@@ -1733,6 +1733,131 @@ public sealed class ExactSmallCommitmentDifferentialTests
     }
 
     [Fact]
+    public void Zero_switch_limits_give_every_thesis_arm_the_same_selection_problem()
+    {
+        // Every Tier-3 configuration of the thesis sets a zero hard limit on vehicle_switch_count
+        // in all active phases, and zero stop-switch limits. A zero limit puts any vehicle with a
+        // promised rider at the ceiling of the utilization level, 1,000,000 ppm, so a Rule C drop
+        // budget cannot rank anything. With the same state, no drop limit (U), Rule C, the
+        // revision cap, and the strict or relaxed deadline hand the solver the same levels and the
+        // same contributions under either objective order. With a zero bound, Rule C and the cap
+        // also keep the same candidates. Only without the zero switch limits would the drop budget
+        // rank the candidates (control).
+        var fixture = CreateState(seed: 3);
+        var kept = fixture.BaselineDrop.Milliseconds;
+        const long Bound = 30_000;
+
+        static long? HardLimit(CommitmentDimension dimension, bool zeroSwitches, long? dropLimit) =>
+            dimension switch
+            {
+                CommitmentDimension.VehicleSwitchCount
+                    or CommitmentDimension.PickupStopSwitchCount
+                    or CommitmentDimension.DropStopSwitchCount when zeroSwitches => 0,
+                CommitmentDimension.DropEtaTotalMs => dropLimit,
+                _ => null,
+            };
+
+        CommitmentPolicy Arm(
+            bool zeroSwitches = true,
+            long? dropLimit = null,
+            long? revisionLimit = null,
+            long? deadlineSlack = null,
+            bool relaxed = false) =>
+            new(
+                fixture.Policy.PolicyId,
+                CommitmentBudgetBasis.DecisionInduced,
+                CommitmentDimensionVocabulary.Ordered.Select(
+                    dimension => new CommitmentDimensionLimit(
+                        dimension,
+                        HardLimit(dimension, zeroSwitches, dropLimit),
+                        CommitmentPhase.AllActive)),
+                new MaterialRevisionRule(1_000, null),
+                dropEtaDeadlineSlack: deadlineSlack is long slack ? new Duration(slack) : null,
+                dropEtaDeadlineRelaxed: relaxed,
+                dropEtaRevisionLimit: revisionLimit is long limit ? new Duration(limit) : null);
+
+        CandidateSelectionProblem Problem(
+            CommitmentPolicy policy,
+            SolverBackedSelectionObjectiveOrder order)
+        {
+            var solver = new EnumeratingSolver();
+            var decided = new SolverBackedRidePoolingPolicy(solver).Decide(
+                PromiseContext(fixture, kept, policy),
+                CandidateGenerationOptions.ExactSmall,
+                HardVectorOptions(forcedReferenceRecovery: false, selectionObjectiveOrder: order));
+            Assert.True(decided.IsSuccess, decided.Witness?.Message);
+            return solver.LastProblem!;
+        }
+
+        static string[] Signature(CandidateSelectionProblem problem) =>
+            problem.ObjectiveLevels
+                .Select(value => $"{value.Name}/{value.Sense}/{value.Aggregation}")
+                .Concat(
+                    problem.Options.Select(
+                        value => $"{value.OptionId}={string.Join(",", value.ObjectiveContributions)}"))
+                .ToArray();
+
+        static long[] Level(CandidateSelectionProblem problem, string name)
+        {
+            var index = problem.ObjectiveLevels
+                .Select((value, position) => (value.Name, position))
+                .Single(value => value.Name == name)
+                .position;
+            return problem.Options.Select(value => value.ObjectiveContributions[index]).ToArray();
+        }
+
+        foreach (var order in new[]
+                 {
+                     SolverBackedSelectionObjectiveOrder.StabilityFirst,
+                     SolverBackedSelectionObjectiveOrder.CostFirst,
+                 })
+        {
+            var unlimited = Problem(Arm(), order);
+            var expected = Signature(unlimited);
+
+            Assert.Equal(expected, Signature(Problem(Arm(dropLimit: Bound), order)));
+            Assert.Equal(expected, Signature(Problem(Arm(revisionLimit: Bound), order)));
+            Assert.Equal(expected, Signature(Problem(Arm(deadlineSlack: Bound), order)));
+            Assert.Equal(
+                expected,
+                Signature(Problem(Arm(deadlineSlack: Bound, relaxed: true), order)));
+            Assert.DoesNotContain(
+                unlimited.ObjectiveLevels,
+                value => value.Name == "forced-reference-count");
+
+            var frozen = Signature(Problem(Arm(dropLimit: 0), order));
+            Assert.Equal(frozen, Signature(Problem(Arm(revisionLimit: 0), order)));
+            Assert.True(frozen.Length < expected.Length, "A zero bound must prune a candidate.");
+
+            if (order == SolverBackedSelectionObjectiveOrder.StabilityFirst)
+            {
+                Assert.All(
+                    Level(unlimited, "worst-hard-utilization-ppm"),
+                    value => Assert.Equal(HardVectorCandidateAssessor.PartsPerMillion, value));
+                Assert.Equal(
+                    CommitmentDimensionVocabulary.Ordered.Count,
+                    unlimited.ObjectiveLevels.Count(
+                        value => value.Name.StartsWith("revision:", StringComparison.Ordinal)));
+            }
+            else
+            {
+                Assert.DoesNotContain(
+                    unlimited.ObjectiveLevels,
+                    value => value.Name == "worst-hard-utilization-ppm"
+                        || value.Name.StartsWith("revision:", StringComparison.Ordinal));
+            }
+        }
+
+        // Control: without the zero switch limits Rule C's drop budget ranks the same candidates.
+        var ranked = Level(
+            Problem(
+                Arm(zeroSwitches: false, dropLimit: Bound),
+                SolverBackedSelectionObjectiveOrder.StabilityFirst),
+            "worst-hard-utilization-ppm");
+        Assert.True(ranked.Distinct().Count() > 1, string.Join(",", ranked));
+    }
+
+    [Fact]
     public void No_worse_recovery_requires_forced_reference_recovery()
     {
         var (generated, _, _, context) = NoOpRejectedWhileAnInsertionSurvives();

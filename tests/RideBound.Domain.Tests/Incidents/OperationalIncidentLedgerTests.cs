@@ -400,6 +400,42 @@ public sealed class OperationalIncidentLedgerTests
     }
 
     [Fact]
+    public void Forced_breaches_reject_the_revision_limit_code()
+    {
+        // The per-decision revision cap compares with the exogenous projection, like a lock, so
+        // a kept route never trips it; a forced breach naming it would be a defect and fails
+        // closed. The same records with the deadline code are accepted.
+        var drift = CommitmentTestData.Vector(CommitmentDimension.DropEtaTotalMs, 40);
+        var deltas = new ThreeWayPromiseDelta(drift, CommitmentVector.Zero, drift);
+        var changed = CommitmentTestData.Projection(dropEta: 19_990);
+
+        Assert.DoesNotContain(
+            CommitmentFailureCodes.RevisionLimitExceeded,
+            CommitmentBreachRecord.ForcedReferenceWitnessCodes);
+        Assert.Throws<ArgumentException>(
+            () => ForcedReference(
+                deltas,
+                25,
+                25,
+                [CommitmentFailureCodes.RevisionLimitExceeded]));
+        Assert.Throws<ArgumentException>(
+            () => NoWorse(
+                deltas,
+                25,
+                25,
+                [CommitmentFailureCodes.RevisionLimitExceeded],
+                changed));
+        Assert.Equal(
+            [CommitmentFailureCodes.DeadlineExceeded],
+            ForcedReference(deltas, 25, 25, [CommitmentFailureCodes.DeadlineExceeded])
+                .WitnessCodes);
+        Assert.Equal(
+            [CommitmentFailureCodes.DeadlineExceeded],
+            NoWorse(deltas, 25, 25, [CommitmentFailureCodes.DeadlineExceeded], changed)
+                .WitnessCodes);
+    }
+
+    [Fact]
     public void Projection_equality_is_field_by_field()
     {
         Assert.True(

@@ -170,6 +170,46 @@ public sealed class CommitmentRevisionCapLockTests
         Assert.Empty(exempt);
     }
 
+    [Theory]
+    [InlineData(CommitmentPhase.AllActive, true)]
+    [InlineData(CommitmentPhase.Onboard, true)]
+    [InlineData(CommitmentPhase.Accepted | CommitmentPhase.WaitingPickup, false)]
+    public void An_onboard_rider_is_capped_when_the_drop_dimension_applies_onboard(
+        CommitmentPhase dropPhases,
+        bool expectViolation)
+    {
+        // Insertions often delay a rider who is already on board, so the cap must follow the
+        // rider into the onboard phase whenever drop_eta_total_ms applies there.
+        var onboard = OnboardRequest();
+        Assert.Equal(RequestLifecycle.Onboard, onboard.Lifecycle);
+
+        var past = new CommitmentLockEvaluator().Evaluate(
+            onboard,
+            Published(Projection(Previous)),
+            Projection(Exogenous),
+            Projection(Exogenous + Limit + 1),
+            new SimTime(0),
+            Policy(Limit, dropPhases));
+        var within = new CommitmentLockEvaluator().Evaluate(
+            onboard,
+            Published(Projection(Previous)),
+            Projection(Exogenous),
+            Projection(Exogenous + Limit),
+            new SimTime(0),
+            Policy(Limit, dropPhases));
+
+        if (expectViolation)
+        {
+            Assert.Equal(CommitmentLockEvaluator.RevisionCapRule, Assert.Single(past).Rule);
+        }
+        else
+        {
+            Assert.Empty(past);
+        }
+
+        Assert.Empty(within);
+    }
+
     [Fact]
     public void The_cap_witness_follows_lock_and_deadline_witnesses()
     {
@@ -269,6 +309,9 @@ public sealed class CommitmentRevisionCapLockTests
 
     private static RideRequest WaitingRequest() =>
         AcceptedRequest().ConfirmWaitingPickup().Value!;
+
+    private static RideRequest OnboardRequest() =>
+        WaitingRequest().Board(Vehicle, new SimTime(100)).Value!;
 
     private static PromiseProjection Projection(long dropMs, long pickupMs = 0) =>
         new(

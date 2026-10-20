@@ -279,9 +279,12 @@ public sealed class CommitmentPolicy
     /// plus the slack and the exogenous (kept-route) projection: a candidate fails only
     /// if its drop ETA is later than both (DL-HZ in the study notation). Drift alone
     /// never trips it, so the safety no-op is never rejected by it and it never
-    /// triggers forced-reference recovery. Per rider it accepts exactly what the strict
-    /// deadline accepts under no-worse-than-reference recovery, without forced vehicles
-    /// or breach records. Requires a slack; cannot be two-sided.
+    /// triggers forced-reference recovery. When the kept route overruns no other gate,
+    /// each candidate passes it for a rider exactly when the strict deadline passes it
+    /// under no-worse-than-reference recovery, but without forced vehicles or breach
+    /// records. No-worse recovery also exempts budget overruns of the kept route, and its
+    /// forced options add a ranking level, so beyond that case, and for the selection
+    /// itself, the two can differ. Requires a slack; cannot be two-sided.
     /// </summary>
     public bool DropEtaDeadlineRelaxed { get; }
 
