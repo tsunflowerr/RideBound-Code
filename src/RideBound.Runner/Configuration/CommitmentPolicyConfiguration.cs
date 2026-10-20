@@ -27,7 +27,9 @@ public sealed class CommitmentPolicyConfiguration :
         "finalConfirmationLocks",
         "ratchetLocks",
         "dropEtaDeadlineSlackMs",
-        "dropEtaDeadlineTwoSided");
+        "dropEtaDeadlineTwoSided",
+        "dropEtaDeadlineRelaxed",
+        "dropEtaRevisionLimitMs");
     private static readonly IReadOnlySet<string> LimitFields = Fields(
         "dimension",
         "hardLimit",
@@ -168,21 +170,28 @@ public sealed class CommitmentPolicyConfiguration :
         var deadlineSlack = OptionalPositiveInteger(
             element,
             "dropEtaDeadlineSlackMs");
-        var deadlineTwoSided = element.TryGetProperty(
-                "dropEtaDeadlineTwoSided",
-                out var twoSided)
-            && twoSided.ValueKind switch
-            {
-                JsonValueKind.True => true,
-                JsonValueKind.False => false,
-                _ => throw new InvalidDataException(
-                    "'dropEtaDeadlineTwoSided' must be a boolean."),
-            };
+        var deadlineTwoSided = OptionalBoolean(element, "dropEtaDeadlineTwoSided");
+        var deadlineRelaxed = OptionalBoolean(element, "dropEtaDeadlineRelaxed");
+        var revisionLimit = OptionalPositiveInteger(
+            element,
+            "dropEtaRevisionLimitMs");
 
         if (deadlineTwoSided && deadlineSlack is null)
         {
             throw new InvalidDataException(
                 "'dropEtaDeadlineTwoSided' requires 'dropEtaDeadlineSlackMs'.");
+        }
+
+        if (deadlineRelaxed && deadlineSlack is null)
+        {
+            throw new InvalidDataException(
+                "'dropEtaDeadlineRelaxed' requires 'dropEtaDeadlineSlackMs'.");
+        }
+
+        if (deadlineRelaxed && deadlineTwoSided)
+        {
+            throw new InvalidDataException(
+                "'dropEtaDeadlineRelaxed' cannot be combined with 'dropEtaDeadlineTwoSided'.");
         }
 
         return new CommitmentPolicy(
@@ -203,7 +212,9 @@ public sealed class CommitmentPolicyConfiguration :
             ReadLocks(element, "finalConfirmationLocks"),
             ReadLocks(element, "ratchetLocks"),
             deadlineSlack is long slack ? new Duration(slack) : null,
-            deadlineTwoSided);
+            deadlineTwoSided,
+            deadlineRelaxed,
+            revisionLimit is long limit ? new Duration(limit) : null);
     }
 
     private static CommitmentDimensionLimit ReadLimit(JsonElement element)
@@ -354,6 +365,16 @@ public sealed class CommitmentPolicyConfiguration :
         element.TryGetProperty(propertyName, out var value)
             ? PositiveInteger(value, propertyName)
             : null;
+
+    private static bool OptionalBoolean(JsonElement element, string propertyName) =>
+        element.TryGetProperty(propertyName, out var value)
+        && value.ValueKind switch
+        {
+            JsonValueKind.True => true,
+            JsonValueKind.False => false,
+            _ => throw new InvalidDataException(
+                $"'{propertyName}' must be a boolean."),
+        };
 
     private static IReadOnlySet<string> Fields(params string[] values) =>
         new HashSet<string>(values, StringComparer.Ordinal);

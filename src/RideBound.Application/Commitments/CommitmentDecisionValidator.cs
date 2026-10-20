@@ -412,7 +412,8 @@ public sealed class CommitmentDecisionValidator
 
             // A vehicle named as forced-reference keeps its route although a gate rejects it:
             // its deadline and budget overruns become an exemption instead of a rejection. A
-            // phase lock cannot fire on a kept route; if one did, the breach factory rejects it.
+            // phase lock or the revision cap cannot fire on a kept route; if one did, the breach
+            // factory rejects it.
             // Under no-worse recovery a changed route of that vehicle is exempted only for gates the
             // kept route also overruns, and only by no more than the kept route would.
             var keptRoute = IsForcedReference(context, request);
@@ -458,6 +459,14 @@ public sealed class CommitmentDecisionValidator
                             CommitmentValidationStage.Lock,
                             CommitmentFailureCodes.DeadlineExceeded,
                             "The candidate moves the drop ETA outside the initial-promise window.",
+                            request.AssignedVehicleId,
+                            value.RequestId,
+                            value.Dimension,
+                            value.Rule),
+                        CommitmentLockEvaluator.RevisionCapRule => new CommitmentValidationWitness(
+                            CommitmentValidationStage.Lock,
+                            CommitmentFailureCodes.RevisionLimitExceeded,
+                            "The candidate moves the drop ETA beyond the per-decision revision limit.",
                             request.AssignedVehicleId,
                             value.RequestId,
                             value.Dimension,
@@ -792,7 +801,8 @@ public sealed class CommitmentDecisionValidator
     /// The kept route's gate overruns for one rider. A changed route may be exempted for a
     /// deadline only if the kept route overruns the same side and the changed route is not
     /// further out on that side; for a budget dimension only if the kept route also exceeds it
-    /// and the changed route's total is not larger. Phase locks are never exempted.
+    /// and the changed route's total is not larger. Phase locks and the revision cap are never
+    /// exempted: both compare with the kept route, which therefore never overruns them.
     /// </summary>
     private sealed class NoWorseReference(
         PromiseProjection kept,

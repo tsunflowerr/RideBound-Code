@@ -150,6 +150,14 @@ public static class CommitmentFailureCodes
     public const string DeadlineExceeded = "COMMITMENT_DEADLINE_EXCEEDED";
 
     /// <summary>
+    /// The candidate moves a rider's drop ETA further from its exogenous projection
+    /// than the per-decision revision limit allows. Like a phase lock it compares with
+    /// the exogenous projection, so drift alone never trips it and the kept route never
+    /// does; it is therefore never a forced-reference exemption code.
+    /// </summary>
+    public const string RevisionLimitExceeded = "COMMITMENT_REVISION_LIMIT_EXCEEDED";
+
+    /// <summary>
     /// A treatment assessment rejected every generated candidate for one
     /// vehicle, including the safety no-op. This is fail-closed: the run stops
     /// with an explicit witness instead of handing the solver a vehicle that has

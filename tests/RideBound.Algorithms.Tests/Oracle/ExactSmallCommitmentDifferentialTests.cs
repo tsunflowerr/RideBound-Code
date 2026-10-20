@@ -1476,6 +1476,263 @@ public sealed class ExactSmallCommitmentDifferentialTests
     }
 
     [Fact]
+    public void A_relaxed_deadline_keeps_exactly_what_the_strict_deadline_keeps_under_no_worse_recovery()
+    {
+        // DL-HZ equivalence. The kept route drops the incumbent at e and the independent oracle
+        // gives every candidate's incumbent drop p. For each slack s and first promise p0, the
+        // strict deadline with no-worse-than-reference recovery, the relaxed deadline with the same
+        // recovery requested, and the relaxed deadline without recovery keep the same candidates:
+        // those with p <= max(p0 + s, e). Only the strict rule needs a forced vehicle for it.
+        var fixture = CreateState(seed: 3);
+        var generated = new InsertionCandidateGenerator().Generate(
+            fixture.State,
+            CandidateGenerationOptions.ExactSmall);
+        Assert.True(generated.IsSuccess, generated.Witness?.Message);
+        var set = generated.VehicleCandidates!.Single();
+        var kept = fixture.BaselineDrop.Milliseconds;
+        var drops = set.Candidates.ToDictionary(
+            value => value.CandidateId,
+            value => OracleEtas(fixture.State, SemanticKey(value), fixture.IncumbentId)
+                .Drop.Milliseconds,
+            StringComparer.Ordinal);
+        var delays = drops.Values
+            .Select(value => value - kept)
+            .Where(value => value > 0)
+            .Distinct()
+            .Order()
+            .ToArray();
+        Assert.True(delays.Length >= 2, "The fixture needs two distinct incumbent delays.");
+        Assert.Contains(drops.Values, value => value == kept);
+        var forcedCases = 0;
+        var normalCases = 0;
+
+        foreach (var slack in new[] { 0, delays[0], delays[1] })
+        {
+            // How far drift carried the kept route past the deadline p0 + s (negative: inside).
+            foreach (var overrun in new[]
+                     {
+                         delays[1] + 1, delays[0] + 1, delays[0], 1, 0, -1, -delays[0], -delays[1],
+                     })
+            {
+                var initial = kept - slack - overrun;
+
+                // A first promise cannot drop the incumbent before it was picked up.
+                if (initial < fixture.BaselinePickup.Milliseconds)
+                {
+                    continue;
+                }
+
+                var strictContext = SlackDeadlineContext(fixture, initial, slack, relaxed: false);
+                var relaxedContext = SlackDeadlineContext(fixture, initial, slack, relaxed: true);
+                var strict = new HardVectorCandidateAssessor().AssessAndFilter(
+                    strictContext,
+                    generated.VehicleCandidates!,
+                    requireSafetyNoOp: true,
+                    forcedReferenceRecovery: true,
+                    forcedNoWorse: true);
+                var relaxed = new HardVectorCandidateAssessor().AssessAndFilter(
+                    relaxedContext,
+                    generated.VehicleCandidates!,
+                    requireSafetyNoOp: true,
+                    forcedReferenceRecovery: true,
+                    forcedNoWorse: true);
+                var plain = new HardVectorCandidateAssessor().AssessAndFilter(
+                    relaxedContext,
+                    generated.VehicleCandidates!,
+                    requireSafetyNoOp: true);
+
+                Assert.True(strict.IsSuccess, strict.Witness?.Message);
+                Assert.True(relaxed.IsSuccess, relaxed.Witness?.Message);
+                Assert.True(plain.IsSuccess, plain.Witness?.Message);
+                var expected = drops
+                    .Where(value => value.Value <= Math.Max(initial + slack, kept))
+                    .Select(value => value.Key)
+                    .Order(StringComparer.Ordinal)
+                    .ToArray();
+                Assert.Equal(expected, RetainedIds(strict));
+                Assert.Equal(expected, RetainedIds(relaxed));
+                Assert.Equal(expected, RetainedIds(plain));
+                Assert.Equal(PrunedKeys(strict), PrunedKeys(relaxed));
+                Assert.Equal(PrunedKeys(plain), PrunedKeys(relaxed));
+
+                // The strict rule rejects the no-op exactly when drift put the kept route past the
+                // deadline; only then does it need a forced vehicle. The relaxed rule never does.
+                Assert.Equal(
+                    overrun > 0 ? [AlgorithmTestData.VehicleOne] : Array.Empty<VehicleId>(),
+                    strict.Batch!.ForcedReferenceVehicles.ToArray());
+                Assert.Empty(relaxed.Batch!.ForcedReferenceVehicles);
+                Assert.DoesNotContain(relaxed.Batch.Assessments.Values, value => value.IsForcedReference);
+                Assert.Equal(
+                    plain.Batch!.Assessments.OrderBy(value => value.Key, StringComparer.Ordinal),
+                    relaxed.Batch.Assessments.OrderBy(value => value.Key, StringComparer.Ordinal));
+
+                if (overrun > 0)
+                {
+                    forcedCases++;
+                }
+                else
+                {
+                    normalCases++;
+                }
+            }
+        }
+
+        Assert.True(forcedCases >= 6, $"Only {forcedCases} cases exercised the forced path.");
+        Assert.True(normalCases >= 6, $"Only {normalCases} cases exercised the normal path.");
+    }
+
+    [Fact]
+    public void A_relaxed_deadline_decision_needs_no_forced_vehicle_and_records_no_breach()
+    {
+        // Drift carried the kept route 1 ms past a zero-slack deadline. The strict rule reaches its
+        // decision through a forced vehicle and records a breach; the relaxed rule reaches the same
+        // plan as normal operation. On this one-vehicle fixture every option of the forced vehicle
+        // counts 1 on the forced level, so that level cannot change the choice.
+        var fixture = CreateState(seed: 3);
+        var initial = fixture.BaselineDrop.Milliseconds - 1;
+        var strictContext = SlackDeadlineContext(fixture, initial, 0, relaxed: false);
+        var relaxedContext = SlackDeadlineContext(fixture, initial, 0, relaxed: true);
+        var strictSolver = new EnumeratingSolver();
+        var relaxedSolver = new EnumeratingSolver();
+        var options = HardVectorOptions(forcedReferenceRecovery: true, forcedNoWorseRecovery: true);
+
+        var strict = new SolverBackedRidePoolingPolicy(strictSolver).Decide(
+            strictContext,
+            CandidateGenerationOptions.ExactSmall,
+            options);
+        var relaxed = new SolverBackedRidePoolingPolicy(relaxedSolver).Decide(
+            relaxedContext,
+            CandidateGenerationOptions.ExactSmall,
+            options);
+
+        Assert.True(strict.IsSuccess, strict.Witness?.Message);
+        Assert.True(relaxed.IsSuccess, relaxed.Witness?.Message);
+        var strictDecision = strict.Decision!.Decision;
+        var relaxedDecision = relaxed.Decision!.Decision;
+        Assert.Equal([AlgorithmTestData.VehicleOne], strictDecision.ForcedReferenceVehicles!);
+        Assert.Null(relaxedDecision.ForcedReferenceVehicles);
+        Assert.Equal("forced-reference-count", strictSolver.LastProblem!.ObjectiveLevels[0].Name);
+        Assert.DoesNotContain(
+            relaxedSolver.LastProblem!.ObjectiveLevels,
+            value => value.Name == "forced-reference-count");
+        Assert.False(relaxedDecision.VehiclePlans.Single().Candidate.IsNoOp);
+        Assert.Equal(
+            strictDecision.VehiclePlans.Single().Candidate.CandidateId,
+            relaxedDecision.VehiclePlans.Single().Candidate.CandidateId);
+
+        var validator = new CommitmentDecisionValidator();
+        var strictValidated = validator.Validate(
+            RunnerLikeContext(
+                strictContext,
+                strictDecision,
+                strictDecision.ForcedReferenceVehicles,
+                noWorse: true));
+        var relaxedValidated = validator.Validate(
+            RunnerLikeContext(
+                relaxedContext,
+                relaxedDecision,
+                relaxedDecision.ForcedReferenceVehicles,
+                noWorse: true));
+
+        Assert.True(strictValidated.IsValid, strictValidated.Witnesses.FirstOrDefault()?.Message);
+        Assert.Equal(
+            [CommitmentFailureCodes.DeadlineExceeded],
+            Assert.Single(strictValidated.ForcedBreaches).WitnessCodes);
+        Assert.True(relaxedValidated.IsValid, relaxedValidated.Witnesses.FirstOrDefault()?.Message);
+        Assert.Empty(relaxedValidated.ForcedBreaches);
+        Assert.Empty(relaxedValidated.ForcedExemptions);
+        Assert.Empty(relaxedValidated.ValidatedState!.Incidents.Breaches);
+        Assert.Equal(
+            strictValidated.Publications.Select(
+                value => (value.PublicationId, value.Entry.PublishedPromise.Projection.DropEta)),
+            relaxedValidated.Publications.Select(
+                value => (value.PublicationId, value.Entry.PublishedPromise.Projection.DropEta)));
+    }
+
+    [Fact]
+    public void The_revision_cap_prunes_by_the_incumbent_change_and_never_makes_a_vehicle_forced()
+    {
+        // The kept route drifted 500 ms earlier than the incumbent's promise; no deadline is set. A
+        // cap one millisecond below the smallest positive incumbent delay keeps exactly the
+        // candidates that leave the incumbent's drop on the kept route. The drift itself is free,
+        // so the no-op is never rejected, and neither recovery mode finds a vehicle to force.
+        var fixture = CreateState(seed: 3);
+        var generated = new InsertionCandidateGenerator().Generate(
+            fixture.State,
+            CandidateGenerationOptions.ExactSmall);
+        Assert.True(generated.IsSuccess, generated.Witness?.Message);
+        var set = generated.VehicleCandidates!.Single();
+        var cap = SmallestPositiveDelay(fixture, set) - 1;
+        var kept = fixture.BaselineDrop.Milliseconds;
+        var context = PromiseContext(
+            fixture,
+            kept + 500,
+            new CommitmentPolicy(
+                fixture.Policy.PolicyId,
+                CommitmentBudgetBasis.DecisionInduced,
+                CommitmentDimensionVocabulary.Ordered.Select(
+                    dimension => new CommitmentDimensionLimit(
+                        dimension,
+                        null,
+                        CommitmentPhase.AllActive)),
+                new MaterialRevisionRule(1_000, null),
+                dropEtaRevisionLimit: new Duration(cap)));
+        var expected = set.Candidates
+            .Where(
+                value => Math.Abs(
+                    OracleEtas(fixture.State, SemanticKey(value), fixture.IncumbentId)
+                        .Drop.Milliseconds - kept) <= cap)
+            .Select(value => value.CandidateId)
+            .Order(StringComparer.Ordinal)
+            .ToArray();
+        Assert.Contains(set.Candidates.Single(value => value.IsNoOp).CandidateId, expected);
+        Assert.True(expected.Length < set.Candidates.Count);
+
+        var results = new[]
+        {
+            new HardVectorCandidateAssessor().AssessAndFilter(
+                context,
+                generated.VehicleCandidates!,
+                requireSafetyNoOp: true),
+            new HardVectorCandidateAssessor().AssessAndFilter(
+                context,
+                generated.VehicleCandidates!,
+                requireSafetyNoOp: true,
+                forcedReferenceRecovery: true),
+            new HardVectorCandidateAssessor().AssessAndFilter(
+                context,
+                generated.VehicleCandidates!,
+                requireSafetyNoOp: true,
+                forcedReferenceRecovery: true,
+                forcedNoWorse: true),
+        };
+
+        foreach (var result in results)
+        {
+            Assert.True(result.IsSuccess, result.Witness?.Message);
+            Assert.Empty(result.Batch!.ForcedReferenceVehicles);
+            Assert.DoesNotContain(result.Batch.Assessments.Values, value => value.IsForcedReference);
+            Assert.Equal(expected, RetainedIds(result));
+            var pruned = result.Batch.FeasibleCandidateSets.Single().PrunedCandidates
+                .Where(value => set.Candidates.Any(candidate => candidate.CandidateId == value.CandidateId))
+                .ToArray();
+            Assert.Equal(set.Candidates.Count - expected.Length, pruned.Length);
+            Assert.All(
+                pruned,
+                value =>
+                {
+                    Assert.Equal(CommitmentFailureCodes.RevisionLimitExceeded, value.Code);
+                    Assert.Equal(
+                        CommitmentLockEvaluator.RevisionCapRule,
+                        Assert.Single(value.CommitmentWitnesses!).Rule);
+                });
+        }
+
+        Assert.Equal(PrunedKeys(results[0]), PrunedKeys(results[1]));
+        Assert.Equal(PrunedKeys(results[0]), PrunedKeys(results[2]));
+    }
+
+    [Fact]
     public void No_worse_recovery_requires_forced_reference_recovery()
     {
         var (generated, _, _, context) = NoOpRejectedWhileAnInsertionSurvives();
@@ -1718,6 +1975,43 @@ public sealed class ExactSmallCommitmentDifferentialTests
                 new MaterialRevisionRule(1_000, null),
                 dropEtaDeadlineSlack: new Duration(0),
                 dropEtaDeadlineTwoSided: twoSided));
+
+    /// <summary>
+    /// A one-sided deadline of <paramref name="slack"/> from the given first promise, strict or
+    /// relaxed (DL-HZ), with no budget limit.
+    /// </summary>
+    private static CommitmentMechanismContext SlackDeadlineContext(
+        Fixture fixture,
+        long initialDropMs,
+        long slack,
+        bool relaxed) =>
+        PromiseContext(
+            fixture,
+            initialDropMs,
+            new CommitmentPolicy(
+                fixture.Policy.PolicyId,
+                CommitmentBudgetBasis.DecisionInduced,
+                CommitmentDimensionVocabulary.Ordered.Select(
+                    dimension => new CommitmentDimensionLimit(
+                        dimension,
+                        null,
+                        CommitmentPhase.AllActive)),
+                new MaterialRevisionRule(1_000, null),
+                dropEtaDeadlineSlack: new Duration(slack),
+                dropEtaDeadlineRelaxed: relaxed));
+
+    private static string[] RetainedIds(HardVectorCandidateAssessmentResult result) =>
+        result.Batch!.FeasibleCandidateSets.Single().Candidates
+            .Select(value => value.CandidateId)
+            .Order(StringComparer.Ordinal)
+            .ToArray();
+
+    private static (string CandidateId, string Code, string Message)[] PrunedKeys(
+        HardVectorCandidateAssessmentResult result) =>
+        result.Batch!.FeasibleCandidateSets.Single().PrunedCandidates
+            .Select(value => (value.CandidateId, value.Code, value.Message))
+            .OrderBy(value => value.CandidateId, StringComparer.Ordinal)
+            .ToArray();
 
     /// <summary>
     /// The incumbent's only ledger entry is an initial promise at the kept pickup

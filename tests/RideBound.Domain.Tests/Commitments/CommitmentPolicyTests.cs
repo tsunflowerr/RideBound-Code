@@ -63,9 +63,62 @@ public sealed class CommitmentPolicyTests
         Assert.Equal("dropEtaDeadlineTwoSided", error.ParamName);
     }
 
+    [Fact]
+    public void Policy_has_no_relaxed_deadline_and_no_revision_limit_by_default()
+    {
+        var policy = CreatePolicy(CommitmentBudgetBasis.DecisionInduced);
+        var deadline = CreateDeadlinePolicy(new Duration(30_000), twoSided: false);
+
+        Assert.False(policy.DropEtaDeadlineRelaxed);
+        Assert.Null(policy.DropEtaRevisionLimit);
+        Assert.False(deadline.DropEtaDeadlineRelaxed);
+        Assert.Null(deadline.DropEtaRevisionLimit);
+    }
+
+    [Fact]
+    public void Policy_keeps_a_configured_relaxed_deadline_and_revision_limit()
+    {
+        var policy = CreateDeadlinePolicy(
+            new Duration(30_000),
+            twoSided: false,
+            relaxed: true,
+            revisionLimit: new Duration(60_000));
+        var zero = CreateDeadlinePolicy(
+            null,
+            twoSided: false,
+            revisionLimit: new Duration(0));
+
+        Assert.Equal(new Duration(30_000), policy.DropEtaDeadlineSlack);
+        Assert.True(policy.DropEtaDeadlineRelaxed);
+        Assert.False(policy.DropEtaDeadlineTwoSided);
+        Assert.Equal(new Duration(60_000), policy.DropEtaRevisionLimit);
+        Assert.Equal(new Duration(0), zero.DropEtaRevisionLimit);
+        Assert.Null(zero.DropEtaDeadlineSlack);
+    }
+
+    [Fact]
+    public void Policy_rejects_a_relaxed_deadline_without_a_slack()
+    {
+        var error = Assert.Throws<ArgumentException>(
+            () => CreateDeadlinePolicy(null, twoSided: false, relaxed: true));
+
+        Assert.Equal("dropEtaDeadlineRelaxed", error.ParamName);
+    }
+
+    [Fact]
+    public void Policy_rejects_a_relaxed_two_sided_deadline()
+    {
+        var error = Assert.Throws<ArgumentException>(
+            () => CreateDeadlinePolicy(new Duration(30_000), twoSided: true, relaxed: true));
+
+        Assert.Equal("dropEtaDeadlineRelaxed", error.ParamName);
+    }
+
     private static CommitmentPolicy CreateDeadlinePolicy(
         Duration? slack,
-        bool twoSided) =>
+        bool twoSided,
+        bool relaxed = false,
+        Duration? revisionLimit = null) =>
         new(
             "validated-policy",
             CommitmentBudgetBasis.DecisionInduced,
@@ -76,7 +129,9 @@ public sealed class CommitmentPolicyTests
                     CommitmentPhase.AllActive)),
             new MaterialRevisionRule(1, null),
             dropEtaDeadlineSlack: slack,
-            dropEtaDeadlineTwoSided: twoSided);
+            dropEtaDeadlineTwoSided: twoSided,
+            dropEtaDeadlineRelaxed: relaxed,
+            dropEtaRevisionLimit: revisionLimit);
 
     private static CommitmentPolicy CreatePolicy(
         CommitmentBudgetBasis budgetBasis,

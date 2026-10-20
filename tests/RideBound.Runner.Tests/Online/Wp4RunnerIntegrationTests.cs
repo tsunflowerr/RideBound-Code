@@ -757,6 +757,99 @@ public sealed class Wp4RunnerIntegrationTests
     }
 
     [Fact]
+    public void A_relaxed_deadline_keeps_the_late_route_as_normal_operation_without_recovery()
+    {
+        // The scenario above: drift alone carries the booked rider past a one-millisecond
+        // deadline. The relaxed deadline is the later of that deadline and the kept route, so the
+        // kept route passes under every recovery setting, including fail-closed: the certificate is
+        // normal, no breach is recorded, and the fleet actions are those the strict deadline
+        // reaches only through a forced vehicle.
+        var strict = DeadlineCommitmentConfiguration(slackMs: 1);
+        var relaxed = DeadlineCommitmentConfiguration(slackMs: 1, relaxed: true);
+        Assert.True(relaxed.TryGetPolicy("uniform-v1", out var relaxedPolicy));
+        Assert.True(relaxedPolicy.DropEtaDeadlineRelaxed);
+        var forcedSetup = CreateSession(
+            HardVectorConfiguration(strict, recovery: "forced-reference-v1"),
+            commitmentConfiguration: strict);
+        var forced = DecisionPayloadCodec.Decode(
+            DriftBookedRider(forcedSetup, progressPermille: 1).Payload).Value!;
+        Assert.False(forced.Certificate.Body!.NormalOperation);
+
+        foreach (var recovery in new string?[]
+                 {
+                     null,
+                     "forced-reference-v1",
+                     "no-worse-than-reference-v1",
+                 })
+        {
+            var setup = CreateSession(
+                HardVectorConfiguration(relaxed, recovery),
+                commitmentConfiguration: relaxed);
+            var response = DriftBookedRider(setup, progressPermille: 1);
+
+            Assert.Equal("decision", response.MessageType.Value);
+            var decision = DecisionPayloadCodec.Decode(response.Payload);
+            Assert.True(decision.IsSuccess, decision.Error?.Message);
+            var body = decision.Value!.Certificate.Body!;
+            Assert.True(body.NormalOperation);
+            Assert.Empty(body.Witnesses);
+            Assert.Equal(forced.Certificate.Body.PublicationIds, body.PublicationIds);
+            Assert.Equal(
+                forced.Actions.Select(value => value.GetRawText()),
+                decision.Value.Actions.Select(value => value.GetRawText()));
+            _ = setup.Session.Process(
+                DecisionApplied(3, 1_050, decision.Value.DecisionHash.Value));
+            Assert.Empty(setup.Session.CommittedOnlineState!.Incidents.Breaches);
+        }
+    }
+
+    [Fact]
+    public void A_revision_cap_lets_drift_through_and_never_forces_the_kept_route()
+    {
+        // The same drift under a one-millisecond per-decision cap and no deadline. The decision
+        // only republishes the kept route, whose own change is zero, so under every recovery
+        // setting it is the uncapped decision: normal operation and no breach.
+        var plain = CommitmentConfiguration();
+        var capped = RevisionLimitCommitmentConfiguration(limitMs: 1);
+        Assert.True(capped.TryGetPolicy("uniform-v1", out var cappedPolicy));
+        Assert.Equal(1, cappedPolicy.DropEtaRevisionLimit?.Milliseconds);
+        var expected = DecisionPayloadCodec.Decode(
+            DriftBookedRider(
+                CreateSession(
+                    HardVectorConfiguration(plain, recovery: null),
+                    commitmentConfiguration: plain),
+                progressPermille: 1).Payload).Value!;
+        Assert.Single(
+            expected.Actions,
+            action => action.GetProperty("decisionType").GetString() == "promisePublished");
+
+        foreach (var recovery in new string?[]
+                 {
+                     null,
+                     "forced-reference-v1",
+                     "no-worse-than-reference-v1",
+                 })
+        {
+            var setup = CreateSession(
+                HardVectorConfiguration(capped, recovery),
+                commitmentConfiguration: capped);
+            var response = DriftBookedRider(setup, progressPermille: 1);
+
+            Assert.Equal("decision", response.MessageType.Value);
+            var decision = DecisionPayloadCodec.Decode(response.Payload);
+            Assert.True(decision.IsSuccess, decision.Error?.Message);
+            Assert.True(decision.Value!.Certificate.Body!.NormalOperation);
+            Assert.Empty(decision.Value.Certificate.Body.Witnesses);
+            Assert.Equal(
+                expected.Actions.Select(value => value.GetRawText()),
+                decision.Value.Actions.Select(value => value.GetRawText()));
+            _ = setup.Session.Process(
+                DecisionApplied(3, 1_050, decision.Value.DecisionHash.Value));
+            Assert.Empty(setup.Session.CommittedOnlineState!.Incidents.Breaches);
+        }
+    }
+
+    [Fact]
     public void No_worse_recovery_is_rejected_outside_the_solver_backed_C1_and_C2()
     {
         var commitment = CommitmentConfiguration();
@@ -1000,7 +1093,8 @@ public sealed class Wp4RunnerIntegrationTests
             """);
 
     private static CommitmentPolicyConfiguration DeadlineCommitmentConfiguration(
-        long slackMs)
+        long slackMs,
+        bool relaxed = false)
     {
         var json = JsonNode.Parse(File.ReadAllText(Path.Combine(
             RepositoryRoot(),
@@ -1008,6 +1102,25 @@ public sealed class Wp4RunnerIntegrationTests
             "configurations",
             "wp3-boundary-test-v1.json")))!;
         json["policies"]![0]!["dropEtaDeadlineSlackMs"] = slackMs;
+
+        if (relaxed)
+        {
+            json["policies"]![0]!["dropEtaDeadlineRelaxed"] = true;
+        }
+
+        return CommitmentPolicyConfiguration.Decode(
+            Encoding.UTF8.GetBytes(json.ToJsonString()));
+    }
+
+    private static CommitmentPolicyConfiguration RevisionLimitCommitmentConfiguration(
+        long limitMs)
+    {
+        var json = JsonNode.Parse(File.ReadAllText(Path.Combine(
+            RepositoryRoot(),
+            "benchmarks",
+            "configurations",
+            "wp3-boundary-test-v1.json")))!;
+        json["policies"]![0]!["dropEtaRevisionLimitMs"] = limitMs;
         return CommitmentPolicyConfiguration.Decode(
             Encoding.UTF8.GetBytes(json.ToJsonString()));
     }

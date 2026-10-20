@@ -124,6 +124,57 @@ public sealed class EffectivePolicyFairnessTests
             Fingerprint(policy));
     }
 
+    /// <summary>
+    /// The per-decision revision limit (P-b) and the relaxed deadline (DL-HZ) are research
+    /// probes of the same kind: a baseline arm scored against either would stop being a
+    /// baseline, so B1-B4 never receive them.
+    /// </summary>
+    [Theory]
+    [InlineData(RidePoolingPolicyKind.RollingCost)]
+    [InlineData(RidePoolingPolicyKind.RollingPenalty)]
+    [InlineData(RidePoolingPolicyKind.FixedFreezeHorizon)]
+    [InlineData(RidePoolingPolicyKind.NoReassignmentRepair)]
+    public void A_baseline_arm_never_inherits_a_revision_limit_or_a_relaxed_deadline(
+        RidePoolingPolicyKind kind)
+    {
+        var policy = EffectivePolicyFor(
+            kind,
+            deadlineSlackMs: 30_000,
+            deadlineRelaxed: true,
+            revisionLimitMs: 60_000);
+
+        Assert.Null(policy.DropEtaRevisionLimit);
+        Assert.False(policy.DropEtaDeadlineRelaxed);
+        Assert.Null(policy.DropEtaDeadlineSlack);
+        Assert.Equal(
+            Fingerprint(EffectivePolicyFor(kind)),
+            Fingerprint(policy));
+    }
+
+    [Theory]
+    [InlineData(RidePoolingPolicyKind.RideBoundHardVector)]
+    [InlineData(RidePoolingPolicyKind.CommitSoftHardHybrid)]
+    public void A_commitment_arm_keeps_a_revision_limit_and_a_relaxed_deadline(
+        RidePoolingPolicyKind kind)
+    {
+        var policy = EffectivePolicyFor(
+            kind,
+            deadlineSlackMs: 30_000,
+            deadlineRelaxed: true,
+            revisionLimitMs: 60_000);
+
+        Assert.Equal(60_000, policy.DropEtaRevisionLimit?.Milliseconds);
+        Assert.True(policy.DropEtaDeadlineRelaxed);
+        Assert.Equal(
+            Fingerprint(
+                ConfiguredPolicy(
+                    DropEtaHardLimit,
+                    30_000,
+                    deadlineRelaxed: true,
+                    revisionLimitMs: 60_000)),
+            Fingerprint(policy));
+    }
+
     [Fact]
     public void B3_and_b4_keep_only_their_declared_mechanism_settings()
     {
@@ -174,6 +225,8 @@ public sealed class EffectivePolicyFairnessTests
                 ((int)policy.FinalConfirmationLocks).ToString(),
                 policy.DropEtaDeadlineSlack?.Milliseconds.ToString() ?? "none",
                 policy.DropEtaDeadlineTwoSided.ToString(),
+                policy.DropEtaDeadlineRelaxed.ToString(),
+                policy.DropEtaRevisionLimit?.Milliseconds.ToString() ?? "none",
             }.Concat(
                 CommitmentDimensionVocabulary.Ordered.Select(
                     dimension => string.Join(
@@ -190,7 +243,9 @@ public sealed class EffectivePolicyFairnessTests
         RidePoolingPolicyKind kind,
         long? dropEtaHardLimit = DropEtaHardLimit,
         long? deadlineSlackMs = null,
-        bool deadlineTwoSided = false)
+        bool deadlineTwoSided = false,
+        bool deadlineRelaxed = false,
+        long? revisionLimitMs = null)
     {
         var request = AlgorithmTestData.PendingRequest("request-1");
         var unadvanced = AlgorithmTestData.CreateState(
@@ -212,7 +267,9 @@ public sealed class EffectivePolicyFairnessTests
         var configured = ConfiguredPolicy(
             dropEtaHardLimit,
             deadlineSlackMs,
-            deadlineTwoSided);
+            deadlineTwoSided,
+            deadlineRelaxed,
+            revisionLimitMs);
         var solverBudget = DeterministicSolverBudget.Create(1000, 1000, 1).Value!;
         var executionBudget =
             DeterministicCandidateSelectionExecutionBudget.Create(
@@ -245,7 +302,9 @@ public sealed class EffectivePolicyFairnessTests
     private static CommitmentPolicy ConfiguredPolicy(
         long? dropEtaHardLimit,
         long? deadlineSlackMs = null,
-        bool deadlineTwoSided = false) =>
+        bool deadlineTwoSided = false,
+        bool deadlineRelaxed = false,
+        long? revisionLimitMs = null) =>
         new(
             PolicyId,
             CommitmentBudgetBasis.DecisionInduced,
@@ -260,7 +319,9 @@ public sealed class EffectivePolicyFairnessTests
                         : CommitmentPhase.AllActive)),
             new MaterialRevisionRule(1, 30_000),
             dropEtaDeadlineSlack: deadlineSlackMs is long slack ? new Duration(slack) : null,
-            dropEtaDeadlineTwoSided: deadlineTwoSided);
+            dropEtaDeadlineTwoSided: deadlineTwoSided,
+            dropEtaDeadlineRelaxed: deadlineRelaxed,
+            dropEtaRevisionLimit: revisionLimitMs is long limit ? new Duration(limit) : null);
 
     /// <summary>
     /// Each arm carries its own mandatory settings — B3 needs a freeze horizon and lock

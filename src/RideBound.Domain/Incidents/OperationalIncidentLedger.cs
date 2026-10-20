@@ -461,6 +461,7 @@ public sealed record CommitmentBreachRecord
     /// The gate codes a forced-reference breach may name. A phase lock is absent on
     /// purpose: locks compare a candidate with its exogenous projection, which a kept
     /// route equals, so a lock on a kept route would be a defect and must fail closed.
+    /// The per-decision revision limit is absent for the same reason.
     /// </summary>
     public static IReadOnlySet<string> ForcedReferenceWitnessCodes { get; } =
         new[]
