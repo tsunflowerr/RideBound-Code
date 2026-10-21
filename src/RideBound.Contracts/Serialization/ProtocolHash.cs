@@ -66,6 +66,99 @@ public static class ProtocolHash
             ]);
     }
 
+    /// <summary>
+    /// The same decisionHash v1 as above, with canonicalInputState given as ordered byte
+    /// ranges whose concatenation is the canonical input. The hashed byte stream is
+    /// identical; the input is never materialized or copied.
+    /// </summary>
+    public static Sha256Hex CalculateDecisionHash(
+        Sha256Hex previousDecisionHash,
+        Sha256Hex manifestHash,
+        string policyVersion,
+        IReadOnlyList<ReadOnlyMemory<byte>> canonicalInputStateParts,
+        ReadOnlySpan<byte> canonicalDecision) =>
+        CalculateDecisionHash(
+            DecisionDomain,
+            previousDecisionHash,
+            manifestHash,
+            policyVersion,
+            canonicalInputStateParts,
+            canonicalDecision);
+
+    /// <summary>
+    /// PROTOTYPE (wf9 option b): decisionHash v2 has its own domain and a canonicalInputState
+    /// without "onlineStateBefore"; the state stays bound through stateIdentityBefore.stateHash
+    /// (OnlineStateHash.v2), which commits to every entity of the state.
+    /// </summary>
+    public static Sha256Hex CalculateDecisionHashV2(
+        Sha256Hex previousDecisionHash,
+        Sha256Hex manifestHash,
+        string policyVersion,
+        IReadOnlyList<ReadOnlyMemory<byte>> canonicalInputStateParts,
+        ReadOnlySpan<byte> canonicalDecision) =>
+        CalculateDecisionHash(
+            DecisionDomainV2,
+            previousDecisionHash,
+            manifestHash,
+            policyVersion,
+            canonicalInputStateParts,
+            canonicalDecision);
+
+    private static readonly byte[] DecisionDomainV2 =
+        "RideBound.DecisionHash.v2\0"u8.ToArray();
+
+    private static Sha256Hex CalculateDecisionHash(
+        byte[] domain,
+        Sha256Hex previousDecisionHash,
+        Sha256Hex manifestHash,
+        string policyVersion,
+        IReadOnlyList<ReadOnlyMemory<byte>> canonicalInputStateParts,
+        ReadOnlySpan<byte> canonicalDecision)
+    {
+        ArgumentNullException.ThrowIfNull(previousDecisionHash);
+        ArgumentNullException.ThrowIfNull(manifestHash);
+        ArgumentNullException.ThrowIfNull(canonicalInputStateParts);
+
+        if (!OpaqueIdentifier.IsValid(policyVersion))
+        {
+            throw new ArgumentException(
+                "policyVersion must be an opaque protocol identifier.",
+                nameof(policyVersion));
+        }
+
+        using var incremental = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
+        incremental.AppendData(domain);
+        AppendFrame(
+            incremental,
+            "previousDecisionHash",
+            Convert.FromHexString(previousDecisionHash.Value));
+        AppendFrame(
+            incremental,
+            "manifestHash",
+            Convert.FromHexString(manifestHash.Value));
+        AppendFrame(
+            incremental,
+            "policyVersion",
+            Encoding.UTF8.GetBytes(policyVersion));
+
+        long inputLength = 0;
+
+        foreach (var part in canonicalInputStateParts)
+        {
+            inputLength += part.Length;
+        }
+
+        AppendFrameHeader(incremental, "canonicalInputState", inputLength);
+
+        foreach (var part in canonicalInputStateParts)
+        {
+            incremental.AppendData(part.Span);
+        }
+
+        AppendFrame(incremental, "canonicalDecision", canonicalDecision);
+        return CreateHex(incremental.GetHashAndReset());
+    }
+
     public static Sha256Hex CalculateStateIdentityHash(
         EpochId epochId,
         EventSequence nextEventSequence,
@@ -109,6 +202,15 @@ public static class ProtocolHash
         string tag,
         ReadOnlySpan<byte> value)
     {
+        AppendFrameHeader(hash, tag, value.Length);
+        hash.AppendData(value);
+    }
+
+    private static void AppendFrameHeader(
+        IncrementalHash hash,
+        string tag,
+        long valueLengthBytes)
+    {
         var tagBytes = Encoding.UTF8.GetBytes(tag);
 
         if (tagBytes.Length > ushort.MaxValue)
@@ -124,9 +226,8 @@ public static class ProtocolHash
         hash.AppendData(tagBytes);
 
         Span<byte> valueLength = stackalloc byte[sizeof(ulong)];
-        BinaryPrimitives.WriteUInt64BigEndian(valueLength, (ulong)value.Length);
+        BinaryPrimitives.WriteUInt64BigEndian(valueLength, (ulong)valueLengthBytes);
         hash.AppendData(valueLength);
-        hash.AppendData(value);
     }
 
     private static Sha256Hex CreateHex(ReadOnlySpan<byte> hash)

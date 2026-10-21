@@ -19,7 +19,62 @@ public static class OnlineStateCanonicalizer
     private static readonly byte[] DomainPrefix =
         "RideBound.OnlineStateHash.v1\0"u8.ToArray();
 
+    /// <summary>
+    /// When RIDEBOUND_CANONICAL_SELFCHECK=1, every Canonicalize/CalculateHash call also runs
+    /// the reference path and throws on any byte difference (used to validate the direct
+    /// writer on the whole test suite).
+    /// </summary>
+    private static readonly bool SelfCheck = string.Equals(
+        Environment.GetEnvironmentVariable("RIDEBOUND_CANONICAL_SELFCHECK"),
+        "1",
+        StringComparison.Ordinal);
+
     public static byte[] Canonicalize(OnlineState state)
+    {
+        ArgumentNullException.ThrowIfNull(state);
+        var canonical = OnlineStateCanonicalWriter.Write(state, null);
+        Verify(state, canonical);
+        return canonical.ToArray();
+    }
+
+    public static Sha256Hex CalculateHash(OnlineState state)
+    {
+        ArgumentNullException.ThrowIfNull(state);
+        var canonical = OnlineStateCanonicalWriter.Write(state, null);
+        Verify(state, canonical);
+        return OnlineStateCanonicalWriter.HashV1(canonical);
+    }
+
+    /// <summary>Throws when the reference canonicalization differs (self-check mode only).</summary>
+    public static void Verify(OnlineState state, CanonicalSegments canonical)
+    {
+        if (!SelfCheck)
+        {
+            return;
+        }
+
+        var equal = canonical.ContentEquals(CanonicalizeReference(state));
+        var log = Environment.GetEnvironmentVariable("RIDEBOUND_CANONICAL_SELFCHECK_LOG");
+
+        if (!string.IsNullOrEmpty(log))
+        {
+            lock (DomainPrefix)
+            {
+                File.AppendAllText(
+                    log,
+                    $"{(equal ? "equal" : "DIFFERENT")} {canonical.Length} {state.Run.Requests.Count} {state.Commitments.Histories.Count} {state.Incidents.Breaches.Count} {state.Incidents.Incidents.Count} {state.Incidents.LatePickups.Count} {state.PlanPool.Version}\n");
+            }
+        }
+
+        if (!equal)
+        {
+            throw new InvalidOperationException(
+                "Direct canonical writer differs from the reference canonicalization.");
+        }
+    }
+
+    /// <summary>The original v1 path: Utf8JsonWriter followed by CanonicalJson.Canonicalize.</summary>
+    public static byte[] CanonicalizeReference(OnlineState state)
     {
         ArgumentNullException.ThrowIfNull(state);
         var buffer = new ArrayBufferWriter<byte>();
@@ -128,9 +183,10 @@ public static class OnlineStateCanonicalizer
         return CanonicalJson.Canonicalize(buffer.WrittenSpan);
     }
 
-    public static Sha256Hex CalculateHash(OnlineState state)
+    /// <summary>The original v1 hash path (reference for differential tests).</summary>
+    public static Sha256Hex CalculateHashReference(OnlineState state)
     {
-        var canonical = Canonicalize(state);
+        var canonical = CanonicalizeReference(state);
         var buffer = new ArrayBufferWriter<byte>();
         buffer.Write(DomainPrefix);
         WriteFrame(buffer, "canonicalOnlineState", canonical);

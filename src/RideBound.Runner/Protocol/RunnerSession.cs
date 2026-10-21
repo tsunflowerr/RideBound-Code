@@ -70,6 +70,17 @@ public sealed class RunnerSession
     private Sha256Hex _stateHash = ProtocolHash.ZeroHash;
     private Sha256Hex _previousDecisionHash = ProtocolHash.ZeroHash;
     private EventReductionCoordinator? _onlineCoordinator;
+    private readonly OnlineStateCanonicalCache _canonicalCache = new();
+
+    // PROTOTYPE option b (wf9): RIDEBOUND_STATE_HASH=v2 switches state and decision hashes to v2.
+    private readonly OnlineStateHashV2? _hashV2 = string.Equals(
+        Environment.GetEnvironmentVariable("RIDEBOUND_STATE_HASH"),
+        "v2",
+        StringComparison.Ordinal)
+        ? new OnlineStateHashV2()
+        : null;
+    private CanonicalStateBytes? _committedCanonical;
+    private CanonicalStateBytes? _stagedCanonical;
 
     public RunnerSession(
         CapabilityRequirementProfile requirements,
@@ -356,8 +367,13 @@ public sealed class RunnerSession
                     run,
                     _identity.Manifest.TravelTimeSnapshotHash.Value),
                 CreateEventReducer());
-            _stateHash = OnlineStateCanonicalizer.CalculateHash(
-                _onlineCoordinator.CommittedState);
+            var initialCanonical = CanonicalOf(_onlineCoordinator.CommittedState);
+            _committedCanonical = new CanonicalStateBytes(
+                _onlineCoordinator.CommittedState,
+                initialCanonical);
+            _stagedCanonical = null;
+            _stateHash = _hashV2?.Calculate(_onlineCoordinator.CommittedState)
+                ?? OnlineStateCanonicalWriter.HashV1(initialCanonical);
         }
 
         Status = RunnerSessionStatus.Initialized;
@@ -416,7 +432,11 @@ public sealed class RunnerSession
             envelope.EpochId!.Value.Value,
             firstSequence,
             lastSequence);
-        var canonicalBatchHash = CalculateCanonicalBatchHash(envelope);
+        var timing = HashTiming.Start();
+        var canonicalBatch = CanonicalJson.Canonicalize(
+            ProtocolEnvelopeCodec.Encode(envelope));
+        var canonicalBatchHash = Convert.ToHexStringLower(SHA256.HashData(canonicalBatch));
+        timing.Lap(HashTiming.Phase.Batch);
 
         if (_lastBatch is not null && _lastBatch.Key == key)
         {
@@ -486,7 +506,7 @@ public sealed class RunnerSession
 
         if (IsOnlineMode)
         {
-            var online = BuildOnlineDecision(envelope);
+            var online = BuildOnlineDecision(envelope, canonicalBatchHash, ref timing);
 
             if (online.Error is not null)
             {
@@ -529,15 +549,23 @@ public sealed class RunnerSession
                 zero);
         }
 
-        var canonicalInput = CreateCanonicalInput(envelope);
+        timing.Lap(HashTiming.Phase.Decide);
         var canonicalDecision = CanonicalJson.Canonicalize(
             DecisionPayloadCodec.Encode(shell, hashProjection: true));
-        var decisionHash = ProtocolHash.CalculateDecisionHash(
-            _previousDecisionHash,
-            _manifestHash,
-            _identity!.Manifest.PolicyVersion,
-            canonicalInput,
-            canonicalDecision);
+        var decisionHash = _hashV2 is null
+            ? ProtocolHash.CalculateDecisionHash(
+                _previousDecisionHash,
+                _manifestHash,
+                _identity!.Manifest.PolicyVersion,
+                CreateCanonicalInputParts(canonicalBatch, includeOnlineState: IsOnlineMode),
+                canonicalDecision)
+            : ProtocolHash.CalculateDecisionHashV2(
+                _previousDecisionHash,
+                _manifestHash,
+                _identity!.Manifest.PolicyVersion,
+                CreateCanonicalInputParts(canonicalBatch, includeOnlineState: false),
+                canonicalDecision);
+        timing.Lap(HashTiming.Phase.DecisionHash);
         var decision = shell with { DecisionHash = decisionHash };
         var response = CreateEnvelope(
             "decision",
@@ -555,6 +583,11 @@ public sealed class RunnerSession
             decisionHash);
         _lastBatch = new CachedBatch(key, canonicalBatchHash, response);
         Status = RunnerSessionStatus.AwaitingDecisionApplied;
+        timing.End(
+            nextEpoch,
+            canonicalBatch.Length,
+            _stagedCanonical?.Canonical.Length ?? 0,
+            _committedCanonical?.Canonical.Length ?? 0);
 
         return new RunnerSessionResult(response);
     }
@@ -612,6 +645,16 @@ public sealed class RunnerSession
                     acknowledged.Witness!.Message,
                     envelope);
             }
+
+            // The acknowledged state is the staged object itself
+            // (EventReductionCoordinator.ApplyDecisionAcknowledgement), so its canonical
+            // bytes are the ones hashed for stateAfterHash.
+            _committedCanonical =
+                _stagedCanonical is { } staged
+                    && ReferenceEquals(staged.State, _onlineCoordinator.CommittedState)
+                    ? staged
+                    : null;
+            _stagedCanonical = null;
         }
 
         _appliedEpoch = _pending.Epoch;
@@ -649,8 +692,7 @@ public sealed class RunnerSession
         }
 
         using var stateDocument = JsonDocument.Parse(
-            OnlineStateCanonicalizer.Canonicalize(
-                _onlineCoordinator.CommittedState));
+            CanonicalOf(_onlineCoordinator.CommittedState).ToArray());
         var content = new CheckpointContent(
             _manifestHash,
             _stateHash,
@@ -659,6 +701,20 @@ public sealed class RunnerSession
             _nextEventSequence,
             _simulationTimeMilliseconds,
             stateDocument.RootElement.Clone());
+
+        // v2 prototype: the checkpoint is where cached digests are checked against a full
+        // recomputation without any cache, so a stale cache entry can never pass silently.
+        if (_hashV2 is not null
+            && new OnlineStateHashV2(cached: false).Calculate(
+                _onlineCoordinator.CommittedState) != _stateHash)
+        {
+            return Error(
+                "INTERNAL_ERROR",
+                ProtocolFailureDisposition.FailSession,
+                "Cached state hash v2 differs from its full recomputation.",
+                envelope);
+        }
+
         var hash = CheckpointPayloadCodec.CalculateHash(content);
         var payload = new CheckpointPayload(
             CheckpointPayloadCodec.CurrentVersion,
@@ -720,7 +776,10 @@ public sealed class RunnerSession
         }
 
         var state = restored.State!;
-        var calculatedStateHash = OnlineStateCanonicalizer.CalculateHash(state);
+        var restoredCanonical = CanonicalOf(state);
+        var calculatedStateHash = _hashV2 is null
+            ? OnlineStateCanonicalWriter.HashV1(restoredCanonical)
+            : new OnlineStateHashV2(cached: false).Calculate(state);
 
         if (state.Run.Id.Value != _identity!.RunId.Value
             || state.Run.ScenarioId.Value != _identity.ScenarioId.Value
@@ -742,6 +801,8 @@ public sealed class RunnerSession
         }
 
         _onlineCoordinator = new EventReductionCoordinator(state, CreateEventReducer());
+        _committedCanonical = new CanonicalStateBytes(state, restoredCanonical);
+        _stagedCanonical = null;
         _appliedEpoch = checkpoint.Content.AppliedEpoch;
         _nextEventSequence = checkpoint.Content.NextEventSequence;
         _simulationTimeMilliseconds = checkpoint.Content.SimulationTimeMs;
@@ -765,49 +826,98 @@ public sealed class RunnerSession
         && envelope.RunId == _identity.RunId
         && envelope.ScenarioId == _identity.ScenarioId;
 
-    private byte[] CreateCanonicalInput(ProtocolEnvelope envelope)
+    /// <summary>
+    /// The canonicalInputState of decisionHash v1 as ordered byte ranges. The original
+    /// CreateCanonicalInput built {"eventBatch", "stateIdentityBefore", "onlineStateBefore"}
+    /// with Utf8JsonWriter, re-parsed both documents and canonicalized the whole object.
+    /// Canonical JSON v1 is compositional (CanonicalJson.cs:78-176: an object is its members
+    /// sorted by ordinal name, each value canonicalized on its own), so the same bytes are
+    /// '{"eventBatch":' + canonical(batch envelope) + ',"onlineStateBefore":' +
+    /// canonical(committed state) + ',"stateIdentityBefore":' + canonical(identity) + '}'.
+    /// </summary>
+    private IReadOnlyList<ReadOnlyMemory<byte>> CreateCanonicalInputParts(
+        byte[] canonicalBatch,
+        bool includeOnlineState)
     {
-        var envelopeBytes = ProtocolEnvelopeCodec.Encode(envelope);
-        using var envelopeDocument = JsonDocument.Parse(envelopeBytes);
-        var buffer = new ArrayBufferWriter<byte>();
-
-        using (var writer = new Utf8JsonWriter(buffer))
+        var parts = new List<ReadOnlyMemory<byte>>
         {
-            writer.WriteStartObject();
-            writer.WritePropertyName("eventBatch");
-            envelopeDocument.RootElement.WriteTo(writer);
-            writer.WritePropertyName("stateIdentityBefore");
-            writer.WriteStartObject();
-            writer.WriteNumber("epochId", _appliedEpoch);
-            writer.WriteNumber("nextEventSeq", _nextEventSequence);
-            writer.WriteNumber("simTimeMs", _simulationTimeMilliseconds);
-            writer.WriteString("stateHash", _stateHash.Value);
-            writer.WriteEndObject();
+            "{\"eventBatch\":"u8.ToArray(),
+            canonicalBatch,
+        };
 
-            if (IsOnlineMode)
+        if (includeOnlineState)
+        {
+            parts.Add(",\"onlineStateBefore\":"u8.ToArray());
+
+            foreach (var part in CanonicalOf(_onlineCoordinator!.CommittedState).Parts)
             {
-                writer.WritePropertyName("onlineStateBefore");
-                using var onlineDocument = JsonDocument.Parse(
-                    OnlineStateCanonicalizer.Canonicalize(
-                        _onlineCoordinator!.CommittedState));
-                onlineDocument.RootElement.WriteTo(writer);
+                parts.Add(part);
             }
-
-            writer.WriteEndObject();
         }
 
-        return CanonicalJson.Canonicalize(buffer.WrittenSpan);
+        var identity = new CanonicalBuffer(160);
+        identity.Raw(",\"stateIdentityBefore\":"u8);
+        var item = new CanonicalObject(identity);
+        item.Member("epochId"u8).Integer(_appliedEpoch);
+        item.Member("nextEventSeq"u8).Integer(_nextEventSequence);
+        item.Member("simTimeMs"u8).Integer(_simulationTimeMilliseconds);
+        item.Member("stateHash"u8).String(_stateHash.Value);
+        item.End();
+        identity.Byte((byte)'}');
+        parts.Add(identity.ToArray());
+        return parts;
     }
 
-    private static string CalculateCanonicalBatchHash(ProtocolEnvelope envelope)
+    /// <summary>
+    /// stateAfterHash of the staged state: OnlineStateHash.v1 over cached canonical segments
+    /// (exact), or the v2 prototype when RIDEBOUND_STATE_HASH=v2.
+    /// </summary>
+    private Sha256Hex HashStagedState(
+        OnlineState state,
+        ref CanonicalSegments? canonical,
+        ref HashTiming timing)
     {
-        var canonical = CanonicalJson.Canonicalize(
-            ProtocolEnvelopeCodec.Encode(envelope));
-        return Convert.ToHexStringLower(SHA256.HashData(canonical));
+        timing.Lap(HashTiming.Phase.Decide);
+
+        if (_hashV2 is not null)
+        {
+            var v2 = _hashV2.Calculate(state);
+            timing.Lap(HashTiming.Phase.StateHash);
+            return v2;
+        }
+
+        canonical = CanonicalOf(state);
+        timing.Lap(HashTiming.Phase.StateWrite);
+        var v1 = OnlineStateCanonicalWriter.HashV1(canonical);
+        timing.Lap(HashTiming.Phase.StateHash);
+        return v1;
+    }
+
+    /// <summary>
+    /// Canonical bytes of a state: reused when the state is the committed or staged object
+    /// already hashed, otherwise built with the per-entity fragment cache.
+    /// </summary>
+    private CanonicalSegments CanonicalOf(OnlineState state)
+    {
+        if (_committedCanonical is { } committed && ReferenceEquals(committed.State, state))
+        {
+            return committed.Canonical;
+        }
+
+        if (_stagedCanonical is { } staged && ReferenceEquals(staged.State, state))
+        {
+            return staged.Canonical;
+        }
+
+        var canonical = OnlineStateCanonicalWriter.Write(state, _hashV2 is null ? _canonicalCache : null);
+        OnlineStateCanonicalizer.Verify(state, canonical);
+        return canonical;
     }
 
     private OnlineDecisionBuildResult BuildOnlineDecision(
-        ProtocolEnvelope envelope)
+        ProtocolEnvelope envelope,
+        string publicationScope,
+        ref HashTiming timing)
     {
         if (_onlineCoordinator is null)
         {
@@ -842,7 +952,6 @@ public sealed class RunnerSession
         ICommitmentPolicyProvider validationPolicies = _commitmentPolicies!;
         RollingCostDecisionResult decision;
 
-        var publicationScope = CalculateCanonicalBatchHash(envelope);
         var sourceEventSequence = mapped.Batch!.Events[^1].EventSequence;
 
         if (_wp4Configuration is not null)
@@ -950,6 +1059,8 @@ public sealed class RunnerSession
         var stateToStage = decision.Decision!.ProposedState;
         IReadOnlyList<PromisePublication> publications = [];
         CertificateShell certificate;
+        CanonicalSegments? stagedCanonical = null;
+        Sha256Hex? stagedHash = null;
 
         if (_executionMode == RunnerExecutionMode.OnlineCommitment)
         {
@@ -1009,7 +1120,10 @@ public sealed class RunnerSession
                 stateToStage = bridged.State!;
             }
 
-            var afterHash = OnlineStateCanonicalizer.CalculateHash(stateToStage);
+            // One canonicalization and one hash of the staged state per epoch; the original
+            // computed the same hash twice (here and in the Success call below).
+            stagedHash = HashStagedState(stateToStage, ref stagedCanonical, ref timing);
+            var afterHash = stagedHash;
             var breachWitnesses = ForcedBreachWitnesses(validation.ForcedExemptions);
             certificate = new CertificateShell(
                 CertificateStatus.Produced,
@@ -1046,6 +1160,11 @@ public sealed class RunnerSession
                 staged.Witness!.Message);
         }
 
+        stagedHash ??= HashStagedState(stateToStage, ref stagedCanonical, ref timing);
+        _stagedCanonical = stagedCanonical is null
+            ? null
+            : new CanonicalStateBytes(stateToStage, stagedCanonical);
+
         var actions = OnlineDecisionActionMapper.Map(
                 decision.Decision,
                 beforeEventState,
@@ -1075,8 +1194,7 @@ public sealed class RunnerSession
                 ? SolverExecutionEvidenceMapper.Map(decision.Decision)
                 : null;
         return OnlineDecisionBuildResult.Success(
-            OnlineStateCanonicalizer.CalculateHash(
-                stateToStage),
+            stagedHash!,
             reasonCode,
             actions,
             certificate,
@@ -1196,6 +1314,11 @@ public sealed class RunnerSession
         BatchKey Key,
         string CanonicalBatchHash,
         ProtocolEnvelope Response);
+
+    /// <summary>The canonical v1 bytes of one immutable state object.</summary>
+    private sealed record CanonicalStateBytes(
+        OnlineState State,
+        CanonicalSegments Canonical);
 
     private sealed record PendingDecision(
         long Epoch,
