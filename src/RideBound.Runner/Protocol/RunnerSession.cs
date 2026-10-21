@@ -691,8 +691,22 @@ public sealed class RunnerSession
                 envelope);
         }
 
-        using var stateDocument = JsonDocument.Parse(
-            CanonicalOf(_onlineCoordinator.CommittedState).ToArray());
+        var committedBytes = CanonicalOf(_onlineCoordinator.CommittedState).ToArray();
+
+        // The checkpoint re-derives the committed state's bytes without any cache: a stale
+        // fragment (an entity mutated in place) fails the session instead of passing silently.
+        if (_hashV2 is null
+            && !OnlineStateCanonicalWriter.Write(_onlineCoordinator.CommittedState, null)
+                .ContentEquals(committedBytes))
+        {
+            return Error(
+                "INTERNAL_ERROR",
+                ProtocolFailureDisposition.FailSession,
+                "Cached canonical state differs from its full recomputation.",
+                envelope);
+        }
+
+        using var stateDocument = JsonDocument.Parse(committedBytes);
         var content = new CheckpointContent(
             _manifestHash,
             _stateHash,
