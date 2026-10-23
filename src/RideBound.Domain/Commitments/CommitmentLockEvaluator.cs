@@ -101,7 +101,8 @@ public sealed class CommitmentLockEvaluator
 
         // The deadline witness goes last, so a lock witness keeps its position
         // and callers reading the first witness still see the lock.
-        if (policy.DropEtaDeadlineSlack is Duration slack)
+        if (policy.DropEtaDeadlineSlack is not null
+            || policy.DropEtaDeadlineSlackPermille is not null)
         {
             AddDeadlineWitness(
                 ordered,
@@ -109,7 +110,6 @@ public sealed class CommitmentLockEvaluator
                 exogenous,
                 candidate,
                 anchor,
-                slack,
                 policy);
         }
 
@@ -190,7 +190,6 @@ public sealed class CommitmentLockEvaluator
         PromiseProjection exogenous,
         PromiseProjection candidate,
         PromiseProjection? anchor,
-        Duration slack,
         CommitmentPolicy policy)
     {
         if (anchor is null)
@@ -206,6 +205,10 @@ public sealed class CommitmentLockEvaluator
                 "Deadline anchor identity must match the request.",
                 nameof(anchor));
         }
+
+        // Fixed slack, or the slack-proportional share of this rider's first promise.
+        var slack = policy.DeadlineSlackFor(anchor, request.MaxRideTime)
+            ?? throw new InvalidOperationException("A deadline rule has no slack.");
 
         // Both values are canonical non-negative integers below 2^53, so the
         // difference and its negation fit in a long.

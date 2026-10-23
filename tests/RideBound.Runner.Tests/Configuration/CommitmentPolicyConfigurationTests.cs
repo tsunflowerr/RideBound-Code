@@ -337,6 +337,72 @@ public sealed class CommitmentPolicyConfigurationTests
         Assert.Equal(hashes.Length, hashes.Distinct(StringComparer.Ordinal).Count());
     }
 
+    [Fact]
+    public void Slack_proportional_budget_and_deadline_are_read_when_present()
+    {
+        var budget = CommitmentPolicyConfiguration.Decode(PolicyJson("\"dropEtaBudgetSlackPermille\":350"));
+        var deadline = CommitmentPolicyConfiguration.Decode(
+            PolicyJson("\"dropEtaDeadlineRelaxed\":true,\"dropEtaDeadlineSlackPermille\":350"));
+        var absent = CommitmentPolicyConfiguration.Decode(PolicyJson(null));
+
+        Assert.True(budget.TryGetPolicy("uniform-v1", out var rce));
+        Assert.Equal(350, rce.DropEtaBudgetSlackPermille);
+        Assert.Null(rce.DropEtaDeadlineSlackPermille);
+        Assert.Null(rce.DropEtaDeadlineSlack);
+        Assert.True(deadline.TryGetPolicy("uniform-v1", out var eohz));
+        Assert.Equal(350, eohz.DropEtaDeadlineSlackPermille);
+        Assert.True(eohz.DropEtaDeadlineRelaxed);
+        Assert.Null(eohz.DropEtaDeadlineSlack);
+        Assert.Null(eohz.DropEtaBudgetSlackPermille);
+        Assert.True(absent.TryGetPolicy("uniform-v1", out var plain));
+        Assert.Null(plain.DropEtaBudgetSlackPermille);
+        Assert.Null(plain.DropEtaDeadlineSlackPermille);
+        Assert.False(plain.ReadsInitialPromise);
+    }
+
+    [Theory]
+    [InlineData("\"dropEtaBudgetSlackPermille\":0", "must be positive")]
+    [InlineData("\"dropEtaBudgetSlackPermille\":1001", "'dropEtaBudgetSlackPermille' must be 1 to 1000")]
+    [InlineData("\"dropEtaDeadlineSlackPermille\":1001", "'dropEtaDeadlineSlackPermille' must be 1 to 1000")]
+    [InlineData(
+        "\"dropEtaDeadlineSlackMs\":30000,\"dropEtaDeadlineSlackPermille\":350",
+        "'dropEtaDeadlineSlackMs' cannot be combined with 'dropEtaDeadlineSlackPermille'")]
+    [InlineData(
+        "\"dropEtaDeadlineTwoSided\":true,\"dropEtaBudgetSlackPermille\":350",
+        "'dropEtaDeadlineTwoSided' requires 'dropEtaDeadlineSlackMs' or 'dropEtaDeadlineSlackPermille'")]
+    [InlineData("\"dropEtaSlackPermille\":350", "Unknown field 'dropEtaSlackPermille'")]
+    public void Invalid_slack_proportional_settings_are_rejected(string extraFields, string expectedMessage)
+    {
+        var error = Assert.Throws<InvalidDataException>(
+            () => CommitmentPolicyConfiguration.Decode(PolicyJson(extraFields)));
+
+        Assert.Contains(expectedMessage, error.Message);
+    }
+
+    [Fact]
+    public void A_slack_proportional_permille_given_as_a_string_is_rejected()
+    {
+        // Same shared integer reader as Drop_eta_deadline_given_as_a_string_is_rejected.
+        Assert.ThrowsAny<InvalidOperationException>(
+            () => CommitmentPolicyConfiguration.Decode(PolicyJson("\"dropEtaBudgetSlackPermille\":\"350\"")));
+    }
+
+    [Fact]
+    public void A_slack_proportional_budget_cannot_coexist_with_a_fixed_drop_eta_total_limit()
+    {
+        var withFixedLimit = Encoding.UTF8.GetString(PolicyJson("\"dropEtaBudgetSlackPermille\":350"))
+            .Replace(
+                "{\"dimension\":\"drop_eta_total_ms\",\"applicablePhases\":[\"accepted\"]}",
+                "{\"dimension\":\"drop_eta_total_ms\",\"hardLimit\":120000,\"applicablePhases\":[\"accepted\"]}",
+                StringComparison.Ordinal);
+        Assert.Contains("\"hardLimit\":120000", withFixedLimit, StringComparison.Ordinal);
+
+        var error = Assert.Throws<InvalidDataException>(
+            () => CommitmentPolicyConfiguration.Decode(Encoding.UTF8.GetBytes(withFixedLimit)));
+
+        Assert.Contains("'dropEtaBudgetSlackPermille' replaces the drop_eta_total_ms hardLimit", error.Message);
+    }
+
     private static byte[] PolicyJson(string? extraFields)
     {
         var limits = string.Join(

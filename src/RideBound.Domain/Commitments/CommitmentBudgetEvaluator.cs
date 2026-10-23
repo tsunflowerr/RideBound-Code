@@ -43,11 +43,21 @@ public sealed class CommitmentBudgetEvaluator
         RequestLifecycle lifecycle,
         CommitmentVector before,
         CommitmentVector delta,
-        CommitmentPolicy policy)
+        CommitmentPolicy policy,
+        long? dropEtaTotalLimit = null)
     {
         ArgumentNullException.ThrowIfNull(before);
         ArgumentNullException.ThrowIfNull(delta);
         ArgumentNullException.ThrowIfNull(policy);
+
+        // A per-rider limit exists only for a slack-proportional budget, and that policy has no
+        // fixed limit on the dimension, so the two can never both apply.
+        if ((dropEtaTotalLimit is not null) != (policy.DropEtaBudgetSlackPermille is not null))
+        {
+            throw new ArgumentException(
+                "A per-rider drop_eta_total_ms limit is given exactly for a slack-proportional budget.",
+                nameof(dropEtaTotalLimit));
+        }
         var added = before.Add(delta);
 
         if (!added.IsSuccess)
@@ -76,9 +86,13 @@ public sealed class CommitmentBudgetEvaluator
         foreach (var dimension in CommitmentDimensionVocabulary.Ordered)
         {
             var limit = policy.Limits[dimension];
+            var configuredLimit = dimension == CommitmentDimension.DropEtaTotalMs
+                && dropEtaTotalLimit is long riderLimit
+                    ? riderLimit
+                    : limit.HardLimit;
 
             if ((limit.ApplicablePhases & phase) == 0
-                || limit.HardLimit is not long hardLimit)
+                || configuredLimit is not long hardLimit)
             {
                 continue;
             }

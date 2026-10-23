@@ -138,7 +138,9 @@ public sealed class CommitmentPolicy
         Duration? dropEtaDeadlineSlack = null,
         bool dropEtaDeadlineTwoSided = false,
         bool dropEtaDeadlineRelaxed = false,
-        Duration? dropEtaRevisionLimit = null)
+        Duration? dropEtaRevisionLimit = null,
+        int? dropEtaBudgetSlackPermille = null,
+        int? dropEtaDeadlineSlackPermille = null)
     {
         ArgumentNullException.ThrowIfNull(limits);
         ArgumentNullException.ThrowIfNull(materialRevisionRule);
@@ -197,14 +199,41 @@ public sealed class CommitmentPolicy
                 "Only pickup and drop ETA locks can be relaxed to a ratchet.");
         }
 
-        if (dropEtaDeadlineTwoSided && dropEtaDeadlineSlack is null)
+        if (dropEtaBudgetSlackPermille is int budgetPermille
+            && budgetPermille is < 1 or > 1000)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(dropEtaBudgetSlackPermille),
+                "A slack-proportional budget must be 1 to 1000 permille.");
+        }
+
+        if (dropEtaDeadlineSlackPermille is int deadlinePermille
+            && deadlinePermille is < 1 or > 1000)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(dropEtaDeadlineSlackPermille),
+                "A slack-proportional deadline must be 1 to 1000 permille.");
+        }
+
+        // A rider has one drop deadline slack: either the fixed one or the share of its slack.
+        if (dropEtaDeadlineSlack is not null && dropEtaDeadlineSlackPermille is not null)
+        {
+            throw new ArgumentException(
+                "A deadline slack is either fixed or slack-proportional, not both.",
+                nameof(dropEtaDeadlineSlackPermille));
+        }
+
+        var hasDeadline = dropEtaDeadlineSlack is not null
+            || dropEtaDeadlineSlackPermille is not null;
+
+        if (dropEtaDeadlineTwoSided && !hasDeadline)
         {
             throw new ArgumentException(
                 "A two-sided deadline requires a deadline slack.",
                 nameof(dropEtaDeadlineTwoSided));
         }
 
-        if (dropEtaDeadlineRelaxed && dropEtaDeadlineSlack is null)
+        if (dropEtaDeadlineRelaxed && !hasDeadline)
         {
             throw new ArgumentException(
                 "A relaxed deadline requires a deadline slack.",
@@ -220,6 +249,17 @@ public sealed class CommitmentPolicy
                 nameof(dropEtaDeadlineRelaxed));
         }
 
+        // The slack-proportional budget is the drop_eta_total_ms hard limit of each rider, so a
+        // fixed hard limit on the same dimension would leave two limits for one ledger value.
+        if (dropEtaBudgetSlackPermille is not null
+            && materialized.Single(value => value.Dimension == CommitmentDimension.DropEtaTotalMs)
+                .HardLimit is not null)
+        {
+            throw new ArgumentException(
+                "A slack-proportional budget replaces the fixed drop_eta_total_ms hard limit.",
+                nameof(dropEtaBudgetSlackPermille));
+        }
+
         BudgetBasis = budgetBasis;
         _limits = materialized.ToFrozenDictionary(value => value.Dimension);
         MaterialRevisionRule = materialRevisionRule;
@@ -231,7 +271,95 @@ public sealed class CommitmentPolicy
         DropEtaDeadlineTwoSided = dropEtaDeadlineTwoSided;
         DropEtaDeadlineRelaxed = dropEtaDeadlineRelaxed;
         DropEtaRevisionLimit = dropEtaRevisionLimit;
+        DropEtaBudgetSlackPermille = dropEtaBudgetSlackPermille;
+        DropEtaDeadlineSlackPermille = dropEtaDeadlineSlackPermille;
     }
+
+    /// <summary>
+    /// The rider's drop slack at the first published promise, scaled by a permille share
+    /// (Elmi et al. 2026, Ordinary Control, as formalised in the wf14 preregistration):
+    /// round(permille / 1000 * max(0, pickup0 + maxRide - drop0)), half away from zero.
+    /// The slack is the room the ride-time limit leaves after the first promise, so it is
+    /// fixed when the promise opens and never re-measured. The arithmetic is in IEEE double,
+    /// exactly as the emulator's Math.round(alpha * slack), and the value is non-negative.
+    /// </summary>
+    public static long SlackProportionalLimit(
+        PromiseProjection initialPromise,
+        Duration maximumRideTime,
+        int permille)
+    {
+        ArgumentNullException.ThrowIfNull(initialPromise);
+
+        if (permille is < 1 or > 1000)
+        {
+            throw new ArgumentOutOfRangeException(nameof(permille));
+        }
+
+        // Canonical non-negative integers below 2^53, so the sums fit in a long and the
+        // slack converts to double without loss.
+        var slack = Math.Max(
+            0L,
+            initialPromise.PickupEta.Milliseconds
+                + maximumRideTime.Milliseconds
+                - initialPromise.DropEta.Milliseconds);
+
+        return (long)Math.Round(
+            permille / 1000.0 * slack,
+            MidpointRounding.AwayFromZero);
+    }
+
+    /// <summary>
+    /// Effective drop deadline slack of one rider: the fixed slack, or the slack-proportional
+    /// share of the rider's first promise; null when the policy has no deadline.
+    /// </summary>
+    public Duration? DeadlineSlackFor(PromiseProjection? initialPromise, Duration maximumRideTime)
+    {
+        if (DropEtaDeadlineSlack is Duration fixedSlack)
+        {
+            return fixedSlack;
+        }
+
+        if (DropEtaDeadlineSlackPermille is not int permille)
+        {
+            return null;
+        }
+
+        if (initialPromise is null)
+        {
+            throw new ArgumentException(
+                "A slack-proportional deadline requires the initial promise.",
+                nameof(initialPromise));
+        }
+
+        return new Duration(SlackProportionalLimit(initialPromise, maximumRideTime, permille));
+    }
+
+    /// <summary>
+    /// Per-rider drop_eta_total_ms hard limit of a slack-proportional budget; null when the
+    /// policy uses the dimension's fixed limit (or none).
+    /// </summary>
+    public long? DropEtaTotalLimitFor(PromiseProjection? initialPromise, Duration maximumRideTime)
+    {
+        if (DropEtaBudgetSlackPermille is not int permille)
+        {
+            return null;
+        }
+
+        if (initialPromise is null)
+        {
+            throw new ArgumentException(
+                "A slack-proportional budget requires the initial promise.",
+                nameof(initialPromise));
+        }
+
+        return SlackProportionalLimit(initialPromise, maximumRideTime, permille);
+    }
+
+    /// <summary>True when a rule of this policy reads the rider's initial promise.</summary>
+    public bool ReadsInitialPromise =>
+        DropEtaDeadlineSlack is not null
+        || DropEtaDeadlineSlackPermille is not null
+        || DropEtaBudgetSlackPermille is not null;
 
     public string PolicyId { get; }
 
@@ -298,4 +426,20 @@ public sealed class CommitmentPolicy
     /// dimension has a hard limit. Research probe; null disables the rule.
     /// </summary>
     public Duration? DropEtaRevisionLimit { get; }
+
+    /// <summary>
+    /// Slack-proportional cumulative budget (rule C with the budget of Elmi et al. 2026,
+    /// RCE in the study notation): each rider's drop_eta_total_ms hard limit is
+    /// <see cref="SlackProportionalLimit"/> of its first promise. Replaces the dimension's
+    /// fixed hard limit, which must then be absent. Research probe; null disables the rule.
+    /// </summary>
+    public int? DropEtaBudgetSlackPermille { get; }
+
+    /// <summary>
+    /// Slack-proportional deadline (Elmi et al. 2026 Ordinary Control; EO, or EOHZ when
+    /// relaxed): each rider's deadline slack is <see cref="SlackProportionalLimit"/> of its
+    /// first promise. Exclusive with the fixed <see cref="DropEtaDeadlineSlack"/>.
+    /// Research probe; null disables the rule.
+    /// </summary>
+    public int? DropEtaDeadlineSlackPermille { get; }
 }

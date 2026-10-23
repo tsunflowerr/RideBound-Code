@@ -29,7 +29,9 @@ public sealed class CommitmentPolicyConfiguration :
         "dropEtaDeadlineSlackMs",
         "dropEtaDeadlineTwoSided",
         "dropEtaDeadlineRelaxed",
-        "dropEtaRevisionLimitMs");
+        "dropEtaRevisionLimitMs",
+        "dropEtaBudgetSlackPermille",
+        "dropEtaDeadlineSlackPermille");
     private static readonly IReadOnlySet<string> LimitFields = Fields(
         "dimension",
         "hardLimit",
@@ -175,17 +177,35 @@ public sealed class CommitmentPolicyConfiguration :
         var revisionLimit = OptionalPositiveInteger(
             element,
             "dropEtaRevisionLimitMs");
+        var budgetPermille = OptionalPermille(element, "dropEtaBudgetSlackPermille");
+        var deadlinePermille = OptionalPermille(element, "dropEtaDeadlineSlackPermille");
 
-        if (deadlineTwoSided && deadlineSlack is null)
+        if (deadlineSlack is not null && deadlinePermille is not null)
         {
             throw new InvalidDataException(
-                "'dropEtaDeadlineTwoSided' requires 'dropEtaDeadlineSlackMs'.");
+                "'dropEtaDeadlineSlackMs' cannot be combined with 'dropEtaDeadlineSlackPermille'.");
         }
 
-        if (deadlineRelaxed && deadlineSlack is null)
+        var hasDeadline = deadlineSlack is not null || deadlinePermille is not null;
+
+        if (deadlineTwoSided && !hasDeadline)
         {
             throw new InvalidDataException(
-                "'dropEtaDeadlineRelaxed' requires 'dropEtaDeadlineSlackMs'.");
+                "'dropEtaDeadlineTwoSided' requires 'dropEtaDeadlineSlackMs' or 'dropEtaDeadlineSlackPermille'.");
+        }
+
+        if (deadlineRelaxed && !hasDeadline)
+        {
+            throw new InvalidDataException(
+                "'dropEtaDeadlineRelaxed' requires 'dropEtaDeadlineSlackMs' or 'dropEtaDeadlineSlackPermille'.");
+        }
+
+        if (budgetPermille is not null
+            && limits.FirstOrDefault(value => value.Dimension == CommitmentDimension.DropEtaTotalMs)
+                ?.HardLimit is not null)
+        {
+            throw new InvalidDataException(
+                "'dropEtaBudgetSlackPermille' replaces the drop_eta_total_ms hardLimit; remove one.");
         }
 
         if (deadlineRelaxed && deadlineTwoSided)
@@ -214,7 +234,21 @@ public sealed class CommitmentPolicyConfiguration :
             deadlineSlack is long slack ? new Duration(slack) : null,
             deadlineTwoSided,
             deadlineRelaxed,
-            revisionLimit is long limit ? new Duration(limit) : null);
+            revisionLimit is long limit ? new Duration(limit) : null,
+            budgetPermille,
+            deadlinePermille);
+    }
+
+    private static int? OptionalPermille(JsonElement element, string propertyName)
+    {
+        if (OptionalPositiveInteger(element, propertyName) is not long value)
+        {
+            return null;
+        }
+
+        return value <= 1000
+            ? (int)value
+            : throw new InvalidDataException($"'{propertyName}' must be 1 to 1000.");
     }
 
     private static CommitmentDimensionLimit ReadLimit(JsonElement element)

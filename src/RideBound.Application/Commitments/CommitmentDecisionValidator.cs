@@ -383,12 +383,12 @@ public sealed class CommitmentDecisionValidator
                 return ProjectionFailure(exogenousProjection.Failure!, request);
             }
 
-            // Only a deadline reads the initial promise, so without one this path is
-            // unchanged. The ledger can only be opened by an initial promise, so a
-            // different first entry is a broken invariant, not a rejectable candidate.
+            // Only a deadline or a slack-proportional budget reads the initial promise, so
+            // without one this path is unchanged. The ledger can only be opened by an initial
+            // promise, so a different first entry is a broken invariant, not a rejectable candidate.
             PromiseProjection? anchor = null;
 
-            if (policy.DropEtaDeadlineSlack is not null)
+            if (policy.ReadsInitialPromise)
             {
                 var initialEntry = priorHistory.Entries[0];
 
@@ -400,6 +400,9 @@ public sealed class CommitmentDecisionValidator
 
                 anchor = initialEntry.PublishedPromise.Projection;
             }
+
+            // Per-rider drop_eta_total_ms limit of a slack-proportional budget; null otherwise.
+            var dropEtaTotalLimit = policy.DropEtaTotalLimitFor(anchor, request.MaxRideTime);
 
             var lockWitnesses = _lockEvaluator.Evaluate(
                 request,
@@ -428,7 +431,8 @@ public sealed class CommitmentDecisionValidator
                     exogenousProjection.Value!,
                     context,
                     policy,
-                    anchor)
+                    anchor,
+                    dropEtaTotalLimit)
                 : null;
 
             if (noWorseRoute && reference is null)
@@ -526,7 +530,8 @@ public sealed class CommitmentDecisionValidator
                 request.Lifecycle,
                 priorHistory.Current.BudgetAfter,
                 charged,
-                policy);
+                policy,
+                dropEtaTotalLimit);
 
             if (!budget.IsAllowed)
             {
@@ -763,7 +768,8 @@ public sealed class CommitmentDecisionValidator
         PromiseProjection exogenous,
         CommitmentValidationContext context,
         CommitmentPolicy policy,
-        PromiseProjection? anchor)
+        PromiseProjection? anchor,
+        long? dropEtaTotalLimit)
     {
         var keptLocks = _lockEvaluator.Evaluate(
             request,
@@ -793,7 +799,8 @@ public sealed class CommitmentDecisionValidator
             request.Lifecycle,
             priorHistory.Current.BudgetAfter,
             keptCharged,
-            policy);
+            policy,
+            dropEtaTotalLimit);
         return new NoWorseReference(exogenous, keptLocks, keptBudget.Witnesses);
     }
 
