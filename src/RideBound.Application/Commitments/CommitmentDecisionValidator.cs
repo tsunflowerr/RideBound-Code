@@ -191,14 +191,14 @@ public sealed class CommitmentDecisionValidator
         ArgumentNullException.ThrowIfNull(context.Policies);
         ArgumentNullException.ThrowIfNull(context.StopDistances);
 
-        var structural = ValidateStateBoundary(context);
+        var structural = ValidateStateBoundary(context, out var relocation);
 
         if (structural is not null)
         {
             return CommitmentDecisionValidationResult.Invalid([structural]);
         }
 
-        var physicalWitnesses = ValidatePhysicalPlans(context);
+        var physicalWitnesses = ValidatePhysicalPlans(context, relocation);
 
         if (physicalWitnesses.Count != 0)
         {
@@ -844,9 +844,17 @@ public sealed class CommitmentDecisionValidator
         return $"forced-{Convert.ToHexStringLower(SHA256.HashData(material))}";
     }
 
+    /// <param name="relocation">
+    /// The decision's one waiting-rider relocation when the boundary holds and the rider's
+    /// policy allows it; null when the decision moves nobody.
+    /// </param>
     private static CommitmentValidationWitness? ValidateStateBoundary(
-        CommitmentValidationContext context)
+        CommitmentValidationContext context,
+        out WaitingRiderRelocation? relocation)
     {
+        relocation = null;
+        WaitingRiderRelocation? found = null;
+
         if (context.SourceEventSequence is < 1 or > DomainLimits.MaxCanonicalInteger
             || context.BeforeEventState.Run.AppliedEpoch + 1
                 != context.ReducedState.Run.AppliedEpoch
@@ -887,10 +895,13 @@ public sealed class CommitmentDecisionValidator
                 context.CandidateState.Incidents)
             || !RequestsMatchDecisionBoundary(
                 context.ReducedState.Run,
-                context.CandidateState.Run)
+                context.CandidateState.Run,
+                out found)
+            || found is not null && !IsPermittedRelocation(context, found)
             || !VehiclesMatchDecisionBoundary(
                 context.ReducedState.Run,
-                context.CandidateState.Run))
+                context.CandidateState.Run,
+                found))
         {
             return new CommitmentValidationWitness(
                 CommitmentValidationStage.State,
@@ -900,13 +911,34 @@ public sealed class CommitmentDecisionValidator
                 "incident, and commitment-ledger boundary.");
         }
 
+        relocation = found;
         return null;
     }
 
+    /// <summary>
+    /// A relocation is part of the boundary only when the rider's policy enables it and
+    /// neither vehicle keeps a forced reference route (the emulator excludes both).
+    /// </summary>
+    private static bool IsPermittedRelocation(
+        CommitmentValidationContext context,
+        WaitingRiderRelocation relocation) =>
+        context.CandidateState.Run.Requests.TryGetValue(relocation.RequestId, out var request)
+        && context.Policies.TryGetPolicy(request.CommitmentPolicyId, out var policy)
+        && policy.WaitingRiderRelocation
+        && context.ForcedReferenceVehicles?.Contains(relocation.DonorVehicleId) != true
+        && context.ForcedReferenceVehicles?.Contains(relocation.ReceiverVehicleId) != true;
+
+    /// <param name="relocation">
+    /// Set to the one non-pending request whose only change is a waiting rider's vehicle; a
+    /// second such change, or any other change, breaks the boundary.
+    /// </param>
     private static bool RequestsMatchDecisionBoundary(
         RideBoundRun reduced,
-        RideBoundRun candidate)
+        RideBoundRun candidate,
+        out WaitingRiderRelocation? relocation)
     {
+        relocation = null;
+
         if (reduced.Requests.Count != candidate.Requests.Count)
         {
             return false;
@@ -925,7 +957,14 @@ public sealed class CommitmentDecisionValidator
             {
                 if (current != proposed)
                 {
-                    return false;
+                    if (relocation is not null
+                        || WaitingRiderRelocation.FromChange(current, proposed) is not { } moved)
+                    {
+                        relocation = null;
+                        return false;
+                    }
+
+                    relocation = moved;
                 }
 
                 continue;
@@ -973,7 +1012,8 @@ public sealed class CommitmentDecisionValidator
 
     private static bool VehiclesMatchDecisionBoundary(
         RideBoundRun reduced,
-        RideBoundRun candidate)
+        RideBoundRun candidate,
+        WaitingRiderRelocation? relocation)
     {
         if (reduced.Vehicles.Count != candidate.Vehicles.Count)
         {
@@ -998,6 +1038,16 @@ public sealed class CommitmentDecisionValidator
             var expectedAccepted = current.AcceptedRequestIds
                 .Concat(newlyAssigned)
                 .ToHashSet();
+
+            // A relocated waiting rider leaves the donor's accepted set and joins the receiver's.
+            if (relocation is not null && relocation.DonorVehicleId == current.Id)
+            {
+                expectedAccepted.Remove(relocation.RequestId);
+            }
+            else if (relocation is not null && relocation.ReceiverVehicleId == current.Id)
+            {
+                expectedAccepted.Add(relocation.RequestId);
+            }
             var routeBoundary = current.Route.IsSemanticallyEqual(proposed.Route)
                 || current.Route.HasExactFrozenPrefix(proposed.Route)
                     && proposed.Route.Version.Value
@@ -1026,7 +1076,8 @@ public sealed class CommitmentDecisionValidator
     }
 
     private IReadOnlyList<CommitmentValidationWitness> ValidatePhysicalPlans(
-        CommitmentValidationContext context)
+        CommitmentValidationContext context,
+        WaitingRiderRelocation? relocation)
     {
         var witnesses = new List<CommitmentValidationWitness>();
 
@@ -1041,7 +1092,8 @@ public sealed class CommitmentDecisionValidator
                 vehicle.Id,
                 vehicle.Route,
                 context.ReducedState.TravelTimes!,
-                context.ReducedState.Run.SimulationTime);
+                context.ReducedState.Run.SimulationTime,
+                relocation);
 
             if (!validation.IsFeasible)
             {

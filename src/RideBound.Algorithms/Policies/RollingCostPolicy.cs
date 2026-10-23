@@ -77,11 +77,64 @@ public sealed class RollingCostPolicy
             : RollingCostDecisionResult.Failure(applied.Witness!);
     }
 
+    /// <summary>
+    /// The selected waiting-rider move (G2): null when no selected plan has a relocation role,
+    /// otherwise exactly one donor and one receiver of the same rider, the donor being the
+    /// rider's vehicle. Anything else is a malformed selection.
+    /// </summary>
+    internal static (WaitingRiderRelocation? Relocation, RollingCostWitness? Witness)
+        SelectedRelocation(OnlineState state, FleetSelection selection)
+    {
+        var donors = selection.VehiclePlans
+            .Where(plan => plan.Candidate.RelocationRole == RelocationRole.Donor)
+            .ToArray();
+        var receivers = selection.VehiclePlans
+            .Where(plan => plan.Candidate.RelocationRole == RelocationRole.Receiver)
+            .ToArray();
+
+        if (donors.Length == 0 && receivers.Length == 0)
+        {
+            return (null, null);
+        }
+
+        if (donors.Length != 1
+            || receivers.Length != 1
+            || donors[0].Candidate.RelocatedRequestId is not RequestId requestId
+            || receivers[0].Candidate.RelocatedRequestId != requestId
+            || !state.Run.Requests.TryGetValue(requestId, out var request)
+            || request.AssignedVehicleId != donors[0].VehicleId
+            || receivers[0].VehicleId == donors[0].VehicleId)
+        {
+            return (
+                null,
+                new RollingCostWitness(
+                    RollingCostFailureCodes.SelectedCandidateInvalid,
+                    "A selected relocation needs exactly one donor (the rider's vehicle) and one " +
+                    "receiver of the same waiting rider.",
+                    donors.FirstOrDefault()?.VehicleId ?? receivers[0].VehicleId,
+                    donors.FirstOrDefault()?.Candidate.RelocatedRequestId
+                        ?? receivers.FirstOrDefault()?.Candidate.RelocatedRequestId,
+                    donors.FirstOrDefault()?.Candidate.CandidateId ?? receivers[0].Candidate.CandidateId,
+                    "relocation"));
+        }
+
+        return (
+            new WaitingRiderRelocation(requestId, donors[0].VehicleId, receivers[0].VehicleId),
+            null);
+    }
+
     internal static RollingCostWitness? ValidateSelection(
         OnlineState state,
         FleetSelection selection,
         PhysicalPlanValidator validator)
     {
+        var (relocation, relocationWitness) = SelectedRelocation(state, selection);
+
+        if (relocationWitness is not null)
+        {
+            return relocationWitness;
+        }
+
         foreach (var plan in selection.VehiclePlans)
         {
             var validation = validator.ValidateWithExogenousRelief(
@@ -89,7 +142,8 @@ public sealed class RollingCostPolicy
                 plan.VehicleId,
                 plan.Candidate.Route,
                 state.TravelTimes!,
-                state.Run.SimulationTime);
+                state.Run.SimulationTime,
+                relocation);
 
             if (!validation.IsFeasible)
             {
@@ -104,6 +158,69 @@ public sealed class RollingCostPolicy
         }
 
         return null;
+    }
+
+    /// <summary>
+    /// Applies a selection with one waiting-rider move: every changed route first (the donor
+    /// without the rider, the receiver with it), then the atomic reassignment, then the new
+    /// requests vehicle by vehicle, all in ordinal order.
+    /// </summary>
+    private static (RideBoundRun? Run, RollingCostWitness? Witness) ApplyRelocatedSelection(
+        RideBoundRun run,
+        FleetSelection selection,
+        WaitingRiderRelocation relocation)
+    {
+        var plans = selection.VehiclePlans
+            .OrderBy(value => value.VehicleId.Value, StringComparer.Ordinal)
+            .ToArray();
+
+        foreach (var plan in plans.Where(value => !value.Candidate.IsNoOp))
+        {
+            var route = run.UpdateVehicleRoute(plan.VehicleId, plan.Candidate.Route);
+
+            if (!route.IsSuccess)
+            {
+                return (null, ApplyFailure(route.Failure!, plan.VehicleId, plan.Candidate.CandidateId).Witness);
+            }
+
+            run = route.Value!;
+        }
+
+        var reassigned = run.ReassignWaitingRequest(relocation.RequestId, relocation.ReceiverVehicleId);
+
+        if (!reassigned.IsSuccess)
+        {
+            return (
+                null,
+                ApplyFailure(
+                    reassigned.Failure!,
+                    relocation.ReceiverVehicleId,
+                    plans.Single(value => value.VehicleId == relocation.ReceiverVehicleId).Candidate.CandidateId,
+                    relocation.RequestId).Witness);
+        }
+
+        run = reassigned.Value!;
+
+        foreach (var plan in plans)
+        {
+            foreach (var requestId in plan.Candidate.NewRequestIds.OrderBy(
+                         value => value.Value,
+                         StringComparer.Ordinal))
+            {
+                var accepted = run.AcceptRequest(requestId, plan.VehicleId);
+
+                if (!accepted.IsSuccess)
+                {
+                    return (
+                        null,
+                        ApplyFailure(accepted.Failure!, plan.VehicleId, plan.Candidate.CandidateId, requestId).Witness);
+                }
+
+                run = accepted.Value!;
+            }
+        }
+
+        return (run, null);
     }
 
     internal static RollingCostDecisionResult ApplySelection(
@@ -123,10 +240,32 @@ public sealed class RollingCostPolicy
             .SelectMany(value => value.PrunedCandidates)
             .OrderBy(value => value.CandidateId, StringComparer.Ordinal)
             .ToArray();
+        var (relocation, relocationWitness) = SelectedRelocation(state, selection);
 
-        foreach (var plan in selection.VehiclePlans.OrderBy(
-                     value => value.VehicleId.Value,
-                     StringComparer.Ordinal))
+        if (relocationWitness is not null)
+        {
+            return RollingCostDecisionResult.Failure(relocationWitness);
+        }
+
+        if (relocation is not null)
+        {
+            var moved = ApplyRelocatedSelection(run, selection, relocation);
+
+            if (moved.Witness is not null)
+            {
+                return RollingCostDecisionResult.Failure(moved.Witness);
+            }
+
+            run = moved.Run!;
+        }
+
+        // Without a move this is the archived per-vehicle loop; with one, it was applied above.
+        foreach (var plan in (relocation is not null
+                         ? Array.Empty<SelectedVehiclePlan>()
+                         : selection.VehiclePlans)
+                     .OrderBy(
+                         value => value.VehicleId.Value,
+                         StringComparer.Ordinal))
         {
             if (!plan.Candidate.IsNoOp)
             {

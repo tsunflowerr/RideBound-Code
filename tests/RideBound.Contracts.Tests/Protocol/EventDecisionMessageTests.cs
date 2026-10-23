@@ -327,6 +327,77 @@ public sealed class EventDecisionMessageTests
     }
 
     [Fact]
+    public void G2_evidence_v13_allows_relocation_fields_only_in_its_own_version()
+    {
+        const string portfolio =
+            """
+            "candidatePortfolio":{
+                "portfolioVersion":"1.0.0",
+                "schemaId":"https://ridebound.local/schemas/wp13/v1/runner-retained-candidate-portfolio-evidence.schema.json",
+                "objectiveProfile":"hardVector",
+                "generatedCandidateCount":2,
+                "policyEligibleCandidateCount":1,
+                "selectedCandidateIds":["noop"],
+                "selectionProblem":{
+                  "vehicleIds":["v-1"],
+                  "requestIds":[],
+                  "objectiveLevels":[{
+                    "levelIndex":0,
+                    "name":"accepted-request-count",
+                    "sense":"maximize",
+                    "aggregation":"sum"
+                  }]
+                },
+                "candidates":[{
+                  "candidateId":"noop",
+                  "vehicleId":"v-1",
+                  "newRequestIds":[],
+                  "isNoOp":true,
+                  "scheduleStrategy":"earliestFeasible",
+                  "relocatedWaitMs":0,
+                  "route":{"planVersion":0,"executedStopCount":0,"frozenPrefix":[],"mutableSuffix":[]},
+                  "schedule":{"operationalCost":0,"stops":[]},
+                  "policyEligibility":"eligible",
+                  "objectiveContributions":[0]
+                },{
+                  "candidateId":"relocate-donor",
+                  "vehicleId":"v-1",
+                  "newRequestIds":[],
+                  "isNoOp":false,
+                  "scheduleStrategy":"earliestFeasible",
+                  "relocatedWaitMs":0,
+                  "relocatedRequestId":"waiting-1",
+                  "relocationRole":"donor",
+                  "route":{"planVersion":1,"executedStopCount":0,"frozenPrefix":[],"mutableSuffix":[]},
+                  "schedule":{"operationalCost":0,"stops":[]},
+                  "policyEligibility":"pruned"
+                }]
+              },
+            """;
+        var withPortfolio = "{\"evidenceVersion\":\"1.3.0\",\"generation\":{\"relocationLosses\":[]},"
+            + portfolio + "\"prunedCandidates\":[],\"selection\":{}}";
+        const string withoutPortfolio =
+            """{"evidenceVersion":"1.3.0","generation":{"relocationLosses":[]},"prunedCandidates":[],"selection":{}}""";
+
+        Assert.True(DecodeSolverEvidence(withoutPortfolio).IsSuccess, DecodeSolverEvidence(withoutPortfolio).Error?.Message);
+        Assert.True(DecodeSolverEvidence(withPortfolio).IsSuccess, DecodeSolverEvidence(withPortfolio).Error?.Message);
+
+        // The same relocation fields under v1.2.0 are unknown fields.
+        Assert.Equal(
+            ProtocolPayloadErrorCode.UnknownField,
+            DecodeSolverEvidence(withPortfolio.Replace("\"1.3.0\"", "\"1.2.0\"", StringComparison.Ordinal)).Error?.Code);
+
+        foreach (var broken in new[]
+                 {
+                     withPortfolio.Replace("\"relocatedRequestId\":\"waiting-1\",", string.Empty, StringComparison.Ordinal),
+                     withPortfolio.Replace("\"relocationRole\":\"donor\"", "\"relocationRole\":\"both\"", StringComparison.Ordinal),
+                 })
+        {
+            Assert.False(DecodeSolverEvidence(broken).IsSuccess);
+        }
+    }
+
+    [Fact]
     public void Unknown_decision_reason_is_rejected_as_contract_drift()
     {
         var json = """

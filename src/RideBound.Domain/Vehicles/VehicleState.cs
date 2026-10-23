@@ -346,6 +346,43 @@ public sealed class VehicleState
                 route.Failure.Dimension);
     }
 
+    /// <summary>
+    /// Removes a waiting rider that moves to another vehicle from the accepted set. Unlike
+    /// <see cref="CancelAccepted"/> it leaves the route alone: the donor route without the
+    /// rider's stops must already be applied.
+    /// </summary>
+    public DomainResult<VehicleState> Release(RequestId requestId)
+    {
+        if (OnboardRequestIds.Contains(requestId)
+            || !AcceptedRequestIds.Contains(requestId))
+        {
+            return DomainResult<VehicleState>.Fail(
+                VehicleFailureCodes.RiderStateMismatch,
+                "A released request must be assigned to the vehicle and not onboard.",
+                requestId.Value,
+                "acceptedRequestIds");
+        }
+
+        if (Route.RemainingStops.Any(stop => stop.RequestId == requestId))
+        {
+            return DomainResult<VehicleState>.Fail(
+                VehicleFailureCodes.RiderStateMismatch,
+                "A released request must have no remaining stop on the vehicle route.",
+                requestId.Value,
+                "routeStops");
+        }
+
+        return Create(
+            Id,
+            Capacity,
+            OccupiedSeats,
+            Position,
+            OnboardRequestIds,
+            AcceptedRequestIds.Where(value => value != requestId),
+            Route,
+            LastObservedEpoch);
+    }
+
     public DomainResult<VehicleState> UpdateRoute(RoutePlan route)
     {
         ArgumentNullException.ThrowIfNull(route);

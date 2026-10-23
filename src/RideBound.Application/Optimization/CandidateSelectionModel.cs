@@ -20,12 +20,22 @@ public sealed record CandidateSelectionObjectiveLevel(
     CandidateSelectionObjectiveSense Sense,
     CandidateSelectionObjectiveAggregation Aggregation);
 
+/// <param name="RelocationOut">
+/// The waiting rider this option gives up (a G2 donor); null otherwise.
+/// </param>
+/// <param name="RelocationIn">
+/// The waiting rider this option takes over (a G2 receiver, which accepts no request); null
+/// otherwise. A selection picks a donor of a rider exactly when it picks a receiver of it, and
+/// at most one receiver in all.
+/// </param>
 public sealed record CandidateSelectionOption(
     string OptionId,
     VehicleId VehicleId,
     IReadOnlyList<RequestId> RequestIds,
     IReadOnlyList<long> ObjectiveContributions,
-    bool IsNoOp);
+    bool IsNoOp,
+    RequestId? RelocationOut = null,
+    RequestId? RelocationIn = null);
 
 /// <summary>
 /// Solver-neutral assignment model. Input collections are validated and then
@@ -252,6 +262,20 @@ public sealed class CandidateSelectionProblem
                 return Fail(
                     "A no-op candidate cannot accept a request.",
                     "isNoOp",
+                    option.OptionId);
+            }
+
+            if (option.RelocationOut is not null && option.RelocationIn is not null
+                || option.IsNoOp && (option.RelocationOut is not null || option.RelocationIn is not null)
+                || option.RelocationIn is not null && option.RequestIds.Count != 0
+                || option.RelocationOut is RequestId outgoing && requestSet.Contains(outgoing)
+                || option.RelocationIn is RequestId incoming && requestSet.Contains(incoming))
+            {
+                return Fail(
+                    "A relocation option is either a donor or a receiver of one waiting rider; " +
+                    "it is never a no-op, a receiver accepts no request, and the rider is not " +
+                    "a decided request.",
+                    "relocation",
                     option.OptionId);
             }
 

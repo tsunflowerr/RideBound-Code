@@ -12,13 +12,19 @@ namespace RideBound.Domain.Validation;
 /// published contractual bounds apply unchanged, which is the behaviour of every
 /// call site that does not probe.
 /// </param>
+/// <param name="Relocation">
+/// The one waiting rider this decision moves between vehicles (G2). The receiver may then
+/// carry the donor's rider and the donor must drop it; <c>null</c> keeps every accepted rider
+/// on its vehicle, which is the behaviour of every call site without relocation.
+/// </param>
 public sealed record PhysicalValidationContext(
     RideBoundRun State,
     VehicleId VehicleId,
     RoutePlan CandidateRoute,
     ITravelTimeLookup TravelTimes,
     SimTime EvaluationTime,
-    ServiceQualityAllowance? ServiceQuality = null);
+    ServiceQualityAllowance? ServiceQuality = null,
+    WaitingRiderRelocation? Relocation = null);
 
 public sealed record PhysicalViolationWitness(
     string Code,
@@ -107,12 +113,17 @@ public sealed class PhysicalPlanValidator
     /// generator produced must use this, otherwise a candidate the generator
     /// legitimately kept would be rejected downstream.
     /// </summary>
+    /// <param name="relocation">
+    /// The decision's waiting-rider relocation, if any. The relief still comes from this
+    /// vehicle's own active route, so a rider moved onto a receiver gets none there.
+    /// </param>
     public PhysicalValidationResult ValidateWithExogenousRelief(
         RideBoundRun state,
         VehicleId vehicleId,
         RoutePlan candidateRoute,
         ITravelTimeLookup travelTimes,
-        SimTime evaluationTime)
+        SimTime evaluationTime,
+        WaitingRiderRelocation? relocation = null)
     {
         var probe = ProbeServiceQuality(
             state,
@@ -128,7 +139,8 @@ public sealed class PhysicalPlanValidator
                     candidateRoute,
                     travelTimes,
                     evaluationTime,
-                    probe.Allowance))
+                    probe.Allowance,
+                    relocation))
             : PhysicalValidationResult.Infeasible(probe.Witness!);
     }
 
@@ -681,7 +693,8 @@ public sealed class PhysicalPlanValidator
 
         if (request.IsAcceptedActive
             && request.AssignedVehicleId is VehicleId assigned
-            && assigned != vehicle.Id)
+            && assigned != vehicle.Id
+            && !IsDeclaredRelocation(context.Relocation, request, assigned, vehicle.Id))
         {
             return RequestResolution.Fail(
                 Fail(
@@ -696,11 +709,44 @@ public sealed class PhysicalPlanValidator
         return RequestResolution.Success(request);
     }
 
+    /// <summary>
+    /// True only for the declared relocation itself: the waiting rider, still assigned to the
+    /// declared donor in the validated state, carried by the declared receiver.
+    /// </summary>
+    private static bool IsDeclaredRelocation(
+        WaitingRiderRelocation? relocation,
+        RideRequest request,
+        VehicleId assigned,
+        VehicleId receiver) =>
+        relocation is not null
+        && relocation.RequestId == request.Id
+        && relocation.DonorVehicleId == assigned
+        && relocation.ReceiverVehicleId == receiver
+        && request.Lifecycle == RequestLifecycle.WaitingPickup;
+
     private static PhysicalValidationResult ValidateAcceptedPreservation(
         PhysicalValidationContext context,
         VehicleState vehicle)
     {
         var remaining = context.CandidateRoute.RemainingStops.ToArray();
+
+        if (context.Relocation is { } relocation
+            && relocation.ReceiverVehicleId == vehicle.Id
+            && context.State.Requests.TryGetValue(relocation.RequestId, out var moved)
+            && IsDeclaredRelocation(relocation, moved, relocation.DonorVehicleId, vehicle.Id)
+            && moved.AssignedVehicleId == relocation.DonorVehicleId
+            && (remaining.Count(stop => stop.Kind == RouteStopKind.Pickup
+                    && stop.RequestId == moved.Id) != 1
+                || remaining.Count(stop => stop.Kind == RouteStopKind.DropOff
+                    && stop.RequestId == moved.Id) != 1))
+        {
+            return Fail(
+                PhysicalViolationCodes.AcceptedPreservation,
+                vehicle.Id,
+                "The receiver route must carry the relocated request's pickup and drop once each.",
+                moved.Id,
+                dimension: "routeStops");
+        }
 
         foreach (var request in context.State.Requests.Values
                      .Where(
@@ -714,6 +760,26 @@ public sealed class PhysicalPlanValidator
             var dropCount = remaining.Count(
                 stop => stop.Kind == RouteStopKind.DropOff
                     && stop.RequestId == request.Id);
+
+            // The declared relocated rider leaves the donor completely.
+            if (context.Relocation is { } leaving
+                && leaving.DonorVehicleId == vehicle.Id
+                && leaving.RequestId == request.Id
+                && request.Lifecycle == RequestLifecycle.WaitingPickup)
+            {
+                if (pickupCount != 0 || dropCount != 0)
+                {
+                    return Fail(
+                        PhysicalViolationCodes.AcceptedPreservation,
+                        vehicle.Id,
+                        "A relocated request must have no stop left on the donor route.",
+                        request.Id,
+                        dimension: "routeStops");
+                }
+
+                continue;
+            }
+
             var preserved = request.Lifecycle == RequestLifecycle.Onboard
                 ? pickupCount == 0 && dropCount == 1
                 : pickupCount == 1 && dropCount == 1;

@@ -140,7 +140,8 @@ public sealed class CommitmentPolicy
         bool dropEtaDeadlineRelaxed = false,
         Duration? dropEtaRevisionLimit = null,
         int? dropEtaBudgetSlackPermille = null,
-        int? dropEtaDeadlineSlackPermille = null)
+        int? dropEtaDeadlineSlackPermille = null,
+        bool waitingRiderRelocation = false)
     {
         ArgumentNullException.ThrowIfNull(limits);
         ArgumentNullException.ThrowIfNull(materialRevisionRule);
@@ -260,6 +261,29 @@ public sealed class CommitmentPolicy
                 nameof(dropEtaBudgetSlackPermille));
         }
 
+        // Relocation lifts the vehicle lock of a waiting rider. A final-confirmation vehicle
+        // lock, or a zero switch limit while waiting, would forbid every move and leave the
+        // flag silently inert, so both are rejected.
+        if (waitingRiderRelocation
+            && ((finalConfirmationLocks | freezeHorizonLocks) & PromiseLock.Vehicle) != 0)
+        {
+            throw new ArgumentException(
+                "Waiting-rider relocation cannot keep a vehicle lock at final confirmation "
+                + "or inside the freeze horizon.",
+                nameof(waitingRiderRelocation));
+        }
+
+        if (waitingRiderRelocation
+            && materialized.Single(value => value.Dimension == CommitmentDimension.VehicleSwitchCount)
+                is { HardLimit: 0 } switchLimit
+            && (switchLimit.ApplicablePhases & CommitmentPhase.WaitingPickup) != 0)
+        {
+            throw new ArgumentException(
+                "Waiting-rider relocation cannot run under a zero vehicle_switch_count limit "
+                + "for waiting riders.",
+                nameof(waitingRiderRelocation));
+        }
+
         BudgetBasis = budgetBasis;
         _limits = materialized.ToFrozenDictionary(value => value.Dimension);
         MaterialRevisionRule = materialRevisionRule;
@@ -273,6 +297,7 @@ public sealed class CommitmentPolicy
         DropEtaRevisionLimit = dropEtaRevisionLimit;
         DropEtaBudgetSlackPermille = dropEtaBudgetSlackPermille;
         DropEtaDeadlineSlackPermille = dropEtaDeadlineSlackPermille;
+        WaitingRiderRelocation = waitingRiderRelocation;
     }
 
     /// <summary>
@@ -443,4 +468,12 @@ public sealed class CommitmentPolicy
     /// Research probe; null disables the rule.
     /// </summary>
     public int? DropEtaDeadlineSlackPermille { get; }
+
+    /// <summary>
+    /// Waiting-rider relocation (G2): the accepted-assignment vehicle lock is lifted for a
+    /// confirmed waiting rider, so one decision may move it to another vehicle. Accepted
+    /// (unconfirmed) and onboard riders keep the lock. Research probe; false keeps every
+    /// rider on its vehicle.
+    /// </summary>
+    public bool WaitingRiderRelocation { get; }
 }

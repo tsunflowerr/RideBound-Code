@@ -137,9 +137,13 @@ public sealed class HardVectorCandidateAssessor
                 new Dictionary<string, CommitmentValidationWitness>(
                     StringComparer.Ordinal);
 
-            foreach (var candidate in set.Candidates.OrderBy(
-                         value => value.CandidateId,
-                         StringComparer.Ordinal))
+            // G2 candidates are half of a move; they are assessed as pairs after this loop,
+            // once the forced vehicles are known. Without G2 this is every candidate.
+            foreach (var candidate in set.Candidates
+                         .Where(value => value.RelocationRole is null)
+                         .OrderBy(
+                             value => value.CandidateId,
+                             StringComparer.Ordinal))
             {
                 var updated = CandidateStateApplicator.Apply(
                     context.ReducedState.Run,
@@ -400,6 +404,48 @@ public sealed class HardVectorCandidateAssessor
                     set.Loss));
         }
 
+        if (rawCandidateSets.Any(set => set.Candidates.Any(value => value.RelocationRole is not null)))
+        {
+            var relocated = AssessRelocations(
+                context,
+                rawCandidateSets,
+                forcedVehicles.ToHashSet(),
+                warningProfiles);
+
+            if (relocated.Witness is not null)
+            {
+                return HardVectorCandidateAssessmentResult.Failure(relocated.Witness);
+            }
+
+            for (var index = 0; index < outputSets.Count; index++)
+            {
+                var set = outputSets[index];
+                var retained = relocated.Retained
+                    .Where(value => value.VehicleId == set.VehicleId)
+                    .ToArray();
+                var pruned = relocated.Pruned
+                    .Where(value => value.VehicleId == set.VehicleId)
+                    .ToArray();
+
+                if (retained.Length != 0 || pruned.Length != 0)
+                {
+                    outputSets[index] = set with
+                    {
+                        Candidates = set.Candidates
+                            .Concat(retained)
+                            .OrderBy(value => value.CandidateId, StringComparer.Ordinal)
+                            .ToArray(),
+                        PrunedCandidates = set.PrunedCandidates
+                            .Concat(pruned)
+                            .OrderBy(value => value.CandidateId, StringComparer.Ordinal)
+                            .ToArray(),
+                    };
+                }
+            }
+
+            assessments.AddRange(relocated.Assessments);
+        }
+
         return HardVectorCandidateAssessmentResult.Success(
             new HardVectorCandidateAssessmentBatch(
                 outputSets.AsReadOnly(),
@@ -409,6 +455,294 @@ public sealed class HardVectorCandidateAssessor
             {
                 ForcedReferenceVehicles = forcedVehicles.ToFrozenSet(),
             });
+    }
+
+    public const string RelocationForcedVehicle = "RELOCATION_FORCED_VEHICLE";
+    public const string RelocationDonorOnlyRejected = "RELOCATION_DONOR_ONLY_REJECTED";
+    public const string RelocationNoReceiver = "RELOCATION_NO_RECEIVER";
+    public const string RelocationMalformed = "RELOCATION_MALFORMED";
+
+    /// <summary>
+    /// G2 pair assessment (DESIGN 3.3), per moved rider w in ordinal order. The validator is
+    /// scoped to one vehicle, so a candidate is checked in a pair state with a canonical partner,
+    /// and the result does not depend on which partner (only the scoped vehicle's riders and
+    /// route are checked):
+    /// <list type="number">
+    /// <item>a forced-reference donor drops every candidate of w; a forced receiver drops its own
+    /// (the emulator excludes forced vehicles on both sides);</item>
+    /// <item>the donor-only route D0, paired with the first receiver, must pass, otherwise every
+    /// candidate of w is dropped (the emulator's admissible-donor rule);</item>
+    /// <item>each receiver is checked paired with D0;</item>
+    /// <item>with no surviving receiver every donor is dropped; otherwise each donor is checked
+    /// paired with the first surviving receiver.</item>
+    /// </list>
+    /// </summary>
+    private RelocationAssessment AssessRelocations(
+        CommitmentMechanismContext context,
+        IReadOnlyList<VehicleCandidateSet> rawCandidateSets,
+        IReadOnlySet<VehicleId> forcedVehicles,
+        ICommitmentWarningProfileProvider? warningProfiles)
+    {
+        var result = new RelocationAssessment();
+        var byRider = rawCandidateSets
+            .SelectMany(set => set.Candidates)
+            .Where(value => value.RelocationRole is not null)
+            .GroupBy(value => value.RelocatedRequestId!.Value)
+            .OrderBy(group => group.Key.Value, StringComparer.Ordinal);
+
+        foreach (var group in byRider)
+        {
+            var donors = group
+                .Where(value => value.RelocationRole == RelocationRole.Donor)
+                .OrderBy(value => value.CandidateId, StringComparer.Ordinal)
+                .ToArray();
+            var receivers = group
+                .Where(value => value.RelocationRole == RelocationRole.Receiver)
+                .OrderBy(value => value.VehicleId.Value, StringComparer.Ordinal)
+                .ThenBy(value => value.CandidateId, StringComparer.Ordinal)
+                .ToArray();
+            var donorOnly = donors.Where(value => value.NewRequestIds.Count == 0).ToArray();
+            var donorVehicle = context.ReducedState.Run.Requests.TryGetValue(group.Key, out var rider)
+                ? rider.AssignedVehicleId
+                : null;
+
+            if (donorOnly.Length != 1
+                || receivers.Length == 0
+                || donorVehicle is null
+                || donors.Any(value => value.VehicleId != donorVehicle)
+                || receivers.Any(value => value.VehicleId == donorVehicle))
+            {
+                result.PruneAll(group, RelocationMalformed, "G2 candidates of this rider do not form a donor-only route and receivers on other vehicles.");
+                continue;
+            }
+
+            if (forcedVehicles.Contains(donorVehicle.Value))
+            {
+                result.PruneAll(group, RelocationForcedVehicle, "A forced-reference vehicle cannot give up a waiting rider.");
+                continue;
+            }
+
+            foreach (var forcedReceiver in receivers.Where(value => forcedVehicles.Contains(value.VehicleId)))
+            {
+                result.Prune(forcedReceiver, RelocationForcedVehicle, "A forced-reference vehicle cannot take a waiting rider.");
+            }
+
+            receivers = receivers.Where(value => !forcedVehicles.Contains(value.VehicleId)).ToArray();
+
+            if (receivers.Length == 0)
+            {
+                result.PruneAll(donors, RelocationNoReceiver, "No receiver of this waiting rider is on a vehicle free to take it.");
+                continue;
+            }
+
+            var d0 = donorOnly[0];
+            var d0Assessment = AssessPair(context, d0, d0, receivers[0], warningProfiles);
+
+            if (d0Assessment.Witness is not null)
+            {
+                return RelocationAssessment.Failure(d0Assessment.Witness);
+            }
+
+            if (d0Assessment.Prune is not null)
+            {
+                result.Pruned.Add(d0Assessment.Prune);
+                result.PruneAll(
+                    donors.Where(value => value.CandidateId != d0.CandidateId).Concat(receivers),
+                    RelocationDonorOnlyRejected,
+                    "The donor route without this waiting rider is not admissible, so it cannot move.");
+                continue;
+            }
+
+            var survivingReceivers = new List<InsertionCandidate>();
+
+            foreach (var receiver in receivers)
+            {
+                var assessed = AssessPair(context, receiver, d0, receiver, warningProfiles);
+
+                if (assessed.Witness is not null)
+                {
+                    return RelocationAssessment.Failure(assessed.Witness);
+                }
+
+                if (assessed.Prune is not null)
+                {
+                    result.Pruned.Add(assessed.Prune);
+                    continue;
+                }
+
+                survivingReceivers.Add(receiver);
+                result.Retained.Add(receiver);
+                result.Assessments.Add(assessed.Assessment!);
+            }
+
+            if (survivingReceivers.Count == 0)
+            {
+                result.PruneAll(donors, RelocationNoReceiver, "Every receiver of this waiting rider was rejected.");
+                continue;
+            }
+
+            result.Retained.Add(d0);
+            result.Assessments.Add(d0Assessment.Assessment!);
+
+            foreach (var donor in donors.Where(value => value.CandidateId != d0.CandidateId))
+            {
+                var assessed = AssessPair(context, donor, donor, survivingReceivers[0], warningProfiles);
+
+                if (assessed.Witness is not null)
+                {
+                    return RelocationAssessment.Failure(assessed.Witness);
+                }
+
+                if (assessed.Prune is not null)
+                {
+                    result.Pruned.Add(assessed.Prune);
+                    continue;
+                }
+
+                result.Retained.Add(donor);
+                result.Assessments.Add(assessed.Assessment!);
+            }
+        }
+
+        return result;
+    }
+
+    /// <summary>
+    /// Validates <paramref name="candidate"/> (one side of the pair) in the pair state, scoped to
+    /// its own vehicle, exactly as the main loop validates an ordinary candidate.
+    /// </summary>
+    private PairResult AssessPair(
+        CommitmentMechanismContext context,
+        InsertionCandidate candidate,
+        InsertionCandidate donor,
+        InsertionCandidate receiver,
+        ICommitmentWarningProfileProvider? warningProfiles)
+    {
+        var updated = CandidateStateApplicator.ApplyRelocationPair(
+            context.ReducedState.Run,
+            donor,
+            receiver);
+
+        if (!updated.IsSuccess)
+        {
+            return PairResult.Pruned(
+                new CandidatePruneWitness(
+                    candidate.CandidateId,
+                    candidate.VehicleId,
+                    candidate.NewRequestIds,
+                    updated.Failure!.Code,
+                    updated.Failure.Message));
+        }
+
+        var validation = _validator.Validate(
+            new CommitmentValidationContext(
+                context.BeforeEventState,
+                context.ReducedState,
+                context.ReducedState with { Run = updated.Value! },
+                context.Policies,
+                context.StopDistances,
+                context.PublicationScope,
+                context.SourceEventSequence,
+                RevisionReasonCode: "C1_HARD_VECTOR",
+                ScopedVehicleId: candidate.VehicleId,
+                InitialPromiseTrigger: context.InitialPromiseTrigger,
+                CollectAllCommitmentWitnesses: context.CollectAllCommitmentWitnesses));
+
+        if (!validation.IsValid)
+        {
+            var witness = validation.Witnesses[0];
+            return PairResult.Pruned(
+                new CandidatePruneWitness(
+                    candidate.CandidateId,
+                    candidate.VehicleId,
+                    candidate.NewRequestIds,
+                    witness.Code,
+                    witness.Message,
+                    CommitmentWitnesses: validation.Witnesses));
+        }
+
+        var revision = AggregateDecisionRevision(validation.Publications);
+
+        if (!revision.IsSuccess)
+        {
+            return PairResult.Failed(revision.Witness!, candidate);
+        }
+
+        var utilization = CalculateWorstUtilization(
+            validation.ValidatedState!,
+            context.Policies,
+            candidate.VehicleId,
+            context.InitialPromiseTrigger);
+
+        if (!utilization.IsSuccess)
+        {
+            return PairResult.Failed(utilization.Witness!, candidate);
+        }
+
+        var warning = CalculateWarningExcess(
+            validation.ValidatedState!,
+            context.Policies,
+            warningProfiles,
+            candidate.VehicleId,
+            context.InitialPromiseTrigger);
+
+        if (!warning.IsSuccess)
+        {
+            return PairResult.Failed(warning.Witness!, candidate);
+        }
+
+        return PairResult.Kept(
+            new HardVectorCandidateAssessment(
+                candidate.CandidateId,
+                utilization.PartsPerMillion,
+                revision.Value!,
+                utilization.HasApplicableHardLimit,
+                warning.Value,
+                warning.HasApplicableWarning));
+    }
+
+    private sealed record PairResult(
+        HardVectorCandidateAssessment? Assessment,
+        CandidatePruneWitness? Prune,
+        CommitmentAssessmentWitness? Witness)
+    {
+        public static PairResult Kept(HardVectorCandidateAssessment assessment) => new(assessment, null, null);
+
+        public static PairResult Pruned(CandidatePruneWitness prune) => new(null, prune, null);
+
+        public static PairResult Failed(CommitmentAssessmentWitness witness, InsertionCandidate candidate) =>
+            new(null, null, witness with { CandidateId = candidate.CandidateId, VehicleId = candidate.VehicleId });
+    }
+
+    private sealed class RelocationAssessment
+    {
+        public List<InsertionCandidate> Retained { get; } = [];
+
+        public List<CandidatePruneWitness> Pruned { get; } = [];
+
+        public List<HardVectorCandidateAssessment> Assessments { get; } = [];
+
+        public CommitmentAssessmentWitness? Witness { get; private init; }
+
+        public static RelocationAssessment Failure(CommitmentAssessmentWitness witness) =>
+            new() { Witness = witness };
+
+        public void Prune(InsertionCandidate candidate, string code, string message) =>
+            Pruned.Add(
+                new CandidatePruneWitness(
+                    candidate.CandidateId,
+                    candidate.VehicleId,
+                    candidate.NewRequestIds,
+                    code,
+                    message));
+
+        public void PruneAll(IEnumerable<InsertionCandidate> candidates, string code, string message)
+        {
+            foreach (var candidate in candidates.OrderBy(value => value.CandidateId, StringComparer.Ordinal))
+            {
+                Prune(candidate, code, message);
+            }
+        }
     }
 
     /// <summary>

@@ -399,6 +399,17 @@ public sealed class SolverBackedFleetSelector
                     "operational-cost",
                     candidate => candidate.Schedule.OperationalCost));
 
+            // G2 "prefer-keep" (emulator engine.js 584-596): among equal cost, fewer relocation
+            // candidates win before the identity tie-break. Added only when a G2 option exists,
+            // so every other decision keeps the archived hierarchy.
+            if (allCandidates.Any(candidate => candidate.RelocationRole is not null))
+            {
+                objectives.Add(
+                    MinSum(
+                        "relocation-candidate-count",
+                        candidate => candidate.RelocationRole is null ? 0 : 1));
+            }
+
             foreach (var set in orderedSets)
             {
                 var ranks = set.Candidates
@@ -429,7 +440,13 @@ public sealed class SolverBackedFleetSelector
                         candidate.NewRequestIds,
                         objectives.Select(
                             objective => objective.Contribution(candidate)).ToArray(),
-                        candidate.IsNoOp)));
+                        candidate.IsNoOp,
+                        candidate.RelocationRole == RelocationRole.Donor
+                            ? candidate.RelocatedRequestId
+                            : null,
+                        candidate.RelocationRole == RelocationRole.Receiver
+                            ? candidate.RelocatedRequestId
+                            : null)));
 
             return problem.IsSuccess
                 ? new SelectionModelMapping(

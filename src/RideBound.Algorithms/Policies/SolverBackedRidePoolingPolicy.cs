@@ -275,6 +275,16 @@ public sealed class SolverBackedRidePoolingPolicy
         ICommitmentWarningProfileProvider? warningProfiles = null)
     {
         ArgumentNullException.ThrowIfNull(context);
+
+        // G2 candidates are assessed in pairs only by the C1 hard-vector assessor; any other
+        // policy would see half moves, so the combination is a programming error.
+        if (generationOptions?.WaitingRiderRelocation is not null
+            && policyOptions?.PolicyKind != RidePoolingPolicyKind.RideBoundHardVector)
+        {
+            throw new ArgumentException(
+                "Waiting-rider relocation runs only under the solver-backed C1 policy.",
+                nameof(generationOptions));
+        }
         ArgumentNullException.ThrowIfNull(generationOptions);
         ArgumentNullException.ThrowIfNull(policyOptions);
 
@@ -507,12 +517,17 @@ public sealed class SolverBackedRidePoolingPolicy
             long validationWorkUnits,
             DeterministicCandidateSelectionExecutionBudget budget)
     {
+        // G2 work (null losses when off) is charged to the same generation budget.
         var generationWork = SaturatingSum(
-            diagnostics.VehicleLosses.Select(value => value.ExplorationWorkUnits));
+            diagnostics.VehicleLosses
+                .Select(value => value.ExplorationWorkUnits)
+                .Concat((diagnostics.RelocationLosses ?? []).Select(value => value.WorkUnits)));
         var omittedCount = SaturatingSum(
             diagnostics.Omissions.Select(value => value.Count));
         var saturated = diagnostics.Omissions.Any(value => value.CountWasSaturated)
             || diagnostics.VehicleLosses.Any(
+                value => value.OmissionCountWasSaturated)
+            || (diagnostics.RelocationLosses ?? []).Any(
                 value => value.OmissionCountWasSaturated);
         var digest = omittedCount == 0
             ? null

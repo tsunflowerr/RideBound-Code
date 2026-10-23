@@ -501,6 +501,101 @@ public sealed class RideBoundRun
             : FromFailure(updated.Failure!);
     }
 
+    /// <summary>
+    /// Moves one waiting rider from its vehicle (donor) to <paramref name="receiverVehicleId"/>
+    /// in one step: the request's assignment and both accepted sets change together. Both
+    /// routes must already be applied: the donor route has no remaining stop of the rider and
+    /// the receiver's mutable suffix has its pickup before its drop, once each.
+    /// </summary>
+    public DomainResult<RideBoundRun> ReassignWaitingRequest(
+        RequestId requestId,
+        VehicleId receiverVehicleId)
+    {
+        if (!TryGetRequestAndVehicle(
+                requestId,
+                receiverVehicleId,
+                out var request,
+                out var receiver,
+                out var failure))
+        {
+            return failure!;
+        }
+
+        var reassigned = request!.ReassignWaiting(receiverVehicleId);
+
+        if (!reassigned.IsSuccess)
+        {
+            return FromFailure(reassigned.Failure!);
+        }
+
+        if (request.AssignedVehicleId is not VehicleId donorId
+            || !Vehicles.TryGetValue(donorId, out var donor))
+        {
+            return DomainResult<RideBoundRun>.Fail(
+                RunFailureCodes.VehicleRiderMismatch,
+                "Waiting request has no matching donor vehicle state.",
+                requestId.Value,
+                "assignedVehicleId");
+        }
+
+        var suffix = receiver!.Route.MutableSuffix;
+        var pickupIndexes = Enumerable.Range(0, suffix.Count)
+            .Where(index => suffix[index].RequestId == requestId
+                && suffix[index].Kind == RouteStopKind.Pickup)
+            .ToArray();
+        var dropIndexes = Enumerable.Range(0, suffix.Count)
+            .Where(index => suffix[index].RequestId == requestId
+                && suffix[index].Kind == RouteStopKind.DropOff)
+            .ToArray();
+
+        if (pickupIndexes.Length != 1
+            || dropIndexes.Length != 1
+            || pickupIndexes[0] > dropIndexes[0]
+            || receiver.Route.RemainingStops.Count(stop => stop.RequestId == requestId) != 2)
+        {
+            return DomainResult<RideBoundRun>.Fail(
+                RunFailureCodes.VehicleRiderMismatch,
+                "Receiver route must carry the relocated request's pickup before its drop, once each.",
+                requestId.Value,
+                "routeStops");
+        }
+
+        var released = donor.Release(requestId);
+
+        if (!released.IsSuccess)
+        {
+            return FromFailure(released.Failure!);
+        }
+
+        var assigned = receiver.Assign(requestId);
+
+        if (!assigned.IsSuccess)
+        {
+            return FromFailure(assigned.Failure!);
+        }
+
+        return DomainResult<RideBoundRun>.Success(
+            Copy(
+                AppliedEpoch,
+                SimulationTime,
+                Requests.Select(
+                    pair => pair.Key == requestId
+                        ? new KeyValuePair<RequestId, RideRequest>(
+                            requestId,
+                            reassigned.Value!)
+                        : pair),
+                Vehicles.Select(
+                    pair => pair.Key == donorId
+                        ? new KeyValuePair<VehicleId, VehicleState>(
+                            donorId,
+                            released.Value!)
+                        : pair.Key == receiverVehicleId
+                            ? new KeyValuePair<VehicleId, VehicleState>(
+                                receiverVehicleId,
+                                assigned.Value!)
+                            : pair)));
+    }
+
     private bool TryGetRequestAndVehicle(
         RequestId requestId,
         VehicleId vehicleId,

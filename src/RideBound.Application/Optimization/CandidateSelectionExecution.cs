@@ -414,7 +414,10 @@ public sealed class SafeCandidateSelectionExecutor
         var solutions = new List<CandidateSelectionSolution>();
 
         foreach (var option in problem.Options.Where(
-                     option => !option.IsNoOp && option.RequestIds.Count == 1))
+                     option => !option.IsNoOp
+                         && option.RequestIds.Count == 1
+                         && option.RelocationOut is null
+                         && option.RelocationIn is null))
         {
             var selectedIds = problem.VehicleIds
                 .Select(

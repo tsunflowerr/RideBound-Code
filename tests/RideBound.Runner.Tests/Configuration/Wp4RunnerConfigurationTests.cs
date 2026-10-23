@@ -791,6 +791,67 @@ public sealed class Wp4RunnerConfigurationTests
         }
     }
 
+    [Fact]
+    public void Waiting_rider_relocation_needs_both_keys_and_cost_first_C1()
+    {
+        // The G2 arms: no vehicle lock at final confirmation, a pickup ratchet, no zero switch limit.
+        var json = JsonNode.Parse(File.ReadAllText(Path.Combine(
+            RepositoryRoot(),
+            "benchmarks",
+            "configurations",
+            "wp14-c1-h6-reference-v1.json")))!;
+        var policy = json["policies"]![0]!.AsObject();
+        policy["limits"]!.AsArray()
+            .Single(value => (string?)value!["dimension"] == "vehicle_switch_count")!
+            .AsObject()
+            .Remove("hardLimit");
+        policy["finalConfirmationLocks"] = new JsonArray("pickupStop", "pickupEta");
+        policy["ratchetLocks"] = new JsonArray("pickupEta");
+        var plain = CommitmentPolicyConfiguration.Decode(Encoding.UTF8.GetBytes(json.ToJsonString()));
+        policy["waitingRiderRelocation"] = true;
+        var relocating = CommitmentPolicyConfiguration.Decode(Encoding.UTF8.GetBytes(json.ToJsonString()));
+        var costFirst = Tier3Wp4V2Json.Replace(
+            "\"lateBoarding\": \"record-v1\"",
+            "\"lateBoarding\": \"record-v1\",\n  \"selectionObjectiveOrder\": \"cost-first\"",
+            StringComparison.Ordinal);
+        var withG2 = costFirst.Replace(
+            "\"retentionStrategy\": \"service-set-stability-portfolio-v1\"",
+            "\"retentionStrategy\": \"service-set-stability-portfolio-v1\",\n"
+                + "    \"waitingRiderRelocation\": { \"maximumTargetVehicles\": 8 }",
+            StringComparison.Ordinal);
+        Assert.NotEqual(costFirst, withG2);
+
+        var g2 = Wp4RunnerConfiguration.Decode(Encoding.UTF8.GetBytes(withG2), relocating);
+        var off = Wp4RunnerConfiguration.Decode(Encoding.UTF8.GetBytes(costFirst), plain);
+
+        Assert.NotNull(g2.CandidateGeneration.WaitingRiderRelocation);
+        Assert.Null(g2.CandidateGeneration.WaitingRiderRelocation!.MaximumRidersPerVehicle);
+        Assert.Equal(8, g2.CandidateGeneration.WaitingRiderRelocation.MaximumTargetVehicles);
+        Assert.Null(off.CandidateGeneration.WaitingRiderRelocation);
+        Assert.NotEqual(off.ContentHash, g2.ContentHash);
+
+        foreach (var (wp4, commitment, message) in new[]
+                 {
+                     (withG2, plain, "requires 'waitingRiderRelocation' on every commitment policy"),
+                     (costFirst, relocating, "requires 'candidateGeneration.waitingRiderRelocation'"),
+                     (withG2.Replace("\"cost-first\"", "\"stability-first\"", StringComparison.Ordinal),
+                         relocating,
+                         "requires the solver-backed C1 policy with selectionObjectiveOrder 'cost-first'"),
+                     (withG2.Replace("{ \"maximumTargetVehicles\": 8 }", "{ \"maximumTargetVehicles\": 0 }", StringComparison.Ordinal),
+                         relocating,
+                         "maximumTargetVehicles"),
+                     (withG2.Replace("{ \"maximumTargetVehicles\": 8 }", "{ \"targets\": 8 }", StringComparison.Ordinal),
+                         relocating,
+                         "targets"),
+                 })
+        {
+            Assert.Contains(
+                message,
+                Assert.Throws<InvalidDataException>(
+                    () => Wp4RunnerConfiguration.Decode(Encoding.UTF8.GetBytes(wp4), commitment)).Message);
+        }
+    }
+
     private static string HardVectorJson(string? selectionObjectiveOrder)
     {
         var json = File.ReadAllText(Path.Combine(

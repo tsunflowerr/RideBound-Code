@@ -234,6 +234,29 @@ public sealed record RideRequest
             ? Success(RequestLifecycle.WaitingPickup, AssignedVehicleId)
             : InvalidTransition(RequestLifecycle.WaitingPickup);
 
+    /// <summary>
+    /// Moves a confirmed waiting rider to another vehicle (waiting-rider relocation). An
+    /// offered, onboard or terminal rider never moves, and the lifecycle is unchanged.
+    /// </summary>
+    public DomainResult<RideRequest> ReassignWaiting(VehicleId receiverVehicleId)
+    {
+        if (Lifecycle != RequestLifecycle.WaitingPickup)
+        {
+            return InvalidTransition(RequestLifecycle.WaitingPickup);
+        }
+
+        if (AssignedVehicleId == receiverVehicleId)
+        {
+            return DomainResult<RideRequest>.Fail(
+                RequestFailureCodes.AssignmentMismatch,
+                "A relocation must name a vehicle other than the current assignment.",
+                Id.Value,
+                "vehicleId");
+        }
+
+        return Success(RequestLifecycle.WaitingPickup, receiverVehicleId);
+    }
+
     public DomainResult<RideRequest> Reject() =>
         Lifecycle == RequestLifecycle.Pending
             ? Success(RequestLifecycle.Rejected, null)

@@ -364,6 +364,36 @@ public sealed class OrToolsCandidateSelectionSolver : ICandidateSelectionSolver
                         .Select(option => variables[option.OptionId])) <= 1);
         }
 
+        // G2 coupling, added only when relocation options exist: a rider's donors and
+        // receivers are selected together, and at most one rider moves.
+        var receivers = problem.Options
+            .Where(option => option.RelocationIn is not null)
+            .ToArray();
+
+        if (receivers.Length != 0
+            || problem.Options.Any(option => option.RelocationOut is not null))
+        {
+            foreach (var rider in problem.Options
+                         .Select(option => option.RelocationOut ?? option.RelocationIn)
+                         .OfType<RequestId>()
+                         .Distinct()
+                         .OrderBy(value => value.Value, StringComparer.Ordinal))
+            {
+                model.Add(
+                    LinearExpr.Sum(
+                        problem.Options
+                            .Where(option => option.RelocationOut == rider)
+                            .Select(option => variables[option.OptionId]))
+                    == LinearExpr.Sum(
+                        problem.Options
+                            .Where(option => option.RelocationIn == rider)
+                            .Select(option => variables[option.OptionId])));
+            }
+
+            model.Add(
+                LinearExpr.Sum(receivers.Select(option => variables[option.OptionId])) <= 1);
+        }
+
         var objectives = new List<LinearExpr>(problem.ObjectiveLevels.Count);
 
         for (var levelIndex = 0;

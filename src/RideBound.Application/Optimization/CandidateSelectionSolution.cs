@@ -67,6 +67,27 @@ public sealed class CandidateSelectionSolution
                 "requestId");
         }
 
+        // G2: a rider leaves one vehicle exactly when it joins another, and at most one rider
+        // moves per decision. Both sets are empty without relocation options.
+        var movedOut = selected
+            .Where(option => option.RelocationOut is not null)
+            .Select(option => option.RelocationOut!.Value)
+            .OrderBy(value => value.Value, StringComparer.Ordinal)
+            .ToArray();
+        var movedIn = selected
+            .Where(option => option.RelocationIn is not null)
+            .Select(option => option.RelocationIn!.Value)
+            .OrderBy(value => value.Value, StringComparer.Ordinal)
+            .ToArray();
+
+        if (movedIn.Length > 1 || !movedOut.SequenceEqual(movedIn))
+        {
+            return Fail(
+                "A selection must pair each relocated rider's donor with one receiver, and " +
+                "may move at most one rider.",
+                "relocation");
+        }
+
         var objectiveValues = new long[problem.ObjectiveLevels.Count];
 
         try

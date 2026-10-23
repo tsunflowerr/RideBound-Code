@@ -48,7 +48,12 @@ public sealed class CommitmentLockEvaluator
                 "Lock evaluation request and promise identities must match.");
         }
 
-        var activeLocks = PromiseLock.Vehicle;
+        // Waiting-rider relocation lifts only this rule's vehicle lock, and only for a
+        // confirmed waiting rider; the onboard and configured rules still apply.
+        var activeLocks = policy.WaitingRiderRelocation
+            && request.Lifecycle == RequestLifecycle.WaitingPickup
+                ? PromiseLock.None
+                : PromiseLock.Vehicle;
         var rules = new List<(PromiseLock Locks, string Rule)>();
 
         if (request.Lifecycle == RequestLifecycle.Onboard)

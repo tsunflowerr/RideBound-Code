@@ -403,6 +403,68 @@ public sealed class CommitmentPolicyConfigurationTests
         Assert.Contains("'dropEtaBudgetSlackPermille' replaces the drop_eta_total_ms hardLimit", error.Message);
     }
 
+    [Fact]
+    public void Waiting_rider_relocation_is_read_when_present_and_off_when_absent()
+    {
+        var on = CommitmentPolicyConfiguration.Decode(PolicyJson(
+            "\"waitingRiderRelocation\":true,\"finalConfirmationLocks\":[\"pickupStop\",\"pickupEta\"],"
+            + "\"ratchetLocks\":[\"pickupEta\"]"));
+        var off = CommitmentPolicyConfiguration.Decode(PolicyJson("\"waitingRiderRelocation\":false"));
+        var absent = CommitmentPolicyConfiguration.Decode(PolicyJson(null));
+
+        Assert.True(on.TryGetPolicy("uniform-v1", out var g2));
+        Assert.True(g2.WaitingRiderRelocation);
+        Assert.Equal(PromiseLock.PickupStop | PromiseLock.PickupEta, g2.FinalConfirmationLocks);
+        Assert.Equal(PromiseLock.PickupEta, g2.RatchetLocks);
+        Assert.True(off.TryGetPolicy("uniform-v1", out var explicitOff));
+        Assert.False(explicitOff.WaitingRiderRelocation);
+        Assert.True(absent.TryGetPolicy("uniform-v1", out var plain));
+        Assert.False(plain.WaitingRiderRelocation);
+        // Declaring the key is a different configuration, so archived bindings omit it.
+        Assert.NotEqual(absent.ContentHash, off.ContentHash);
+    }
+
+    [Theory]
+    [InlineData(
+        "\"waitingRiderRelocation\":true,\"finalConfirmationLocks\":[\"vehicle\",\"pickupEta\"]",
+        "'waitingRiderRelocation' requires 'finalConfirmationLocks' and 'freezeHorizonLocks' without 'vehicle'")]
+    [InlineData(
+        "\"waitingRiderRelocation\":true,\"freezeHorizonMs\":60000,\"freezeHorizonLocks\":[\"vehicle\"]",
+        "'waitingRiderRelocation' requires 'finalConfirmationLocks' and 'freezeHorizonLocks' without 'vehicle'")]
+    [InlineData("\"waitingRiderRelocation\":\"true\"", "waitingRiderRelocation")]
+    public void Invalid_waiting_rider_relocation_settings_are_rejected(string extraFields, string expectedMessage)
+    {
+        var error = Assert.ThrowsAny<Exception>(
+            () => CommitmentPolicyConfiguration.Decode(PolicyJson(extraFields)));
+
+        Assert.True(error is InvalidDataException or InvalidOperationException, error.GetType().Name);
+        Assert.Contains(expectedMessage, error.Message);
+    }
+
+    [Fact]
+    public void Waiting_rider_relocation_cannot_run_under_a_zero_switch_limit_while_waiting()
+    {
+        var json = Encoding.UTF8.GetString(PolicyJson("\"waitingRiderRelocation\":true"));
+        var waiting = json.Replace(
+            "{\"dimension\":\"vehicle_switch_count\",\"applicablePhases\":[\"accepted\"]}",
+            "{\"dimension\":\"vehicle_switch_count\",\"hardLimit\":0,\"applicablePhases\":[\"accepted\",\"waitingPickup\"]}",
+            StringComparison.Ordinal);
+        var acceptedOnly = json.Replace(
+            "{\"dimension\":\"vehicle_switch_count\",\"applicablePhases\":[\"accepted\"]}",
+            "{\"dimension\":\"vehicle_switch_count\",\"hardLimit\":0,\"applicablePhases\":[\"accepted\"]}",
+            StringComparison.Ordinal);
+        Assert.NotEqual(json, waiting);
+        Assert.NotEqual(json, acceptedOnly);
+
+        var error = Assert.Throws<InvalidDataException>(
+            () => CommitmentPolicyConfiguration.Decode(Encoding.UTF8.GetBytes(waiting)));
+
+        Assert.Contains("vehicle_switch_count hardLimit of 0 for waiting riders", error.Message);
+        Assert.True(CommitmentPolicyConfiguration.Decode(Encoding.UTF8.GetBytes(acceptedOnly))
+            .TryGetPolicy("uniform-v1", out var allowed));
+        Assert.True(allowed.WaitingRiderRelocation);
+    }
+
     private static byte[] PolicyJson(string? extraFields)
     {
         var limits = string.Join(

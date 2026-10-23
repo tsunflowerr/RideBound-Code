@@ -31,7 +31,8 @@ public sealed class CommitmentPolicyConfiguration :
         "dropEtaDeadlineRelaxed",
         "dropEtaRevisionLimitMs",
         "dropEtaBudgetSlackPermille",
-        "dropEtaDeadlineSlackPermille");
+        "dropEtaDeadlineSlackPermille",
+        "waitingRiderRelocation");
     private static readonly IReadOnlySet<string> LimitFields = Fields(
         "dimension",
         "hardLimit",
@@ -179,6 +180,7 @@ public sealed class CommitmentPolicyConfiguration :
             "dropEtaRevisionLimitMs");
         var budgetPermille = OptionalPermille(element, "dropEtaBudgetSlackPermille");
         var deadlinePermille = OptionalPermille(element, "dropEtaDeadlineSlackPermille");
+        var relocation = OptionalBoolean(element, "waitingRiderRelocation");
 
         if (deadlineSlack is not null && deadlinePermille is not null)
         {
@@ -214,6 +216,24 @@ public sealed class CommitmentPolicyConfiguration :
                 "'dropEtaDeadlineRelaxed' cannot be combined with 'dropEtaDeadlineTwoSided'.");
         }
 
+        if (relocation
+            && ((ReadLocks(element, "finalConfirmationLocks")
+                | ReadLocks(element, "freezeHorizonLocks")) & PromiseLock.Vehicle) != 0)
+        {
+            throw new InvalidDataException(
+                "'waitingRiderRelocation' requires 'finalConfirmationLocks' and "
+                + "'freezeHorizonLocks' without 'vehicle'.");
+        }
+
+        if (relocation
+            && limits.FirstOrDefault(value => value.Dimension == CommitmentDimension.VehicleSwitchCount)
+                is { HardLimit: 0 } switchLimit
+            && (switchLimit.ApplicablePhases & CommitmentPhase.WaitingPickup) != 0)
+        {
+            throw new InvalidDataException(
+                "'waitingRiderRelocation' cannot run under a vehicle_switch_count hardLimit of 0 for waiting riders.");
+        }
+
         return new CommitmentPolicy(
             Text(element, "policyId"),
             Text(element, "budgetBasis") switch
@@ -236,7 +256,8 @@ public sealed class CommitmentPolicyConfiguration :
             deadlineRelaxed,
             revisionLimit is long limit ? new Duration(limit) : null,
             budgetPermille,
-            deadlinePermille);
+            deadlinePermille,
+            relocation);
     }
 
     private static int? OptionalPermille(JsonElement element, string propertyName)

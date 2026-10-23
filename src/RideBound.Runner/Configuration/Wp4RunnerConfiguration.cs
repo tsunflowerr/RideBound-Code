@@ -84,7 +84,11 @@ public sealed class Wp4RunnerConfiguration : ICommitmentWarningProfileProvider
         "exactSmallMode",
         "scheduleStrategy",
         "maximumExplorationWorkUnits",
-        "retentionStrategy");
+        "retentionStrategy",
+        "waitingRiderRelocation");
+    private static readonly IReadOnlySet<string> RelocationGenerationFields = Fields(
+        "maximumRidersPerVehicle",
+        "maximumTargetVehicles");
     private static readonly IReadOnlySet<string> SolverRequiredFields = Fields(
         "adapterVersion",
         "maximumGenerationWorkUnits",
@@ -401,6 +405,38 @@ public sealed class Wp4RunnerConfiguration : ICommitmentWarningProfileProvider
                 + "policies accept it only with selectionObjectiveOrder 'cost-first'.");
         }
 
+        // G2 needs both halves: candidates that move a waiting rider, and a policy that lets the
+        // rider change vehicle. Either alone would be silently inert, so both are required
+        // together, and only the solver-backed cost-first C1 (the emulator's selection) runs it.
+        var relocatingPolicies = commitmentConfiguration.PolicyIds
+            .Count(id => commitmentConfiguration.TryGetPolicy(id, out var policy)
+                && policy.WaitingRiderRelocation);
+
+        if (generation.WaitingRiderRelocation is not null
+            && (!hasSolver
+                || policyKind != RidePoolingPolicyKind.RideBoundHardVector
+                || selectionObjectiveOrder != SolverBackedSelectionObjectiveOrder.CostFirst))
+        {
+            throw new InvalidDataException(
+                "'candidateGeneration.waitingRiderRelocation' requires the solver-backed C1 "
+                + "policy with selectionObjectiveOrder 'cost-first'.");
+        }
+
+        if (generation.WaitingRiderRelocation is not null
+            && relocatingPolicies != commitmentConfiguration.PolicyIds.Count)
+        {
+            throw new InvalidDataException(
+                "'candidateGeneration.waitingRiderRelocation' requires 'waitingRiderRelocation' "
+                + "on every commitment policy.");
+        }
+
+        if (generation.WaitingRiderRelocation is null && relocatingPolicies > 0)
+        {
+            throw new InvalidDataException(
+                "A commitment policy with 'waitingRiderRelocation' requires "
+                + "'candidateGeneration.waitingRiderRelocation'.");
+        }
+
         SolverBackedRidePoolingPolicyOptions? solverOptions = null;
         MultiplePlanPoolOptions? multipleOptions = null;
         var warningProfiles = Array.Empty<CommitmentWarningProfile>();
@@ -521,6 +557,34 @@ public sealed class Wp4RunnerConfiguration : ICommitmentWarningProfileProvider
                         "Unknown candidate retentionStrategy."),
                 }
                 : CandidateRetentionStrategy.LegacyAcceptedCountCostSlack;
+
+        // G2 (waiting-rider relocation). Absent means off, so every earlier configuration keeps
+        // its canonical bytes and content hash. Each cap is optional: absent means unbounded.
+        WaitingRiderRelocationGenerationOptions? relocation = null;
+
+        if (element.TryGetProperty("waitingRiderRelocation", out var relocationElement))
+        {
+            RequireObject(
+                relocationElement,
+                RelocationGenerationFields,
+                Fields(),
+                "$.candidateGeneration.waitingRiderRelocation");
+
+            if (strategy != CandidateScheduleStrategy.EarliestFeasible)
+            {
+                throw new InvalidDataException(
+                    "'waitingRiderRelocation' requires scheduleStrategy 'earliest-feasible'.");
+            }
+
+            relocation = new WaitingRiderRelocationGenerationOptions(
+                relocationElement.TryGetProperty("maximumRidersPerVehicle", out var riders)
+                    ? PositiveInt32(riders, "maximumRidersPerVehicle")
+                    : null,
+                relocationElement.TryGetProperty("maximumTargetVehicles", out var targets)
+                    ? PositiveInt32(targets, "maximumTargetVehicles")
+                    : null);
+        }
+
         return new CandidateGenerationOptions(
             PositiveInt32(
                 element.GetProperty("maximumCandidatesPerVehicle"),
@@ -535,7 +599,8 @@ public sealed class Wp4RunnerConfiguration : ICommitmentWarningProfileProvider
             PositiveInteger(
                 element.GetProperty("maximumExplorationWorkUnits"),
                 "maximumExplorationWorkUnits"),
-            retentionStrategy: retentionStrategy);
+            retentionStrategy: retentionStrategy,
+            waitingRiderRelocation: relocation);
     }
 
     private static DeterministicCandidateSelectionExecutionBudget

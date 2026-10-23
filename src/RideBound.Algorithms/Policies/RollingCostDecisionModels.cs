@@ -202,6 +202,12 @@ public sealed class CandidatePortfolioEvidenceSnapshot
 
             if (option.VehicleId != candidate.VehicleId
                 || option.IsNoOp != candidate.IsNoOp
+                || option.RelocationOut != (candidate.RelocationRole == RelocationRole.Donor
+                    ? candidate.RelocatedRequestId
+                    : null)
+                || option.RelocationIn != (candidate.RelocationRole == RelocationRole.Receiver
+                    ? candidate.RelocatedRequestId
+                    : null)
                 || !option.RequestIds.SequenceEqual(
                     candidate.NewRequestIds.OrderBy(
                         value => value.Value,

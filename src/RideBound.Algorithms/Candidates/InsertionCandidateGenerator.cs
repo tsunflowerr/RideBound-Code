@@ -15,6 +15,7 @@ public sealed class InsertionCandidateGenerator
     private readonly OriginHoldCandidateTransformer _originHoldTransformer;
     private readonly WaitingIncumbentRepairSeedBuilder _repairSeedBuilder;
     private readonly CandidatePortfolioRetainer _portfolioRetainer;
+    private readonly WaitingRiderRelocationBuilder _relocationBuilder;
 
     public InsertionCandidateGenerator(
         PhysicalPlanValidator? validator = null,
@@ -22,7 +23,8 @@ public sealed class InsertionCandidateGenerator
         ForwardSlackProfileCache? slackCache = null,
         OriginHoldCandidateTransformer? originHoldTransformer = null,
         WaitingIncumbentRepairSeedBuilder? repairSeedBuilder = null,
-        CandidatePortfolioRetainer? portfolioRetainer = null)
+        CandidatePortfolioRetainer? portfolioRetainer = null,
+        WaitingRiderRelocationBuilder? relocationBuilder = null)
     {
         _validator = validator ?? new PhysicalPlanValidator();
         _slackCache = slackCache ?? new ForwardSlackProfileCache(
@@ -33,6 +35,8 @@ public sealed class InsertionCandidateGenerator
             repairSeedBuilder ?? new WaitingIncumbentRepairSeedBuilder();
         _portfolioRetainer = portfolioRetainer
             ?? new CandidatePortfolioRetainer();
+        _relocationBuilder = relocationBuilder
+            ?? new WaitingRiderRelocationBuilder();
     }
 
     public CandidateGenerationResult Generate(
@@ -116,6 +120,28 @@ public sealed class InsertionCandidateGenerator
             breaches.AddRange(generated.Breaches);
         }
 
+        IReadOnlyList<RelocationCandidateLoss>? relocationLosses = null;
+
+        // G2 runs only when configured, after the ordinary search, and its candidates are
+        // appended after retention, so the ordinary sets are unchanged when it is off.
+        if (options.WaitingRiderRelocation is { } relocationOptions)
+        {
+            var relocated = GenerateRelocations(state, requests, options, relocationOptions);
+
+            if (relocated.Witness is not null)
+            {
+                return CandidateGenerationResult.Failure(relocated.Witness);
+            }
+
+            for (var index = 0; index < vehicleSets.Count; index++)
+            {
+                vehicleSets[index] = relocated.MergeInto(vehicleSets[index]);
+            }
+
+            omissions.AddRange(relocated.Omissions);
+            relocationLosses = relocated.Losses;
+        }
+
         return CandidateGenerationResult.Success(
             vehicleSets.AsReadOnly(),
             new CandidateGenerationDiagnostics(
@@ -124,7 +150,245 @@ public sealed class InsertionCandidateGenerator
                 omittedRequests.Length,
                 vehicleSets.Select(set => set.Loss!).ToArray(),
                 omissions.AsReadOnly(),
-                breaches.AsReadOnly()));
+                breaches.AsReadOnly(),
+                relocationLosses));
+    }
+
+    /// <summary>
+    /// G2 (waiting-rider relocation), mirroring the emulator's reference (engine.js 463-497):
+    /// for each donor in ordinal order and each eligible waiting rider w,
+    /// <list type="number">
+    /// <item>the donor-only route D0 (the suffix without w) must be strictly feasible;</item>
+    /// <item>every receiver route (w's own stops inserted into another vehicle's suffix, no new
+    /// request) is evaluated, and at least one must be feasible;</item>
+    /// <item>donor routes taking the new requests are explored from D0 with the ordinary
+    /// best-first search and work cap.</item>
+    /// </list>
+    /// A rider failing 1 or 2 yields no candidate. Every route is checked physically against the
+    /// reduced state with the move declared; commitments are assessed later, as a pair.
+    /// </summary>
+    private RelocationGenerationResult GenerateRelocations(
+        OnlineState state,
+        IReadOnlyList<RideRequest> requests,
+        CandidateGenerationOptions options,
+        WaitingRiderRelocationGenerationOptions relocationOptions)
+    {
+        var result = new RelocationGenerationResult();
+
+        foreach (var donor in state.Run.Vehicles.Values.OrderBy(
+                     value => value.Id.Value,
+                     StringComparer.Ordinal))
+        {
+            var eligibility = _relocationBuilder.Eligible(
+                state,
+                donor,
+                relocationOptions.MaximumRidersPerVehicle);
+
+            if (eligibility.EligibleRequestIds.Count == 0)
+            {
+                continue;
+            }
+
+            if (options.ExactSmallMode && eligibility.OmittedRequestIds.Count > 0)
+            {
+                return RelocationGenerationResult.Failure(
+                    new CandidateGenerationWitness(
+                        CandidateGenerationFailureCodes.ExactSmallRelocationRiderBoundExceeded,
+                        "Exact-small G2 cannot omit an eligible waiting rider above its " +
+                        "explicit rider cap.",
+                        donor.Id,
+                        eligibility.OmittedRequestIds[0],
+                        "maximumRidersPerVehicle"));
+            }
+
+            if (eligibility.OmittedRequestIds.Count > 0)
+            {
+                result.Omissions.Add(
+                    new CandidateOmissionWitness(
+                        CandidateGenerationFailureCodes.RelocationRiderBoundOmission,
+                        eligibility.OmittedRequestIds.Count,
+                        CandidateIdentity.CreateOmissionDigest(
+                            eligibility.OmittedRequestIds.Select(id => id.Value)),
+                        "Eligible waiting riders beyond the G2 rider cap were not " +
+                        "considered for relocation.",
+                        donor.Id,
+                        eligibility.OmittedRequestIds));
+                result.Truncated.Add(donor.Id);
+            }
+
+            var work = 0L;
+            var evaluatedReceivers = 0L;
+            var feasibleReceivers = 0L;
+            var evaluatedDonorPaths = 0L;
+            var feasibleDonors = 0L;
+            var omittedDonorPaths = 0L;
+            var saturated = false;
+            var withoutReceiver = 0L;
+            var donorInfeasible = 0L;
+
+            foreach (var seed in eligibility.Considered)
+            {
+                var targets = _relocationBuilder.Targets(
+                    state,
+                    donor,
+                    seed.Request,
+                    relocationOptions.MaximumTargetVehicles);
+
+                if (targets.Count == 0)
+                {
+                    withoutReceiver++;
+                    continue;
+                }
+
+                // The donor's own checks ignore the receiver, so the context names the first
+                // target; each receiver route is checked with its own vehicle below.
+                var donorContext = new WaitingRiderRelocation(
+                    seed.Request.Id,
+                    donor.Id,
+                    targets[0].Id);
+                var donorFeasible =
+                    new Dictionary<string, InsertionCandidate>(StringComparer.Ordinal);
+                var donorPruned =
+                    new Dictionary<string, CandidatePruneWitness>(StringComparer.Ordinal);
+                var donorOnly = donor.Route.ReplaceMutableSuffix(seed.DonorSuffix);
+                work = SaturatingAdd(work, 1);
+                evaluatedDonorPaths = SaturatingAdd(evaluatedDonorPaths, 1);
+
+                if (donorOnly.IsSuccess)
+                {
+                    EvaluateRoute(
+                        state,
+                        donor,
+                        donorOnly.Value!,
+                        [],
+                        isNoOp: false,
+                        repairedIncumbentRequestId: null,
+                        options,
+                        ServiceQualityAllowance.Strict,
+                        donorFeasible,
+                        donorPruned,
+                        relocation: donorContext,
+                        relocationRole: RelocationRole.Donor);
+                }
+
+                if (donorFeasible.Count == 0)
+                {
+                    donorInfeasible++;
+                    continue;
+                }
+
+                var receiverFeasible =
+                    new Dictionary<string, InsertionCandidate>(StringComparer.Ordinal);
+                var receiverPruned =
+                    new Dictionary<string, CandidatePruneWitness>(StringComparer.Ordinal);
+
+                foreach (var receiver in targets)
+                {
+                    var receiverContext = new WaitingRiderRelocation(
+                        seed.Request.Id,
+                        donor.Id,
+                        receiver.Id);
+
+                    foreach (var route in WaitingRiderRelocationBuilder.ReceiverRoutes(
+                                 receiver,
+                                 seed.Pickup,
+                                 seed.DropOff))
+                    {
+                        work = SaturatingAdd(work, 1);
+                        evaluatedReceivers = SaturatingAdd(evaluatedReceivers, 1);
+                        EvaluateRoute(
+                            state,
+                            receiver,
+                            route,
+                            [],
+                            isNoOp: false,
+                            repairedIncumbentRequestId: null,
+                            options,
+                            ServiceQualityAllowance.Strict,
+                            receiverFeasible,
+                            receiverPruned,
+                            relocation: receiverContext,
+                            relocationRole: RelocationRole.Receiver);
+                    }
+                }
+
+                if (receiverFeasible.Count == 0)
+                {
+                    withoutReceiver++;
+                    continue;
+                }
+
+                var exploration = ExploreBestFirst(
+                    state,
+                    donor,
+                    requests,
+                    [],
+                    options,
+                    ServiceQualityAllowance.Strict,
+                    donorFeasible,
+                    donorPruned,
+                    new RelocationRoot(donorContext, seed.DonorSuffix));
+
+                if (exploration.Witness is not null)
+                {
+                    return RelocationGenerationResult.Failure(
+                        exploration.Witness with
+                        {
+                            Code = CandidateGenerationFailureCodes
+                                .ExactSmallRelocationWorkCapExceeded,
+                            RequestId = seed.Request.Id,
+                        });
+                }
+
+                work = SaturatingAdd(work, exploration.WorkUnits);
+                evaluatedDonorPaths = SaturatingAdd(
+                    evaluatedDonorPaths,
+                    exploration.EvaluatedCandidatePathCount);
+                omittedDonorPaths = SaturatingAdd(
+                    omittedDonorPaths,
+                    exploration.OmittedCandidatePathCount);
+                saturated |= exploration.OmissionCountWasSaturated;
+
+                if (exploration.OmittedCandidatePathCount > 0)
+                {
+                    result.Omissions.Add(
+                        new CandidateOmissionWitness(
+                            CandidateGenerationFailureCodes.RelocationWorkBoundOmission,
+                            exploration.OmittedCandidatePathCount,
+                            CandidateIdentity.CreateOmissionDigest(
+                                exploration.OmittedSubtreeIds),
+                            "Deterministic work cap left G2 donor exploration paths " +
+                            "unexpanded; their feasibility is unknown.",
+                            donor.Id,
+                            [seed.Request.Id],
+                            exploration.OmissionCountWasSaturated));
+                    result.Truncated.Add(donor.Id);
+                }
+
+                feasibleDonors = SaturatingAdd(feasibleDonors, donorFeasible.Count);
+                feasibleReceivers = SaturatingAdd(feasibleReceivers, receiverFeasible.Count);
+                result.Add(donorFeasible.Values, donorPruned.Values);
+                result.Add(receiverFeasible.Values, receiverPruned.Values);
+            }
+
+            result.Losses.Add(
+                new RelocationCandidateLoss(
+                    donor.Id,
+                    eligibility.EligibleRequestIds.Count,
+                    eligibility.Considered.Count,
+                    eligibility.OmittedRequestIds.Count,
+                    work,
+                    evaluatedReceivers,
+                    feasibleReceivers,
+                    evaluatedDonorPaths,
+                    feasibleDonors,
+                    omittedDonorPaths,
+                    saturated,
+                    withoutReceiver,
+                    donorInfeasible));
+        }
+
+        return result;
     }
 
     private VehicleGenerationResult GenerateForVehicle(
@@ -378,11 +642,16 @@ public sealed class InsertionCandidateGenerator
         CandidateGenerationOptions options,
         ServiceQualityAllowance serviceQuality,
         IDictionary<string, InsertionCandidate> feasibleById,
-        IDictionary<string, CandidatePruneWitness> prunedById)
+        IDictionary<string, CandidatePruneWitness> prunedById,
+        RelocationRoot? relocationRoot = null)
     {
         var frontier = new PriorityQueue<ExplorationNode, SearchPriority>(
             SearchPriorityComparer.Instance);
-        var roots = new[]
+        // A G2 donor search has the single root D0 (the donor suffix without the moved
+        // rider). Its root-only path is D0 itself, evaluated by the caller like the no-op.
+        var roots = relocationRoot is not null
+            ? [CreateNode(requestIndex: 0, relocationRoot.Suffix, [], repairedIncumbentRequestId: null)]
+            : new[]
             {
                 CreateNode(
                     requestIndex: 0,
@@ -401,9 +670,13 @@ public sealed class InsertionCandidateGenerator
             .Select(group => group.First())
             .ToArray();
 
+        var rootIsActiveRoute = relocationRoot is null;
+
         foreach (var root in roots)
         {
-            frontier.Enqueue(root, CreatePriority(state, vehicle, requests, serviceQuality, root));
+            frontier.Enqueue(
+                root,
+                CreatePriority(state, vehicle, requests, serviceQuality, root, rootIsActiveRoute));
         }
         var workUnits = 0L;
         var evaluatedPaths = 0L;
@@ -437,7 +710,9 @@ public sealed class InsertionCandidateGenerator
                         serviceQuality,
                         feasibleById,
                         prunedById,
-                        node.SlackLookup);
+                        node.SlackLookup,
+                        relocationRoot?.Relocation,
+                        relocationRoot is null ? null : RelocationRole.Donor);
                 }
 
                 continue;
@@ -447,7 +722,13 @@ public sealed class InsertionCandidateGenerator
                 .Select(
                     child => new PrioritizedNode(
                         child,
-                        CreatePriority(state, vehicle, requests, serviceQuality, child)))
+                        CreatePriority(
+                            state,
+                            vehicle,
+                            requests,
+                            serviceQuality,
+                            child,
+                            rootIsActiveRoute)))
                 .ToList();
             children.Sort(
                 (left, right) => SearchPriorityComparer.Instance.Compare(
@@ -580,7 +861,8 @@ public sealed class InsertionCandidateGenerator
         VehicleState vehicle,
         IReadOnlyList<RideRequest> requests,
         ServiceQualityAllowance serviceQuality,
-        ExplorationNode node)
+        ExplorationNode node,
+        bool rootIsActiveRoute)
     {
         var remaining = requests.Count - node.RequestIndex;
         var potentialAccepted = node.InsertedRequestIds.Count + remaining;
@@ -594,6 +876,7 @@ public sealed class InsertionCandidateGenerator
         // on its own candidate suffix.
         var route = node.RequestIndex == 0
                     && node.RepairedIncumbentRequestId is null
+                    && rootIsActiveRoute
             ? vehicle.Route
             : node.Project(vehicle).Value;
         long? slack = 0;
@@ -714,7 +997,9 @@ public sealed class InsertionCandidateGenerator
         ServiceQualityAllowance serviceQuality,
         IDictionary<string, InsertionCandidate> feasibleById,
         IDictionary<string, CandidatePruneWitness> prunedById,
-        ForwardSlackCacheLookup? prefetchedProfile = null)
+        ForwardSlackCacheLookup? prefetchedProfile = null,
+        WaitingRiderRelocation? relocation = null,
+        RelocationRole? relocationRole = null)
     {
         var orderedRequests = insertedRequestIds
             .OrderBy(value => value.Value, StringComparer.Ordinal)
@@ -738,7 +1023,8 @@ public sealed class InsertionCandidateGenerator
                 route,
                 state.TravelTimes!,
                 state.Run.SimulationTime,
-                serviceQuality));
+                serviceQuality,
+                relocation));
 
         if (!validation.IsFeasible)
         {
@@ -818,7 +1104,8 @@ public sealed class InsertionCandidateGenerator
                         transformed.Route,
                         state.TravelTimes!,
                         state.Run.SimulationTime,
-                        serviceQuality));
+                        serviceQuality,
+                        relocation));
 
                 if (!transformedValidation.IsFeasible)
                 {
@@ -881,7 +1168,9 @@ public sealed class InsertionCandidateGenerator
                 selectedStrategy,
                 relocatedWait,
                 selectedProfile.CertifiedDelayAtRouteStartMilliseconds,
-                repairedIncumbentRequestId));
+                repairedIncumbentRequestId,
+                relocation?.RequestId,
+                relocationRole));
     }
 
     private static bool HasExactServiceEquivalence(
@@ -1040,6 +1329,79 @@ public sealed class InsertionCandidateGenerator
         public static ExplorationResult Failure(
             CandidateGenerationWitness witness) =>
             new(0, 0, 0, [], false, witness);
+    }
+
+    /// <summary>The root of a G2 donor search: D0's suffix and the declared move.</summary>
+    private sealed record RelocationRoot(
+        WaitingRiderRelocation Relocation,
+        IReadOnlyList<RouteStop> Suffix);
+
+    /// <summary>
+    /// G2 output, kept per vehicle until it is appended to the ordinary sets after retention.
+    /// </summary>
+    private sealed class RelocationGenerationResult
+    {
+        private readonly Dictionary<VehicleId, List<InsertionCandidate>> _candidates = [];
+        private readonly Dictionary<VehicleId, List<CandidatePruneWitness>> _pruned = [];
+
+        public CandidateGenerationWitness? Witness { get; private init; }
+
+        public List<CandidateOmissionWitness> Omissions { get; } = [];
+
+        public List<RelocationCandidateLoss> Losses { get; } = [];
+
+        public HashSet<VehicleId> Truncated { get; } = [];
+
+        public static RelocationGenerationResult Failure(CandidateGenerationWitness witness) =>
+            new() { Witness = witness };
+
+        public void Add(
+            IEnumerable<InsertionCandidate> candidates,
+            IEnumerable<CandidatePruneWitness> pruned)
+        {
+            foreach (var candidate in candidates)
+            {
+                (_candidates.TryGetValue(candidate.VehicleId, out var list)
+                    ? list
+                    : _candidates[candidate.VehicleId] = []).Add(candidate);
+            }
+
+            foreach (var witness in pruned)
+            {
+                (_pruned.TryGetValue(witness.VehicleId, out var list)
+                    ? list
+                    : _pruned[witness.VehicleId] = []).Add(witness);
+            }
+        }
+
+        /// <summary>
+        /// The set unchanged when G2 produced nothing for its vehicle; otherwise the union,
+        /// still ordered by candidate id. G2 candidates are never capped (emulator-equal).
+        /// </summary>
+        public VehicleCandidateSet MergeInto(VehicleCandidateSet set)
+        {
+            var hasCandidates = _candidates.TryGetValue(set.VehicleId, out var candidates);
+            var hasPruned = _pruned.TryGetValue(set.VehicleId, out var pruned);
+            var truncated = Truncated.Contains(set.VehicleId);
+
+            if (!hasCandidates && !hasPruned && !truncated)
+            {
+                return set;
+            }
+
+            return set with
+            {
+                Candidates = set.Candidates
+                    .Concat(candidates ?? [])
+                    .OrderBy(value => value.CandidateId, StringComparer.Ordinal)
+                    .ToArray(),
+                PrunedCandidates = set.PrunedCandidates
+                    .Concat(pruned ?? [])
+                    .OrderBy(value => value.CandidateId, StringComparer.Ordinal)
+                    .ToArray(),
+                WasTruncated = set.WasTruncated || truncated,
+            };
+        }
     }
 
     private sealed record VehicleGenerationResult(

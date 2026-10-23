@@ -29,11 +29,15 @@ internal static class SolverExecutionEvidenceMapper
         using (var writer = new Utf8JsonWriter(buffer))
         {
             writer.WriteStartObject();
+            // 1.3.0 = G2 on (relocationLosses and the candidates' relocation fields may appear);
+            // without G2 the version and every byte are as before.
             writer.WriteString(
                 "evidenceVersion",
-                decision.CandidatePortfolioEvidence is null
-                    ? "1.1.0"
-                    : "1.2.0");
+                decision.GenerationDiagnostics.RelocationLosses is not null
+                    ? "1.3.0"
+                    : decision.CandidatePortfolioEvidence is null
+                        ? "1.1.0"
+                        : "1.2.0");
             writer.WritePropertyName("generation");
             WriteGeneration(writer, decision.GenerationDiagnostics);
 
@@ -198,6 +202,15 @@ internal static class SolverExecutionEvidenceMapper
         if (candidate.RepairedIncumbentRequestId is { } repaired)
         {
             writer.WriteString("repairedIncumbentRequestId", repaired.Value);
+        }
+
+        // G2 fields are written only for relocation candidates, so evidence without G2 is unchanged.
+        if (candidate.RelocatedRequestId is { } relocated)
+        {
+            writer.WriteString("relocatedRequestId", relocated.Value);
+            writer.WriteString(
+                "relocationRole",
+                candidate.RelocationRole == RelocationRole.Donor ? "donor" : "receiver");
         }
 
         writer.WritePropertyName("route");
@@ -456,6 +469,37 @@ internal static class SolverExecutionEvidenceMapper
         }
 
         writer.WriteEndArray();
+
+        // G2 work is part of consumedGenerationWorkUnits, so its accounting is published too.
+        if (diagnostics.RelocationLosses is { } relocationLosses)
+        {
+            writer.WritePropertyName("relocationLosses");
+            writer.WriteStartArray();
+
+            foreach (var loss in relocationLosses.OrderBy(
+                         value => value.DonorVehicleId.Value,
+                         StringComparer.Ordinal))
+            {
+                writer.WriteStartObject();
+                writer.WriteString("donorVehicleId", loss.DonorVehicleId.Value);
+                writer.WriteNumber("eligibleRiderCount", loss.EligibleRiderCount);
+                writer.WriteNumber("consideredRiderCount", loss.ConsideredRiderCount);
+                writer.WriteNumber("omittedRiderCount", loss.OmittedRiderCount);
+                writer.WriteNumber("workUnits", loss.WorkUnits);
+                writer.WriteNumber("evaluatedReceiverRouteCount", loss.EvaluatedReceiverRouteCount);
+                writer.WriteNumber("feasibleReceiverCount", loss.FeasibleReceiverCount);
+                writer.WriteNumber("evaluatedDonorPathCount", loss.EvaluatedDonorPathCount);
+                writer.WriteNumber("feasibleDonorCount", loss.FeasibleDonorCount);
+                writer.WriteNumber("omittedUnexpandedDonorPathCount", loss.OmittedUnexpandedDonorPathCount);
+                writer.WriteBoolean("omissionCountWasSaturated", loss.OmissionCountWasSaturated);
+                writer.WriteNumber("ridersWithoutFeasibleReceiver", loss.RidersWithoutFeasibleReceiver);
+                writer.WriteNumber("ridersWithInfeasibleDonorRoute", loss.RidersWithInfeasibleDonorRoute);
+                writer.WriteEndObject();
+            }
+
+            writer.WriteEndArray();
+        }
+
         writer.WriteEndObject();
     }
 

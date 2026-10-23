@@ -221,6 +221,14 @@ public static class DecisionPayloadCodec
             "objectiveContributions",
         };
 
+    // Solver evidence v1.3.0 (G2): a portfolio candidate may also name the waiting rider it moves.
+    private static readonly IReadOnlySet<string> RelocationPortfolioCandidateFields =
+        new HashSet<string>(PortfolioCandidateFields, StringComparer.Ordinal)
+        {
+            "relocatedRequestId",
+            "relocationRole",
+        };
+
     private static readonly IReadOnlySet<string> PortfolioRouteFields =
         new HashSet<string>(StringComparer.Ordinal)
         {
@@ -886,7 +894,7 @@ public static class DecisionPayloadCodec
             "candidatePortfolio",
             out var candidatePortfolio);
 
-        if (version.Value is not ("1.0.0" or "1.1.0" or "1.2.0")
+        if (version.Value is not ("1.0.0" or "1.1.0" or "1.2.0" or "1.3.0")
             || generation.Value.ValueKind != JsonValueKind.Object
             || pruned.Value.ValueKind != JsonValueKind.Array
             || selection.Value.ValueKind != JsonValueKind.Object)
@@ -915,6 +923,17 @@ public static class DecisionPayloadCodec
                 "candidatePortfolio is available only in solver evidence v1.2.0.");
         }
 
+        // v1.3.0 (G2): v1.2.0 with relocation data; the portfolio is optional and validated when present.
+        if (version.Value == "1.3.0")
+        {
+            return hasCandidatePortfolio
+                ? ValidateCandidatePortfolio(
+                    candidatePortfolio,
+                    $"{path}.candidatePortfolio",
+                    allowRelocation: true)
+                : null;
+        }
+
         return version.Value == "1.2.0"
             ? ValidateCandidatePortfolio(
                 candidatePortfolio,
@@ -924,7 +943,8 @@ public static class DecisionPayloadCodec
 
     private static ProtocolPayloadError? ValidateCandidatePortfolio(
         JsonElement portfolio,
-        string path)
+        string path,
+        bool allowRelocation = false)
     {
         var objectError = ProtocolPayloadReader.ValidateObject(
             portfolio,
@@ -1028,7 +1048,8 @@ public static class DecisionPayloadCodec
                 candidateElement,
                 $"{path}.candidates[{index}]",
                 problem!,
-                out var candidate);
+                out var candidate,
+                allowRelocation);
 
             if (candidateError is not null)
             {
@@ -1241,17 +1262,38 @@ public static class DecisionPayloadCodec
         JsonElement candidate,
         string path,
         PortfolioSelectionShape problem,
-        out PortfolioCandidateShape? shape)
+        out PortfolioCandidateShape? shape,
+        bool allowRelocation = false)
     {
         shape = null;
         var objectError = ProtocolPayloadReader.ValidateObject(
             candidate,
             path,
-            PortfolioCandidateFields);
+            allowRelocation ? RelocationPortfolioCandidateFields : PortfolioCandidateFields);
 
         if (objectError is not null)
         {
             return objectError;
+        }
+
+        if (allowRelocation)
+        {
+            var relocated = ProtocolPayloadReader.ReadOptionalString(candidate, path, "relocatedRequestId");
+            var role = ProtocolPayloadReader.ReadOptionalString(candidate, path, "relocationRole");
+            var relocationError = HelloPayloadCodec.FirstError(relocated.Error, role.Error);
+
+            if (relocationError is not null)
+            {
+                return relocationError;
+            }
+
+            if ((relocated.Value is null) != (role.Value is null)
+                || role.Value is not (null or "donor" or "receiver"))
+            {
+                return InvalidPortfolioValue(
+                    path,
+                    "A relocation candidate names both the moved rider and a donor or receiver role.");
+            }
         }
 
         var candidateId = ProtocolPayloadReader.ReadRequiredString(

@@ -92,6 +92,9 @@ class PromiseAction:
     promise_version: int
     reason_code: str
     source_event_sequence: int
+    # The projection's vehicle as sent, kept only for the G2 move check; it is never mapped
+    # or validated here, so decisions without G2 parse exactly as before.
+    vehicle_id: str | None = None
 
 
 @dataclass(frozen=True)
@@ -317,6 +320,7 @@ def parse_decision(
                     _integer(value["promiseVersion"], f"{path}.payload.promiseVersion", minimum=1),
                     _text(value["reasonCode"], f"{path}.payload.reasonCode"),
                     _integer(value["sourceEventSeq"], f"{path}.payload.sourceEventSeq", minimum=1),
+                    promise.get("vehicleId") if isinstance(promise.get("vehicleId"), str) else None,
                 )
             )
         elif decision_type in {"offerProposed", "commitmentBreachDeclared"}:

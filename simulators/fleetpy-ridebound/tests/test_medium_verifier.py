@@ -164,6 +164,60 @@ class MediumVerifierTests(unittest.TestCase):
                 1,
             )
 
+    def test_audited_solver_evidence_v13_charges_g2_work_and_checks_relocation_fields(self):
+        evidence = _audited_evidence_v13()
+
+        self.assertEqual(
+            "1.3.0",
+            verifier._verify_audited_solver_evidence(
+                {"status": "completed", "executionEvidence": evidence},
+                1,
+            ),
+        )
+
+        # G2 work must be part of consumedGenerationWorkUnits (5 ordinary + 3 relocation).
+        uncharged = copy.deepcopy(evidence)
+        uncharged["selection"]["consumedGenerationWorkUnits"] = 5
+        with self.assertRaises(RuntimeError):
+            verifier._verify_audited_solver_evidence(
+                {"status": "completed", "executionEvidence": uncharged},
+                1,
+            )
+
+        half = copy.deepcopy(evidence)
+        del half["candidatePortfolio"]["candidates"][1]["relocatedRequestId"]
+        with self.assertRaisesRegex(RuntimeError, "relocation fields are inconsistent"):
+            verifier._verify_audited_solver_evidence(
+                {"status": "completed", "executionEvidence": half},
+                1,
+            )
+
+        bad_role = copy.deepcopy(evidence)
+        bad_role["candidatePortfolio"]["candidates"][1]["relocationRole"] = "both"
+        with self.assertRaisesRegex(RuntimeError, "relocation fields are inconsistent"):
+            verifier._verify_audited_solver_evidence(
+                {"status": "completed", "executionEvidence": bad_role},
+                1,
+            )
+
+        bad_riders = copy.deepcopy(evidence)
+        bad_riders["generation"]["relocationLosses"][0]["omittedRiderCount"] = 1
+        with self.assertRaisesRegex(RuntimeError, "rider accounting differs"):
+            verifier._verify_audited_solver_evidence(
+                {"status": "completed", "executionEvidence": bad_riders},
+                1,
+            )
+
+    def test_relocation_data_is_rejected_below_v13(self):
+        evidence = _audited_evidence_v13()
+        evidence["evidenceVersion"] = "1.2.0"
+
+        with self.assertRaisesRegex(RuntimeError, "fields differ"):
+            verifier._verify_audited_solver_evidence(
+                {"status": "completed", "executionEvidence": evidence},
+                1,
+            )
+
 
 class MediumPreflightSeedTests(unittest.TestCase):
     def test_master_seed_is_explicitly_propagated_to_runner_settings(self):
@@ -626,6 +680,33 @@ def _audited_evidence_v12():
             },
         ],
     }
+    return evidence
+
+
+def _audited_evidence_v13():
+    """1.2.0 plus G2: relocation accounting (3 work units) and a pruned donor candidate."""
+    evidence = _audited_evidence_v12()
+    evidence["evidenceVersion"] = "1.3.0"
+    evidence["generation"]["relocationLosses"] = [
+        {
+            "donorVehicleId": "veh-a",
+            "eligibleRiderCount": 1,
+            "consideredRiderCount": 1,
+            "omittedRiderCount": 0,
+            "workUnits": 3,
+            "evaluatedReceiverRouteCount": 1,
+            "feasibleReceiverCount": 1,
+            "evaluatedDonorPathCount": 1,
+            "feasibleDonorCount": 1,
+            "omittedUnexpandedDonorPathCount": 0,
+            "omissionCountWasSaturated": False,
+            "ridersWithoutFeasibleReceiver": 0,
+            "ridersWithInfeasibleDonorRoute": 0,
+        }
+    ]
+    evidence["selection"]["consumedGenerationWorkUnits"] = 8
+    evidence["candidatePortfolio"]["candidates"][1]["relocatedRequestId"] = "req-w"
+    evidence["candidatePortfolio"]["candidates"][1]["relocationRole"] = "donor"
     return evidence
 
 

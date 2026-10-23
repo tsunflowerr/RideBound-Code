@@ -127,7 +127,7 @@ public sealed class WaitingIncumbentRepairSeedBuilder
             omitted.Select(request => request.Id).ToArray());
     }
 
-    private static bool HasExactMutablePair(
+    internal static bool HasExactMutablePair(
         RoutePlan route,
         RequestId requestId)
     {

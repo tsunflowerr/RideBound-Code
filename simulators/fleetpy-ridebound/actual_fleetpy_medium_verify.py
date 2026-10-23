@@ -192,12 +192,15 @@ def _verify_audited_solver_evidence(solver, epoch):
     }
     if evidence_version == "1.2.0":
         required_evidence_fields.add("candidatePortfolio")
+    # 1.3.0 (G2): 1.2.0 plus generation.relocationLosses and the candidates' relocation
+    # fields; the portfolio is optional and verified when present.
     evidence = _require_fields(
         raw_evidence,
         field,
         required_evidence_fields,
+        {"candidatePortfolio"} if evidence_version == "1.3.0" else (),
     )
-    if evidence_version not in {"1.0.0", "1.1.0", "1.2.0"}:
+    if evidence_version not in {"1.0.0", "1.1.0", "1.2.0", "1.3.0"}:
         raise RuntimeError(f"{field}: unknown evidence version")
     generation_fields = {
         "totalPendingRequestCount",
@@ -206,8 +209,10 @@ def _verify_audited_solver_evidence(solver, epoch):
         "vehicleLosses",
         "omissions",
     }
-    if evidence_version in {"1.1.0", "1.2.0"}:
+    if evidence_version in {"1.1.0", "1.2.0", "1.3.0"}:
         generation_fields.add("exogenousServiceQualityBreaches")
+    if evidence_version == "1.3.0":
+        generation_fields.add("relocationLosses")
     generation = _require_fields(
         evidence["generation"],
         f"{field}.generation",
@@ -305,7 +310,41 @@ def _verify_audited_solver_evidence(solver, epoch):
             )
         omitted_candidate_count += omission["count"]
 
-    if evidence_version in {"1.1.0", "1.2.0"}:
+    if evidence_version == "1.3.0":
+        relocation_losses = generation["relocationLosses"]
+        if not isinstance(relocation_losses, list):
+            raise RuntimeError(f"{field}.generation.relocationLosses must be an array")
+        for index, loss in enumerate(relocation_losses):
+            loss_field = f"{field}.generation.relocationLosses[{index}]"
+            _require_fields(
+                loss,
+                loss_field,
+                {
+                    "donorVehicleId",
+                    "eligibleRiderCount",
+                    "consideredRiderCount",
+                    "omittedRiderCount",
+                    "workUnits",
+                    "evaluatedReceiverRouteCount",
+                    "feasibleReceiverCount",
+                    "evaluatedDonorPathCount",
+                    "feasibleDonorCount",
+                    "omittedUnexpandedDonorPathCount",
+                    "omissionCountWasSaturated",
+                    "ridersWithoutFeasibleReceiver",
+                    "ridersWithInfeasibleDonorRoute",
+                },
+            )
+            if loss["omissionCountWasSaturated"] is not False:
+                raise RuntimeError(f"{loss_field}: saturated evidence is not auditable")
+            for name, value in loss.items():
+                if name not in {"donorVehicleId", "omissionCountWasSaturated"}:
+                    _nonnegative_integer(value, f"{loss_field}.{name}")
+            if loss["consideredRiderCount"] + loss["omittedRiderCount"] != loss["eligibleRiderCount"]:
+                raise RuntimeError(f"{loss_field}: rider accounting differs")
+            generation_work += loss["workUnits"]
+
+    if evidence_version in {"1.1.0", "1.2.0", "1.3.0"}:
         breaches = generation["exogenousServiceQualityBreaches"]
         if not isinstance(breaches, list):
             raise RuntimeError(
@@ -454,7 +493,9 @@ def _verify_audited_solver_evidence(solver, epoch):
     )
     if primary != final:
         raise RuntimeError(f"{field}: primary/final optimal diagnostics differ")
-    if evidence_version == "1.2.0":
+    if evidence_version == "1.2.0" or (
+        evidence_version == "1.3.0" and "candidatePortfolio" in evidence
+    ):
         _verify_retained_candidate_portfolio(
             evidence["candidatePortfolio"],
             f"{field}.candidatePortfolio",
@@ -565,8 +606,14 @@ def _verify_retained_candidate_portfolio(portfolio, field):
                 "certifiedForwardSlackMs",
                 "repairedIncumbentRequestId",
                 "objectiveContributions",
+                "relocatedRequestId",
+                "relocationRole",
             },
         )
+        if ("relocatedRequestId" in candidate) != ("relocationRole" in candidate) or candidate.get(
+            "relocationRole", "donor"
+        ) not in {"donor", "receiver"}:
+            raise RuntimeError(f"{candidate_field}: relocation fields are inconsistent")
         candidate_id = candidate["candidateId"]
         vehicle_id = candidate["vehicleId"]
         if (
@@ -1072,11 +1119,15 @@ def verify_transcript(
             raise RuntimeError(f"epoch {next_epoch}: solver status is invalid")
         if require_audited_solver_evidence:
             evidence_version = _verify_audited_solver_evidence(solver, next_epoch)
-            if require_retained_candidate_portfolio and evidence_version != "1.2.0":
+            has_portfolio = evidence_version == "1.2.0" or (
+                evidence_version == "1.3.0"
+                and "candidatePortfolio" in solver["executionEvidence"]
+            )
+            if require_retained_candidate_portfolio and not has_portfolio:
                 raise RuntimeError(
                     f"epoch {next_epoch}: retained portfolio evidence is required"
                 )
-            if evidence_version == "1.2.0":
+            if has_portfolio:
                 retained_portfolio_evidence_count += 1
         behavioral_decisions.append(
             {

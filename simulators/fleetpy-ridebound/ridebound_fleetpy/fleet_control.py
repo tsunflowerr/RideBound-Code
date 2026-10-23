@@ -31,6 +31,7 @@ from .protocol import (
     ProtocolStop,
     parse_decision,
 )
+from .relocation import infer_waiting_rider_relocations, route_riders
 from .session import RideBoundProtocolSession, RideBoundSessionSettings
 
 
@@ -891,6 +892,25 @@ class RideBoundFleetControl(FleetControlBase):
                     "sourceEventSeq": action.source_event_sequence,
                 }
             )
+        relocations = ()
+        if getattr(self._rb_settings, "waiting_rider_relocation", False):
+            # G2: infer and check the one waiting rider this decision may move, before
+            # FleetPy applies any plan (relocation.py). Off, nothing here runs.
+            relocations = infer_waiting_rider_relocations(
+                {
+                    action.raw_vehicle: route_riders(self._rb_routes[action.raw_vehicle].remaining_stops)
+                    for action, _ in prepared_plans
+                },
+                {action.raw_vehicle: route_riders(action.route.remaining_stops) for action, _ in prepared_plans},
+                dict(self.rid_to_assigned_vid),
+                dict(self._rb_states),
+                {
+                    action.raw_request: self._rb_mapper.raw_vehicle(action.vehicle_id)
+                    for action in parsed.promises
+                    if action.vehicle_id is not None
+                },
+                frozenset(accepted_by_request),
+            )
         plans_by_vehicle = {}
         for action, plan in prepared_plans:
             plans_by_vehicle[action.raw_vehicle] = plan
@@ -925,6 +945,9 @@ class RideBoundFleetControl(FleetControlBase):
         for rid, acceptance in accepted_by_request.items():
             if self.rid_to_assigned_vid.get(rid) != acceptance.raw_vehicle:
                 raise _fail("RBWP7_ASSIGNMENT_INDEX_MISMATCH", "$.decision.accepted", repr(rid))
+        for move in relocations:
+            if self.rid_to_assigned_vid.get(move.raw_request) != move.raw_receiver:
+                raise _fail("RBWP7_RELOCATION_INDEX_MISMATCH", "$.decision.vehiclePlanUpdated", repr(move))
 
     def _fleetpy_plan(self, vid, route, simulation_time):
         stops = []

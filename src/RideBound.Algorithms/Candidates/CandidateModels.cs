@@ -27,6 +27,23 @@ public enum CandidateRetentionStrategy
     ServiceSetStabilityPortfolioV1,
 }
 
+/// <summary>
+/// The side of a waiting-rider relocation (G2) a candidate stands for: the donor route
+/// drops the rider, the receiver route carries it. Only a donor and a receiver of the
+/// same rider together form a move.
+/// </summary>
+public enum RelocationRole
+{
+    Donor,
+    Receiver,
+}
+
+/// <param name="RelocatedRequestId">
+/// The waiting rider a G2 candidate moves; null for every ordinary candidate.
+/// </param>
+/// <param name="RelocationRole">
+/// Donor or receiver of that move; null exactly when <paramref name="RelocatedRequestId"/> is.
+/// </param>
 public sealed record InsertionCandidate(
     string CandidateId,
     VehicleId VehicleId,
@@ -38,7 +55,9 @@ public sealed record InsertionCandidate(
         CandidateScheduleStrategy.EarliestFeasible,
     long RelocatedWaitMilliseconds = 0,
     long? CertifiedForwardSlackMilliseconds = null,
-    RequestId? RepairedIncumbentRequestId = null);
+    RequestId? RepairedIncumbentRequestId = null,
+    RequestId? RelocatedRequestId = null,
+    RelocationRole? RelocationRole = null);
 
 public sealed record CandidatePruneWitness(
     string CandidateId,
@@ -82,6 +101,25 @@ public sealed record VehicleCandidateLoss(
     VehicleId? VehicleId = null);
 
 /// <summary>
+/// G2 accounting for one donor vehicle with at least one eligible waiting rider. Kept apart
+/// from <see cref="VehicleCandidateLoss"/>, whose meaning stays that of the ordinary search.
+/// </summary>
+public sealed record RelocationCandidateLoss(
+    VehicleId DonorVehicleId,
+    long EligibleRiderCount,
+    long ConsideredRiderCount,
+    long OmittedRiderCount,
+    long WorkUnits,
+    long EvaluatedReceiverRouteCount,
+    long FeasibleReceiverCount,
+    long EvaluatedDonorPathCount,
+    long FeasibleDonorCount,
+    long OmittedUnexpandedDonorPathCount,
+    bool OmissionCountWasSaturated,
+    long RidersWithoutFeasibleReceiver,
+    long RidersWithInfeasibleDonorRoute);
+
+/// <summary>
 /// A service-quality deadline the vehicle's unchanged active route can no longer
 /// meet under the current travel snapshot (ADR-045). It is attributed to traffic,
 /// not to the decision about to be taken, and it never removes the safety no-op.
@@ -108,14 +146,22 @@ public sealed record CandidateGenerationDiagnostics(
     /// vehicle, then request, then dimension. These are diagnostic: they never
     /// prune a candidate and never fail the epoch.
     /// </summary>
-    IReadOnlyList<ExogenousServiceQualityBreach> ExogenousServiceQualityBreaches)
+    IReadOnlyList<ExogenousServiceQualityBreach> ExogenousServiceQualityBreaches,
+    /// <summary>
+    /// G2 accounting by donor vehicle; null when waiting-rider relocation is off.
+    /// </summary>
+    IReadOnlyList<RelocationCandidateLoss>? RelocationLosses = null)
 {
 
     public bool IsComplete => OmittedRequestCount == 0
         && VehicleLosses.All(
             loss => loss.OmittedUnexpandedCandidatePathCount == 0
                 && loss.OmittedFeasibleCandidateCountByCap == 0
-                && loss.OmittedRepairRequestCount == 0);
+                && loss.OmittedRepairRequestCount == 0)
+        && (RelocationLosses is null
+            || RelocationLosses.All(
+                loss => loss.OmittedRiderCount == 0
+                    && loss.OmittedUnexpandedDonorPathCount == 0));
 }
 
 public sealed record CandidateGenerationResult
@@ -166,7 +212,8 @@ public sealed record CandidateGenerationOptions
         long maximumExplorationWorkUnits = 100_000,
         int maximumRepairRequestsConsideredPerVehicle = 0,
         CandidateRetentionStrategy retentionStrategy =
-            CandidateRetentionStrategy.LegacyAcceptedCountCostSlack)
+            CandidateRetentionStrategy.LegacyAcceptedCountCostSlack,
+        WaitingRiderRelocationGenerationOptions? waitingRiderRelocation = null)
     {
         if (maximumCandidatesPerVehicle < 1)
         {
@@ -203,6 +250,16 @@ public sealed record CandidateGenerationOptions
             throw new ArgumentOutOfRangeException(nameof(retentionStrategy));
         }
 
+        // G2 candidates use the earliest-feasible schedule only; an origin-hold transform
+        // would change their routes and identities on one side of the move.
+        if (waitingRiderRelocation is not null
+            && scheduleStrategy != CandidateScheduleStrategy.EarliestFeasible)
+        {
+            throw new ArgumentException(
+                "Waiting-rider relocation requires the earliest-feasible schedule strategy.",
+                nameof(waitingRiderRelocation));
+        }
+
         MaximumCandidatesPerVehicle = maximumCandidatesPerVehicle;
         MaximumNewRequestsPerVehicle = maximumNewRequestsPerVehicle;
         ExactSmallMode = exactSmallMode;
@@ -211,6 +268,7 @@ public sealed record CandidateGenerationOptions
         MaximumRepairRequestsConsideredPerVehicle =
             maximumRepairRequestsConsideredPerVehicle;
         RetentionStrategy = retentionStrategy;
+        WaitingRiderRelocation = waitingRiderRelocation;
     }
 
     public int MaximumCandidatesPerVehicle { get; }
@@ -231,6 +289,12 @@ public sealed record CandidateGenerationOptions
 
     public CandidateRetentionStrategy RetentionStrategy { get; }
 
+    /// <summary>
+    /// Null disables G2. Otherwise every eligible waiting rider (up to the cap) seeds donor
+    /// and receiver candidates after the ordinary per-vehicle search.
+    /// </summary>
+    public WaitingRiderRelocationGenerationOptions? WaitingRiderRelocation { get; }
+
     public CandidateGenerationOptions WithRepairRequestCap(int maximumRequests) =>
         new(
             MaximumCandidatesPerVehicle,
@@ -239,13 +303,44 @@ public sealed record CandidateGenerationOptions
             ScheduleStrategy,
             MaximumExplorationWorkUnits,
             maximumRequests,
-            RetentionStrategy);
+            RetentionStrategy,
+            WaitingRiderRelocation);
 
     public static CandidateGenerationOptions ExactSmall { get; } =
         new(
             maximumCandidatesPerVehicle: 100_000,
             maximumNewRequestsPerVehicle: 2,
             exactSmallMode: true);
+}
+
+/// <summary>
+/// G2 generation bounds. A null cap means every eligible waiting rider of a donor, and every
+/// other vehicle as a receiver; the k nearest targets are ranked by travel time from the
+/// vehicle's schedule start node to the rider's origin, ties by ordinal vehicle id.
+/// </summary>
+public sealed record WaitingRiderRelocationGenerationOptions
+{
+    public WaitingRiderRelocationGenerationOptions(
+        int? maximumRidersPerVehicle = null,
+        int? maximumTargetVehicles = null)
+    {
+        if (maximumRidersPerVehicle is < 1)
+        {
+            throw new ArgumentOutOfRangeException(nameof(maximumRidersPerVehicle));
+        }
+
+        if (maximumTargetVehicles is < 1)
+        {
+            throw new ArgumentOutOfRangeException(nameof(maximumTargetVehicles));
+        }
+
+        MaximumRidersPerVehicle = maximumRidersPerVehicle;
+        MaximumTargetVehicles = maximumTargetVehicles;
+    }
+
+    public int? MaximumRidersPerVehicle { get; }
+
+    public int? MaximumTargetVehicles { get; }
 }
 
 public static class CandidateGenerationFailureCodes
@@ -270,4 +365,12 @@ public static class CandidateGenerationFailureCodes
         "REPAIR_REQUEST_BOUND_OMISSION";
     public const string ExactSmallRepairRequestBoundExceeded =
         "EXACT_SMALL_REPAIR_REQUEST_BOUND_EXCEEDED";
+    public const string RelocationRiderBoundOmission =
+        "RELOCATION_RIDER_BOUND_OMISSION";
+    public const string RelocationWorkBoundOmission =
+        "RELOCATION_WORK_BOUND_OMISSION";
+    public const string ExactSmallRelocationRiderBoundExceeded =
+        "EXACT_SMALL_RELOCATION_RIDER_BOUND_EXCEEDED";
+    public const string ExactSmallRelocationWorkCapExceeded =
+        "EXACT_SMALL_RELOCATION_WORK_CAP_EXCEEDED";
 }
