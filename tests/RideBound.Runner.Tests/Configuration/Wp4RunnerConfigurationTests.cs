@@ -745,6 +745,52 @@ public sealed class Wp4RunnerConfigurationTests
         Assert.NotEqual(wp4.ContentHash, costFirst.ContentHash);
     }
 
+    [Fact]
+    public void A_per_rider_drop_budget_is_accepted_by_C1_only_under_cost_first()
+    {
+        // Hard utilization reads the fixed hard limit only, so under stability-first the per-rider
+        // budget would silently leave the ranking; the configuration fails closed instead.
+        var json = JsonNode.Parse(File.ReadAllText(Path.Combine(
+            RepositoryRoot(),
+            "benchmarks",
+            "configurations",
+            "wp14-c1-h6-reference-v1.json")))!;
+        var policy = json["policies"]![0]!.AsObject();
+        policy["limits"]!.AsArray()
+            .Single(value => (string?)value!["dimension"] == "drop_eta_total_ms")!
+            .AsObject()
+            .Remove("hardLimit");
+        policy["dropEtaBudgetSlackPermille"] = 350;
+        var commitment = CommitmentPolicyConfiguration.Decode(
+            Encoding.UTF8.GetBytes(json.ToJsonString()));
+        var costFirstJson = Tier3Wp4V2Json.Replace(
+            "\"lateBoarding\": \"record-v1\"",
+            "\"lateBoarding\": \"record-v1\",\n  \"selectionObjectiveOrder\": \"cost-first\"",
+            StringComparison.Ordinal);
+
+        var costFirst = Wp4RunnerConfiguration.Decode(Encoding.UTF8.GetBytes(costFirstJson), commitment);
+        var rollingCost = Wp4RunnerConfiguration.Decode(Encoding.UTF8.GetBytes(PublishedJson()), commitment);
+
+        Assert.Equal(
+            SolverBackedSelectionObjectiveOrder.CostFirst,
+            costFirst.SolverPolicyOptions!.SelectionObjectiveOrder);
+        Assert.Equal(RidePoolingPolicyRegistry.RollingCost, rollingCost.PolicyId);
+
+        foreach (var stabilityFirst in new[]
+                 {
+                     Tier3Wp4V2Json,
+                     costFirstJson.Replace("\"cost-first\"", "\"stability-first\"", StringComparison.Ordinal),
+                 })
+        {
+            Assert.Contains(
+                "'dropEtaBudgetSlackPermille' is not ranked by hard utilization",
+                Assert.Throws<InvalidDataException>(
+                    () => Wp4RunnerConfiguration.Decode(
+                        Encoding.UTF8.GetBytes(stabilityFirst),
+                        commitment)).Message);
+        }
+    }
+
     private static string HardVectorJson(string? selectionObjectiveOrder)
     {
         var json = File.ReadAllText(Path.Combine(

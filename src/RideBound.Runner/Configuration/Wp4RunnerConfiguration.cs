@@ -387,6 +387,20 @@ public sealed class Wp4RunnerConfiguration : ICommitmentWarningProfileProvider
                 "selectionObjectiveOrder 'cost-first' requires the solver-backed C1 policy.");
         }
 
+        // Hard utilization reads the fixed hard limit only, so a per-rider drop budget would
+        // silently drop out of the stability-first C1 and C2 ranking. Fail closed instead.
+        if (policyKind is RidePoolingPolicyKind.RideBoundHardVector
+                or RidePoolingPolicyKind.CommitSoftHardHybrid
+            && selectionObjectiveOrder != SolverBackedSelectionObjectiveOrder.CostFirst
+            && commitmentConfiguration.PolicyIds.Any(
+                id => commitmentConfiguration.TryGetPolicy(id, out var policy)
+                    && policy.DropEtaBudgetSlackPermille is not null))
+        {
+            throw new InvalidDataException(
+                "'dropEtaBudgetSlackPermille' is not ranked by hard utilization; the C1 and C2 "
+                + "policies accept it only with selectionObjectiveOrder 'cost-first'.");
+        }
+
         SolverBackedRidePoolingPolicyOptions? solverOptions = null;
         MultiplePlanPoolOptions? multipleOptions = null;
         var warningProfiles = Array.Empty<CommitmentWarningProfile>();

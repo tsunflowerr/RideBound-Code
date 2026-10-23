@@ -295,8 +295,9 @@ public sealed class CommitmentPolicy
             throw new ArgumentOutOfRangeException(nameof(permille));
         }
 
-        // Canonical non-negative integers below 2^53, so the sums fit in a long and the
-        // slack converts to double without loss.
+        // Canonical non-negative integers below 2^53, so the sums fit in a long. The slack
+        // converts to double without loss only below 2^53 ms (about 285,000 years); beyond
+        // that the limit may leave the canonical range and the Duration constructor throws.
         var slack = Math.Max(
             0L,
             initialPromise.PickupEta.Milliseconds
