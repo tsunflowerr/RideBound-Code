@@ -15,7 +15,7 @@ from src.fleetctrl.planning.VehiclePlan import (
     RoutingTargetPlanStop,
     VehiclePlan,
 )
-from src.misc.globals import G_DRIVING_STATUS
+from src.misc.globals import G_DRIVING_STATUS, VRL_STATES
 from src.simulation.Offers import TravellerOffer
 
 from .errors import AdapterFailure
@@ -950,21 +950,92 @@ class RideBoundFleetControl(FleetControlBase):
                 raise _fail("RBWP7_RELOCATION_INDEX_MISMATCH", "$.decision.vehiclePlanUpdated", repr(move))
 
     def _fleetpy_plan(self, vid, route, simulation_time):
+        plan = VehiclePlan(
+            self._require_vehicle(vid),
+            simulation_time,
+            self.routing_engine,
+            self._fleetpy_stops(route),
+        )
+        in_progress = self._in_progress_service_stop(vid, route, plan, simulation_time)
+        if in_progress is not None:
+            plan = VehiclePlan(
+                self._require_vehicle(vid),
+                simulation_time,
+                self.routing_engine,
+                [in_progress, *self._fleetpy_stops(route)],
+            )
+        if not plan.is_feasible() or not plan.is_structural_feasible():
+            raise _fail("RBWP7_FLEETPY_PLAN_INFEASIBLE", f"$.vehicles[{vid}].route", str(plan))
+        return plan
+
+    def _fleetpy_stops(self, route):
         stops = []
         unexecuted_frozen = route.frozen_prefix[route.executed_stop_count :]
         for stop in unexecuted_frozen:
             stops.append(self._fleetpy_stop(stop, locked=True))
         for stop in route.mutable_suffix:
             stops.append(self._fleetpy_stop(stop, locked=False))
-        plan = VehiclePlan(
-            self._require_vehicle(vid),
-            simulation_time,
-            self.routing_engine,
-            stops,
-        )
-        if not plan.is_feasible() or not plan.is_structural_feasible():
-            raise _fail("RBWP7_FLEETPY_PLAN_INFEASIBLE", f"$.vehicles[{vid}].route", str(plan))
-        return plan
+        return stops
+
+    def _in_progress_service_stop(self, vid, route, plan, simulation_time):
+        """FleetPy's own in-progress stop to keep in front of the Runner's route, or None.
+
+        With 0 s dwell a vehicle that has just arrived serves the stop in a zero-duration leg that FleetPy
+        keeps locked for the rest of the step (Vehicles.py:226-228). The Runner already counts the stop as
+        executed. A new route decided in that step (for example a G2 receiver picking up at the same node)
+        then has a different first leg, and FleetPy refuses to replace a locked leg (Vehicles.py:351-366).
+        FleetPy's own convention for re-planning such a vehicle is to keep the started stop first, locked,
+        with its start time (VehiclePlan.update_plan, step 2). This returns a copy of that stop only when all
+        of the following hold; otherwise the plan is exactly the Runner's route, as before:
+          - the current leg is a locked BOARDING leg of zero duration;
+          - the Runner's route would not already start with an equivalent leg (no conflict, no change);
+          - FleetPy's stored plan starts with that started stop (same node, riders, lock, start time);
+          - every rider boarding there has its pickup, and every rider alighting there its drop, executed in
+            the Runner's route and not remaining.
+        """
+        vehicle = self._require_vehicle(vid)
+        if not vehicle.assigned_route:
+            return None
+        current = vehicle.assigned_route[0]
+        if not current.locked or current.status != VRL_STATES.BOARDING or current.duration != 0:
+            return None
+        new_legs = self._build_VRLs(plan, vehicle, simulation_time)
+        if new_legs and self._leg_equivalent(current, new_legs[0]):
+            return None
+        stored = getattr(self, "veh_plans", {}).get(vid)
+        if stored is None or not stored.list_plan_stops:
+            return None
+        head = stored.list_plan_stops[0]
+        boarding = {request.get_rid_struct() for request in current.rq_dict.get(1, [])}
+        alighting = {request.get_rid_struct() for request in current.rq_dict.get(-1, [])}
+        if (
+            head.get_pos() != current.destination_pos
+            or not head.is_locked()
+            or head.get_started_at() is None
+            or set(head.get_list_boarding_rids()) != boarding
+            or set(head.get_list_alighting_rids()) != alighting
+        ):
+            return None
+        executed = route.frozen_prefix[: route.executed_stop_count]
+        remaining = route.remaining_stops
+
+        def finished(rid, kind):
+            return any(stop.raw_request == rid and stop.kind == kind for stop in executed) and not any(
+                stop.raw_request == rid and stop.kind == kind for stop in remaining
+            )
+
+        if not all(finished(rid, "pickup") for rid in boarding) or not all(
+            finished(rid, "dropOff") for rid in alighting
+        ):
+            return None
+        # The stop is being served now, so its latest-time bounds are history: a late boarding there is already
+        # recorded by the Runner (ADR-076). Kept on the copy, they would make the plan infeasible. The earliest
+        # times stay, so the leg built from the copy is the same locked leg. FleetPy's stored stop is unchanged.
+        in_progress = head.copy()
+        in_progress.latest_pickup_time_dict = {}
+        in_progress.latest_arrival_time_dict = {}
+        in_progress.max_trip_time_dict = {}
+        return in_progress
 
     def _fleetpy_stop(self, stop: ProtocolStop, locked: bool):
         position = (stop.raw_node, None, None)
