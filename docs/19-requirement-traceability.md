@@ -1,5 +1,22 @@
 # Ma trận truy vết yêu cầu
 
+## Cầu nối bộ mô phỏng công ty: A0.1, Elmi, G2 — 2026-10-23
+
+ADR-080 (nhập từ máy công ty) và ADR-081; nhánh thăm dò `research/via-ref` → `research/via-core` → `research/g2-core`, chưa
+push; không nâng work package. Nhật ký: `E:/Code/Report_INT3508/ridebound-scratchpad/via-bridge-2026-10-22/AMENDMENTS.md`.
+
+| Yêu cầu | Chứng cứ | Trạng thái/giới hạn |
+|---|---|---|
+| Nhập patch của máy công ty, giữ nguồn gốc | 4 commit giữ tác giả, ngày và thông điệp gốc, kèm sha256 patch; dựng lại đúng cây `086beacc`, `c112fdbb` | Xong; bản nháp ADR-080 chỉ tóm tắt, chưa chép nguyên văn |
+| Bộ mô phỏng khớp RideBound thật (chỉ chèn) | 55/55 ô-nhánh, 4.972/4.972 khách; dự đoán khóa sha256 trước job chính | Chỉ 11 ô Manhattan, chế độ adapter-identity; Via plain chưa nối |
+| Runner nhanh hơn mà không đổi đầu ra (A0.1) | Phát lại 58/58 job, 43.154/43.154 khung giống từng byte | A0.2–A0.5 chưa làm |
+| Đối chứng Elmi theo từng khách (RCE35, EOHZ35) | `6d6fa47`, `4a24810`; 1178/1178 test; cầu nối 22/22, 1.966/1.966 khách | Comparator, không phải đóng góp; EOC dùng floor, chỉ so EOHZ35 với EOHZ35 |
+| G2: dời tối đa 1 khách đang chờ mỗi quyết định | `115a4fc`; 1225/1225 test; tắt G2 thì phát lại 80/80 job giống từng byte | Không claim tính mới; chỉ C1 solver cost-first |
+| G2 khớp bộ mô phỏng từng khách | v4: 33/33 ô-nhánh, 2.994/2.994 khách, 142/142 lần dời; 24.439 quyết định evidence 1.3.0, 0 lỗi kiểm | Lần đầu 30/33; không chứng minh lợi ích G2 trên Via |
+| Sửa adapter theo 4 điều kiện của chủ | `fa676b4`; dwell 0 ở hai phía; 3 ca tái hiện và test fail trước khi sửa; chạy lại 113/113; job đã khớp không đổi | Không đổi RideBound, không đổi bộ mô phỏng; dwell khác 0 chưa kiểm |
+| Ghi lỗi của chính quy trình | Lỗi launcher (job G2 trước v4 dùng adapter cũ) và lỗi Contracts 1.3.0 ghi ở AMENDMENTS A6, A8 | Số 30/33 lần đầu đo với adapter cũ |
+| Giữ biên repo | Chỉ commit trong worktree; cây chính `E:/Code/RideBound` và `E:/Code/RideBound-deadline` không đổi; không xóa đầu ra | Chưa push; trộn vào cây chính cần chủ quyết |
+
 ## Bàn giao GitHub và khảo sát C60/C120 — 2026-10-16
 
 | Yêu cầu | Chứng cứ | Trạng thái/giới hạn |

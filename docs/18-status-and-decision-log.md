@@ -2,6 +2,7 @@
 
 > Tệp sống — cập nhật ở cuối mọi task RideBound
 > Tiếp phiên ngoài cây chính:2026-10-16 — ADR079: C60/C120 COMPLETE: 2/2 smoke, 68/68 main; final verification và analysis exit0 lúc17:24:02+07; 4.355/4.355 đối chiếu số học đạt;0active/0pending/0STOP. C60 so C30: +32phục vụ/+113ghép/+19muộn60/+13trong60; C120 so C60: +34phục vụ/+192ghép/+121muộn60/−87trong60. Thăm dò34ô/nămngày đã thấy, không optimum/satisfaction/profit. PDF77trang giữ nguyên; audit/WP12 còn mở. Hourly PAUSED sau khi báo vàpush kết quả;one-off PAUSED.
+> Cầu nối bộ mô phỏng công ty (2026-10-23; nhánh `research/via-ref` → `research/via-core` → `research/g2-core`, chưa push): ADR-080 (PS/DL-HZ, bản nháp từ máy công ty) và ADR-081 (A0.1, Elmi, G2). Bộ mô phỏng khớp RideBound thật từng khách trên 11 ô Manhattan: chỉ chèn 55/55 ô-nhánh, Elmi 22/22, G2 33/33 (sau bản sửa adapter đã được chủ duyệt). Đây là độ trung thực cài đặt, không phải lợi ích của luật. Cây chính không đổi.
 > Cập nhật gần nhất: 2026-08-28 (cây chính); nhánh thăm dò `research/deadline-gate`: 2026-09-24 (ADR-074 Proposed); nhánh thăm dò `research/tier3-failure-aware`: 2026-09-25 (ADR-075, ADR-076 Proposed; thí điểm T3.7 xong, cổng dừng phục hồi bị kích hoạt); nhánh thăm dò `research/tier3-no-worse`: 2026-09-26 (ADR-077 Proposed; 28 job đầu-cuối A1 pass), 2026-09-29 (Tầng 3 việc A: 48 job `V`/`M` với hai luật phục hồi, thăm dò), 2026-09-30 (Tầng 3 việc B: 88 job khung 7:00–9:00 chỉ tắc đường thật, thăm dò), 2026-10-01 (w07x: mức hứa 90–240 s, 104 job, thăm dò), 2026-10-02 (T3.8/T3.9 trên panel A: 185 job, thăm dò có niêm phong), 2026-10-06 (hứa giờ có tính trước tắc đường: lớp lời hứa phát lại 170 job, 43 job đầu-cuối, thăm dò có niêm phong)
 
 ## 1. Trạng thái tổng thể
@@ -15,6 +16,7 @@
 | Repository | `https://github.com/tsunflowerr/RideBound` |
 | Thesis / Stage 1b continuation | ADR-078: COMPLETE exploratory Stage1b;68/68 main and final post-phase/extract/report exit0;83/83 independent extraction-arithmetic checks. I_L+180,I_served+42,I_timely60−138;Stage1b H1–H6 PASS,H7 FAIL(7<10),no Stage2. Results reported; hourly paused again after ADR079 completion/report/push; one-off PAUSED. Resource boundary after20 runs preserved; actual thesis updated 2026-10-16, 77 pages, backed up and verified. [Hồ sơ](benchmarking/thesis-stage1b-continuation-2026-10-15.md) |
 | Cost-cap sensitivity / GitHub handoff | ADR079: C60/C120 COMPLETE: 2/2 smoke, 68/68 main; final verification và analysis exit0 lúc17:24:02+07; 4.355/4.355 đối chiếu số học đạt;0active/0pending/0STOP. C60 so C30: +32phục vụ/+113ghép/+19muộn60/+13trong60; C120 so C60: +34phục vụ/+192ghép/+121muộn60/−87trong60. Thăm dò34ô/nămngày đã thấy, không optimum/satisfaction/profit. PDF77trang giữ nguyên; audit/WP12 còn mở. Hourly PAUSED sau khi báo vàpush kết quả;one-off PAUSED. [Hồ sơ](benchmarking/cost-cap-sensitivity-handoff-2026-10-16.md) |
+| Cầu nối bộ mô phỏng / kế hoạch công ty 21/10 | ADR-080/081, Proposed, thăm dò. Nhánh `research/g2-core` (`fa676b4` + commit docs) xếp chồng trên `research/via-core` `4a24810` và `research/via-ref` `66558f2`; chưa push. Cầu nối Manhattan 11 ô, so với dự đoán bộ mô phỏng đã khóa sha256 trước: chỉ chèn 55/55 ô-nhánh (4.972/4.972 khách), Elmi RCE35/EOHZ35 22/22 (1.966/1.966), G2 33/33 (2.994/2.994 khách, 142/142 lần dời; lần đầu 30/33, sửa adapter theo quyết định của chủ). Cổng phát lại: A0.1 58/58 job, Runner G2 khi tắt G2 80/80 job. Không chứng minh lợi ích của G2 hay luật C trên Via; Via P512 chờ tệp từ máy công ty. [Tổng hợp](C:/RideBoundContinuation/2026-10-23/TONG-HOP-2026-10-23.md) |
 | Main baseline | B1 `rolling-cost` |
 | Main treatment | C1 `ridebound-hard-vector` |
 | Layer 2 | FleetPy 1.0.2 |
@@ -1730,6 +1732,15 @@ Date: 2026-08-27
 ```
 
 ## 5. Next action
+
+**Nhánh `research/g2-core` (cầu nối bộ mô phỏng công ty), cập nhật 2026-10-23:** bước 1 (ngân sách Elmi) và bước 2 (G2)
+đã xong và đã commit cục bộ; xem ADR-081. Việc kế tiếp, theo thứ tự:
+1. Lấy tệp từ máy công ty (`C:/RideBoundContinuation/2026-10-22/CAN-LAY-TU-MAY-CONG-TY.md`), chạy lại 55 ngày Via ở chế độ
+   adapter, rồi làm phép thử đường biên RC / PS / DL-HZ / Elmi.
+2. Báo công ty: ở 3/33 ô-nhánh, nước G2 của bộ mô phỏng chỉ chạy được trên FleetPy nhờ bản sửa adapter `fa676b4`.
+3. A0.2–A0.5 và A1, chỉ khi cần chạy ô Via P256/P512 trên RideBound.
+
+Không push, không trộn vào cây chính khi chủ chưa quyết định.
 
 **Nhánh thăm dò `research/tier3-no-worse`, cập nhật 2026-10-06:** Tầng 3 (w07x, T3.8/T3.9, hứa giờ có tính trước tắc
 đường) đã chạy xong và kiểm độc lập; xem mục 2026-10-06 ở §9. Việc kế tiếp là viết, không phải chạy thêm: đưa các kết quả này
@@ -5279,6 +5290,105 @@ cầu khi hoàn tất;one-off đã PAUSED,không archive. Dữ liệu/H6/E1 gố
 claim hẹp và biên repo giữ nguyên. Next: người dùng xem kết quả và bản PDF74
 trang đã ghép; luận văn thật vẫn chờ owner duyệt,không tự sửa/commit/push.
 
+### ADR-080 — 2026-10-20 — Proposed (thăm dò; nhập từ máy công ty; nhánh `research/via-ref`; commit `b43ef5b` + `66558f2`)
+
+**Nguồn:** chủ nghiên cứu viết trên máy công ty (commit gốc `61db5d9`, `dc5bb49`, nhánh `research/perstep-relaxed-deadline`,
+không có trong kho này). Toàn văn bản nháp ở
+`C:/RideBoundContinuation/2026-10-22/bundle-21-10/extracted/docs/bundle-nycvia/bundle/patches/ADR-080-draft.md`
+(sha256 `41e1fd64…c107d`). Bản nháp ghi rõ "chưa chép vào docs/18" để chủ xem trước, nên mục này chỉ tóm tắt và trỏ tới đó,
+không chép nguyên văn.
+
+**Decision (tóm tắt bản nháp):**
+- `CommitmentPolicy` thêm `DropEtaRevisionLimit` (P-b: loại ứng viên khi `|p − e| > b` ở từng quyết định, không nhớ) và
+  `DropEtaDeadlineRelaxed` (DL-HZ: hạn chót nới `p ≤ max(p0 + slack, e)`). Khóa cấu hình `dropEtaRevisionLimitMs`,
+  `dropEtaDeadlineRelaxed`. Mã mới `COMMITMENT_REVISION_LIMIT_EXCEEDED`.
+- Vắng khóa thì bytes chuẩn tắc và mọi hash cấu hình giữ nguyên; B1–B4 không nhận hai tham số.
+- Hai cổng là công cụ đo cho phép so luật C với các họ cổng khác, không phải đề xuất cơ chế; không claim tính mới.
+
+**Evidence bổ sung ở máy này (22/10):**
+- Hai patch nhập nguyên văn lên `7435661` cho cây `086beacc`; `dotnet test RideBound.slnx` 1134/1134.
+- Hồi quy: Runner mới, hai luật tắt, so với job Stage 1b đã lưu: 2.311/2.311 khung giống hệt.
+- Hai luật thật sự hoạt động trên FleetPy (job smoke): PS-300 có 36 lần `COMMITMENT_REVISION_LIMIT_EXCEEDED`, DLHZ-120 có
+  116 lần `COMMITMENT_DEADLINE_EXCEEDED`.
+- Cầu nối Manhattan: PS-300 và DLHZ-120 khớp dự đoán bộ mô phỏng ở 11/11 ô mỗi nhánh (trong 55/55 của ADR-081).
+- Giới hạn của bản nháp vẫn giữ nguyên, trừ hai điểm "chưa chạy lại ô lưu trữ" và "chưa chạy trên FleetPy", nay đã có các
+  bằng chứng trên.
+
+### ADR-081 — 2026-10-23 — Proposed (thăm dò; cầu nối bộ mô phỏng công ty; nhánh `research/via-core`, `research/g2-core`)
+
+**Context:**
+- Kế hoạch tổng hợp của công ty ngày 21/10 (`RideBound-Tong-Hop-Ke-Hoach-21-10.md`) đo các luật trên Via bằng bộ mô phỏng
+  của công ty. Trước khi dùng số của nó, phải chứng minh bộ mô phỏng làm đúng như RideBound thật chạy trên FleetPy (cầu nối).
+- Chủ nghiên cứu quyết định ngày 22/10:
+  - chấp nhận G2 theo định nghĩa của bộ mô phỏng: mỗi quyết định dời tối đa 1 khách đang chờ sang xe khác, giờ đón không
+    muộn hơn dự báo của tuyến giữ;
+  - đối chứng chính là Elmi Ordinary Control EO35.
+- Không claim tính mới. Dời khách đang chờ (reassignment) và ngân sách tỉ lệ theo slack (Elmi et al. 2026) đều đã có; đây chỉ
+  là cài đặt để cầu nối kiểm được (`docs/03-related-work-and-claim-boundary.md`).
+
+**Decision:**
+1. **A0.1** (hai patch băm của máy công ty, `365caac`, `365b502`): băm trạng thái một lần mỗi epoch với mảnh chuẩn tắc được
+   cache. Byte giao thức và hash không đổi; checkpoint kiểm lại bằng bản dựng không cache.
+2. **Ngân sách Elmi theo từng khách** (`6d6fa47`; v1.1 `4a24810`):
+   - khóa `dropEtaBudgetSlackPermille` (RCE) và `dropEtaDeadlineSlackPermille` (EO; thêm `dropEtaDeadlineRelaxed` thì là
+     EOHZ);
+   - `B_r = round(permille/1000 · max(0, pickup0 + maxRide − drop0))`, làm tròn xa số 0, cùng giá trị với `Math.round`
+     của bộ mô phỏng; cố định ở lời hứa đầu;
+   - v1.1 (sau review độc lập): C1/C2 chỉ nhận khóa ngân sách khi thứ tự chọn là cost-first, vì tầng hard utilization chỉ đọc
+     hạn mức cố định.
+3. **G2** (`115a4fc`):
+   - bật bằng cờ `waitingRiderRelocation` ở mọi policy và `candidateGeneration.waitingRiderRelocation` ở WP4; chỉ với C1
+     solver cost-first, `earliest-feasible`;
+   - tuyến xe cho phải khả thi chặt khi bỏ khách; xe nhận là mọi cách chèn đón và trả của chính khách đó vào phần đuôi còn sửa
+     được của xe khác, không kèm yêu cầu mới; giờ đón bị chặn chỉ được sớm lên (ratchet); không giới hạn số lần đổi xe;
+   - CP-SAT ràng buộc cặp cho–nhận; tầng `relocation-candidate-count` đứng sau chi phí vận hành, nên hòa thì giữ nguyên;
+   - evidence 1.3.0 (`relocationLosses`, trường dời của ứng viên), Contracts và bộ kiểm Python nhận 1.3.0.
+4. **Sửa adapter** (`fa676b4`; chủ chọn phương án A ngày 23/10, kèm 4 điều kiện):
+   - khi FleetPy đang khóa một chặng phục vụ dài 0 s mà Runner đã tính là xong, adapter giữ bản sao chặng đó ở đầu kế hoạch
+     rồi nối tuyến của Runner. Đây là quy ước của FleetPy khi lập lại kế hoạch giữa lúc phục vụ;
+   - không đổi RideBound, không đổi bộ mô phỏng. Mọi trường hợp khác vẫn đúng tuyến của Runner như trước.
+
+**Evidence:**
+- Cây và test (`dotnet test RideBound.slnx`, chạy khi worktree còn thay đổi chưa commit):
+  - `086beacc` 1134/1134; `c112fdbb` 1134/1134;
+  - Elmi v1 `32155156` 1173/1173; v1.1 `290c698b` 1178/1178;
+  - G2 `6d071153` 1225/1225; `0b930c4f` 1227/1227.
+  - Bộ test adapter Python: 456 test, 6 lỗi có từ trước, giống hệt trên cây không có G2.
+- Cầu nối Manhattan (11 ô sáng/chiều 12–18/11/2018, trần đi 2,0×, cost-first, thế giới W5, seed 7). So với dự đoán bộ mô
+  phỏng đã khóa sha256 trước mọi job tương ứng:
+  - chỉ chèn (U, C-120, C-300, PS-300, DLHZ-120): 55/55 ô-nhánh, 4.972/4.972 khách;
+  - Elmi (RCE35, EOHZ35): 22/22, 1.966/1.966 khách. Luật thật sự ràng buộc: RCE35 khác U ở 873/1.072 khách;
+  - G2 (G2-U, G2-RCE35, G2-EOHZ35): 33/33, 2.994/2.994 khách, 142/142 lần dời, tối đa 1 lần mỗi quyết định; 24.439 quyết
+    định evidence 1.3.0, 0 lỗi kiểm.
+- Lần đầu G2 chỉ được 30/33: 3 job dừng với `RBWP7_LOCKED_LEG_MISMATCH`, chính là nước của bộ mô phỏng mà FleetPy không cho
+  làm trong bước đó.
+  - Điều kiện của chủ: dwell = 0 ở cả hai phía; tái hiện 3 ca bằng test trước khi sửa.
+  - Sau khi sửa, chạy lại cả 33 job G2 và 80 job chỉ chèn: 113/113 đạt. 30 job G2 đã khớp trước đó giống từng khung
+    (66.951). 80 job chỉ chèn giống hệt, trừ hai trường nguồn gốc ở khung 2 (`binarySha256`, `coreCommitSha`).
+- Cổng phát lại:
+  - Runner A0.1: 58/58 job, 43.154/43.154 khung giống từng byte;
+  - Runner Elmi: 58/58 job;
+  - Runner G2 khi tắt G2: 80/80 job, 59.330/59.330 khung, ở cả ba bản v1–v3.
+- Hồ sơ:
+  - `E:/Code/Report_INT3508/ridebound-scratchpad/via-bridge-2026-10-22/` (`BRIDGE-REPORT.md`, `AMENDMENTS.md` A1–A9);
+  - đầu ra `C:/RideBoundData/research/via-bridge-man-v1/`;
+  - tổng hợp `C:/RideBoundContinuation/2026-10-23/TONG-HOP-2026-10-23.md`.
+
+**Consequences và giới hạn:**
+- Cầu nối chỉ chứng minh **độ trung thực cài đặt**: trên 11 ô Manhattan nhỏ, bộ mô phỏng cho đúng kết quả của RideBound thật.
+  Nó không chứng minh G2 hay luật C có lợi trên Via.
+- Cầu nối chạy ở chế độ adapter-identity. Bằng chứng Via 55 ngày của công ty chạy ở chế độ plain, và hai chế độ khớp từng
+  khách ở 0/20 ô, nên phải chạy lại Via ở chế độ adapter (cần tệp từ máy công ty). Ô Via P512 lớn hơn nhiều, chưa chứng minh ở
+  cỡ đó.
+- Khác biệt mô hình đã biết: bộ mô phỏng không có khóa theo bước của FleetPy. Adapter nay xử lý ca chặng phục vụ 0 s; dwell khác
+  0 chưa được kiểm.
+- Trước lần chạy lại v4, mọi job G2 nạp adapter của `E:/Code/RideBound-deadline` (lỗi launcher, AMENDMENTS A8). Số 30/33 lần
+  đầu đo với adapter cũ; số 33/33 đo với adapter của nhánh này.
+- Nhánh EOC của bộ mô phỏng dùng `floor`, còn RCE/EOHZ dùng `round`; EOHZ35 của RideBound chỉ được so với EOHZ35 của bộ mô
+  phỏng.
+- Trên cây sạch sau commit, `StrictBagItBundleTests` có 1 lỗi đã biết (nó đòi worktree có thay đổi, ADR-079).
+- Không authorize `RB-WP14R-009..012`, WP15 hay H7. Không push; cây chính `E:/Code/RideBound` không đổi.
+
 ## Cập nhật khóa luận — 2026-10-16T00:09:00.907016+07:00
 
 Người dùng yêu cầu cập nhật toàn bộ nội dung theo cách đọc tự nhiên, bổ sung
@@ -5375,6 +5485,16 @@ Claude/Antigravity. Không có quyền commit/push mới trong lượt này.
 | WP16–WP20 | Roadmap-level only | — | — | Không ticket hóa trước verified WP14R frontier/closure gate |
 
 ## 9. Change history
+
+- 2026-10-23 (nhánh thăm dò `research/via-ref` → `research/via-core` → `research/g2-core`; chưa push; cây chính không đổi):
+  cầu nối RideBound với bộ mô phỏng của công ty theo kế hoạch ngày 21/10. Mọi kết quả mang nhãn thăm dò; không authorize
+  `RB-WP14R-009..012`, WP15 hay H7. Không tuyên bố mới: dời khách đang chờ và ngân sách tỉ lệ slack (Elmi et al. 2026) đều
+  đã có.
+  - Bốn patch của máy công ty (ADR-080 và A0.1) được nhập nguyên văn, giữ tác giả và ngày gốc; mỗi cặp dựng lại đúng cây đã
+    test (`086beacc`, `c112fdbb`).
+  - Ngân sách Elmi theo từng khách (`6d6fa47`, `4a24810`) và G2 (`115a4fc`, `fa676b4`); xem ADR-081.
+  - Cầu nối Manhattan khớp bộ mô phỏng từng khách: chỉ chèn 55/55 ô-nhánh, Elmi 22/22, G2 33/33.
+  - Nhật ký chạy: `E:/Code/Report_INT3508/ridebound-scratchpad/via-bridge-2026-10-22/AMENDMENTS.md` (A1–A9).
 
 - 2026-10-06 (nhánh thăm dò `research/tier3-no-worse`; không đổi code trong kho): hứa giờ có tính trước tắc đường. Mọi
   kết quả mang nhãn thăm dò; không authorize `RB-WP14R-009..012`, WP15 hay H7. Không tuyên bố mới: dự báo giờ đi theo giờ
