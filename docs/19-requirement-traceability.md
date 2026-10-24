@@ -1,5 +1,20 @@
 # Ma trận truy vết yêu cầu
 
+## Đóng cầu nối giai đoạn 1 — 2026-10-25
+
+ADR-082 (và ADR-083 trên `research/p1-dwell`); nhánh thăm dò `research/p1-fix`, chưa push. Nhật ký:
+`E:/Code/Report_INT3508/ridebound-scratchpad/bridge-phase1-2026-10-23/PHASE1-LOG.md`.
+
+| Yêu cầu | Chứng cứ | Trạng thái/giới hạn |
+|---|---|---|
+| Bộ mô phỏng sinh số Elmi của công ty (wf15) là bộ mô phỏng đã bắc cầu | wf15 tái tạo đúng từng byte 4 tệp dự đoán đã khóa | Xong |
+| Hàng rào chặt (ép xe) khớp RideBound thật | EO35, DLS-120 với `forced-reference-v1`, có và không có G2: 44/44 ô-nhánh; 35–534 quyết định bị ép mỗi nhánh | Chỉ 11 ô Manhattan |
+| G2 giới hạn k xe nhận khớp | k = 3: 33/33; giới hạn đổi kết quả ở 93–166 khách | k = 8 chưa thử ở đội 62 xe |
+| Ô lớn hơn | 10 ô 128 yêu cầu × 10 xe: 40/40 | Trần hợp đồng v1: 128 yêu cầu, 96 nút |
+| Sửa adapter ca "xe cho" theo 4 điều kiện của chủ | Test tái hiện hỏng trước, đạt sau; chạy lại 108 job G2: 106/106 giữ nguyên, 108/108 khớp; bộ test adapter 461 với 6 lỗi đã biết | Không đổi RideBound, không đổi bộ mô phỏng |
+| Tác giả commit là chủ nghiên cứu, không lộ e-mail máy công ty | Chuỗi `7435661..research/g2-core` tạo lại, cùng cây; ref cũ ở `refs/backup/pre-author-rewrite-20261025/` | Nguồn gốc ghi trong ADR-080/081/082 |
+| Đối thủ chính | Chủ quyết 25/10: EOHZ35/SHHZ chính, luôn báo kèm EO35/SHF | Thay câu "đối chứng chính EO35" của ADR-081 |
+
 ## Cầu nối bộ mô phỏng công ty: A0.1, Elmi, G2 — 2026-10-23
 
 ADR-080 (nhập từ máy công ty) và ADR-081; nhánh thăm dò `research/via-ref` → `research/via-core` → `research/g2-core`, chưa
@@ -7,7 +22,7 @@ push; không nâng work package. Nhật ký: `E:/Code/Report_INT3508/ridebound-s
 
 | Yêu cầu | Chứng cứ | Trạng thái/giới hạn |
 |---|---|---|
-| Nhập patch của máy công ty, giữ nguồn gốc | 4 commit giữ tác giả, ngày và thông điệp gốc, kèm sha256 patch; dựng lại đúng cây `086beacc`, `c112fdbb` | Xong; bản nháp ADR-080 chỉ tóm tắt, chưa chép nguyên văn |
+| Nhập patch của máy công ty, giữ nguồn gốc | 4 commit giữ ngày và thông điệp gốc, kèm sha256 patch; dựng lại đúng cây `086beacc`, `c112fdbb`. Tác giả được viết lại thành chủ nghiên cứu ngày 25/10 (ADR-082) | Xong; nguồn gốc ghi trong ADR-080/081; bản nháp ADR-080 chỉ tóm tắt, chưa chép nguyên văn |
 | Bộ mô phỏng khớp RideBound thật (chỉ chèn) | 55/55 ô-nhánh, 4.972/4.972 khách; dự đoán khóa sha256 trước job chính | Chỉ 11 ô Manhattan, chế độ adapter-identity; Via plain chưa nối |
 | Runner nhanh hơn mà không đổi đầu ra (A0.1) | Phát lại 58/58 job, 43.154/43.154 khung giống từng byte | A0.2–A0.5 chưa làm |
 | Đối chứng Elmi theo từng khách (RCE35, EOHZ35) | `6d6fa47`, `4a24810`; 1178/1178 test; cầu nối 22/22, 1.966/1.966 khách | Comparator, không phải đóng góp; EOC dùng floor, chỉ so EOHZ35 với EOHZ35 |

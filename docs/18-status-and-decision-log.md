@@ -16,7 +16,7 @@
 | Repository | `https://github.com/tsunflowerr/RideBound` |
 | Thesis / Stage 1b continuation | ADR-078: COMPLETE exploratory Stage1b;68/68 main and final post-phase/extract/report exit0;83/83 independent extraction-arithmetic checks. I_L+180,I_served+42,I_timely60−138;Stage1b H1–H6 PASS,H7 FAIL(7<10),no Stage2. Results reported; hourly paused again after ADR079 completion/report/push; one-off PAUSED. Resource boundary after20 runs preserved; actual thesis updated 2026-10-16, 77 pages, backed up and verified. [Hồ sơ](benchmarking/thesis-stage1b-continuation-2026-10-15.md) |
 | Cost-cap sensitivity / GitHub handoff | ADR079: C60/C120 COMPLETE: 2/2 smoke, 68/68 main; final verification và analysis exit0 lúc17:24:02+07; 4.355/4.355 đối chiếu số học đạt;0active/0pending/0STOP. C60 so C30: +32phục vụ/+113ghép/+19muộn60/+13trong60; C120 so C60: +34phục vụ/+192ghép/+121muộn60/−87trong60. Thăm dò34ô/nămngày đã thấy, không optimum/satisfaction/profit. PDF77trang giữ nguyên; audit/WP12 còn mở. Hourly PAUSED sau khi báo vàpush kết quả;one-off PAUSED. [Hồ sơ](benchmarking/cost-cap-sensitivity-handoff-2026-10-16.md) |
-| Cầu nối bộ mô phỏng / kế hoạch công ty 21/10 | ADR-080/081, Proposed, thăm dò. Nhánh `research/g2-core` (`fa676b4` + commit docs) xếp chồng trên `research/via-core` `4a24810` và `research/via-ref` `66558f2`; chưa push. Cầu nối Manhattan 11 ô, so với dự đoán bộ mô phỏng đã khóa sha256 trước: chỉ chèn 55/55 ô-nhánh (4.972/4.972 khách), Elmi RCE35/EOHZ35 22/22 (1.966/1.966), G2 33/33 (2.994/2.994 khách, 142/142 lần dời; lần đầu 30/33, sửa adapter theo quyết định của chủ). Cổng phát lại: A0.1 58/58 job, Runner G2 khi tắt G2 80/80 job. Không chứng minh lợi ích của G2 hay luật C trên Via; Via P512 chờ tệp từ máy công ty. [Tổng hợp](C:/RideBoundContinuation/2026-10-23/TONG-HOP-2026-10-23.md) |
+| Cầu nối bộ mô phỏng / kế hoạch công ty 21/10 | ADR-080/081/082, Proposed, thăm dò. Nhánh `research/p1-fix` trên `research/g2-core` `e1c6f2b`, `research/via-core` `1190518`, `research/via-ref` `176f5dd` (SHA sau khi viết lại tác giả ngày 25/10, ADR-082); chưa push. Giai đoạn 1 (25/10): bộ mô phỏng wf15 khớp 117/117 ô-nhánh, 11.521/11.521 khách (EO35 chặt, DLS-120, G2 k = 3, ô 128 yêu cầu); đối thủ chính EOHZ35/SHHZ, luôn báo kèm EO35/SHF. Cầu nối Manhattan 11 ô, so với dự đoán bộ mô phỏng đã khóa sha256 trước: chỉ chèn 55/55 ô-nhánh (4.972/4.972 khách), Elmi RCE35/EOHZ35 22/22 (1.966/1.966), G2 33/33 (2.994/2.994 khách, 142/142 lần dời; lần đầu 30/33, sửa adapter theo quyết định của chủ). Cổng phát lại: A0.1 58/58 job, Runner G2 khi tắt G2 80/80 job. Không chứng minh lợi ích của G2 hay luật C trên Via; Via P512 chờ tệp từ máy công ty. [Tổng hợp](C:/RideBoundContinuation/2026-10-23/TONG-HOP-2026-10-23.md) |
 | Main baseline | B1 `rolling-cost` |
 | Main treatment | C1 `ridebound-hard-vector` |
 | Layer 2 | FleetPy 1.0.2 |
@@ -1732,6 +1732,16 @@ Date: 2026-08-27
 ```
 
 ## 5. Next action
+
+**Nhánh `research/p1-fix` / `research/p1-dwell`, cập nhật 2026-10-25:** giai đoạn 1 xong (ADR-082). Phần dwell nằm ở ADR-083 trên
+`research/p1-dwell`. Đã đọc toàn bộ tài
+liệu công ty; danh sách việc ở
+`C:/RideBoundContinuation/2026-10-24/doc-toan-bo/CON-THIEU-SO-VOI-KE-HOACH-CONG-TY.md`. Việc kế tiếp:
+1. Kiểm toán §6-P5: chạy lại một lát Via (10 ngày × 2 khung × 3 lần rút mẫu; INS và G2; EO35, EOHZ35, RCE35, SHF, SHHZ,
+   SHRC) ở chế độ adapter + half-even, so với plain + round. Dùng 360 ô wf14 đã có ở máy nhà.
+2. §6-P4(a) bổ sung nhánh hạn chót nới dạng của sinh viên (`dropEtaDeadlineSlackMs` kèm `no-worse-than-reference-v1`, không
+   có cờ `dropEtaDeadlineRelaxed`) trên 11 ô Manhattan.
+3. Giai đoạn 2: DuckDB và dữ liệu TLC (HVFHV, Yellow); §6-P7.
 
 **Nhánh `research/g2-core` (cầu nối bộ mô phỏng công ty), cập nhật 2026-10-23:** bước 1 (ngân sách Elmi) và bước 2 (G2)
 đã xong và đã commit cục bộ; xem ADR-081. Việc kế tiếp, theo thứ tự:
@@ -5290,7 +5300,7 @@ cầu khi hoàn tất;one-off đã PAUSED,không archive. Dữ liệu/H6/E1 gố
 claim hẹp và biên repo giữ nguyên. Next: người dùng xem kết quả và bản PDF74
 trang đã ghép; luận văn thật vẫn chờ owner duyệt,không tự sửa/commit/push.
 
-### ADR-080 — 2026-10-20 — Proposed (thăm dò; nhập từ máy công ty; nhánh `research/via-ref`; commit `b43ef5b` + `66558f2`)
+### ADR-080 — 2026-10-20 — Proposed (thăm dò; nhập từ máy công ty; nhánh `research/via-ref`; commit `3afcd17` + `176f5dd`, trước khi viết lại tác giả ngày 25/10 là `b43ef5b` + `66558f2`)
 
 **Nguồn:** chủ nghiên cứu viết trên máy công ty (commit gốc `61db5d9`, `dc5bb49`, nhánh `research/perstep-relaxed-deadline`,
 không có trong kho này). Toàn văn bản nháp ở
@@ -5388,6 +5398,69 @@ không chép nguyên văn.
   phỏng.
 - Trên cây sạch sau commit, `StrictBagItBundleTests` có 1 lỗi đã biết (nó đòi worktree có thay đổi, ADR-079).
 - Không authorize `RB-WP14R-009..012`, WP15 hay H7. Không push; cây chính `E:/Code/RideBound` không đổi.
+- Các SHA trong ADR này là SHA trước ngày 25/10. Ngày đó lịch sử được viết lại, chỉ đổi tác giả và thông điệp (ADR-082).
+  Bảng SHA cũ → mới nằm ở ADR-082.
+
+### ADR-082 — 2026-10-25 — Proposed (thăm dò; đóng cầu nối giai đoạn 1; nhánh `research/p1-fix`)
+
+**Context:**
+- Bộ mô phỏng wf15 của công ty sinh ra mọi số so sánh với Elmi (wf14, wf15). Cầu nối ADR-081 mới phủ bộ mô phỏng cũ (wf5) và
+  chưa phủ ba thứ: hàng rào chặt EO35 (ép xe), G2 giới hạn k xe nhận, ô lớn hơn.
+- Chủ duyệt chạy bộ mô phỏng wf15 từ gói công ty (23/10), và duyệt sửa adapter ở ca "xe cho" kèm 4 điều kiện của A8 (24/10).
+
+**Decision:**
+1. **Sửa adapter ở ca "xe cho"** (`fleet_control.py`, `_started_first_stop`).
+   - Khi chặng FleetPy đang khóa là chặng "cho khách lên" dài 0 s, và chặng đầu của Runner trùng nó ở mọi trường trừ cờ khóa,
+     adapter dùng điểm dừng FleetPy đã bắt đầu thay cho bản sao của Runner. Hai bản là cùng một điểm dừng.
+   - Nhánh này chỉ chạy đúng ở chỗ mà mã cũ đã từ chối (`RBWP7_LOCKED_LEG_MISMATCH`). Không đổi RideBound, không đổi bộ mô
+     phỏng.
+2. **Viết lại tác giả commit** (chủ quyết ngày 25/10).
+   - Chuỗi `7435661..research/g2-core` được tạo lại với cùng cây và cùng ngày.
+   - Tác giả là chủ nghiên cứu; bỏ dòng Co-Authored-By.
+   - Lý do: 4 commit nhập từ máy công ty mang e-mail máy công ty trong metadata.
+   - Nguồn gốc vẫn ghi ở đây và ở ADR-080/081: các patch A0.1 và ADR-080 được viết trên máy công ty ngày 20–21/10.
+   - Bảng SHA cũ → mới:
+     - `b43ef5b` → `3afcd17`
+     - `66558f2` → `176f5dd`
+     - `365caac` → `9b633d9`
+     - `365b502` → `2eadfb7`
+     - `6d6fa47` → `18978dd`
+     - `4a24810` → `1190518`
+     - `115a4fc` → `c6588f8`
+     - `fa676b4` → `ef2b02f`
+     - `937bb31` → `e1c6f2b`
+   - Ref cũ giữ ở `refs/backup/pre-author-rewrite-20261025/`. Cây của cả 5 nhánh giống hệt bản cũ.
+3. **Đối thủ chính** (chủ quyết ngày 25/10, thay câu "đối chứng chính là EO35" của ADR-081):
+   - EOHZ35 (Elmi Ordinary, hàng rào nới) và SHHZ là đối thủ chính;
+   - EO35 và SHF luôn được báo cạnh trong cùng bảng.
+   - Lý do: trong thế giới thời gian đi cố định của bài Elmi, hai hàng rào trùng nhau. Còn "ép xe" khi giao thông vượt hàng
+     rào là cách hình thức hóa thêm vào, không có trong bài Elmi (kiểm toán công ty 23/10, §2.4).
+
+**Evidence:**
+- **Bộ mô phỏng wf15** (`engine.js` sha `908a2961…`) tái tạo đúng từng byte cả 4 tệp dự đoán đã khóa của cầu nối ADR-081.
+- **Giai đoạn 1: 117/117 ô-nhánh khớp từng khách, 11.521/11.521 khách.** Mọi dự đoán được khóa sha256 trước job tương ứng.
+  - EO35 và DLS-120 với `forced-reference-v1`, có và không có G2: 44/44. Xe bị ép thật: 35–534 quyết định mỗi nhánh.
+  - G2 chỉ xét 3 xe nhận (`maximumTargetVehicles` 3): 33/33. Giới hạn này đổi kết quả ở 93–166 khách.
+  - Ô 128 yêu cầu × 10 xe: 40/40. Với 10 xe, giới hạn 8 xe nhận không đổi khách nào.
+- **Bản sửa adapter:**
+  - test `test_in_progress_donor_leg.py` (4 test) hỏng trước khi sửa và đạt sau khi sửa;
+  - bộ test adapter: 461 test, đúng 6 lỗi đã biết.
+- **Chạy lại 108 job G2 sau khi sửa (điều kiện 3):**
+  - 106/106 job đã khớp trước đây vẫn giống hệt: 73 giống từng khung; 33 chỉ khác hai trường nguồn gốc ở khung 2;
+  - 108/108 khớp bộ mô phỏng;
+  - kết quả ở `compare/fix1-2026-10-24/condition3.json`, sha `5dc049f3…`.
+- **Hồ sơ:**
+  - `E:/Code/Report_INT3508/ridebound-scratchpad/bridge-phase1-2026-10-23/PHASE1-LOG.md` (P1–P9);
+  - `C:/RideBoundContinuation/2026-10-24/BAO-CAO-GIAI-DOAN-1.md`.
+
+**Consequences và giới hạn:**
+- Vẫn chỉ là **độ trung thực cài đặt**, không phải lợi ích của luật.
+- Ô lớn nhất làm được là 128 yêu cầu và 96 nút (hợp đồng dữ liệu v1).
+- Giới hạn 8 xe nhận chỉ được kiểm gián tiếp qua k = 3. Trên ô Via 62 xe phải kiểm lại.
+- Dwell khác 0 xem ADR-083.
+- Số liệu Via của công ty chạy ở chế độ plain; cầu nối chạy ở chế độ adapter. Việc kế tiếp là kiểm toán §6-P5: chạy lại một
+  lát Via ở chế độ adapter.
+- Không push; cây chính không đổi.
 
 ## Cập nhật khóa luận — 2026-10-16T00:09:00.907016+07:00
 
@@ -5486,6 +5559,11 @@ Claude/Antigravity. Không có quyền commit/push mới trong lượt này.
 
 ## 9. Change history
 
+- 2026-10-25 (nhánh thăm dò `research/p1-fix`; chưa push; cây chính không đổi): đóng cầu nối giai đoạn 1 (ADR-082).
+  - Bộ mô phỏng wf15 khớp RideBound thật trên 117/117 ô-nhánh: EO35 chặt, DLS-120, G2 k = 3, ô 128 yêu cầu.
+  - Sửa adapter ca "xe cho"; chạy lại 108 job G2: 106/106 giữ nguyên, 108/108 khớp.
+  - Viết lại tác giả chuỗi `7435661..research/g2-core`: cùng cây, ref cũ được sao lưu.
+  - Chủ chốt EOHZ35/SHHZ làm đối thủ chính, luôn báo kèm EO35/SHF.
 - 2026-10-23 (nhánh thăm dò `research/via-ref` → `research/via-core` → `research/g2-core`; chưa push; cây chính không đổi):
   cầu nối RideBound với bộ mô phỏng của công ty theo kế hoạch ngày 21/10. Mọi kết quả mang nhãn thăm dò; không authorize
   `RB-WP14R-009..012`, WP15 hay H7. Không tuyên bố mới: dời khách đang chờ và ngân sách tỉ lệ slack (Elmi et al. 2026) đều

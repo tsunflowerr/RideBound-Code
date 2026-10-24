@@ -964,6 +964,15 @@ class RideBoundFleetControl(FleetControlBase):
                 self.routing_engine,
                 [in_progress, *self._fleetpy_stops(route)],
             )
+        else:
+            started = self._started_first_stop(vid, plan, simulation_time)
+            if started is not None:
+                plan = VehiclePlan(
+                    self._require_vehicle(vid),
+                    simulation_time,
+                    self.routing_engine,
+                    [started, *self._fleetpy_stops(route)[1:]],
+                )
         if not plan.is_feasible() or not plan.is_structural_feasible():
             raise _fail("RBWP7_FLEETPY_PLAN_INFEASIBLE", f"$.vehicles[{vid}].route", str(plan))
         return plan
@@ -1036,6 +1045,59 @@ class RideBoundFleetControl(FleetControlBase):
         in_progress.latest_arrival_time_dict = {}
         in_progress.max_trip_time_dict = {}
         return in_progress
+
+    def _started_first_stop(self, vid, plan, simulation_time):
+        """FleetPy's own started stop to use in place of the Runner's first stop, or None.
+
+        The twin of _in_progress_service_stop for a stop the Runner does not yet count as executed. A vehicle that has
+        just arrived serves the stop in a zero-duration leg that FleetPy keeps locked for the rest of the step, but the
+        event batch of that instant may not report it yet, so the Runner still holds the stop as remaining and
+        unlocked. A new route decided in that step that starts with that same stop (for example a G2 donor giving a
+        waiting rider away) then builds a first leg that differs from FleetPy's only in `locked`, and FleetPy refuses
+        to replace a locked leg (Vehicles.py:351-366). This returns a copy of FleetPy's started stop, to take the place
+        of the Runner's first stop (it is the same stop), only when all of the following hold; otherwise the plan is
+        exactly the Runner's route, as before:
+          - the current leg is a locked BOARDING leg of zero duration;
+          - the first leg built from the Runner's route is unlocked, not equivalent to the current leg, and equal to it
+            in every other field of the leg signature (status, node, boarding and alighting riders, duration, earliest
+            start and end);
+          - FleetPy's stored plan starts with that started stop (same node, riders, lock, start time).
+        """
+        vehicle = self._require_vehicle(vid)
+        if not vehicle.assigned_route:
+            return None
+        current = vehicle.assigned_route[0]
+        if not current.locked or current.status != VRL_STATES.BOARDING or current.duration != 0:
+            return None
+        new_legs = self._build_VRLs(plan, vehicle, simulation_time)
+        if not new_legs or new_legs[0].locked or self._leg_equivalent(current, new_legs[0]):
+            return None
+        current_signature, first_signature = self._leg_signature(current), self._leg_signature(new_legs[0])
+        lock_field = 4
+        if (current_signature[:lock_field] + current_signature[lock_field + 1:]
+                != first_signature[:lock_field] + first_signature[lock_field + 1:]):
+            return None
+        stored = getattr(self, "veh_plans", {}).get(vid)
+        if stored is None or not stored.list_plan_stops:
+            return None
+        head = stored.list_plan_stops[0]
+        boarding = {request.get_rid_struct() for request in current.rq_dict.get(1, [])}
+        alighting = {request.get_rid_struct() for request in current.rq_dict.get(-1, [])}
+        if (
+            head.get_pos() != current.destination_pos
+            or not head.is_locked()
+            or head.get_started_at() is None
+            or set(head.get_list_boarding_rids()) != boarding
+            or set(head.get_list_alighting_rids()) != alighting
+        ):
+            return None
+        # As in _in_progress_service_stop: the stop is being served now, so its latest-time bounds are history (a late
+        # service is recorded by the Runner, ADR-076). The earliest times stay, so the leg is the same locked leg.
+        started = head.copy()
+        started.latest_pickup_time_dict = {}
+        started.latest_arrival_time_dict = {}
+        started.max_trip_time_dict = {}
+        return started
 
     def _fleetpy_stop(self, stop: ProtocolStop, locked: bool):
         position = (stop.raw_node, None, None)
