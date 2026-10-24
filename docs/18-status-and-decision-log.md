@@ -5462,6 +5462,42 @@ không chép nguyên văn.
   lát Via ở chế độ adapter.
 - Không push; cây chính không đổi.
 
+### ADR-083 — 2026-10-25 — Proposed (thăm dò; thời gian phục vụ ở điểm dừng; nhánh `research/p1-dwell`)
+
+**Context:**
+- Kế hoạch máy nhà 23/10 của công ty muốn bắc cầu thêm thời gian dừng 24 s mỗi điểm.
+- RideBound và adapter đều cứng dwell = 0 (ADR-081).
+
+**Decision:**
+1. Thêm tùy chọn `candidateGeneration.stopServiceDurationMs` (WP4):
+   - số nguyên không âm, tối đa 3.600.000;
+   - vắng khóa nghĩa là 0, và hash nội dung cấu hình giữ nguyên;
+   - điểm đón và điểm trả mới chèn mang thời gian phục vụ đó.
+2. **Không dùng tùy chọn này khi chạy thật cho tới khi lõi có trạng thái "xe bận tới T".** Chủ chọn phương án B ngày 25/10:
+   ghi giới hạn; mọi so sánh trên RideBound thật dùng dwell 0; dwell 24 s chỉ chạy ở bộ mô phỏng (lưới độ bền §6-N4 của kiểm
+   toán).
+
+**Evidence:**
+- `dotnet test RideBound.slnx`: 1230/1230. Có 2 test `StopServiceDurationTests` và 1 test cấu hình: vắng khóa thì hash giữ
+  nguyên; số lẻ thì bị từ chối.
+- Cổng phát lại: Runner mới, khi tắt tùy chọn, cho đúng từng byte trên 228/228 job đã ghi, 176.074 khung.
+- Thử 6 job với dwell 24 s: cả 6 hỏng, kể cả nhánh chỉ chèn.
+  - Ví dụ: xe 1 tới nút 94 lúc 1.222,4 s và cho khách lên tới 1.246,4 s. Yêu cầu mới lúc 1.235 s làm Runner lập tuyến chạy
+    ngay, và FleetPy từ chối.
+  - Nguyên nhân: `RouteScheduleProjector.cs:62-128` luôn bắt đầu từ "bây giờ" tại vị trí xe. RideBound không có khái niệm xe
+    bận tới giờ T, còn bộ mô phỏng có (`busyUntil`).
+- Hồ sơ: `PHASE1-LOG.md` P7–P9; `DWELLOFF-GATE-SUMMARY.json`, sha `483aebc9…`.
+
+**Consequences:**
+- Khóa luận phải ghi: RideBound chỉ được kiểm với thời gian dừng 0 s.
+- Làm thật đòi sửa nhiều tầng, ước 1–2 ngày cộng thời gian chủ duyệt mã:
+  - trạng thái xe "rảnh từ T";
+  - bộ dự báo lịch;
+  - trường giao thức giờ hết phục vụ (đổi hợp đồng);
+  - adapter;
+  - mở rộng A8 cho chặng có thời lượng.
+- Không push; cây chính không đổi.
+
 ## Cập nhật khóa luận — 2026-10-16T00:09:00.907016+07:00
 
 Người dùng yêu cầu cập nhật toàn bộ nội dung theo cách đọc tự nhiên, bổ sung
@@ -5559,6 +5595,9 @@ Claude/Antigravity. Không có quyền commit/push mới trong lượt này.
 
 ## 9. Change history
 
+- 2026-10-25 (nhánh thăm dò `research/p1-dwell`, trên `research/p1-fix`; chưa push): thêm tùy chọn
+  `stopServiceDurationMs`, mặc định tắt (ADR-083). Dwell khác 0 bị chặn vì lõi không có trạng thái "xe bận tới T"; chủ chọn
+  ghi giới hạn.
 - 2026-10-25 (nhánh thăm dò `research/p1-fix`; chưa push; cây chính không đổi): đóng cầu nối giai đoạn 1 (ADR-082).
   - Bộ mô phỏng wf15 khớp RideBound thật trên 117/117 ô-nhánh: EO35 chặt, DLS-120, G2 k = 3, ô 128 yêu cầu.
   - Sửa adapter ca "xe cho"; chạy lại 108 job G2: 106/106 giữ nguyên, 108/108 khớp.

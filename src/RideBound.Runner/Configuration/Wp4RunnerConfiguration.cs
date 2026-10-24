@@ -85,7 +85,8 @@ public sealed class Wp4RunnerConfiguration : ICommitmentWarningProfileProvider
         "scheduleStrategy",
         "maximumExplorationWorkUnits",
         "retentionStrategy",
-        "waitingRiderRelocation");
+        "waitingRiderRelocation",
+        "stopServiceDurationMs");
     private static readonly IReadOnlySet<string> RelocationGenerationFields = Fields(
         "maximumRidersPerVehicle",
         "maximumTargetVehicles");
@@ -585,6 +586,21 @@ public sealed class Wp4RunnerConfiguration : ICommitmentWarningProfileProvider
                     : null);
         }
 
+        // Dwell of inserted stops (bridge step 1.3). Absent means 0, so every earlier configuration
+        // keeps its canonical bytes, content hash and candidates.
+        var stopServiceDurationMs = 0;
+
+        if (element.TryGetProperty("stopServiceDurationMs", out var dwellElement))
+        {
+            stopServiceDurationMs = NonNegativeInt32(dwellElement, "stopServiceDurationMs");
+
+            if (stopServiceDurationMs > MaximumStopServiceDurationMs)
+            {
+                throw new InvalidDataException(
+                    "'candidateGeneration.stopServiceDurationMs' must be at most 3600000 (one hour).");
+            }
+        }
+
         return new CandidateGenerationOptions(
             PositiveInt32(
                 element.GetProperty("maximumCandidatesPerVehicle"),
@@ -600,8 +616,11 @@ public sealed class Wp4RunnerConfiguration : ICommitmentWarningProfileProvider
                 element.GetProperty("maximumExplorationWorkUnits"),
                 "maximumExplorationWorkUnits"),
             retentionStrategy: retentionStrategy,
-            waitingRiderRelocation: relocation);
+            waitingRiderRelocation: relocation,
+            stopServiceDurationMs: stopServiceDurationMs);
     }
+
+    private const int MaximumStopServiceDurationMs = 3_600_000;
 
     private static DeterministicCandidateSelectionExecutionBudget
         ReadSolverBudget(JsonElement element)

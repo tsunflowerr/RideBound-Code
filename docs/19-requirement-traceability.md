@@ -14,6 +14,7 @@ ADR-082 (và ADR-083 trên `research/p1-dwell`); nhánh thăm dò `research/p1-f
 | Sửa adapter ca "xe cho" theo 4 điều kiện của chủ | Test tái hiện hỏng trước, đạt sau; chạy lại 108 job G2: 106/106 giữ nguyên, 108/108 khớp; bộ test adapter 461 với 6 lỗi đã biết | Không đổi RideBound, không đổi bộ mô phỏng |
 | Tác giả commit là chủ nghiên cứu, không lộ e-mail máy công ty | Chuỗi `7435661..research/g2-core` tạo lại, cùng cây; ref cũ ở `refs/backup/pre-author-rewrite-20261025/` | Nguồn gốc ghi trong ADR-080/081/082 |
 | Đối thủ chính | Chủ quyết 25/10: EOHZ35/SHHZ chính, luôn báo kèm EO35/SHF | Thay câu "đối chứng chính EO35" của ADR-081 |
+| Thời gian phục vụ ở điểm dừng (ADR-083) | Tùy chọn `stopServiceDurationMs`, mặc định tắt; 1230/1230 test; khi tắt, phát lại 228/228 job giống từng byte | Dwell khác 0 bị chặn (lõi thiếu "xe bận tới T"); khóa luận ghi dwell 0 |
 
 ## Cầu nối bộ mô phỏng công ty: A0.1, Elmi, G2 — 2026-10-23
 

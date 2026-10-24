@@ -852,6 +852,57 @@ public sealed class Wp4RunnerConfigurationTests
         }
     }
 
+    [Fact]
+    public void Stop_service_duration_is_optional_bounded_and_off_by_default()
+    {
+        // Bridge step 1.3: the dwell of the stops the generator inserts. Absent means 0, so the
+        // archived tier-3 configuration keeps its content hash.
+        var reference = File.ReadAllText(Path.Combine(
+            RepositoryRoot(),
+            "benchmarks",
+            "configurations",
+            "wp14-c1-h6-reference-v1.json"));
+        var commitment = CommitmentPolicyConfiguration.Decode(Encoding.UTF8.GetBytes(reference));
+        string WithDwell(string value) => Tier3Wp4V2Json.Replace(
+            "\"retentionStrategy\": \"service-set-stability-portfolio-v1\"",
+            "\"retentionStrategy\": \"service-set-stability-portfolio-v1\",\n"
+                + "    \"stopServiceDurationMs\": " + value,
+            StringComparison.Ordinal);
+
+        var off = Wp4RunnerConfiguration.Decode(Encoding.UTF8.GetBytes(Tier3Wp4V2Json), commitment);
+        var dwell = Wp4RunnerConfiguration.Decode(Encoding.UTF8.GetBytes(WithDwell("24000")), commitment);
+        var zero = Wp4RunnerConfiguration.Decode(Encoding.UTF8.GetBytes(WithDwell("0")), commitment);
+
+        Assert.Equal(0, off.CandidateGeneration.StopServiceDuration.Milliseconds);
+        Assert.Equal(
+            "fb2813c4036d309490e12df77e37de1683b92b92a9ebdd71e16cad35d50ecd42",
+            off.ContentHash.Value);
+        Assert.Equal(24_000, dwell.CandidateGeneration.StopServiceDuration.Milliseconds);
+        Assert.Equal(0, zero.CandidateGeneration.StopServiceDuration.Milliseconds);
+        Assert.NotEqual(off.ContentHash, dwell.ContentHash);
+        Assert.Equal(
+            24_000,
+            dwell.CandidateGeneration.WithRepairRequestCap(3).StopServiceDuration.Milliseconds);
+
+        foreach (var value in new[] { "-1", "3600001", "\"24000\"", "true" })
+        {
+            Assert.Contains(
+                "stopServiceDurationMs",
+                Assert.Throws<InvalidDataException>(
+                    () => Wp4RunnerConfiguration.Decode(
+                        Encoding.UTF8.GetBytes(WithDwell(value)),
+                        commitment)).Message);
+        }
+
+        // A fraction never reaches the field reader: canonical JSON refuses it first, at the same path.
+        Assert.Contains(
+            "$.candidateGeneration.stopServiceDurationMs",
+            Assert.Throws<RideBound.Contracts.Serialization.CanonicalJsonException>(
+                () => Wp4RunnerConfiguration.Decode(
+                    Encoding.UTF8.GetBytes(WithDwell("1.5")),
+                    commitment)).Message);
+    }
+
     private static string HardVectorJson(string? selectionObjectiveOrder)
     {
         var json = File.ReadAllText(Path.Combine(

@@ -213,7 +213,8 @@ public sealed record CandidateGenerationOptions
         int maximumRepairRequestsConsideredPerVehicle = 0,
         CandidateRetentionStrategy retentionStrategy =
             CandidateRetentionStrategy.LegacyAcceptedCountCostSlack,
-        WaitingRiderRelocationGenerationOptions? waitingRiderRelocation = null)
+        WaitingRiderRelocationGenerationOptions? waitingRiderRelocation = null,
+        long stopServiceDurationMs = 0)
     {
         if (maximumCandidatesPerVehicle < 1)
         {
@@ -267,8 +268,14 @@ public sealed record CandidateGenerationOptions
         MaximumExplorationWorkUnits = maximumExplorationWorkUnits;
         MaximumRepairRequestsConsideredPerVehicle =
             maximumRepairRequestsConsideredPerVehicle;
+        if (stopServiceDurationMs is < 0 or > DomainLimits.MaxCanonicalInteger)
+        {
+            throw new ArgumentOutOfRangeException(nameof(stopServiceDurationMs));
+        }
+
         RetentionStrategy = retentionStrategy;
         WaitingRiderRelocation = waitingRiderRelocation;
+        StopServiceDuration = new Duration(stopServiceDurationMs);
     }
 
     public int MaximumCandidatesPerVehicle { get; }
@@ -295,6 +302,13 @@ public sealed record CandidateGenerationOptions
     /// </summary>
     public WaitingRiderRelocationGenerationOptions? WaitingRiderRelocation { get; }
 
+    /// <summary>
+    /// Service duration of every pickup and drop stop the generator inserts (dwell). Zero, the
+    /// default, keeps every earlier candidate, route and identity unchanged; a positive value lets
+    /// the Runner plan a non-zero boarding time (bridge step 1.3, opt-in).
+    /// </summary>
+    public Duration StopServiceDuration { get; }
+
     public CandidateGenerationOptions WithRepairRequestCap(int maximumRequests) =>
         new(
             MaximumCandidatesPerVehicle,
@@ -304,7 +318,8 @@ public sealed record CandidateGenerationOptions
             MaximumExplorationWorkUnits,
             maximumRequests,
             RetentionStrategy,
-            WaitingRiderRelocation);
+            WaitingRiderRelocation,
+            StopServiceDuration.Milliseconds);
 
     public static CandidateGenerationOptions ExactSmall { get; } =
         new(
