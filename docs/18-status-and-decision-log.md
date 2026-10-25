@@ -1736,12 +1736,12 @@ Date: 2026-08-27
 **Nhánh `research/p1-fix` / `research/p1-dwell`, cập nhật 2026-10-25:** giai đoạn 1 xong (ADR-082). Phần dwell nằm ở ADR-083 trên
 `research/p1-dwell`. Đã đọc toàn bộ tài
 liệu công ty; danh sách việc ở
-`C:/RideBoundContinuation/2026-10-24/doc-toan-bo/CON-THIEU-SO-VOI-KE-HOACH-CONG-TY.md`. Việc kế tiếp:
-1. Kiểm toán §6-P5: chạy lại một lát Via (10 ngày × 2 khung × 3 lần rút mẫu; INS và G2; EO35, EOHZ35, RCE35, SHF, SHHZ,
-   SHRC) ở chế độ adapter + half-even, so với plain + round. Dùng 360 ô wf14 đã có ở máy nhà.
-2. §6-P4(a) bổ sung nhánh hạn chót nới dạng của sinh viên (`dropEtaDeadlineSlackMs` kèm `no-worse-than-reference-v1`, không
-   có cờ `dropEtaDeadlineRelaxed`) trên 11 ô Manhattan.
-3. Giai đoạn 2: DuckDB và dữ liệu TLC (HVFHV, Yellow); §6-P7.
+`C:/RideBoundContinuation/2026-10-24/doc-toan-bo/CON-THIEU-SO-VOI-KE-HOACH-CONG-TY.md`.
+
+P5, P7, P4(a) bổ sung, N1, N2 đã xong ngày 25/10 (ADR-084). Việc kế tiếp:
+1. Chủ duyệt các commit trên nhánh khóa luận `thesis/audit-fixes-2026-10-25`.
+2. Phần việc của sinh viên: duyệt mã (P4), kho riêng và họp giáo viên (P6), giả thuyết đợt 3 (N9).
+3. Nếu làm đợt 3: dựng ô cho ngày mới từ TLC theo quy tắc `rid` đã tìm ra ở P7.
 
 **Nhánh `research/g2-core` (cầu nối bộ mô phỏng công ty), cập nhật 2026-10-23:** bước 1 (ngân sách Elmi) và bước 2 (G2)
 đã xong và đã commit cục bộ; xem ADR-081. Việc kế tiếp, theo thứ tự:
@@ -5498,6 +5498,53 @@ không chép nguyên văn.
   - mở rộng A8 cho chặng có thời lượng.
 - Không push; cây chính không đổi.
 
+### ADR-084 — 2026-10-25 — Proposed (thăm dò sau kiểm toán công ty 23/10; không đổi mã)
+
+**Context:**
+- Đã đọc toàn bộ tài liệu công ty. Danh sách việc còn thiếu:
+  `C:/RideBoundContinuation/2026-10-24/doc-toan-bo/CON-THIEU-SO-VOI-KE-HOACH-CONG-TY.md`.
+- Ngày 25/10 chủ duyệt "thực hiện toàn bộ", và cho phép chạy runner wf15 của công ty cho P5 và các việc trong bảng.
+
+**Decision:** ghi nhận các phép kiểm dưới đây là bằng chứng thăm dò. Không có phép nào là xác nhận, và không đổi mã RideBound.
+
+**Evidence** (hồ sơ dưới `E:/Code/Report_INT3508/ridebound-scratchpad/`):
+- **§6-P5, lát Via ở chế độ adapter + half-even** (`p5-via-adapter-2026-10-25/P5-RESULT.md`):
+  - cây chạy runner wf15 ở nhà khớp 53/53 tệp trong danh sách hash của công ty; APSP khớp `4ae39087`;
+  - cổng 0: **840/840 dòng plain giống hệt dòng xác nhận của công ty**;
+  - đổi sang chế độ adapter thì các phép so chính giữ dấu trên 10 ngày: G2 RCE35 − EOHZ35 đảo hứa −14,9 → −16,1 mỗi ngày,
+    served −4,1 → −3,5;
+  - 7/84 ô bị đánh dấu: hiệu late60 của INS RCE35 − EOHZ35, và các hiệu nhỏ EOHZ35 − EO35. Không dùng hai loại hiệu này.
+- **§6-P7, đối chiếu TLC** (`p7-tlc-2026-10-25/P7-RESULT.md`):
+  - HVFHV 3/2019 và 9/2019 tải ở nhà, dựng lại và so với `via_windows.csv`: 0 dòng lệch mỗi chiều (66.856 và 51.219 dòng);
+  - `rid` của công ty đánh theo thứ tự (giờ yêu cầu, khu đón, khu trả, quãng đường, thời gian).
+- **§6-P4(a), hạn chót nới dạng của sinh viên** (DLS-120 overlay, phục hồi `no-worse-than-reference-v1`, không có cờ
+  `dropEtaDeadlineRelaxed`; `bridge-phase1-2026-10-23/compare/nw-2026-10-25/final-compare.json`):
+  - **11/11 ô, 976/976 khách trùng dự đoán DLHZ-120 đã khóa ngày 21/10**, và trùng job DLHZ-120 thật;
+  - tổng cầu nối: **238 cặp kịch bản–luật**.
+- **Kiểm đồng nhất** (`identity-2026-10-25/IDENTITY-RESULT.md`): RC = NC = OC khi chỉ chèn ở 11/11 ô; khi giao thông
+  phẳng, RCE35 = EOHZ35 ở 10/11 ô.
+- **Bằng chứng bộ giải** (`bridge-phase1-2026-10-23/SOLVER-EVIDENCE-RESULT.md`): 300 job, 232.103 quyết định, 100%
+  `ORTOOLS_OPTIMAL`; trần 100 ứng viên và ngân sách chưa lần nào ràng buộc.
+- **§6-N1, dung sai hàng rào** (`N1-RESULT.md`): 1 s xóa 33–54% khoảng cách phục vụ SHRC − SHF; 60 s làm khoảng cách đảo
+  dấu, đổi lại dời giờ 43–66 khách bảo đảm mỗi ngày.
+- **§6-N2, đường cong α** (`N2-RESULT.md`): với gán lại, luật C ít đảo hứa hơn hàng rào nới 33–55% ở mọi α từ 10% tới
+  100%, đổi lại phục vụ ít hơn 0,2–1,2%.
+- **Bảng 60 ngày tính lại độc lập** (`TABLES-2x3-60days.txt`) trùng mọi số của kiểm toán. Ví dụ G2 RCE35 − EOHZ35: served
+  −2,82 [−4,38; −1,27]; đảo hứa −16,68 (60/60 ngày).
+
+**Consequences:**
+- Khóa luận được sửa trên nhánh riêng của kho khóa luận (`thesis/audit-fixes-2026-10-25`, worktree
+  `C:/Code/Report_INT3508-audit`):
+  - sửa lỗi sự thật (§6-P2);
+  - bản nháp mục so sánh với Elmi và cầu nối (§6-P1, §6-P3).
+
+  Chủ duyệt trước khi đưa vào bản chính.
+- Còn mở:
+  - sinh viên duyệt mã (P4) và các việc P6, N9;
+  - lần vết các ô lệch của E0 (N5);
+  - N3 và N4 mới có kết quả thăm dò a5 của công ty.
+- Không push; cây chính không đổi.
+
 ## Cập nhật khóa luận — 2026-10-16T00:09:00.907016+07:00
 
 Người dùng yêu cầu cập nhật toàn bộ nội dung theo cách đọc tự nhiên, bổ sung
@@ -5595,6 +5642,8 @@ Claude/Antigravity. Không có quyền commit/push mới trong lượt này.
 
 ## 9. Change history
 
+- 2026-10-25 (`research/p1-dwell`, chỉ tài liệu): ADR-084. Các phép thăm dò sau kiểm toán gồm P5, P7, nhánh hạn chót của
+  sinh viên (11/11), kiểm đồng nhất, bằng chứng bộ giải, N1 và N2. Cầu nối nay là 238 cặp kịch bản–luật.
 - 2026-10-25 (nhánh thăm dò `research/p1-dwell`, trên `research/p1-fix`; chưa push): thêm tùy chọn
   `stopServiceDurationMs`, mặc định tắt (ADR-083). Dwell khác 0 bị chặn vì lõi không có trạng thái "xe bận tới T"; chủ chọn
   ghi giới hạn.

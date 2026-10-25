@@ -15,6 +15,10 @@ ADR-082 (và ADR-083 trên `research/p1-dwell`); nhánh thăm dò `research/p1-f
 | Tác giả commit là chủ nghiên cứu, không lộ e-mail máy công ty | Chuỗi `7435661..research/g2-core` tạo lại, cùng cây; ref cũ ở `refs/backup/pre-author-rewrite-20261025/` | Nguồn gốc ghi trong ADR-080/081/082 |
 | Đối thủ chính | Chủ quyết 25/10: EOHZ35/SHHZ chính, luôn báo kèm EO35/SHF | Thay câu "đối chứng chính EO35" của ADR-081 |
 | Thời gian phục vụ ở điểm dừng (ADR-083) | Tùy chọn `stopServiceDurationMs`, mặc định tắt; 1230/1230 test; khi tắt, phát lại 228/228 job giống từng byte | Dwell khác 0 bị chặn (lõi thiếu "xe bận tới T"); khóa luận ghi dwell 0 |
+| Kết luận Via không phụ thuộc chế độ định danh (ADR-084, §6-P5) | Cổng 0: 840/840 dòng trùng công ty; các phép so chính giữ dấu trên 10 ngày | 7/84 ô đánh dấu, không dùng; thăm dò |
+| Dữ liệu Via là chuyến thật (ADR-084, §6-P7) | TLC 3/2019 và 9/2019 so EXCEPT ALL: 0/0 dòng lệch | Mới kiểm 2/10 tháng |
+| Hạn chót nới dạng của sinh viên (ADR-084, §6-P4a) | 11/11 ô, 976/976 khách trùng dự đoán DLHZ-120; tổng cầu nối 238 cặp | Ô Manhattan nhỏ |
+| Hàng rào chặt và độ dư α (ADR-084, §6-N1, N2) | Dung sai 1/5/60 s; α 0–100% | Thăm dò trên 10 ngày đã xem |
 
 ## Cầu nối bộ mô phỏng công ty: A0.1, Elmi, G2 — 2026-10-23
 
