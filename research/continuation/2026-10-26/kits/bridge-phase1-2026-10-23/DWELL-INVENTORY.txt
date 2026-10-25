@@ -1,0 +1,1 @@
+7b97072c2f193d3a9b66d2d7c127a4117ea471787b949349dc4c47be6612436f inventory of C:/Code/RideBound-p1dwell (HEAD 937bb31; = p1fix + C# stopServiceDurationMs option and its tests; patch p1dwell-tracked-changes.patch + p1dwell-untracked.txt), computed 2026-10-24. Runner runner-p1-dwell-v1 tree f8ced3fa (dotnet test 1230/1230). DO NOT edit the dwell worktree while dwell jobs run.

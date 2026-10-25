@@ -1,0 +1,25 @@
+MANHATTAN BRIDGE - final tables
+compare file: final-55-2026-10-22-compare.json; emulator predictions sha256 06742da62c45af96c1310b85a811088fbaaa7ad9674f2e068557592a8a13d17a
+
+1. Real RideBound vs sealed emulator predictions (per rider: t0, p0, A, served, sum|c|, k, net c, max|c|, shared)
+   main jobs read 55; cell-arms exact 55/55; riders identical 4972/4972
+   U         exact 11/11
+   C-120     exact 11/11
+   C-300     exact 11/11
+   PS-300    exact 11/11
+   DLHZ-120  exact 11/11
+
+2. A0.1 gate (incremental-hash Runner replays every recorded job byte for byte)
+   jobs 58/58 identical; frames 43154/43154
+   A0 Runner CPU per replay: median 50.4 s, max 72.2 s
+
+3. Job resources (driver logs; 2 jobs in parallel; 09:00-12:35 also shared the PC with the compression)
+   jobs 55; wall min median 13.9 (min 6.9, max 19.2); peak tree RSS MiB median 916 (max 1007)
+
+4. Descriptive outcomes per arm (11 cells summed; NOT a test, 7 days only)
+   arm       promised  served   k>=1   k>=2  sum|c| s  late>60s
+   U             1011    1011    323     84     68302       261
+   C-120          977     977    170      7     10252        99
+   C-300          999     999    277     50     38372       215
+   PS-300        1009    1009    293     61     43740       229
+   DLHZ-120       976     976    177      8     10696       106

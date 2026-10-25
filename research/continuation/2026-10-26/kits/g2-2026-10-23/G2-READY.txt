@@ -1,0 +1,19 @@
+G2-READY (2026-10-23 06:20)
+
+The G2 bridge phases may run with runner-g2-v2 and the G2 worktree adapter (C:/Code/RideBound-g2).
+
+1. Code, frozen:
+   - staged tree 5fedf3bb1928aa9f1c20ce4e8f18a49b02e6ef5b = v1.1 + G2 A–G + the review fixes;
+   - patch g2-A-G-v2.patch (sha256 e3f1b9cd…);
+   - dotnet test RideBound.slnx 1224/1224;
+   - adapter tests 445/451; the 6 failures fail identically on the non-G2 via worktree;
+   - adapter-repository inventory 6f7411cb19380ad7f1953389b6e5f06d816236ee45af0a00159dd1e990fd1165 (G2-INVENTORY.txt),
+     re-checked 06:19.
+2. Independent review of A–F: no blocking defect. S1 (evidence) and the minor items M1 and M5 are fixed. S2, a
+   Runner-level move test with checkpoint and restore, is still open; the pilot is the first end-to-end exercise.
+   See AMENDMENTS.md A4.
+3. G2-off replay gates. Every finished job (1 regress, 2 smoke, 55 main, 22 elmi), with its own configs (no G2 keys):
+   - runner-g2-v1: 80/80 jobs byte-identical, 59,330/59,330 frames (G2OFF-GATE-SUMMARY.json, fa702a90…);
+   - runner-g2-v2: 80/80 jobs byte-identical, 59,330/59,330 frames (G2OFFV2-GATE-SUMMARY.json, f7e927db…).
+4. Emulator predictions for the G2 arms were sealed before any G2 Runner job, at 2026-10-22T22:11Z
+   (via-bridge-2026-10-22/EMULATOR-PREDICTIONS-G2.sha256).

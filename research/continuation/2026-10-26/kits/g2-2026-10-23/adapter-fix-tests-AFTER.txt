@@ -1,0 +1,9 @@
+test_a_pickup_at_the_node_being_served_keeps_the_in_progress_stop_first (test_in_progress_service_leg.InProgressServiceLegTests) ... ok
+test_a_vehicle_without_a_locked_leg_gets_exactly_the_runner_route (test_in_progress_service_leg.InProgressServiceLegTests) ... ok
+test_without_the_fix_conditions_the_check_still_fails_closed (test_in_progress_service_leg.InProgressServiceLegTests) ... ok
+
+----------------------------------------------------------------------
+Ran 3 tests in 0.002s
+
+OK
+Loading modules from development content.

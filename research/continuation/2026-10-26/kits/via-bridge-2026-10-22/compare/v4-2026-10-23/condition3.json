@@ -1,0 +1,795 @@
+{
+  "g2Emulator": [
+    "jobs 33; cell-arms exact 33/33; riders identical 2994/2994",
+    "  U         exact 0/0",
+    "  C-120     exact 0/0",
+    "  C-300     exact 0/0",
+    "  PS-300    exact 0/0",
+    "  DLHZ-120  exact 0/0",
+    "  RCE35     exact 0/0",
+    "  EOHZ35    exact 0/0",
+    "  G2-U      exact 11/11",
+    "  G2-RCE35  exact 11/11",
+    "  G2-EOHZ35 exact 11/11"
+  ],
+  "g2Previous": [
+    {
+      "job": "G2-EOHZ35-d20181114-s10-r1-w08",
+      "identical": true,
+      "framesIdentical": 2317,
+      "framesCompared": 2317,
+      "first": null
+    },
+    {
+      "job": "G2-RCE35-d20181114-s10-r1-w08",
+      "identical": true,
+      "framesIdentical": 2296,
+      "framesCompared": 2296,
+      "first": null
+    },
+    {
+      "job": "G2-U-d20181114-s10-r1-w08",
+      "identical": true,
+      "framesIdentical": 2410,
+      "framesCompared": 2410,
+      "first": null
+    },
+    {
+      "job": "G2-EOHZ35-d20181112-s10-r1-w17",
+      "identical": true,
+      "framesIdentical": 2536,
+      "framesCompared": 2536,
+      "first": null
+    },
+    {
+      "job": "G2-EOHZ35-d20181113-s10-r1-w08",
+      "identical": true,
+      "framesIdentical": 2440,
+      "framesCompared": 2440,
+      "first": null
+    },
+    {
+      "job": "G2-EOHZ35-d20181113-s10-r1-w17",
+      "identical": true,
+      "framesIdentical": 2446,
+      "framesCompared": 2446,
+      "first": null
+    },
+    {
+      "job": "G2-EOHZ35-d20181114-s10-r1-w17",
+      "identical": true,
+      "framesIdentical": 2482,
+      "framesCompared": 2482,
+      "first": null
+    },
+    {
+      "job": "G2-EOHZ35-d20181115-s10-r1-w08",
+      "identical": true,
+      "framesIdentical": 1966,
+      "framesCompared": 1966,
+      "first": null
+    },
+    {
+      "job": "G2-EOHZ35-d20181116-s10-r1-w08",
+      "identical": true,
+      "framesIdentical": 2098,
+      "framesCompared": 2098,
+      "first": null
+    },
+    {
+      "job": "G2-EOHZ35-d20181117-s10-r1-w08",
+      "identical": true,
+      "framesIdentical": 1747,
+      "framesCompared": 1747,
+      "first": null
+    },
+    {
+      "job": "G2-EOHZ35-d20181118-s10-r1-w08",
+      "identical": true,
+      "framesIdentical": 1882,
+      "framesCompared": 1882,
+      "first": null
+    },
+    {
+      "job": "G2-EOHZ35-d20181118-s10-r1-w17",
+      "identical": true,
+      "framesIdentical": 2125,
+      "framesCompared": 2125,
+      "first": null
+    },
+    {
+      "job": "G2-RCE35-d20181112-s10-r1-w08",
+      "identical": true,
+      "framesIdentical": 2422,
+      "framesCompared": 2422,
+      "first": null
+    },
+    {
+      "job": "G2-RCE35-d20181112-s10-r1-w17",
+      "identical": true,
+      "framesIdentical": 2518,
+      "framesCompared": 2518,
+      "first": null
+    },
+    {
+      "job": "G2-RCE35-d20181113-s10-r1-w08",
+      "identical": true,
+      "framesIdentical": 2419,
+      "framesCompared": 2419,
+      "first": null
+    },
+    {
+      "job": "G2-RCE35-d20181113-s10-r1-w17",
+      "identical": true,
+      "framesIdentical": 2224,
+      "framesCompared": 2224,
+      "first": null
+    },
+    {
+      "job": "G2-RCE35-d20181114-s10-r1-w17",
+      "identical": true,
+      "framesIdentical": 2479,
+      "framesCompared": 2479,
+      "first": null
+    },
+    {
+      "job": "G2-RCE35-d20181115-s10-r1-w08",
+      "identical": true,
+      "framesIdentical": 1930,
+      "framesCompared": 1930,
+      "first": null
+    },
+    {
+      "job": "G2-RCE35-d20181117-s10-r1-w08",
+      "identical": true,
+      "framesIdentical": 1735,
+      "framesCompared": 1735,
+      "first": null
+    },
+    {
+      "job": "G2-RCE35-d20181118-s10-r1-w08",
+      "identical": true,
+      "framesIdentical": 1882,
+      "framesCompared": 1882,
+      "first": null
+    },
+    {
+      "job": "G2-RCE35-d20181118-s10-r1-w17",
+      "identical": true,
+      "framesIdentical": 2230,
+      "framesCompared": 2230,
+      "first": null
+    },
+    {
+      "job": "G2-U-d20181112-s10-r1-w08",
+      "identical": true,
+      "framesIdentical": 2482,
+      "framesCompared": 2482,
+      "first": null
+    },
+    {
+      "job": "G2-U-d20181112-s10-r1-w17",
+      "identical": true,
+      "framesIdentical": 2479,
+      "framesCompared": 2479,
+      "first": null
+    },
+    {
+      "job": "G2-U-d20181113-s10-r1-w08",
+      "identical": true,
+      "framesIdentical": 2446,
+      "framesCompared": 2446,
+      "first": null
+    },
+    {
+      "job": "G2-U-d20181113-s10-r1-w17",
+      "identical": true,
+      "framesIdentical": 2383,
+      "framesCompared": 2383,
+      "first": null
+    },
+    {
+      "job": "G2-U-d20181114-s10-r1-w17",
+      "identical": true,
+      "framesIdentical": 2479,
+      "framesCompared": 2479,
+      "first": null
+    },
+    {
+      "job": "G2-U-d20181115-s10-r1-w08",
+      "identical": true,
+      "framesIdentical": 2083,
+      "framesCompared": 2083,
+      "first": null
+    },
+    {
+      "job": "G2-U-d20181117-s10-r1-w08",
+      "identical": true,
+      "framesIdentical": 1873,
+      "framesCompared": 1873,
+      "first": null
+    },
+    {
+      "job": "G2-U-d20181118-s10-r1-w08",
+      "identical": true,
+      "framesIdentical": 1876,
+      "framesCompared": 1876,
+      "first": null
+    },
+    {
+      "job": "G2-U-d20181118-s10-r1-w17",
+      "identical": true,
+      "framesIdentical": 2266,
+      "framesCompared": 2266,
+      "first": null
+    }
+  ],
+  "ins": [
+    {
+      "job": "regress/REG-CF-U-d20181114-s10-r1-w08-1500",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.binarySha256', '$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 2310,
+      "framesCompared": 2311
+    },
+    {
+      "job": "smoke/PS-300-d20181114-s10-r1-w08",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.binarySha256', '$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 2382,
+      "framesCompared": 2383
+    },
+    {
+      "job": "smoke/DLHZ-120-d20181114-s10-r1-w08",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.binarySha256', '$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 2277,
+      "framesCompared": 2278
+    },
+    {
+      "job": "main/U-d20181112-s10-r1-w08",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.binarySha256', '$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 2418,
+      "framesCompared": 2419
+    },
+    {
+      "job": "main/C-120-d20181112-s10-r1-w08",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.binarySha256', '$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 2454,
+      "framesCompared": 2455
+    },
+    {
+      "job": "main/C-300-d20181112-s10-r1-w08",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.binarySha256', '$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 2358,
+      "framesCompared": 2359
+    },
+    {
+      "job": "main/PS-300-d20181112-s10-r1-w08",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.binarySha256', '$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 2397,
+      "framesCompared": 2398
+    },
+    {
+      "job": "main/DLHZ-120-d20181112-s10-r1-w08",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.binarySha256', '$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 2403,
+      "framesCompared": 2404
+    },
+    {
+      "job": "main/U-d20181113-s10-r1-w08",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.binarySha256', '$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 2442,
+      "framesCompared": 2443
+    },
+    {
+      "job": "main/C-120-d20181113-s10-r1-w08",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.binarySha256', '$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 2466,
+      "framesCompared": 2467
+    },
+    {
+      "job": "main/C-300-d20181113-s10-r1-w08",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.binarySha256', '$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 2430,
+      "framesCompared": 2431
+    },
+    {
+      "job": "main/PS-300-d20181113-s10-r1-w08",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.binarySha256', '$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 2445,
+      "framesCompared": 2446
+    },
+    {
+      "job": "main/DLHZ-120-d20181113-s10-r1-w08",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.binarySha256', '$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 2436,
+      "framesCompared": 2437
+    },
+    {
+      "job": "main/U-d20181114-s10-r1-w08",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.binarySha256', '$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 2382,
+      "framesCompared": 2383
+    },
+    {
+      "job": "main/C-120-d20181114-s10-r1-w08",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.binarySha256', '$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 2277,
+      "framesCompared": 2278
+    },
+    {
+      "job": "main/C-300-d20181114-s10-r1-w08",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.binarySha256', '$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 2382,
+      "framesCompared": 2383
+    },
+    {
+      "job": "main/PS-300-d20181114-s10-r1-w08",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.binarySha256', '$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 2382,
+      "framesCompared": 2383
+    },
+    {
+      "job": "main/DLHZ-120-d20181114-s10-r1-w08",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.binarySha256', '$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 2277,
+      "framesCompared": 2278
+    },
+    {
+      "job": "main/U-d20181115-s10-r1-w08",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.binarySha256', '$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 2064,
+      "framesCompared": 2065
+    },
+    {
+      "job": "main/C-120-d20181115-s10-r1-w08",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.binarySha256', '$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 1941,
+      "framesCompared": 1942
+    },
+    {
+      "job": "main/C-300-d20181115-s10-r1-w08",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.binarySha256', '$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 2010,
+      "framesCompared": 2011
+    },
+    {
+      "job": "main/PS-300-d20181115-s10-r1-w08",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.binarySha256', '$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 2034,
+      "framesCompared": 2035
+    },
+    {
+      "job": "main/DLHZ-120-d20181115-s10-r1-w08",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.binarySha256', '$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 1941,
+      "framesCompared": 1942
+    },
+    {
+      "job": "main/U-d20181116-s10-r1-w08",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.binarySha256', '$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 2103,
+      "framesCompared": 2104
+    },
+    {
+      "job": "main/C-120-d20181116-s10-r1-w08",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.binarySha256', '$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 2067,
+      "framesCompared": 2068
+    },
+    {
+      "job": "main/C-300-d20181116-s10-r1-w08",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.binarySha256', '$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 2175,
+      "framesCompared": 2176
+    },
+    {
+      "job": "main/PS-300-d20181116-s10-r1-w08",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.binarySha256', '$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 2172,
+      "framesCompared": 2173
+    },
+    {
+      "job": "main/DLHZ-120-d20181116-s10-r1-w08",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.binarySha256', '$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 2109,
+      "framesCompared": 2110
+    },
+    {
+      "job": "main/U-d20181117-s10-r1-w08",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.binarySha256', '$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 1872,
+      "framesCompared": 1873
+    },
+    {
+      "job": "main/C-120-d20181117-s10-r1-w08",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.binarySha256', '$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 1767,
+      "framesCompared": 1768
+    },
+    {
+      "job": "main/C-300-d20181117-s10-r1-w08",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.binarySha256', '$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 1737,
+      "framesCompared": 1738
+    },
+    {
+      "job": "main/PS-300-d20181117-s10-r1-w08",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.binarySha256', '$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 1758,
+      "framesCompared": 1759
+    },
+    {
+      "job": "main/DLHZ-120-d20181117-s10-r1-w08",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.binarySha256', '$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 1770,
+      "framesCompared": 1771
+    },
+    {
+      "job": "main/U-d20181118-s10-r1-w08",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.binarySha256', '$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 1902,
+      "framesCompared": 1903
+    },
+    {
+      "job": "main/C-120-d20181118-s10-r1-w08",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.binarySha256', '$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 1719,
+      "framesCompared": 1720
+    },
+    {
+      "job": "main/C-300-d20181118-s10-r1-w08",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.binarySha256', '$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 1902,
+      "framesCompared": 1903
+    },
+    {
+      "job": "main/PS-300-d20181118-s10-r1-w08",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.binarySha256', '$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 1854,
+      "framesCompared": 1855
+    },
+    {
+      "job": "main/DLHZ-120-d20181118-s10-r1-w08",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.binarySha256', '$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 1719,
+      "framesCompared": 1720
+    },
+    {
+      "job": "main/U-d20181112-s10-r1-w17",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.binarySha256', '$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 2499,
+      "framesCompared": 2500
+    },
+    {
+      "job": "main/C-120-d20181112-s10-r1-w17",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.binarySha256', '$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 2511,
+      "framesCompared": 2512
+    },
+    {
+      "job": "main/C-300-d20181112-s10-r1-w17",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.binarySha256', '$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 2487,
+      "framesCompared": 2488
+    },
+    {
+      "job": "main/PS-300-d20181112-s10-r1-w17",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.binarySha256', '$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 2469,
+      "framesCompared": 2470
+    },
+    {
+      "job": "main/DLHZ-120-d20181112-s10-r1-w17",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.binarySha256', '$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 2508,
+      "framesCompared": 2509
+    },
+    {
+      "job": "main/U-d20181113-s10-r1-w17",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.binarySha256', '$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 2340,
+      "framesCompared": 2341
+    },
+    {
+      "job": "main/C-120-d20181113-s10-r1-w17",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.binarySha256', '$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 2385,
+      "framesCompared": 2386
+    },
+    {
+      "job": "main/C-300-d20181113-s10-r1-w17",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.binarySha256', '$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 2283,
+      "framesCompared": 2284
+    },
+    {
+      "job": "main/PS-300-d20181113-s10-r1-w17",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.binarySha256', '$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 2403,
+      "framesCompared": 2404
+    },
+    {
+      "job": "main/DLHZ-120-d20181113-s10-r1-w17",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.binarySha256', '$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 2385,
+      "framesCompared": 2386
+    },
+    {
+      "job": "main/U-d20181114-s10-r1-w17",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.binarySha256', '$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 2499,
+      "framesCompared": 2500
+    },
+    {
+      "job": "main/C-120-d20181114-s10-r1-w17",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.binarySha256', '$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 2430,
+      "framesCompared": 2431
+    },
+    {
+      "job": "main/C-300-d20181114-s10-r1-w17",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.binarySha256', '$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 2523,
+      "framesCompared": 2524
+    },
+    {
+      "job": "main/PS-300-d20181114-s10-r1-w17",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.binarySha256', '$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 2523,
+      "framesCompared": 2524
+    },
+    {
+      "job": "main/DLHZ-120-d20181114-s10-r1-w17",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.binarySha256', '$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 2430,
+      "framesCompared": 2431
+    },
+    {
+      "job": "main/U-d20181118-s10-r1-w17",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.binarySha256', '$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 2298,
+      "framesCompared": 2299
+    },
+    {
+      "job": "main/C-120-d20181118-s10-r1-w17",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.binarySha256', '$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 2097,
+      "framesCompared": 2098
+    },
+    {
+      "job": "main/C-300-d20181118-s10-r1-w17",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.binarySha256', '$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 2265,
+      "framesCompared": 2266
+    },
+    {
+      "job": "main/PS-300-d20181118-s10-r1-w17",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.binarySha256', '$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 2322,
+      "framesCompared": 2323
+    },
+    {
+      "job": "main/DLHZ-120-d20181118-s10-r1-w17",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.binarySha256', '$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 2097,
+      "framesCompared": 2098
+    },
+    {
+      "job": "elmi/RCE35-d20181112-s10-r1-w08",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.binarySha256', '$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 2373,
+      "framesCompared": 2374
+    },
+    {
+      "job": "elmi/EOHZ35-d20181112-s10-r1-w08",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.binarySha256', '$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 2412,
+      "framesCompared": 2413
+    },
+    {
+      "job": "elmi/RCE35-d20181113-s10-r1-w08",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.binarySha256', '$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 2439,
+      "framesCompared": 2440
+    },
+    {
+      "job": "elmi/EOHZ35-d20181113-s10-r1-w08",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.binarySha256', '$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 2439,
+      "framesCompared": 2440
+    },
+    {
+      "job": "elmi/RCE35-d20181114-s10-r1-w08",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.binarySha256', '$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 2265,
+      "framesCompared": 2266
+    },
+    {
+      "job": "elmi/EOHZ35-d20181114-s10-r1-w08",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.binarySha256', '$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 2265,
+      "framesCompared": 2266
+    },
+    {
+      "job": "elmi/RCE35-d20181115-s10-r1-w08",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.binarySha256', '$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 1863,
+      "framesCompared": 1864
+    },
+    {
+      "job": "elmi/EOHZ35-d20181115-s10-r1-w08",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.binarySha256', '$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 1917,
+      "framesCompared": 1918
+    },
+    {
+      "job": "elmi/RCE35-d20181116-s10-r1-w08",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.binarySha256', '$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 2073,
+      "framesCompared": 2074
+    },
+    {
+      "job": "elmi/EOHZ35-d20181116-s10-r1-w08",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.binarySha256', '$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 2082,
+      "framesCompared": 2083
+    },
+    {
+      "job": "elmi/RCE35-d20181117-s10-r1-w08",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.binarySha256', '$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 1734,
+      "framesCompared": 1735
+    },
+    {
+      "job": "elmi/EOHZ35-d20181117-s10-r1-w08",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.binarySha256', '$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 1710,
+      "framesCompared": 1711
+    },
+    {
+      "job": "elmi/RCE35-d20181118-s10-r1-w08",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.binarySha256', '$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 1881,
+      "framesCompared": 1882
+    },
+    {
+      "job": "elmi/EOHZ35-d20181118-s10-r1-w08",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.binarySha256', '$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 1881,
+      "framesCompared": 1882
+    },
+    {
+      "job": "elmi/RCE35-d20181112-s10-r1-w17",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.binarySha256', '$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 2514,
+      "framesCompared": 2515
+    },
+    {
+      "job": "elmi/EOHZ35-d20181112-s10-r1-w17",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.binarySha256', '$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 2514,
+      "framesCompared": 2515
+    },
+    {
+      "job": "elmi/RCE35-d20181113-s10-r1-w17",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.binarySha256', '$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 2361,
+      "framesCompared": 2362
+    },
+    {
+      "job": "elmi/EOHZ35-d20181113-s10-r1-w17",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.binarySha256', '$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 2382,
+      "framesCompared": 2383
+    },
+    {
+      "job": "elmi/RCE35-d20181114-s10-r1-w17",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.binarySha256', '$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 2478,
+      "framesCompared": 2479
+    },
+    {
+      "job": "elmi/EOHZ35-d20181114-s10-r1-w17",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.binarySha256', '$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 2478,
+      "framesCompared": 2479
+    },
+    {
+      "job": "elmi/RCE35-d20181118-s10-r1-w17",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.binarySha256', '$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 2229,
+      "framesCompared": 2230
+    },
+    {
+      "job": "elmi/EOHZ35-d20181118-s10-r1-w17",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.binarySha256', '$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 2172,
+      "framesCompared": 2173
+    }
+  ],
+  "summary": {
+    "g2Emulator": "jobs 33; cell-arms exact 33/33; riders identical 2994/2994",
+    "g2PreviousIdentical": "30/30",
+    "insIdenticalOrA5": "80/80",
+    "insA5Only": 80
+  }
+}

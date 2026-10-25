@@ -1,0 +1,13 @@
+2026-10-22T00:26:48 compare_runs (amendment A1, AMENDMENTS.md) rc=0
+{
+  "runA": "C:/RideBoundData/research/tier3-stage1b-v1/smoke/CF-U-d20181114-s10-r1-w08",
+  "runB": "C:/RideBoundData/research/via-bridge-man-v1/regress/REG-CF-U-d20181114-s10-r1-w08-1500",
+  "framesA": 2311,
+  "framesB": 2311,
+  "framesCompared": 2311,
+  "framesIdentical": 2311,
+  "firstDifference": null,
+  "summaryIdentical": true,
+  "summaryDifference": null,
+  "identical": true
+}

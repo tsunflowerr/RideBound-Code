@@ -1,0 +1,23 @@
+G2-READY-v4 (2026-10-23 11:46; an earlier draft said 09:25 by mistake) — owner decision (A) with conditions 1–4 (see AMENDMENTS A8)
+
+1. Condition 1, dwell/boarding = 0 on both sides:
+   - FleetPy: op_const_boarding_time 0 (actual_fleetpy_medium_preflight.py:241), and every stop in the 3 stopped
+     transcripts has serviceDurationMs 0 (12,754 + 3,962 + 3,956 stops);
+   - emulator: dwell 0 for d20181112 and d20181116 (fixtures.js:19, prepareFixtureCell).
+2. Condition 2, reproduction before the fix:
+   - the 3 stopped jobs rerun unchanged (g2-devsmoke/repro-unfixed) fail identically, with the same error, the same
+     vehicle and the same frame count (676, 676, 1333);
+   - unit test test_in_progress_service_leg.py failed before the fix (adapter-fix-tests-BEFORE.txt) and passes after
+     it (adapter-fix-tests-AFTER.txt);
+   - the late-boarding test fails against the first fix attempt (adapter-fix-late-test-against-attempt1.txt).
+3. Code:
+   - tree 0b930c4f… = v3 tree + adapter fix + its test + the S2 checkpoint test;
+   - RideBound source unchanged; Runner runner-g2-v3 unchanged (its G2-off gate g2offv3 stays valid);
+   - dotnet test 1227/1227; adapter suite 456 tests, the same 6 known failures;
+   - inventory c2213308… (G2-INVENTORY-v4.txt); launcher bridge_launcher_g2.py (adapter of the G2 worktree).
+4. Dev smoke with the real G2 adapter (diagnostic, not evidence):
+   - the 3 cases: all pass, 3/3 cell-arms exact, 269/269 riders;
+   - pilot cell: 3/3 exact, 286/286 riders.
+5. Condition 3, to be run now:
+   - g2all (33 G2 jobs) and insregress/inssmoke/insmain/inselmi (80 jobs);
+   - every earlier matching job must stay identical, and 33/33 G2 must be exact against the sealed emulator.

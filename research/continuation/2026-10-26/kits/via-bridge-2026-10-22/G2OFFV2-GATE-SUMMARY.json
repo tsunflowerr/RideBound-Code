@@ -1,0 +1,650 @@
+{
+  "replayed": 80,
+  "identical": 80,
+  "framesTotal": 59330,
+  "framesIdentical": 59330,
+  "notIdentical": [],
+  "rows": [
+    {
+      "file": "g2offv2-elmi-EOHZ35-d20181112-s10-r1-w08.json",
+      "identical": true,
+      "frames": 805,
+      "framesIdentical": 805,
+      "runnerCpuSeconds": 44.03,
+      "firstDifference": null
+    },
+    {
+      "file": "g2offv2-elmi-EOHZ35-d20181112-s10-r1-w17.json",
+      "identical": true,
+      "frames": 839,
+      "framesIdentical": 839,
+      "runnerCpuSeconds": 54.12,
+      "firstDifference": null
+    },
+    {
+      "file": "g2offv2-elmi-EOHZ35-d20181113-s10-r1-w08.json",
+      "identical": true,
+      "frames": 814,
+      "framesIdentical": 814,
+      "runnerCpuSeconds": 46.28,
+      "firstDifference": null
+    },
+    {
+      "file": "g2offv2-elmi-EOHZ35-d20181113-s10-r1-w17.json",
+      "identical": true,
+      "frames": 795,
+      "framesIdentical": 795,
+      "runnerCpuSeconds": 45.39,
+      "firstDifference": null
+    },
+    {
+      "file": "g2offv2-elmi-EOHZ35-d20181114-s10-r1-w08.json",
+      "identical": true,
+      "frames": 756,
+      "framesIdentical": 756,
+      "runnerCpuSeconds": 43.83,
+      "firstDifference": null
+    },
+    {
+      "file": "g2offv2-elmi-EOHZ35-d20181114-s10-r1-w17.json",
+      "identical": true,
+      "frames": 827,
+      "framesIdentical": 827,
+      "runnerCpuSeconds": 50.69,
+      "firstDifference": null
+    },
+    {
+      "file": "g2offv2-elmi-EOHZ35-d20181115-s10-r1-w08.json",
+      "identical": true,
+      "frames": 640,
+      "framesIdentical": 640,
+      "runnerCpuSeconds": 32.33,
+      "firstDifference": null
+    },
+    {
+      "file": "g2offv2-elmi-EOHZ35-d20181116-s10-r1-w08.json",
+      "identical": true,
+      "frames": 695,
+      "framesIdentical": 695,
+      "runnerCpuSeconds": 36.55,
+      "firstDifference": null
+    },
+    {
+      "file": "g2offv2-elmi-EOHZ35-d20181117-s10-r1-w08.json",
+      "identical": true,
+      "frames": 571,
+      "framesIdentical": 571,
+      "runnerCpuSeconds": 30.03,
+      "firstDifference": null
+    },
+    {
+      "file": "g2offv2-elmi-EOHZ35-d20181118-s10-r1-w08.json",
+      "identical": true,
+      "frames": 628,
+      "framesIdentical": 628,
+      "runnerCpuSeconds": 31.08,
+      "firstDifference": null
+    },
+    {
+      "file": "g2offv2-elmi-EOHZ35-d20181118-s10-r1-w17.json",
+      "identical": true,
+      "frames": 725,
+      "framesIdentical": 725,
+      "runnerCpuSeconds": 44.16,
+      "firstDifference": null
+    },
+    {
+      "file": "g2offv2-elmi-RCE35-d20181112-s10-r1-w08.json",
+      "identical": true,
+      "frames": 792,
+      "framesIdentical": 792,
+      "runnerCpuSeconds": 43.06,
+      "firstDifference": null
+    },
+    {
+      "file": "g2offv2-elmi-RCE35-d20181112-s10-r1-w17.json",
+      "identical": true,
+      "frames": 839,
+      "framesIdentical": 839,
+      "runnerCpuSeconds": 54.11,
+      "firstDifference": null
+    },
+    {
+      "file": "g2offv2-elmi-RCE35-d20181113-s10-r1-w08.json",
+      "identical": true,
+      "frames": 814,
+      "framesIdentical": 814,
+      "runnerCpuSeconds": 45.89,
+      "firstDifference": null
+    },
+    {
+      "file": "g2offv2-elmi-RCE35-d20181113-s10-r1-w17.json",
+      "identical": true,
+      "frames": 788,
+      "framesIdentical": 788,
+      "runnerCpuSeconds": 45.19,
+      "firstDifference": null
+    },
+    {
+      "file": "g2offv2-elmi-RCE35-d20181114-s10-r1-w08.json",
+      "identical": true,
+      "frames": 756,
+      "framesIdentical": 756,
+      "runnerCpuSeconds": 43.77,
+      "firstDifference": null
+    },
+    {
+      "file": "g2offv2-elmi-RCE35-d20181114-s10-r1-w17.json",
+      "identical": true,
+      "frames": 827,
+      "framesIdentical": 827,
+      "runnerCpuSeconds": 50.67,
+      "firstDifference": null
+    },
+    {
+      "file": "g2offv2-elmi-RCE35-d20181115-s10-r1-w08.json",
+      "identical": true,
+      "frames": 622,
+      "framesIdentical": 622,
+      "runnerCpuSeconds": 31.55,
+      "firstDifference": null
+    },
+    {
+      "file": "g2offv2-elmi-RCE35-d20181116-s10-r1-w08.json",
+      "identical": true,
+      "frames": 692,
+      "framesIdentical": 692,
+      "runnerCpuSeconds": 36.91,
+      "firstDifference": null
+    },
+    {
+      "file": "g2offv2-elmi-RCE35-d20181117-s10-r1-w08.json",
+      "identical": true,
+      "frames": 579,
+      "framesIdentical": 579,
+      "runnerCpuSeconds": 28.94,
+      "firstDifference": null
+    },
+    {
+      "file": "g2offv2-elmi-RCE35-d20181118-s10-r1-w08.json",
+      "identical": true,
+      "frames": 628,
+      "framesIdentical": 628,
+      "runnerCpuSeconds": 30.95,
+      "firstDifference": null
+    },
+    {
+      "file": "g2offv2-elmi-RCE35-d20181118-s10-r1-w17.json",
+      "identical": true,
+      "frames": 744,
+      "framesIdentical": 744,
+      "runnerCpuSeconds": 47.62,
+      "firstDifference": null
+    },
+    {
+      "file": "g2offv2-main-C-120-d20181112-s10-r1-w08.json",
+      "identical": true,
+      "frames": 819,
+      "framesIdentical": 819,
+      "runnerCpuSeconds": 46.94,
+      "firstDifference": null
+    },
+    {
+      "file": "g2offv2-main-C-120-d20181112-s10-r1-w17.json",
+      "identical": true,
+      "frames": 838,
+      "framesIdentical": 838,
+      "runnerCpuSeconds": 54.59,
+      "firstDifference": null
+    },
+    {
+      "file": "g2offv2-main-C-120-d20181113-s10-r1-w08.json",
+      "identical": true,
+      "frames": 823,
+      "framesIdentical": 823,
+      "runnerCpuSeconds": 48.12,
+      "firstDifference": null
+    },
+    {
+      "file": "g2offv2-main-C-120-d20181113-s10-r1-w17.json",
+      "identical": true,
+      "frames": 796,
+      "framesIdentical": 796,
+      "runnerCpuSeconds": 45.33,
+      "firstDifference": null
+    },
+    {
+      "file": "g2offv2-main-C-120-d20181114-s10-r1-w08.json",
+      "identical": true,
+      "frames": 760,
+      "framesIdentical": 760,
+      "runnerCpuSeconds": 45.09,
+      "firstDifference": null
+    },
+    {
+      "file": "g2offv2-main-C-120-d20181114-s10-r1-w17.json",
+      "identical": true,
+      "frames": 811,
+      "framesIdentical": 811,
+      "runnerCpuSeconds": 48.64,
+      "firstDifference": null
+    },
+    {
+      "file": "g2offv2-main-C-120-d20181115-s10-r1-w08.json",
+      "identical": true,
+      "frames": 648,
+      "framesIdentical": 648,
+      "runnerCpuSeconds": 33.64,
+      "firstDifference": null
+    },
+    {
+      "file": "g2offv2-main-C-120-d20181116-s10-r1-w08.json",
+      "identical": true,
+      "frames": 690,
+      "framesIdentical": 690,
+      "runnerCpuSeconds": 35.61,
+      "firstDifference": null
+    },
+    {
+      "file": "g2offv2-main-C-120-d20181117-s10-r1-w08.json",
+      "identical": true,
+      "frames": 590,
+      "framesIdentical": 590,
+      "runnerCpuSeconds": 29.56,
+      "firstDifference": null
+    },
+    {
+      "file": "g2offv2-main-C-120-d20181118-s10-r1-w08.json",
+      "identical": true,
+      "frames": 574,
+      "framesIdentical": 574,
+      "runnerCpuSeconds": 26.97,
+      "firstDifference": null
+    },
+    {
+      "file": "g2offv2-main-C-120-d20181118-s10-r1-w17.json",
+      "identical": true,
+      "frames": 700,
+      "framesIdentical": 700,
+      "runnerCpuSeconds": 40.78,
+      "firstDifference": null
+    },
+    {
+      "file": "g2offv2-main-C-300-d20181112-s10-r1-w08.json",
+      "identical": true,
+      "frames": 787,
+      "framesIdentical": 787,
+      "runnerCpuSeconds": 46.17,
+      "firstDifference": null
+    },
+    {
+      "file": "g2offv2-main-C-300-d20181112-s10-r1-w17.json",
+      "identical": true,
+      "frames": 830,
+      "framesIdentical": 830,
+      "runnerCpuSeconds": 54.42,
+      "firstDifference": null
+    },
+    {
+      "file": "g2offv2-main-C-300-d20181113-s10-r1-w08.json",
+      "identical": true,
+      "frames": 811,
+      "framesIdentical": 811,
+      "runnerCpuSeconds": 48.95,
+      "firstDifference": null
+    },
+    {
+      "file": "g2offv2-main-C-300-d20181113-s10-r1-w17.json",
+      "identical": true,
+      "frames": 762,
+      "framesIdentical": 762,
+      "runnerCpuSeconds": 44.05,
+      "firstDifference": null
+    },
+    {
+      "file": "g2offv2-main-C-300-d20181114-s10-r1-w08.json",
+      "identical": true,
+      "frames": 795,
+      "framesIdentical": 795,
+      "runnerCpuSeconds": 48.11,
+      "firstDifference": null
+    },
+    {
+      "file": "g2offv2-main-C-300-d20181114-s10-r1-w17.json",
+      "identical": true,
+      "frames": 842,
+      "framesIdentical": 842,
+      "runnerCpuSeconds": 54.83,
+      "firstDifference": null
+    },
+    {
+      "file": "g2offv2-main-C-300-d20181115-s10-r1-w08.json",
+      "identical": true,
+      "frames": 671,
+      "framesIdentical": 671,
+      "runnerCpuSeconds": 36.5,
+      "firstDifference": null
+    },
+    {
+      "file": "g2offv2-main-C-300-d20181116-s10-r1-w08.json",
+      "identical": true,
+      "frames": 726,
+      "framesIdentical": 726,
+      "runnerCpuSeconds": 41.48,
+      "firstDifference": null
+    },
+    {
+      "file": "g2offv2-main-C-300-d20181117-s10-r1-w08.json",
+      "identical": true,
+      "frames": 580,
+      "framesIdentical": 580,
+      "runnerCpuSeconds": 30.98,
+      "firstDifference": null
+    },
+    {
+      "file": "g2offv2-main-C-300-d20181118-s10-r1-w08.json",
+      "identical": true,
+      "frames": 635,
+      "framesIdentical": 635,
+      "runnerCpuSeconds": 31.62,
+      "firstDifference": null
+    },
+    {
+      "file": "g2offv2-main-C-300-d20181118-s10-r1-w17.json",
+      "identical": true,
+      "frames": 756,
+      "framesIdentical": 756,
+      "runnerCpuSeconds": 49.02,
+      "firstDifference": null
+    },
+    {
+      "file": "g2offv2-main-DLHZ-120-d20181112-s10-r1-w08.json",
+      "identical": true,
+      "frames": 802,
+      "framesIdentical": 802,
+      "runnerCpuSeconds": 45.05,
+      "firstDifference": null
+    },
+    {
+      "file": "g2offv2-main-DLHZ-120-d20181112-s10-r1-w17.json",
+      "identical": true,
+      "frames": 837,
+      "framesIdentical": 837,
+      "runnerCpuSeconds": 54.75,
+      "firstDifference": null
+    },
+    {
+      "file": "g2offv2-main-DLHZ-120-d20181113-s10-r1-w08.json",
+      "identical": true,
+      "frames": 813,
+      "framesIdentical": 813,
+      "runnerCpuSeconds": 46.38,
+      "firstDifference": null
+    },
+    {
+      "file": "g2offv2-main-DLHZ-120-d20181113-s10-r1-w17.json",
+      "identical": true,
+      "frames": 796,
+      "framesIdentical": 796,
+      "runnerCpuSeconds": 45.25,
+      "firstDifference": null
+    },
+    {
+      "file": "g2offv2-main-DLHZ-120-d20181114-s10-r1-w08.json",
+      "identical": true,
+      "frames": 760,
+      "framesIdentical": 760,
+      "runnerCpuSeconds": 45.23,
+      "firstDifference": null
+    },
+    {
+      "file": "g2offv2-main-DLHZ-120-d20181114-s10-r1-w17.json",
+      "identical": true,
+      "frames": 811,
+      "framesIdentical": 811,
+      "runnerCpuSeconds": 48.36,
+      "firstDifference": null
+    },
+    {
+      "file": "g2offv2-main-DLHZ-120-d20181115-s10-r1-w08.json",
+      "identical": true,
+      "frames": 648,
+      "framesIdentical": 648,
+      "runnerCpuSeconds": 33.34,
+      "firstDifference": null
+    },
+    {
+      "file": "g2offv2-main-DLHZ-120-d20181116-s10-r1-w08.json",
+      "identical": true,
+      "frames": 704,
+      "framesIdentical": 704,
+      "runnerCpuSeconds": 37.02,
+      "firstDifference": null
+    },
+    {
+      "file": "g2offv2-main-DLHZ-120-d20181117-s10-r1-w08.json",
+      "identical": true,
+      "frames": 591,
+      "framesIdentical": 591,
+      "runnerCpuSeconds": 29.34,
+      "firstDifference": null
+    },
+    {
+      "file": "g2offv2-main-DLHZ-120-d20181118-s10-r1-w08.json",
+      "identical": true,
+      "frames": 574,
+      "framesIdentical": 574,
+      "runnerCpuSeconds": 27.02,
+      "firstDifference": null
+    },
+    {
+      "file": "g2offv2-main-DLHZ-120-d20181118-s10-r1-w17.json",
+      "identical": true,
+      "frames": 700,
+      "framesIdentical": 700,
+      "runnerCpuSeconds": 40.61,
+      "firstDifference": null
+    },
+    {
+      "file": "g2offv2-main-PS-300-d20181112-s10-r1-w08.json",
+      "identical": true,
+      "frames": 800,
+      "framesIdentical": 800,
+      "runnerCpuSeconds": 48.12,
+      "firstDifference": null
+    },
+    {
+      "file": "g2offv2-main-PS-300-d20181112-s10-r1-w17.json",
+      "identical": true,
+      "frames": 824,
+      "framesIdentical": 824,
+      "runnerCpuSeconds": 54.23,
+      "firstDifference": null
+    },
+    {
+      "file": "g2offv2-main-PS-300-d20181113-s10-r1-w08.json",
+      "identical": true,
+      "frames": 816,
+      "framesIdentical": 816,
+      "runnerCpuSeconds": 49.0,
+      "firstDifference": null
+    },
+    {
+      "file": "g2offv2-main-PS-300-d20181113-s10-r1-w17.json",
+      "identical": true,
+      "frames": 802,
+      "framesIdentical": 802,
+      "runnerCpuSeconds": 48.67,
+      "firstDifference": null
+    },
+    {
+      "file": "g2offv2-main-PS-300-d20181114-s10-r1-w08.json",
+      "identical": true,
+      "frames": 795,
+      "framesIdentical": 795,
+      "runnerCpuSeconds": 52.11,
+      "firstDifference": null
+    },
+    {
+      "file": "g2offv2-main-PS-300-d20181114-s10-r1-w17.json",
+      "identical": true,
+      "frames": 842,
+      "framesIdentical": 842,
+      "runnerCpuSeconds": 58.47,
+      "firstDifference": null
+    },
+    {
+      "file": "g2offv2-main-PS-300-d20181115-s10-r1-w08.json",
+      "identical": true,
+      "frames": 679,
+      "framesIdentical": 679,
+      "runnerCpuSeconds": 37.77,
+      "firstDifference": null
+    },
+    {
+      "file": "g2offv2-main-PS-300-d20181116-s10-r1-w08.json",
+      "identical": true,
+      "frames": 725,
+      "framesIdentical": 725,
+      "runnerCpuSeconds": 41.12,
+      "firstDifference": null
+    },
+    {
+      "file": "g2offv2-main-PS-300-d20181117-s10-r1-w08.json",
+      "identical": true,
+      "frames": 587,
+      "framesIdentical": 587,
+      "runnerCpuSeconds": 32.17,
+      "firstDifference": null
+    },
+    {
+      "file": "g2offv2-main-PS-300-d20181118-s10-r1-w08.json",
+      "identical": true,
+      "frames": 619,
+      "framesIdentical": 619,
+      "runnerCpuSeconds": 30.72,
+      "firstDifference": null
+    },
+    {
+      "file": "g2offv2-main-PS-300-d20181118-s10-r1-w17.json",
+      "identical": true,
+      "frames": 775,
+      "framesIdentical": 775,
+      "runnerCpuSeconds": 53.89,
+      "firstDifference": null
+    },
+    {
+      "file": "g2offv2-main-U-d20181112-s10-r1-w08.json",
+      "identical": true,
+      "frames": 807,
+      "framesIdentical": 807,
+      "runnerCpuSeconds": 49.27,
+      "firstDifference": null
+    },
+    {
+      "file": "g2offv2-main-U-d20181112-s10-r1-w17.json",
+      "identical": true,
+      "frames": 834,
+      "framesIdentical": 834,
+      "runnerCpuSeconds": 58.06,
+      "firstDifference": null
+    },
+    {
+      "file": "g2offv2-main-U-d20181113-s10-r1-w08.json",
+      "identical": true,
+      "frames": 815,
+      "framesIdentical": 815,
+      "runnerCpuSeconds": 48.16,
+      "firstDifference": null
+    },
+    {
+      "file": "g2offv2-main-U-d20181113-s10-r1-w17.json",
+      "identical": true,
+      "frames": 781,
+      "framesIdentical": 781,
+      "runnerCpuSeconds": 48.44,
+      "firstDifference": null
+    },
+    {
+      "file": "g2offv2-main-U-d20181114-s10-r1-w08.json",
+      "identical": true,
+      "frames": 795,
+      "framesIdentical": 795,
+      "runnerCpuSeconds": 50.03,
+      "firstDifference": null
+    },
+    {
+      "file": "g2offv2-main-U-d20181114-s10-r1-w17.json",
+      "identical": true,
+      "frames": 834,
+      "framesIdentical": 834,
+      "runnerCpuSeconds": 53.94,
+      "firstDifference": null
+    },
+    {
+      "file": "g2offv2-main-U-d20181115-s10-r1-w08.json",
+      "identical": true,
+      "frames": 689,
+      "framesIdentical": 689,
+      "runnerCpuSeconds": 39.28,
+      "firstDifference": null
+    },
+    {
+      "file": "g2offv2-main-U-d20181116-s10-r1-w08.json",
+      "identical": true,
+      "frames": 702,
+      "framesIdentical": 702,
+      "runnerCpuSeconds": 40.59,
+      "firstDifference": null
+    },
+    {
+      "file": "g2offv2-main-U-d20181117-s10-r1-w08.json",
+      "identical": true,
+      "frames": 625,
+      "framesIdentical": 625,
+      "runnerCpuSeconds": 37.28,
+      "firstDifference": null
+    },
+    {
+      "file": "g2offv2-main-U-d20181118-s10-r1-w08.json",
+      "identical": true,
+      "frames": 635,
+      "framesIdentical": 635,
+      "runnerCpuSeconds": 34.06,
+      "firstDifference": null
+    },
+    {
+      "file": "g2offv2-main-U-d20181118-s10-r1-w17.json",
+      "identical": true,
+      "frames": 767,
+      "framesIdentical": 767,
+      "runnerCpuSeconds": 53.31,
+      "firstDifference": null
+    },
+    {
+      "file": "g2offv2-regress-REG-CF-U-d20181114-s10-r1-w08-1500.json",
+      "identical": true,
+      "frames": 771,
+      "framesIdentical": 771,
+      "runnerCpuSeconds": 50.0,
+      "firstDifference": null
+    },
+    {
+      "file": "g2offv2-smoke-DLHZ-120-d20181114-s10-r1-w08.json",
+      "identical": true,
+      "frames": 760,
+      "framesIdentical": 760,
+      "runnerCpuSeconds": 47.8,
+      "firstDifference": null
+    },
+    {
+      "file": "g2offv2-smoke-PS-300-d20181114-s10-r1-w08.json",
+      "identical": true,
+      "frames": 795,
+      "framesIdentical": 795,
+      "runnerCpuSeconds": 48.77,
+      "firstDifference": null
+    }
+  ],
+  "runner": "C:/RideBoundData/research/runner-g2-v2"
+}

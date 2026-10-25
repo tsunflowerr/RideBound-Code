@@ -1,0 +1,32 @@
+{
+  "driverVersion": "1.0.0",
+  "scenarioId": "fleetpy-manhattan-v1-wp9-confirmatory-v2-d20181116-s10-r1",
+  "sourceScenarioContentSha256": "508d835005f7c96be5a80ca15b1f809cfb950013a85e290e75021ad54bc641e2",
+  "sourceScenarioHash": "bee52f0e155e454d3b83a7f55a9abf611dfb828360e30b37b8c85657430315f7",
+  "sourceArtifactSha256": "d9e86f33645e5eec287d387f8d63ad41ddf41d4ef648138b65d636482e2c599e",
+  "fleetpyVersion": "1.0.2",
+  "fleetpyCommit": "053aa9d4fcfde91c5d303435d5748f9206c071b0",
+  "eventDriver": "exact-source-arrival-event-clock-v1",
+  "arrivalTimeTransform": "none",
+  "routingRepresentation": "directed-normalized-shortest-path-closure-v1",
+  "completeTravelSnapshotMaximumNodes": 96,
+  "physicalDistanceRule": "travel-time-seconds-times-ten-synthetic-meters-v1",
+  "drainStepSeconds": 600,
+  "maximumDrainSteps": 24,
+  "measuredRepeatsPerArm": 1,
+  "serviceClass": "fleetpy-tlc-public-derivative-v1",
+  "commitmentPolicyId": "wp6-synthetic-policy-overlay-v1",
+  "claimClass": "finite-panel-confirmatory-only",
+  "forbiddenClaims": [
+    "population-inference",
+    "external-validity",
+    "fairness",
+    "satisfaction",
+    "SLA",
+    "novelty"
+  ],
+  "expectedRequestCount": 128,
+  "expectedVehicleCount": 10,
+  "expectedNodeCount": 96,
+  "expectedDirectedArcCount": 9120
+}

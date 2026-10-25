@@ -1,0 +1,49 @@
+{
+  "cells": 11,
+  "eoc0VsDlhz0": {
+    "cells": 11,
+    "identicalCells": 11
+  },
+  "violations": 0,
+  "revisionsChecked": 144515,
+  "perGamma": {
+    "0": {
+      "served": 925,
+      "promised": 925,
+      "sumS": 32107,
+      "ridersWithC": 16
+    },
+    "250": {
+      "served": 979,
+      "promised": 979,
+      "sumS": 8718015,
+      "ridersWithC": 141
+    },
+    "500": {
+      "served": 985,
+      "promised": 985,
+      "sumS": 26010993,
+      "ridersWithC": 218
+    },
+    "750": {
+      "served": 1005,
+      "promised": 1005,
+      "sumS": 47340509,
+      "ridersWithC": 280
+    },
+    "1000": {
+      "served": 1011,
+      "promised": 1011,
+      "sumS": 68301769,
+      "ridersWithC": 323
+    }
+  },
+  "eoc1000VsU": {
+    "riders": 1011,
+    "identical": 1011
+  },
+  "U": {
+    "served": 1011,
+    "sumS": 68301769
+  }
+}

@@ -1,5 +1,19 @@
 # Ma trận truy vết yêu cầu
 
+## RideBound thật trên dữ liệu Via, phép hòa vốn — 2026-10-26
+
+ADR-085; nhánh `research/via-zone-2026-10-26` (trên `research/p1-dwell`, không đổi mã). Nhật ký:
+`research/continuation/2026-10-26/kits/via-real-2026-10-26/VIA-LOG.md` và
+`research/continuation/2026-10-26/kits/breakeven-2026-10-26/BREAKEVEN-LOG.md`.
+
+| Yêu cầu | Chứng cứ | Trạng thái/giới hạn |
+|---|---|---|
+| Chạy RideBound thật trên dữ liệu Via ở cỡ Via | Bộ chuyển theo khu TLC: 509/508 yêu cầu, 62 xe, 60/58 điểm; dự đoán bộ mô phỏng khóa trước mọi job | Họ kịch bản mới (điểm gộp theo khu), không phải ô P512 của công ty; kết quả so từng khách ở VIA-LOG.md |
+| Ngân sách mặc định có đủ cho cỡ Via | Không: job thử dừng an toàn, ngân sách sinh phương án cấp quyết định 10.000 bị vượt với 62 xe | Sửa đổi A1 chỉ nâng ngân sách cấp quyết định và bộ giải bằng cấu hình; trần từng xe giữ nguyên |
+| Job Via chạy hết tới bản chốt cuối | Job A1 chạy hết mọi quyết định (87,6 phút) nhưng hỏng ở bản chốt cuối, runner sát trần heap 2 GiB | Sửa đổi A3: trần heap 6 GiB, in stderr của runner khi hỏng; đợt `runA3` 12 job đang chạy lúc push lần 1 |
+| Điều kiện để luật C đáng dùng (phép hòa vốn) | Kế hoạch khóa trước; cổng 2.520/2.520 lượt trùng P5/N2; G2, cùng số khách, so EOHZ35: w\* = 0,94 (0,46–1,61) | Bộ mô phỏng, 10 ngày đã xem, thăm dò; không đo cảm giác khách; INS không phân biệt được |
+| Đưa code và script lên GitHub cho máy công ty | Nhánh `research/via-zone-2026-10-26`; `research/continuation/2026-10-26/kits/` (danh sách tệp và sha256 trong `COPY-MANIFEST.tsv`) | Không có dữ liệu lớn, transcript, bộ mô phỏng của công ty; repo công khai |
+
 ## Đóng cầu nối giai đoạn 1 — 2026-10-25
 
 ADR-082 (và ADR-083 trên `research/p1-dwell`); nhánh thăm dò `research/p1-fix`, chưa push. Nhật ký:

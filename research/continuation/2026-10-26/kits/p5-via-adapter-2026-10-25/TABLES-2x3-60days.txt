@@ -1,0 +1,82 @@
+== INS: mean day value over days (n days)
+arm       days       served     visRev60     pDispPct  late60First breachDeadline60Pct       TV5min
+U           60      795.561       42.439       45.716      373.850        0.000     3910.346
+EO35        60      723.161       21.567       31.375      235.167        1.120     1390.242
+EOHZ35      60      725.167       21.672       31.505      236.089        1.128     1397.097
+RCE35       60      726.672       19.944       31.745      235.017        1.792     1402.745
+SHF72       60      685.483       30.322       21.277      166.433        2.625     2224.961
+SHHZ72      60      723.850       31.367       20.643      177.056        3.268     2459.193
+SHRC72      60      719.833       30.856       20.532      177.556        3.249     2459.796
+-- contrasts: mean diff [95%% t CI] (days a<b / a>b)
+INS    RCE35-EOHZ35     served                   1.506 [   0.369,    2.642]  (21/38) n=60
+INS    RCE35-EOHZ35     visRev60                -1.728 [  -2.234,   -1.222]  (48/10) n=60
+INS    RCE35-EOHZ35     pDispPct                 0.240 [   0.095,    0.385]  (19/41) n=60
+INS    RCE35-EOHZ35     late60First             -1.072 [  -2.326,    0.182]  (38/20) n=60
+INS    RCE35-EOHZ35     breachDeadline60Pct      0.665 [   0.591,    0.738]  (0/60) n=60
+INS    RCE35-EO35       served                   3.511 [   2.294,    4.728]  (18/41) n=60
+INS    RCE35-EO35       visRev60                -1.622 [  -2.163,   -1.081]  (47/12) n=60
+INS    RCE35-EO35       pDispPct                 0.370 [   0.223,    0.517]  (15/45) n=60
+INS    RCE35-EO35       late60First             -0.150 [  -1.357,    1.057]  (29/29) n=60
+INS    RCE35-EO35       breachDeadline60Pct      0.672 [   0.596,    0.748]  (1/59) n=60
+INS    EOHZ35-EO35      served                   2.006 [   1.266,    2.745]  (13/45) n=60
+INS    EOHZ35-EO35      visRev60                 0.106 [  -0.046,    0.257]  (9/18) n=60
+INS    EOHZ35-EO35      pDispPct                 0.130 [   0.064,    0.196]  (20/40) n=60
+INS    EOHZ35-EO35      late60First              0.922 [   0.329,    1.516]  (21/37) n=60
+INS    EOHZ35-EO35      breachDeadline60Pct      0.007 [  -0.007,    0.021]  (35/24) n=60
+INS    SHRC72-SHHZ72    served                  -4.017 [  -5.006,   -3.028]  (52/7) n=60
+INS    SHRC72-SHHZ72    visRev60                -0.511 [  -1.046,    0.024]  (37/23) n=60
+INS    SHRC72-SHHZ72    pDispPct                -0.111 [  -0.225,    0.002]  (35/25) n=60
+INS    SHRC72-SHHZ72    late60First              0.500 [  -0.325,    1.325]  (24/35) n=60
+INS    SHRC72-SHHZ72    breachDeadline60Pct     -0.019 [  -0.053,    0.016]  (34/26) n=60
+INS    SHRC72-SHF72     served                  34.350 [  31.974,   36.726]  (0/60) n=60
+INS    SHRC72-SHF72     visRev60                 0.533 [  -0.360,    1.427]  (22/37) n=60
+INS    SHRC72-SHF72     pDispPct                -0.744 [  -0.945,   -0.544]  (50/10) n=60
+INS    SHRC72-SHF72     late60First             11.122 [   9.570,   12.675]  (1/59) n=60
+INS    SHRC72-SHF72     breachDeadline60Pct      0.624 [   0.532,    0.715]  (1/59) n=60
+INS    SHHZ72-EOHZ35    served                  -1.317 [  -3.717,    1.084]  (35/24) n=60
+INS    SHHZ72-EOHZ35    visRev60                 9.694 [   8.574,   10.815]  (0/60) n=60
+INS    SHHZ72-EOHZ35    pDispPct               -10.862 [ -11.266,  -10.458]  (60/0) n=60
+INS    SHHZ72-EOHZ35    late60First            -59.033 [ -61.899,  -56.168]  (60/0) n=60
+INS    SHHZ72-EOHZ35    breachDeadline60Pct      2.140 [   1.880,    2.401]  (0/60) n=60
+
+== G2: mean day value over days (n days)
+arm       days       served     visRev60     pDispPct  late60First breachDeadline60Pct       TV5min
+U           60      804.533       88.194       47.056      372.689        0.000     4558.430
+EO35        60      730.561       39.606       32.451      234.589        1.034     1633.989
+EOHZ35      60      732.056       39.761       32.409      234.589        1.013     1633.512
+RCE35       60      729.233       23.078       31.985      235.150        1.765     1436.050
+SHF71       60      694.394       49.972       22.429      168.333        2.590     2627.057
+SHHZ71      60      732.844       53.583       21.918      179.211        3.173     2825.529
+SHRC71      60      723.300       36.939       21.382      181.911        3.099     2550.020
+-- contrasts: mean diff [95%% t CI] (days a<b / a>b)
+G2     RCE35-EOHZ35     served                  -2.822 [  -4.376,   -1.269]  (37/21) n=60
+G2     RCE35-EOHZ35     visRev60               -16.683 [ -18.049,  -15.317]  (60/0) n=60
+G2     RCE35-EOHZ35     pDispPct                -0.424 [  -0.639,   -0.210]  (42/18) n=60
+G2     RCE35-EOHZ35     late60First              0.561 [  -0.822,    1.944]  (26/33) n=60
+G2     RCE35-EOHZ35     breachDeadline60Pct      0.752 [   0.674,    0.830]  (0/60) n=60
+G2     RCE35-EO35       served                  -1.328 [  -2.977,    0.321]  (31/27) n=60
+G2     RCE35-EO35       visRev60               -16.528 [ -17.860,  -15.196]  (60/0) n=60
+G2     RCE35-EO35       pDispPct                -0.466 [  -0.676,   -0.256]  (42/18) n=60
+G2     RCE35-EO35       late60First              0.561 [  -0.963,    2.085]  (26/34) n=60
+G2     RCE35-EO35       breachDeadline60Pct      0.731 [   0.656,    0.806]  (0/60) n=60
+G2     EOHZ35-EO35      served                   1.494 [   0.697,    2.292]  (20/37) n=60
+G2     EOHZ35-EO35      visRev60                 0.156 [  -0.229,    0.540]  (24/29) n=60
+G2     EOHZ35-EO35      pDispPct                -0.042 [  -0.126,    0.042]  (28/32) n=60
+G2     EOHZ35-EO35      late60First              0.000 [  -0.717,    0.717]  (27/28) n=60
+G2     EOHZ35-EO35      breachDeadline60Pct     -0.021 [  -0.040,   -0.002]  (38/20) n=60
+G2     SHRC71-SHHZ71    served                  -9.544 [ -10.939,   -8.150]  (57/3) n=60
+G2     SHRC71-SHHZ71    visRev60               -16.644 [ -17.989,  -15.300]  (60/0) n=60
+G2     SHRC71-SHHZ71    pDispPct                -0.536 [  -0.701,   -0.371]  (49/11) n=60
+G2     SHRC71-SHHZ71    late60First              2.700 [   1.363,    4.037]  (17/43) n=60
+G2     SHRC71-SHHZ71    breachDeadline60Pct     -0.074 [  -0.144,   -0.004]  (34/26) n=60
+G2     SHRC71-SHF71     served                  28.906 [  26.726,   31.085]  (0/60) n=60
+G2     SHRC71-SHF71     visRev60               -13.033 [ -14.763,  -11.304]  (59/1) n=60
+G2     SHRC71-SHF71     pDispPct                -1.047 [  -1.271,   -0.823]  (51/9) n=60
+G2     SHRC71-SHF71     late60First             13.578 [  11.885,   15.271]  (1/59) n=60
+G2     SHRC71-SHF71     breachDeadline60Pct      0.509 [   0.421,    0.598]  (4/56) n=60
+G2     SHHZ71-EOHZ35    served                   0.789 [  -1.817,    3.395]  (29/29) n=60
+G2     SHHZ71-EOHZ35    visRev60                13.822 [  12.172,   15.472]  (1/59) n=60
+G2     SHHZ71-EOHZ35    pDispPct               -10.491 [ -10.873,  -10.109]  (60/0) n=60
+G2     SHHZ71-EOHZ35    late60First            -55.378 [ -58.296,  -52.459]  (60/0) n=60
+G2     SHHZ71-EOHZ35    breachDeadline60Pct      2.160 [   1.900,    2.421]  (0/60) n=60
+

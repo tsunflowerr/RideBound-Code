@@ -1,0 +1,88 @@
+{
+  "finishedJobs": 4,
+  "cells": 4,
+  "exactVsEmulator": 4,
+  "exactVsRealDLHZ120": 4,
+  "ridersVsEmulator": [
+    369,
+    369
+  ],
+  "results": [
+    {
+      "cell": "d20181112-s10-r1-w08",
+      "vsEmulatorDLHZ120": {
+        "riders": 99,
+        "identical": 99,
+        "exact": true,
+        "onlyReal": 0,
+        "onlyOther": 0,
+        "firstDifference": null
+      },
+      "vsRealDLHZ120": {
+        "riders": 99,
+        "identical": 99,
+        "exact": true,
+        "onlyReal": 0,
+        "onlyOther": 0,
+        "firstDifference": null
+      }
+    },
+    {
+      "cell": "d20181113-s10-r1-w08",
+      "vsEmulatorDLHZ120": {
+        "riders": 101,
+        "identical": 101,
+        "exact": true,
+        "onlyReal": 0,
+        "onlyOther": 0,
+        "firstDifference": null
+      },
+      "vsRealDLHZ120": {
+        "riders": 101,
+        "identical": 101,
+        "exact": true,
+        "onlyReal": 0,
+        "onlyOther": 0,
+        "firstDifference": null
+      }
+    },
+    {
+      "cell": "d20181114-s10-r1-w08",
+      "vsEmulatorDLHZ120": {
+        "riders": 92,
+        "identical": 92,
+        "exact": true,
+        "onlyReal": 0,
+        "onlyOther": 0,
+        "firstDifference": null
+      },
+      "vsRealDLHZ120": {
+        "riders": 92,
+        "identical": 92,
+        "exact": true,
+        "onlyReal": 0,
+        "onlyOther": 0,
+        "firstDifference": null
+      }
+    },
+    {
+      "cell": "d20181115-s10-r1-w08",
+      "vsEmulatorDLHZ120": {
+        "riders": 77,
+        "identical": 77,
+        "exact": true,
+        "onlyReal": 0,
+        "onlyOther": 0,
+        "firstDifference": null
+      },
+      "vsRealDLHZ120": {
+        "riders": 77,
+        "identical": 77,
+        "exact": true,
+        "onlyReal": 0,
+        "onlyOther": 0,
+        "firstDifference": null
+      }
+    }
+  ]
+}

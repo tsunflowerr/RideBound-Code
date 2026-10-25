@@ -1,0 +1,4 @@
+2026-10-23T06:23:21 G2REGRESS-PASSED under AMENDMENTS.md A5 (written by hand).
+U: 2382/2383 frames identical, summary identical; RCE35: 2265/2266 frames identical, summary identical.
+The only differing frame in both is frame 2 (initializeRun): manifest.binarySha256 (Runner build) and manifest.coreCommitSha (adapter repository HEAD 1ce15e92 -> 7435661, by design of this phase). Every decision, route, acceptance and promise is identical.
+G2REGRESS-FAILED.txt (the automatic verdict) is kept unchanged.

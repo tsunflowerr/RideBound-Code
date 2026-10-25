@@ -1,0 +1,153 @@
+{
+  "finishedJobs": 10,
+  "cellArmsCompared": 10,
+  "cellArmsExact": 10,
+  "riders": 1003,
+  "ridersIdentical": 1003,
+  "emulatorPredictionsSha256": "06742da62c45af96c1310b85a811088fbaaa7ad9674f2e068557592a8a13d17a",
+  "realRidersTsv": "E:\\Code\\Report_INT3508\\ridebound-scratchpad\\via-bridge-2026-10-22\\compare\\main-1026-real-riders.tsv",
+  "byArm": {
+    "U": {
+      "cellArms": 2,
+      "exact": 2
+    },
+    "C-120": {
+      "cellArms": 2,
+      "exact": 2
+    },
+    "C-300": {
+      "cellArms": 2,
+      "exact": 2
+    },
+    "PS-300": {
+      "cellArms": 2,
+      "exact": 2
+    },
+    "DLHZ-120": {
+      "cellArms": 2,
+      "exact": 2
+    }
+  },
+  "results": [
+    {
+      "arm": "C-120",
+      "cell": "d20181112-s10-r1-w08",
+      "riders": 101,
+      "identical": 101,
+      "exact": true,
+      "onlyReal": 0,
+      "onlyEmulator": 0,
+      "servedReal": 101,
+      "servedEmulator": 101,
+      "firstDifference": null
+    },
+    {
+      "arm": "C-120",
+      "cell": "d20181113-s10-r1-w08",
+      "riders": 102,
+      "identical": 102,
+      "exact": true,
+      "onlyReal": 0,
+      "onlyEmulator": 0,
+      "servedReal": 102,
+      "servedEmulator": 102,
+      "firstDifference": null
+    },
+    {
+      "arm": "C-300",
+      "cell": "d20181112-s10-r1-w08",
+      "riders": 97,
+      "identical": 97,
+      "exact": true,
+      "onlyReal": 0,
+      "onlyEmulator": 0,
+      "servedReal": 97,
+      "servedEmulator": 97,
+      "firstDifference": null
+    },
+    {
+      "arm": "C-300",
+      "cell": "d20181113-s10-r1-w08",
+      "riders": 101,
+      "identical": 101,
+      "exact": true,
+      "onlyReal": 0,
+      "onlyEmulator": 0,
+      "servedReal": 101,
+      "servedEmulator": 101,
+      "firstDifference": null
+    },
+    {
+      "arm": "DLHZ-120",
+      "cell": "d20181112-s10-r1-w08",
+      "riders": 99,
+      "identical": 99,
+      "exact": true,
+      "onlyReal": 0,
+      "onlyEmulator": 0,
+      "servedReal": 99,
+      "servedEmulator": 99,
+      "firstDifference": null
+    },
+    {
+      "arm": "DLHZ-120",
+      "cell": "d20181113-s10-r1-w08",
+      "riders": 101,
+      "identical": 101,
+      "exact": true,
+      "onlyReal": 0,
+      "onlyEmulator": 0,
+      "servedReal": 101,
+      "servedEmulator": 101,
+      "firstDifference": null
+    },
+    {
+      "arm": "PS-300",
+      "cell": "d20181112-s10-r1-w08",
+      "riders": 99,
+      "identical": 99,
+      "exact": true,
+      "onlyReal": 0,
+      "onlyEmulator": 0,
+      "servedReal": 99,
+      "servedEmulator": 99,
+      "firstDifference": null
+    },
+    {
+      "arm": "PS-300",
+      "cell": "d20181113-s10-r1-w08",
+      "riders": 102,
+      "identical": 102,
+      "exact": true,
+      "onlyReal": 0,
+      "onlyEmulator": 0,
+      "servedReal": 102,
+      "servedEmulator": 102,
+      "firstDifference": null
+    },
+    {
+      "arm": "U",
+      "cell": "d20181112-s10-r1-w08",
+      "riders": 100,
+      "identical": 100,
+      "exact": true,
+      "onlyReal": 0,
+      "onlyEmulator": 0,
+      "servedReal": 100,
+      "servedEmulator": 100,
+      "firstDifference": null
+    },
+    {
+      "arm": "U",
+      "cell": "d20181113-s10-r1-w08",
+      "riders": 101,
+      "identical": 101,
+      "exact": true,
+      "onlyReal": 0,
+      "onlyEmulator": 0,
+      "servedReal": 101,
+      "servedEmulator": 101,
+      "firstDifference": null
+    }
+  ]
+}

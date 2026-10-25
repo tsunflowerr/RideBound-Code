@@ -1,0 +1,9 @@
+# Smoke integration inspection receipt
+smokeVerdictSha256 093d1f341be6740784c45b627c23514195e2711fb762f9886d32b8beeff5dc5b
+inspected-by: Antigravity & Claude
+inspection: accepted
+
+Findings from smoke run (2026-10-14):
+1. CF-U-d20181114-s10-r1-w08: 768 decisions, all 768 executionPath=validatedIncumbent, finalSolveStatus=optimal, primarySolveStatus=optimal, level shape accepted-request-count > operational-cost > candidate-id-rank:*x8. Served 94, max drop sum |c| = 420,455 ms, non-normal certificates 0.
+2. CF-C-30-d20181114-s10-r1-w08: 746 decisions, all 746 executionPath=validatedIncumbent, finalSolveStatus=optimal, primarySolveStatus=optimal, level shape accepted-request-count > operational-cost > candidate-id-rank:*x8. Served 90, max drop sum |c| = 28,860 ms (<= 30,000 ms), non-normal certificates 0, breaches {}.
+3. The cost-first objective order is confirmed active and solving to optimality with zero solver failures.

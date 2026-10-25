@@ -1,0 +1,6 @@
+rows re-run: 2520 (expected 2520)
+compared with existing rows: 2520; re-run rows without an existing row: 0
+gate fields ('served', 'visRev60', 'late60First', 'pDisp', 'breachLedger'): 0 differences
+other shared numeric/object fields with differences (information): none
+dispatch-only invariants (netMismatch 0, R60 == visRev60, La60 == late60First): 0 rows fail
+GATE PASS

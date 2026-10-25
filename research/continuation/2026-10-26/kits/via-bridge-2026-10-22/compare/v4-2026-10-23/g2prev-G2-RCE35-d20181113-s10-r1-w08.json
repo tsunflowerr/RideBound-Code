@@ -1,0 +1,12 @@
+{
+  "runA": "C:\\RideBoundData\\research\\via-bridge-man-v1\\g2v3\\g2main\\G2-RCE35-d20181113-s10-r1-w08",
+  "runB": "C:\\RideBoundData\\research\\via-bridge-man-v1\\g2v4\\g2all\\G2-RCE35-d20181113-s10-r1-w08",
+  "framesA": 2419,
+  "framesB": 2419,
+  "framesCompared": 2419,
+  "framesIdentical": 2419,
+  "firstDifference": null,
+  "summaryIdentical": true,
+  "summaryDifference": null,
+  "identical": true
+}

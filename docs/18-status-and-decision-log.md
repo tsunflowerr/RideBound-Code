@@ -1733,6 +1733,14 @@ Date: 2026-08-27
 
 ## 5. Next action
 
+**Nhánh `research/via-zone-2026-10-26`, cập nhật 2026-10-26:** RideBound thật chạy trên dữ liệu Via ở cỡ Via (gộp theo khu
+TLC) và phép hòa vốn (ADR-085). Script, cấu hình, kết quả nhỏ ở `research/continuation/2026-10-26/`; trạng thái job và
+kết quả so từng khách ở `kits/via-real-2026-10-26/VIA-LOG.md`. Việc kế tiếp:
+1. Đọc kết quả so từng khách của 12 job; nếu khớp, sửa câu "RideBound thật chưa chạy ở cỡ Via" trong khóa luận thành câu
+   có giới hạn (điểm gộp theo khu, 2 ô, Shadow vẫn chỉ trong bộ mô phỏng).
+2. Đưa phép hòa vốn vào khóa luận như một điều kiện ("luật C đáng dùng khi …"), không như một chiến thắng.
+3. Các việc của sinh viên giữ nguyên (P4, P6, N9, họp giáo viên, quyết định đợt 3).
+
 **Nhánh `research/p1-fix` / `research/p1-dwell`, cập nhật 2026-10-25:** giai đoạn 1 xong (ADR-082). Phần dwell nằm ở ADR-083 trên
 `research/p1-dwell`. Đã đọc toàn bộ tài
 liệu công ty; danh sách việc ở
@@ -5545,6 +5553,66 @@ không chép nguyên văn.
   - N3 và N4 mới có kết quả thăm dò a5 của công ty.
 - Không push; cây chính không đổi.
 
+### ADR-085 — 2026-10-26 — Proposed (thăm dò; RideBound thật trên dữ liệu Via ở cỡ Via; phép hòa vốn; nhánh `research/via-zone-2026-10-26`)
+
+**Context:**
+- Lệnh của chủ ngày 26/10 (khoảng 00:45): (1) làm phép hòa vốn; (2) chuẩn bị và chạy vài job RideBound thật trên dữ liệu
+  Via; (3) commit code C#, script và những thứ cần thiết, không nặng, lên một nhánh của `RideBound-Code` để máy công ty
+  pull về.
+- Trước đó RideBound thật chỉ chạy tới 128 yêu cầu / 10 xe trên dữ liệu Manhattan cũ (cầu nối 238 cặp, ADR-084); dữ liệu
+  Via chỉ chạy trong bộ mô phỏng.
+
+**Decision:**
+- **Gộp điểm theo khu TLC.** Job thật dựng đồ thị đầy đủ trên mọi điểm của kịch bản và kiểm từng cạnh bằng bộ tìm đường
+  của FleetPy (`actual_fleetpy_medium_preflight.py:113-155, :437-447`); mỗi khung giờ gửi toàn bộ bảng cặp điểm cho
+  Runner. Ô Via của công ty có 824–858 điểm (khoảng 680.000 cạnh), không chạy được trong thực tế. Chuyến Via của TLC chỉ ghi
+  tới khu; công ty rải điểm trong khu. Bộ chuyển `convert_via_zone.py` đưa mỗi điểm về một điểm đại diện của khu (medoid),
+  giữ toàn bộ cầu (509/508 yêu cầu, bỏ 3/4 chuyến nội khu) và 62 xe trên 60/58 điểm. Đây là họ kịch bản mới, không phải ô
+  của công ty; nó kiểm bộ mô phỏng ở cỡ Via, không tái tạo số P5.
+- Bộ chuyển là script nghiên cứu, không phải bộ chuẩn hóa C#; bộ chuẩn hóa C# và giới hạn 128/32/96 của nó không đổi. Job
+  thật nhận số lượng do driver khai báo (`actual_fleetpy_medium_preflight.py:809-817`, có sẵn).
+- **Sửa đổi A1 (trước khi chạy lại):** với WP4 đã bắc cầu, job thử đầu tiên dừng an toàn sau 4,1 phút:
+  `INTERNAL_ERROR: Pre-solve counters must fit their stage budgets ...`. Ngân sách sinh phương án cấp quyết định
+  (10.000) là tổng công việc của mọi xe cộng G2 (`SolverBackedRidePoolingPolicy.cs:520-524`) và bị kiểm cứng
+  (`CandidateSelectionExecution.cs:99-112`); 8–10 xe chưa lần nào chạm (232.103 quyết định), 62 xe thì vượt. Cấu hình
+  `wp4-via-*-a1.json` chỉ nâng bốn ngân sách cấp quyết định và bộ giải (sinh và kiểm 5.000.000; bộ giải 10.000.000 đơn vị /
+  30 s tất định); trần từng xe (100 phương án, 10.000 đơn vị) và mọi luật giữ nguyên. Không đổi mã.
+- **Sửa đổi A2, A3:**
+  - Job thử với A1 chạy hết mọi quyết định, tới giây mô phỏng 9.000, trong 87,6 phút. Nó hỏng ở bản chốt trạng thái cuối
+    cùng: Runner trả `INTERNAL_ERROR` chung (`RunnerHost.cs:96-106`). RAM của runner lúc đó là 1.568 MiB, sát trần heap
+    2 GiB của driver; nhiều khả năng là thiếu heap, nhưng chưa chứng minh.
+  - Phép so từng khách cần bản chốt này (`bridge_riders.py:57-60`).
+  - Đợt chính đã mở sớm theo A2 nên được dừng lại; mọi đầu ra dở dang được giữ.
+  - A3 chỉ đổi ba thứ: trần heap lên 6 GiB; một bản vá chẩn đoán in stderr của Runner khi hỏng; một đợt `runA3` gồm
+    12 job xếp theo thứ tự ưu tiên, các lần nhận job cách nhau 10 phút. Không đổi mã, cấu hình luật hay dự đoán.
+
+**Evidence** (hồ sơ `E:/Code/Report_INT3508/ridebound-scratchpad/`, bản chép trong
+`research/continuation/2026-10-26/kits/`):
+- **Phát hiện:** với ngân sách mặc định/đã bắc cầu, RideBound không chạy được một ô cỡ Via; nó dừng theo thiết kế (không
+  lặng lẽ bỏ phương án). Đầu ra hỏng giữ ở `E:/RideBoundData/research/via-real-v1/runs/trial/`.
+- **Dự đoán bộ mô phỏng** (`via-real-2026-10-26/emulate_via.js`, wf15) cho 6 luật × 2 ô khóa sha256 lúc
+  2026-10-25T18:06:24Z, trước mọi job; khoảng 495 quyết định mỗi job, 362–464 khách được phục vụ, G2 dời 6–33 khách.
+- **Phép hòa vốn** (`breakeven-2026-10-26/BREAKEVEN-RESULT.md`; kế hoạch khóa trước, sha `2e82c711…`; chạy lại 2.520 lượt
+  bộ mô phỏng, trùng tuyệt đối P5/N2): với G2 và cùng số khách phục vụ, so với EOHZ35, luật C bớt 13,5 khách bị đảo hứa và
+  thêm 12,7 khách bị điều phối dời muộn quá 1 phút mỗi ngày; **w\* = 0,94** (bootstrap theo ngày 0,46–1,61). Qua α 10–75%,
+  w\* 0,3–1,2; không mức α nào luật C hơn trên cả hai thước đo. Khi chỉ chèn: không phân biệt được. Phần "muộn" do điều
+  phối, không do tắc đường.
+
+- **Trạng thái lúc push lần 1 (26/10, khoảng 03:00):**
+  - đợt `runA3` (12 job) đang chạy;
+  - chưa có job Via nào qua tới bản chốt cuối, nên **chưa có kết quả so từng khách**;
+  - kết quả sẽ ghi vào `kits/via-real-2026-10-26/VIA-LOG.md` và một lần push sau.
+
+**Consequences:**
+- Câu "RideBound thật chưa chạy ở cỡ Via" chỉ được sửa theo kết quả so từng khách của các job `runA3`. Phần Shadow vẫn chỉ
+  có trong bộ mô phỏng.
+- Bộ máy chạy job hiện tại tốn khoảng 1,5 giờ và khoảng 1 GB nhật ký cho mỗi job Via chỉ chèn; job G2 lâu hơn. Đây là giới
+  hạn thực tế cần ghi trong khóa luận nếu dùng.
+- Khóa luận không đổi trong ADR này.
+- Nhánh `research/via-zone-2026-10-26` đặt trên `research/p1-dwell`, thêm `research/continuation/2026-10-26/` (script,
+  cấu hình, kết quả nhỏ; không có dữ liệu lớn và không có bộ mô phỏng của công ty) và tài liệu này; push lên
+  `RideBound-Code` theo lệnh của chủ. Repo đang công khai.
+
 ## Cập nhật khóa luận — 2026-10-16T00:09:00.907016+07:00
 
 Người dùng yêu cầu cập nhật toàn bộ nội dung theo cách đọc tự nhiên, bổ sung
@@ -5642,6 +5710,10 @@ Claude/Antigravity. Không có quyền commit/push mới trong lượt này.
 
 ## 9. Change history
 
+- 2026-10-26 (`research/via-zone-2026-10-26`, trên `research/p1-dwell`; không đổi mã; push lên `RideBound-Code` theo lệnh
+  của chủ): ADR-085. Bộ chuyển Via theo khu TLC và job RideBound thật ở cỡ Via (sửa đổi A1 về ngân sách cấp quyết định);
+  phép hòa vốn w\* = 0,94 (G2, cùng số khách, so EOHZ35); script và kết quả nhỏ của tháng 10 ở
+  `research/continuation/2026-10-26/`.
 - 2026-10-25 (`research/p1-dwell`, chỉ tài liệu): ADR-084. Các phép thăm dò sau kiểm toán gồm P5, P7, nhánh hạn chót của
   sinh viên (11/11), kiểm đồng nhất, bằng chứng bộ giải, N1 và N2. Cầu nối nay là 238 cặp kịch bản–luật.
 - 2026-10-25 (nhánh thăm dò `research/p1-dwell`, trên `research/p1-fix`; chưa push): thêm tùy chọn

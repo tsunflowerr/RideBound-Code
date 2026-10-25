@@ -1,0 +1,18 @@
+test_a_different_first_stop_still_fails_closed (test_in_progress_donor_leg.InProgressDonorLegTests) ... ok
+test_a_service_leg_with_a_duration_still_fails_closed (test_in_progress_donor_leg.InProgressDonorLegTests) ... ok
+test_a_vehicle_without_a_locked_leg_gets_exactly_the_runner_route (test_in_progress_donor_leg.InProgressDonorLegTests) ... ok
+test_the_stop_being_served_but_not_yet_reported_is_fleetpys_started_stop (test_in_progress_donor_leg.InProgressDonorLegTests) ... FAIL
+
+======================================================================
+FAIL: test_the_stop_being_served_but_not_yet_reported_is_fleetpys_started_stop (test_in_progress_donor_leg.InProgressDonorLegTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Code\RideBound-p1fix\simulators\fleetpy-ridebound\tests\test_in_progress_donor_leg.py", line 94, in test_the_stop_being_served_but_not_yet_reported_is_fleetpys_started_stop
+    self.assertTrue(plan.list_plan_stops[0].is_locked())
+AssertionError: False is not true
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.005s
+
+FAILED (failures=1)
+Loading modules from development content.

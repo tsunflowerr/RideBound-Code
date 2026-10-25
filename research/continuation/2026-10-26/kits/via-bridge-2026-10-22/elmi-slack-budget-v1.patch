@@ -1,0 +1,1078 @@
+diff --git a/src/RideBound.Application/Commitments/CommitmentDecisionValidator.cs b/src/RideBound.Application/Commitments/CommitmentDecisionValidator.cs
+index 4eeea79..51c77cd 100644
+--- a/src/RideBound.Application/Commitments/CommitmentDecisionValidator.cs
++++ b/src/RideBound.Application/Commitments/CommitmentDecisionValidator.cs
+@@ -383,12 +383,12 @@ public sealed class CommitmentDecisionValidator
+                 return ProjectionFailure(exogenousProjection.Failure!, request);
+             }
+ 
+-            // Only a deadline reads the initial promise, so without one this path is
+-            // unchanged. The ledger can only be opened by an initial promise, so a
+-            // different first entry is a broken invariant, not a rejectable candidate.
++            // Only a deadline or a slack-proportional budget reads the initial promise, so
++            // without one this path is unchanged. The ledger can only be opened by an initial
++            // promise, so a different first entry is a broken invariant, not a rejectable candidate.
+             PromiseProjection? anchor = null;
+ 
+-            if (policy.DropEtaDeadlineSlack is not null)
++            if (policy.ReadsInitialPromise)
+             {
+                 var initialEntry = priorHistory.Entries[0];
+ 
+@@ -401,6 +401,9 @@ public sealed class CommitmentDecisionValidator
+                 anchor = initialEntry.PublishedPromise.Projection;
+             }
+ 
++            // Per-rider drop_eta_total_ms limit of a slack-proportional budget; null otherwise.
++            var dropEtaTotalLimit = policy.DropEtaTotalLimitFor(anchor, request.MaxRideTime);
++
+             var lockWitnesses = _lockEvaluator.Evaluate(
+                 request,
+                 priorHistory.Current.PublishedPromise,
+@@ -428,7 +431,8 @@ public sealed class CommitmentDecisionValidator
+                     exogenousProjection.Value!,
+                     context,
+                     policy,
+-                    anchor)
++                    anchor,
++                    dropEtaTotalLimit)
+                 : null;
+ 
+             if (noWorseRoute && reference is null)
+@@ -526,7 +530,8 @@ public sealed class CommitmentDecisionValidator
+                 request.Lifecycle,
+                 priorHistory.Current.BudgetAfter,
+                 charged,
+-                policy);
++                policy,
++                dropEtaTotalLimit);
+ 
+             if (!budget.IsAllowed)
+             {
+@@ -763,7 +768,8 @@ public sealed class CommitmentDecisionValidator
+         PromiseProjection exogenous,
+         CommitmentValidationContext context,
+         CommitmentPolicy policy,
+-        PromiseProjection? anchor)
++        PromiseProjection? anchor,
++        long? dropEtaTotalLimit)
+     {
+         var keptLocks = _lockEvaluator.Evaluate(
+             request,
+@@ -793,7 +799,8 @@ public sealed class CommitmentDecisionValidator
+             request.Lifecycle,
+             priorHistory.Current.BudgetAfter,
+             keptCharged,
+-            policy);
++            policy,
++            dropEtaTotalLimit);
+         return new NoWorseReference(exogenous, keptLocks, keptBudget.Witnesses);
+     }
+ 
+diff --git a/src/RideBound.Domain/Commitments/CommitmentBudgetEvaluator.cs b/src/RideBound.Domain/Commitments/CommitmentBudgetEvaluator.cs
+index 853a263..dc1e30e 100644
+--- a/src/RideBound.Domain/Commitments/CommitmentBudgetEvaluator.cs
++++ b/src/RideBound.Domain/Commitments/CommitmentBudgetEvaluator.cs
+@@ -43,11 +43,21 @@ public sealed class CommitmentBudgetEvaluator
+         RequestLifecycle lifecycle,
+         CommitmentVector before,
+         CommitmentVector delta,
+-        CommitmentPolicy policy)
++        CommitmentPolicy policy,
++        long? dropEtaTotalLimit = null)
+     {
+         ArgumentNullException.ThrowIfNull(before);
+         ArgumentNullException.ThrowIfNull(delta);
+         ArgumentNullException.ThrowIfNull(policy);
++
++        // A per-rider limit exists only for a slack-proportional budget, and that policy has no
++        // fixed limit on the dimension, so the two can never both apply.
++        if ((dropEtaTotalLimit is not null) != (policy.DropEtaBudgetSlackPermille is not null))
++        {
++            throw new ArgumentException(
++                "A per-rider drop_eta_total_ms limit is given exactly for a slack-proportional budget.",
++                nameof(dropEtaTotalLimit));
++        }
+         var added = before.Add(delta);
+ 
+         if (!added.IsSuccess)
+@@ -76,9 +86,13 @@ public sealed class CommitmentBudgetEvaluator
+         foreach (var dimension in CommitmentDimensionVocabulary.Ordered)
+         {
+             var limit = policy.Limits[dimension];
++            var configuredLimit = dimension == CommitmentDimension.DropEtaTotalMs
++                && dropEtaTotalLimit is long riderLimit
++                    ? riderLimit
++                    : limit.HardLimit;
+ 
+             if ((limit.ApplicablePhases & phase) == 0
+-                || limit.HardLimit is not long hardLimit)
++                || configuredLimit is not long hardLimit)
+             {
+                 continue;
+             }
+diff --git a/src/RideBound.Domain/Commitments/CommitmentLockEvaluator.cs b/src/RideBound.Domain/Commitments/CommitmentLockEvaluator.cs
+index 75586c2..2e45465 100644
+--- a/src/RideBound.Domain/Commitments/CommitmentLockEvaluator.cs
++++ b/src/RideBound.Domain/Commitments/CommitmentLockEvaluator.cs
+@@ -101,7 +101,8 @@ public sealed class CommitmentLockEvaluator
+ 
+         // The deadline witness goes last, so a lock witness keeps its position
+         // and callers reading the first witness still see the lock.
+-        if (policy.DropEtaDeadlineSlack is Duration slack)
++        if (policy.DropEtaDeadlineSlack is not null
++            || policy.DropEtaDeadlineSlackPermille is not null)
+         {
+             AddDeadlineWitness(
+                 ordered,
+@@ -109,7 +110,6 @@ public sealed class CommitmentLockEvaluator
+                 exogenous,
+                 candidate,
+                 anchor,
+-                slack,
+                 policy);
+         }
+ 
+@@ -190,7 +190,6 @@ public sealed class CommitmentLockEvaluator
+         PromiseProjection exogenous,
+         PromiseProjection candidate,
+         PromiseProjection? anchor,
+-        Duration slack,
+         CommitmentPolicy policy)
+     {
+         if (anchor is null)
+@@ -207,6 +206,10 @@ public sealed class CommitmentLockEvaluator
+                 nameof(anchor));
+         }
+ 
++        // Fixed slack, or the slack-proportional share of this rider's first promise.
++        var slack = policy.DeadlineSlackFor(anchor, request.MaxRideTime)
++            ?? throw new InvalidOperationException("A deadline rule has no slack.");
++
+         // Both values are canonical non-negative integers below 2^53, so the
+         // difference and its negation fit in a long.
+         var shift = candidate.DropEta.Milliseconds - anchor.DropEta.Milliseconds;
+diff --git a/src/RideBound.Domain/Commitments/CommitmentPolicy.cs b/src/RideBound.Domain/Commitments/CommitmentPolicy.cs
+index 4249240..60ba03f 100644
+--- a/src/RideBound.Domain/Commitments/CommitmentPolicy.cs
++++ b/src/RideBound.Domain/Commitments/CommitmentPolicy.cs
+@@ -138,7 +138,9 @@ public sealed class CommitmentPolicy
+         Duration? dropEtaDeadlineSlack = null,
+         bool dropEtaDeadlineTwoSided = false,
+         bool dropEtaDeadlineRelaxed = false,
+-        Duration? dropEtaRevisionLimit = null)
++        Duration? dropEtaRevisionLimit = null,
++        int? dropEtaBudgetSlackPermille = null,
++        int? dropEtaDeadlineSlackPermille = null)
+     {
+         ArgumentNullException.ThrowIfNull(limits);
+         ArgumentNullException.ThrowIfNull(materialRevisionRule);
+@@ -197,14 +199,41 @@ public sealed class CommitmentPolicy
+                 "Only pickup and drop ETA locks can be relaxed to a ratchet.");
+         }
+ 
+-        if (dropEtaDeadlineTwoSided && dropEtaDeadlineSlack is null)
++        if (dropEtaBudgetSlackPermille is int budgetPermille
++            && budgetPermille is < 1 or > 1000)
++        {
++            throw new ArgumentOutOfRangeException(
++                nameof(dropEtaBudgetSlackPermille),
++                "A slack-proportional budget must be 1 to 1000 permille.");
++        }
++
++        if (dropEtaDeadlineSlackPermille is int deadlinePermille
++            && deadlinePermille is < 1 or > 1000)
++        {
++            throw new ArgumentOutOfRangeException(
++                nameof(dropEtaDeadlineSlackPermille),
++                "A slack-proportional deadline must be 1 to 1000 permille.");
++        }
++
++        // A rider has one drop deadline slack: either the fixed one or the share of its slack.
++        if (dropEtaDeadlineSlack is not null && dropEtaDeadlineSlackPermille is not null)
++        {
++            throw new ArgumentException(
++                "A deadline slack is either fixed or slack-proportional, not both.",
++                nameof(dropEtaDeadlineSlackPermille));
++        }
++
++        var hasDeadline = dropEtaDeadlineSlack is not null
++            || dropEtaDeadlineSlackPermille is not null;
++
++        if (dropEtaDeadlineTwoSided && !hasDeadline)
+         {
+             throw new ArgumentException(
+                 "A two-sided deadline requires a deadline slack.",
+                 nameof(dropEtaDeadlineTwoSided));
+         }
+ 
+-        if (dropEtaDeadlineRelaxed && dropEtaDeadlineSlack is null)
++        if (dropEtaDeadlineRelaxed && !hasDeadline)
+         {
+             throw new ArgumentException(
+                 "A relaxed deadline requires a deadline slack.",
+@@ -220,6 +249,17 @@ public sealed class CommitmentPolicy
+                 nameof(dropEtaDeadlineRelaxed));
+         }
+ 
++        // The slack-proportional budget is the drop_eta_total_ms hard limit of each rider, so a
++        // fixed hard limit on the same dimension would leave two limits for one ledger value.
++        if (dropEtaBudgetSlackPermille is not null
++            && materialized.Single(value => value.Dimension == CommitmentDimension.DropEtaTotalMs)
++                .HardLimit is not null)
++        {
++            throw new ArgumentException(
++                "A slack-proportional budget replaces the fixed drop_eta_total_ms hard limit.",
++                nameof(dropEtaBudgetSlackPermille));
++        }
++
+         BudgetBasis = budgetBasis;
+         _limits = materialized.ToFrozenDictionary(value => value.Dimension);
+         MaterialRevisionRule = materialRevisionRule;
+@@ -231,8 +271,96 @@ public sealed class CommitmentPolicy
+         DropEtaDeadlineTwoSided = dropEtaDeadlineTwoSided;
+         DropEtaDeadlineRelaxed = dropEtaDeadlineRelaxed;
+         DropEtaRevisionLimit = dropEtaRevisionLimit;
++        DropEtaBudgetSlackPermille = dropEtaBudgetSlackPermille;
++        DropEtaDeadlineSlackPermille = dropEtaDeadlineSlackPermille;
++    }
++
++    /// <summary>
++    /// The rider's drop slack at the first published promise, scaled by a permille share
++    /// (Elmi et al. 2026, Ordinary Control, as formalised in the wf14 preregistration):
++    /// round(permille / 1000 * max(0, pickup0 + maxRide - drop0)), half away from zero.
++    /// The slack is the room the ride-time limit leaves after the first promise, so it is
++    /// fixed when the promise opens and never re-measured. The arithmetic is in IEEE double,
++    /// exactly as the emulator's Math.round(alpha * slack), and the value is non-negative.
++    /// </summary>
++    public static long SlackProportionalLimit(
++        PromiseProjection initialPromise,
++        Duration maximumRideTime,
++        int permille)
++    {
++        ArgumentNullException.ThrowIfNull(initialPromise);
++
++        if (permille is < 1 or > 1000)
++        {
++            throw new ArgumentOutOfRangeException(nameof(permille));
++        }
++
++        // Canonical non-negative integers below 2^53, so the sums fit in a long and the
++        // slack converts to double without loss.
++        var slack = Math.Max(
++            0L,
++            initialPromise.PickupEta.Milliseconds
++                + maximumRideTime.Milliseconds
++                - initialPromise.DropEta.Milliseconds);
++
++        return (long)Math.Round(
++            permille / 1000.0 * slack,
++            MidpointRounding.AwayFromZero);
++    }
++
++    /// <summary>
++    /// Effective drop deadline slack of one rider: the fixed slack, or the slack-proportional
++    /// share of the rider's first promise; null when the policy has no deadline.
++    /// </summary>
++    public Duration? DeadlineSlackFor(PromiseProjection? initialPromise, Duration maximumRideTime)
++    {
++        if (DropEtaDeadlineSlack is Duration fixedSlack)
++        {
++            return fixedSlack;
++        }
++
++        if (DropEtaDeadlineSlackPermille is not int permille)
++        {
++            return null;
++        }
++
++        if (initialPromise is null)
++        {
++            throw new ArgumentException(
++                "A slack-proportional deadline requires the initial promise.",
++                nameof(initialPromise));
++        }
++
++        return new Duration(SlackProportionalLimit(initialPromise, maximumRideTime, permille));
++    }
++
++    /// <summary>
++    /// Per-rider drop_eta_total_ms hard limit of a slack-proportional budget; null when the
++    /// policy uses the dimension's fixed limit (or none).
++    /// </summary>
++    public long? DropEtaTotalLimitFor(PromiseProjection? initialPromise, Duration maximumRideTime)
++    {
++        if (DropEtaBudgetSlackPermille is not int permille)
++        {
++            return null;
++        }
++
++        if (initialPromise is null)
++        {
++            throw new ArgumentException(
++                "A slack-proportional budget requires the initial promise.",
++                nameof(initialPromise));
++        }
++
++        return SlackProportionalLimit(initialPromise, maximumRideTime, permille);
+     }
+ 
++    /// <summary>True when a rule of this policy reads the rider's initial promise.</summary>
++    public bool ReadsInitialPromise =>
++        DropEtaDeadlineSlack is not null
++        || DropEtaDeadlineSlackPermille is not null
++        || DropEtaBudgetSlackPermille is not null;
++
+     public string PolicyId { get; }
+ 
+     public CommitmentBudgetBasis BudgetBasis { get; }
+@@ -298,4 +426,20 @@ public sealed class CommitmentPolicy
+     /// dimension has a hard limit. Research probe; null disables the rule.
+     /// </summary>
+     public Duration? DropEtaRevisionLimit { get; }
++
++    /// <summary>
++    /// Slack-proportional cumulative budget (rule C with the budget of Elmi et al. 2026,
++    /// RCE in the study notation): each rider's drop_eta_total_ms hard limit is
++    /// <see cref="SlackProportionalLimit"/> of its first promise. Replaces the dimension's
++    /// fixed hard limit, which must then be absent. Research probe; null disables the rule.
++    /// </summary>
++    public int? DropEtaBudgetSlackPermille { get; }
++
++    /// <summary>
++    /// Slack-proportional deadline (Elmi et al. 2026 Ordinary Control; EO, or EOHZ when
++    /// relaxed): each rider's deadline slack is <see cref="SlackProportionalLimit"/> of its
++    /// first promise. Exclusive with the fixed <see cref="DropEtaDeadlineSlack"/>.
++    /// Research probe; null disables the rule.
++    /// </summary>
++    public int? DropEtaDeadlineSlackPermille { get; }
+ }
+diff --git a/src/RideBound.Runner/Configuration/CommitmentPolicyConfiguration.cs b/src/RideBound.Runner/Configuration/CommitmentPolicyConfiguration.cs
+index 8931d45..55d5e35 100644
+--- a/src/RideBound.Runner/Configuration/CommitmentPolicyConfiguration.cs
++++ b/src/RideBound.Runner/Configuration/CommitmentPolicyConfiguration.cs
+@@ -29,7 +29,9 @@ public sealed class CommitmentPolicyConfiguration :
+         "dropEtaDeadlineSlackMs",
+         "dropEtaDeadlineTwoSided",
+         "dropEtaDeadlineRelaxed",
+-        "dropEtaRevisionLimitMs");
++        "dropEtaRevisionLimitMs",
++        "dropEtaBudgetSlackPermille",
++        "dropEtaDeadlineSlackPermille");
+     private static readonly IReadOnlySet<string> LimitFields = Fields(
+         "dimension",
+         "hardLimit",
+@@ -175,17 +177,35 @@ public sealed class CommitmentPolicyConfiguration :
+         var revisionLimit = OptionalPositiveInteger(
+             element,
+             "dropEtaRevisionLimitMs");
++        var budgetPermille = OptionalPermille(element, "dropEtaBudgetSlackPermille");
++        var deadlinePermille = OptionalPermille(element, "dropEtaDeadlineSlackPermille");
+ 
+-        if (deadlineTwoSided && deadlineSlack is null)
++        if (deadlineSlack is not null && deadlinePermille is not null)
+         {
+             throw new InvalidDataException(
+-                "'dropEtaDeadlineTwoSided' requires 'dropEtaDeadlineSlackMs'.");
++                "'dropEtaDeadlineSlackMs' cannot be combined with 'dropEtaDeadlineSlackPermille'.");
+         }
+ 
+-        if (deadlineRelaxed && deadlineSlack is null)
++        var hasDeadline = deadlineSlack is not null || deadlinePermille is not null;
++
++        if (deadlineTwoSided && !hasDeadline)
++        {
++            throw new InvalidDataException(
++                "'dropEtaDeadlineTwoSided' requires 'dropEtaDeadlineSlackMs' or 'dropEtaDeadlineSlackPermille'.");
++        }
++
++        if (deadlineRelaxed && !hasDeadline)
+         {
+             throw new InvalidDataException(
+-                "'dropEtaDeadlineRelaxed' requires 'dropEtaDeadlineSlackMs'.");
++                "'dropEtaDeadlineRelaxed' requires 'dropEtaDeadlineSlackMs' or 'dropEtaDeadlineSlackPermille'.");
++        }
++
++        if (budgetPermille is not null
++            && limits.FirstOrDefault(value => value.Dimension == CommitmentDimension.DropEtaTotalMs)
++                ?.HardLimit is not null)
++        {
++            throw new InvalidDataException(
++                "'dropEtaBudgetSlackPermille' replaces the drop_eta_total_ms hardLimit; remove one.");
+         }
+ 
+         if (deadlineRelaxed && deadlineTwoSided)
+@@ -214,7 +234,21 @@ public sealed class CommitmentPolicyConfiguration :
+             deadlineSlack is long slack ? new Duration(slack) : null,
+             deadlineTwoSided,
+             deadlineRelaxed,
+-            revisionLimit is long limit ? new Duration(limit) : null);
++            revisionLimit is long limit ? new Duration(limit) : null,
++            budgetPermille,
++            deadlinePermille);
++    }
++
++    private static int? OptionalPermille(JsonElement element, string propertyName)
++    {
++        if (OptionalPositiveInteger(element, propertyName) is not long value)
++        {
++            return null;
++        }
++
++        return value <= 1000
++            ? (int)value
++            : throw new InvalidDataException($"'{propertyName}' must be 1 to 1000.");
+     }
+ 
+     private static CommitmentDimensionLimit ReadLimit(JsonElement element)
+diff --git a/tests/RideBound.Application.Tests/Commitments/CommitmentSlackProportionalValidatorTests.cs b/tests/RideBound.Application.Tests/Commitments/CommitmentSlackProportionalValidatorTests.cs
+new file mode 100644
+index 0000000..fe2ce97
+--- /dev/null
++++ b/tests/RideBound.Application.Tests/Commitments/CommitmentSlackProportionalValidatorTests.cs
+@@ -0,0 +1,260 @@
++using RideBound.Application.Commitments;
++using RideBound.Application.Promises;
++using RideBound.Application.Scheduling;
++using RideBound.Application.State;
++using RideBound.Domain.Commitments;
++using RideBound.Domain.Common;
++using RideBound.Domain.Routes;
++using RideBound.Domain.Runs;
++using RideBound.Domain.Vehicles;
++
++namespace RideBound.Application.Tests.Commitments;
++
++/// <summary>
++/// Slack-proportional budgets (Elmi et al. 2026 Ordinary Control, wf14 formalisation) through the
++/// real validator and ledger. One rider, max ride 1000 ms, 100 ms per arc: the first promise at
++/// t = 1000 picks up at 1100 ms and drops at 1200 ms, so the first-promise slack is
++/// 1100 + 1000 - 1200 = 900 ms and 35% of it is round(315.0) = 315 ms.
++/// </summary>
++public sealed class CommitmentSlackProportionalValidatorTests
++{
++    private const long Now = 1_000;
++    private const long RiderBudget = 315;
++
++    [Fact]
++    public void Rule_c_with_a_rider_budget_charges_the_ledger_against_the_riders_own_limit()
++    {
++        var policy = Policy(budgetPermille: 350);
++        var validator = new CommitmentDecisionValidator();
++
++        var first = validator.Validate(WithCandidateRoute(Decision(policy), route => WaitBeforeDrop(route, "first", 200)));
++        Assert.True(first.IsValid, string.Join("; ", first.Witnesses.Select(w => w.Message)));
++        Assert.Equal(200, Assert.Single(first.Publications).Entry.BudgetAfter.DropEtaTotalMs);
++
++        var second = validator.Validate(
++            WithCandidateRoute(NextDecision(first.ValidatedState!, policy), route => WaitBeforeDrop(route, "second", 200)));
++
++        Assert.False(second.IsValid);
++        var witness = Assert.Single(second.Witnesses);
++        Assert.Equal(CommitmentValidationStage.Budget, witness.Stage);
++        Assert.Equal(CommitmentFailureCodes.BudgetExceeded, witness.Code);
++        Assert.Equal("drop_eta_total_ms", witness.Dimension);
++        Assert.Equal(RiderBudget, witness.Limit);
++        Assert.Equal(200, witness.Before);
++        Assert.Equal(200, witness.Delta);
++        Assert.Equal(400, witness.After);
++    }
++
++    [Theory]
++    [InlineData(RiderBudget, true)]
++    [InlineData(RiderBudget + 1, false)]
++    public void A_rider_budget_passes_exactly_at_its_limit_and_fails_one_millisecond_past_it(long delay, bool expectValid)
++    {
++        var result = new CommitmentDecisionValidator().Validate(
++            WithCandidateRoute(Decision(Policy(budgetPermille: 350)), route => WaitBeforeDrop(route, "added", delay)));
++
++        Assert.Equal(expectValid, result.IsValid);
++
++        if (!expectValid)
++        {
++            var witness = Assert.Single(result.Witnesses);
++            Assert.Equal(CommitmentFailureCodes.BudgetExceeded, witness.Code);
++            Assert.Equal(RiderBudget, witness.Limit);
++        }
++    }
++
++    [Theory]
++    [InlineData(RiderBudget, true)]
++    [InlineData(RiderBudget + 1, false)]
++    public void A_relaxed_rider_deadline_passes_exactly_at_drop0_plus_the_rider_budget(long delay, bool expectValid)
++    {
++        var result = new CommitmentDecisionValidator().Validate(
++            WithCandidateRoute(
++                Decision(Policy(deadlinePermille: 350, relaxed: true)),
++                route => WaitBeforeDrop(route, "added", delay)));
++
++        Assert.Equal(expectValid, result.IsValid);
++
++        if (!expectValid)
++        {
++            var witness = Assert.Single(result.Witnesses);
++            Assert.Equal(CommitmentValidationStage.Lock, witness.Stage);
++            Assert.Equal(CommitmentFailureCodes.DeadlineExceeded, witness.Code);
++            Assert.Equal(CommitmentLockEvaluator.DeadlineCapRule, witness.Rule);
++        }
++    }
++
++    [Fact]
++    public void Drift_past_a_relaxed_rider_deadline_keeps_the_kept_route_and_blocks_any_later_drop()
++    {
++        // The kept route drifts from 1200 to 1700 ms, past drop0 + 315 = 1515 ms.
++        var policy = Policy(deadlinePermille: 350, relaxed: true);
++        var kept = new CommitmentDecisionValidator().Validate(Decision(policy, reducedAt: Now + 500));
++        var later = new CommitmentDecisionValidator().Validate(
++            WithCandidateRoute(Decision(policy, reducedAt: Now + 500), route => WaitBeforeDrop(route, "added", 1)));
++
++        Assert.True(kept.IsValid, string.Join("; ", kept.Witnesses.Select(w => w.Message)));
++        Assert.Empty(kept.ForcedExemptions);
++        Assert.False(later.IsValid);
++        Assert.Equal(CommitmentFailureCodes.DeadlineExceeded, Assert.Single(later.Witnesses).Code);
++    }
++
++    [Fact]
++    public void A_strict_rider_deadline_rejects_drift_past_it_and_a_forced_vehicle_exempts_it()
++    {
++        var policy = Policy(deadlinePermille: 350);
++        var plain = new CommitmentDecisionValidator().Validate(Decision(policy, reducedAt: Now + 500));
++        var forced = new CommitmentDecisionValidator().Validate(
++            Decision(policy, reducedAt: Now + 500) with
++            {
++                ForcedReferenceVehicles = new HashSet<VehicleId> { ApplicationTestData.VehicleId },
++            });
++
++        Assert.False(plain.IsValid);
++        Assert.Equal(CommitmentFailureCodes.DeadlineExceeded, Assert.Single(plain.Witnesses).Code);
++        Assert.True(forced.IsValid, string.Join("; ", forced.Witnesses.Select(w => w.Message)));
++        Assert.NotEmpty(forced.ForcedExemptions);
++    }
++
++    [Fact]
++    public void Rider_budgets_decide_exactly_as_fixed_limits_of_the_same_value()
++    {
++        foreach (var delay in new long[] { 0, 50, 200, 314, 315, 316, 400, 900 })
++        {
++            foreach (var (proportional, fixedPolicy) in new[]
++                     {
++                         (Policy(budgetPermille: 350), Policy(dropBudget: RiderBudget)),
++                         (Policy(deadlinePermille: 350, relaxed: true), Policy(deadlineSlack: RiderBudget, relaxed: true)),
++                         (Policy(deadlinePermille: 350), Policy(deadlineSlack: RiderBudget)),
++                     })
++            {
++                var a = new CommitmentDecisionValidator().Validate(
++                    WithCandidateRoute(Decision(proportional), route => WaitBeforeDrop(route, "added", delay)));
++                var b = new CommitmentDecisionValidator().Validate(
++                    WithCandidateRoute(Decision(fixedPolicy), route => WaitBeforeDrop(route, "added", delay)));
++
++                Assert.Equal(b.IsValid, a.IsValid);
++                Assert.Equal(
++                    b.Witnesses.Select(w => (w.Code, w.Rule, w.Limit, w.After)),
++                    a.Witnesses.Select(w => (w.Code, w.Rule, w.Limit, w.After)));
++            }
++        }
++    }
++
++    private static CommitmentPolicy Policy(
++        int? budgetPermille = null,
++        int? deadlinePermille = null,
++        long? dropBudget = null,
++        long? deadlineSlack = null,
++        bool relaxed = false) =>
++        new(
++            ApplicationTestData.Request().CommitmentPolicyId,
++            CommitmentBudgetBasis.DecisionInduced,
++            CommitmentDimensionVocabulary.Ordered.Select(
++                dimension => new CommitmentDimensionLimit(
++                    dimension,
++                    dimension == CommitmentDimension.DropEtaTotalMs ? dropBudget : null,
++                    CommitmentPhase.AllActive)),
++            new MaterialRevisionRule(1, null),
++            dropEtaDeadlineSlack: deadlineSlack is long slack ? new Duration(slack) : null,
++            dropEtaDeadlineRelaxed: relaxed,
++            dropEtaBudgetSlackPermille: budgetPermille,
++            dropEtaDeadlineSlackPermille: deadlinePermille);
++
++    /// <summary>
++    /// The decision at <paramref name="reducedAt"/> on the kept route (pickup, drop), whose first
++    /// promise was published at <see cref="Now"/>. Same fixture as CommitmentRevisionCapValidatorTests.
++    /// </summary>
++    private static CommitmentValidationContext Decision(CommitmentPolicy policy, long reducedAt = Now)
++    {
++        var request = ApplicationTestData.Request();
++        var stops = new List<RouteStop>
++        {
++            new(new StopId("pickup"), ApplicationTestData.NodeOne, RouteStopKind.Pickup, request.Id, new Duration(0)),
++            new(new StopId("drop"), ApplicationTestData.NodeTwo, RouteStopKind.DropOff, request.Id, new Duration(0)),
++        };
++        var route = RoutePlan.Create(new PlanVersion(0), 0, [], stops).Value!;
++        var vehicle = VehicleState.Create(
++            ApplicationTestData.VehicleId,
++            4,
++            0,
++            new NodePosition(ApplicationTestData.NodeZero),
++            [],
++            [],
++            route,
++            1).Value!;
++        var run = RideBoundRun.Create(ApplicationTestData.RunId, ApplicationTestData.ScenarioId, new SimTime(Now));
++        run = run.AddRequest(request).Value!;
++        run = run.BootstrapVehicle(vehicle).Value!;
++        run = run.AcceptRequest(request.Id, vehicle.Id).Value!;
++        run = run.AdvanceEpoch(1, new SimTime(Now)).Value!;
++        var travel = ApplicationTestData.Travel();
++        var schedule = new RouteScheduleProjector().Project(
++            run,
++            run.Vehicles[vehicle.Id],
++            route,
++            travel,
++            new SimTime(Now)).Schedule!;
++        var initial = new PromiseProjector().Project(run, run.Vehicles[vehicle.Id], route, schedule, request.Id).Value!;
++        Assert.Equal(1_100, initial.PickupEta.Milliseconds);
++        Assert.Equal(1_200, initial.DropEta.Milliseconds);
++        var ledger = CommitmentLedger.Empty.OpenInitial(
++            "initial-publication",
++            initial,
++            1,
++            new SimTime(Now),
++            "INITIAL_ACCEPTANCE",
++            3).Ledger!;
++        var before = new OnlineState(run, travel, 4, travel.SnapshotHash, ledger);
++        var reduced = before with
++        {
++            Run = run.AdvanceEpoch(2, new SimTime(reducedAt)).Value!,
++            NextEventSequence = 5,
++        };
++
++        return new CommitmentValidationContext(
++            before,
++            reduced,
++            reduced,
++            new CommitmentPolicyCatalog([policy]),
++            CommitmentValidatorFixtures.EmptyDistances.Instance,
++            "test-scope",
++            4);
++    }
++
++    private static CommitmentValidationContext NextDecision(OnlineState committed, CommitmentPolicy policy)
++    {
++        var reduced = committed with
++        {
++            Run = committed.Run.AdvanceEpoch(committed.Run.AppliedEpoch + 1, committed.Run.SimulationTime).Value!,
++            NextEventSequence = committed.NextEventSequence + 1,
++        };
++
++        return new CommitmentValidationContext(
++            committed,
++            reduced,
++            reduced,
++            new CommitmentPolicyCatalog([policy]),
++            CommitmentValidatorFixtures.EmptyDistances.Instance,
++            "test-scope-next",
++            committed.NextEventSequence);
++    }
++
++    private static CommitmentValidationContext WithCandidateRoute(
++        CommitmentValidationContext context,
++        Func<RoutePlan, RoutePlan> change)
++    {
++        var vehicle = context.CandidateState.Run.Vehicles[ApplicationTestData.VehicleId];
++        var run = context.CandidateState.Run.UpdateVehicleRoute(ApplicationTestData.VehicleId, change(vehicle.Route)).Value!;
++        return context with { CandidateState = context.CandidateState with { Run = run } };
++    }
++
++    private static RoutePlan WaitBeforeDrop(RoutePlan route, string stopId, long milliseconds)
++    {
++        var stops = route.MutableSuffix.ToList();
++        stops.Insert(
++            stops.FindIndex(value => value.Kind == RouteStopKind.DropOff),
++            new RouteStop(new StopId(stopId), ApplicationTestData.NodeOne, RouteStopKind.Waypoint, null, new Duration(milliseconds)));
++        return RoutePlan.Create(new PlanVersion(route.Version.Value + 1), route.ExecutedStopCount, route.FrozenPrefix, stops).Value!;
++    }
++}
+diff --git a/tests/RideBound.Domain.Tests/Commitments/CommitmentSlackProportionalTests.cs b/tests/RideBound.Domain.Tests/Commitments/CommitmentSlackProportionalTests.cs
+new file mode 100644
+index 0000000..7083464
+--- /dev/null
++++ b/tests/RideBound.Domain.Tests/Commitments/CommitmentSlackProportionalTests.cs
+@@ -0,0 +1,302 @@
++using RideBound.Domain.Commitments;
++using RideBound.Domain.Common;
++using RideBound.Domain.Requests;
++using RideBound.Domain.Routes;
++
++namespace RideBound.Domain.Tests.Commitments;
++
++/// <summary>
++/// Research probe for the slack-proportional budgets of Elmi et al. (2026) Ordinary Control as
++/// formalised in the wf14 preregistration: each rider's budget is
++/// round(alpha * max(0, pickup0 + maxRide - drop0)), fixed at the first promise. It is used either
++/// as the rider's drop_eta_total_ms hard limit (rule C, RCE) or as its deadline slack (EO, EOHZ).
++/// </summary>
++public sealed class CommitmentSlackProportionalTests
++{
++    private const long PickupAnchor = 100_000;
++    private const long DropAnchor = 400_000;
++    private const long MaxRide = 600_000;
++
++    // slack = 100_000 + 600_000 - 400_000 = 300_000; 35% of it = 105_000.
++    private const long Budget35 = 105_000;
++
++    private static readonly RequestId Request = new("request-1");
++    private static readonly VehicleId Vehicle = new("vehicle-1");
++    private static readonly NodeId PickupNode = new("node-pickup");
++    private static readonly NodeId DropNode = new("node-drop");
++    private static readonly StopId PickupStop = new("stop-pickup");
++    private static readonly StopId DropStop = new("stop-drop");
++
++    [Theory]
++    [InlineData(100_000, 400_000, 600_000, 350, 105_000)]
++    [InlineData(100_000, 400_000, 600_000, 1000, 300_000)]
++    [InlineData(100_000, 400_000, 600_000, 1, 300)]
++    // The first promise already uses the whole ride-time room: no slack.
++    [InlineData(100_000, 700_000, 600_000, 350, 0)]
++    // The first promise is past the ride-time room (drift before it opened): clamped to zero.
++    [InlineData(100_000, 800_000, 600_000, 350, 0)]
++    // Halves round away from zero, like the emulator's Math.round on a positive value.
++    [InlineData(0, 0, 1, 500, 1)]
++    [InlineData(0, 0, 3, 500, 2)]
++    [InlineData(0, 0, 1, 350, 0)]
++    [InlineData(0, 0, 2, 350, 1)]
++    public void The_slack_proportional_limit_is_a_rounded_share_of_the_first_promise_slack(
++        long pickup0,
++        long drop0,
++        long maxRide,
++        int permille,
++        long expected)
++    {
++        Assert.Equal(
++            expected,
++            CommitmentPolicy.SlackProportionalLimit(
++                Projection(pickup0, drop0),
++                new Duration(maxRide),
++                permille));
++    }
++
++    [Fact]
++    public void The_slack_proportional_limit_never_exceeds_the_slack_and_grows_with_it()
++    {
++        var previous = 0L;
++
++        for (var slack = 0L; slack <= 20_000; slack += 7)
++        {
++            var limit = CommitmentPolicy.SlackProportionalLimit(
++                Projection(0, 0),
++                new Duration(slack),
++                350);
++
++            Assert.InRange(limit, 0, slack);
++            Assert.True(limit >= previous);
++            Assert.Equal((long)Math.Round(0.35 * slack, MidpointRounding.AwayFromZero), limit);
++            previous = limit;
++        }
++    }
++
++    [Theory]
++    [InlineData(0)]
++    [InlineData(1001)]
++    public void The_permille_must_be_one_to_one_thousand(int permille)
++    {
++        Assert.Throws<ArgumentOutOfRangeException>(
++            () => CommitmentPolicy.SlackProportionalLimit(
++                Projection(0, 0),
++                new Duration(1_000),
++                permille));
++        Assert.Throws<ArgumentOutOfRangeException>(() => Policy(budgetPermille: permille));
++        Assert.Throws<ArgumentOutOfRangeException>(() => Policy(deadlinePermille: permille));
++    }
++
++    [Fact]
++    public void A_rider_budget_accepts_its_exact_limit_and_rejects_one_more()
++    {
++        var policy = Policy(budgetPermille: 350);
++        var limit = policy.DropEtaTotalLimitFor(Projection(PickupAnchor, DropAnchor), new Duration(MaxRide));
++        Assert.Equal(Budget35, limit);
++
++        var evaluator = new CommitmentBudgetEvaluator();
++        var exact = evaluator.Evaluate(
++            Request,
++            RequestLifecycle.WaitingPickup,
++            CommitmentTestData.Vector(CommitmentDimension.DropEtaTotalMs, Budget35 - 5_000),
++            CommitmentTestData.Vector(CommitmentDimension.DropEtaTotalMs, 5_000),
++            policy,
++            limit);
++        var over = evaluator.Evaluate(
++            Request,
++            RequestLifecycle.WaitingPickup,
++            CommitmentTestData.Vector(CommitmentDimension.DropEtaTotalMs, Budget35 - 5_000),
++            CommitmentTestData.Vector(CommitmentDimension.DropEtaTotalMs, 5_001),
++            policy,
++            limit);
++
++        Assert.True(exact.IsAllowed);
++        var witness = Assert.Single(over.Witnesses);
++        Assert.Equal("drop_eta_total_ms", witness.Dimension);
++        Assert.Equal(Budget35, witness.Limit);
++        Assert.Equal(Budget35 + 1, witness.After);
++    }
++
++    [Fact]
++    public void A_rider_budget_must_be_given_exactly_for_a_slack_proportional_policy()
++    {
++        var evaluator = new CommitmentBudgetEvaluator();
++        var zero = CommitmentVector.Zero;
++
++        Assert.Throws<ArgumentException>(
++            () => evaluator.Evaluate(Request, RequestLifecycle.Accepted, zero, zero, Policy(budgetPermille: 350)));
++        Assert.Throws<ArgumentException>(
++            () => evaluator.Evaluate(Request, RequestLifecycle.Accepted, zero, zero, Policy(), 1_000));
++    }
++
++    [Fact]
++    public void The_rider_budget_leaves_every_other_dimension_on_its_fixed_limit()
++    {
++        var policy = Policy(budgetPermille: 350, otherHardLimit: 10);
++        var result = new CommitmentBudgetEvaluator().Evaluate(
++            Request,
++            RequestLifecycle.Accepted,
++            CommitmentVector.Zero,
++            CommitmentTestData.Vector(CommitmentDimension.PickupEtaTotalMs, 11),
++            policy,
++            Budget35);
++
++        var witness = Assert.Single(result.Witnesses);
++        Assert.Equal("pickup_eta_total_ms", witness.Dimension);
++        Assert.Equal(10, witness.Limit);
++    }
++
++    [Theory]
++    // Kept route inside the rider deadline (drop0 + 105_000): the relaxed rule is the strict one.
++    [InlineData(DropAnchor, DropAnchor + Budget35, false)]
++    [InlineData(DropAnchor, DropAnchor + Budget35 + 1, true)]
++    // Adverse drift past the rider deadline: the kept route and anything no later pass.
++    [InlineData(DropAnchor + Budget35 + 9_000, DropAnchor + Budget35 + 9_000, false)]
++    [InlineData(DropAnchor + Budget35 + 9_000, DropAnchor + Budget35 + 9_001, true)]
++    public void A_relaxed_rider_deadline_fails_only_past_the_later_of_its_deadline_and_the_kept_route(
++        long exogenousDropMs,
++        long candidateDropMs,
++        bool expectViolation)
++    {
++        var witnesses = EvaluateLocks(
++            Policy(deadlinePermille: 350, relaxed: true),
++            Projection(PickupAnchor, exogenousDropMs),
++            Projection(PickupAnchor, candidateDropMs));
++
++        if (expectViolation)
++        {
++            var witness = Assert.Single(witnesses);
++            Assert.Equal("drop_eta_ms", witness.Dimension);
++            Assert.Equal(CommitmentLockEvaluator.DeadlineCapRule, witness.Rule);
++        }
++        else
++        {
++            Assert.Empty(witnesses);
++        }
++    }
++
++    [Fact]
++    public void A_slack_proportional_deadline_equals_the_fixed_deadline_of_the_same_slack()
++    {
++        foreach (var exogenous in new[] { DropAnchor - 1_000, DropAnchor, DropAnchor + Budget35, DropAnchor + Budget35 + 7 })
++        {
++            for (var candidate = DropAnchor - 50_000; candidate <= DropAnchor + Budget35 + 50_000; candidate += 4_999)
++            {
++                foreach (var relaxed in new[] { false, true })
++                {
++                    Assert.Equal(
++                        EvaluateLocks(
++                            Policy(fixedSlack: Budget35, relaxed: relaxed),
++                            Projection(PickupAnchor, exogenous),
++                            Projection(PickupAnchor, candidate)),
++                        EvaluateLocks(
++                            Policy(deadlinePermille: 350, relaxed: relaxed),
++                            Projection(PickupAnchor, exogenous),
++                            Projection(PickupAnchor, candidate)));
++                }
++            }
++        }
++    }
++
++    [Fact]
++    public void The_kept_route_never_trips_a_relaxed_rider_deadline()
++    {
++        foreach (var drift in new[] { 0L, Budget35, Budget35 + 1, 10 * Budget35 })
++        {
++            var kept = Projection(PickupAnchor, DropAnchor + drift);
++
++            Assert.Empty(EvaluateLocks(Policy(deadlinePermille: 350, relaxed: true), kept, kept));
++            Assert.Equal(
++                drift > Budget35 ? 1 : 0,
++                EvaluateLocks(Policy(deadlinePermille: 350), kept, kept).Count);
++        }
++    }
++
++    [Fact]
++    public void Policy_construction_keeps_the_new_rules_exclusive_and_explicit()
++    {
++        Assert.Throws<ArgumentException>(() => Policy(fixedSlack: 1_000, deadlinePermille: 350));
++        Assert.Throws<ArgumentException>(() => Policy(budgetPermille: 350, dropHardLimit: 120_000));
++        Assert.Throws<ArgumentException>(() => Policy(relaxedWithoutDeadline: true));
++
++        var relaxed = Policy(deadlinePermille: 350, relaxed: true);
++        Assert.True(relaxed.DropEtaDeadlineRelaxed);
++        Assert.Null(relaxed.DropEtaDeadlineSlack);
++        Assert.Equal(350, relaxed.DropEtaDeadlineSlackPermille);
++
++        Assert.False(Policy().ReadsInitialPromise);
++        Assert.True(Policy(budgetPermille: 350).ReadsInitialPromise);
++        Assert.True(Policy(deadlinePermille: 350).ReadsInitialPromise);
++        Assert.True(Policy(fixedSlack: 1_000).ReadsInitialPromise);
++        Assert.Null(Policy().DropEtaTotalLimitFor(null, new Duration(MaxRide)));
++        Assert.Throws<ArgumentException>(
++            () => Policy(budgetPermille: 350).DropEtaTotalLimitFor(null, new Duration(MaxRide)));
++    }
++
++    private static IReadOnlyList<CommitmentLockWitness> EvaluateLocks(
++        CommitmentPolicy policy,
++        PromiseProjection exogenous,
++        PromiseProjection candidate) =>
++        new CommitmentLockEvaluator().Evaluate(
++            WaitingRequest(),
++            new PublishedPromise(new PromiseVersion(1), 1, new SimTime(0), Projection(PickupAnchor, DropAnchor)),
++            exogenous,
++            candidate,
++            new SimTime(0),
++            policy,
++            Projection(PickupAnchor, DropAnchor));
++
++    private static CommitmentPolicy Policy(
++        int? budgetPermille = null,
++        int? deadlinePermille = null,
++        long? fixedSlack = null,
++        bool relaxed = false,
++        long? dropHardLimit = null,
++        long? otherHardLimit = null,
++        bool relaxedWithoutDeadline = false) =>
++        new(
++            "policy-1",
++            CommitmentBudgetBasis.DecisionInduced,
++            CommitmentDimensionVocabulary.Ordered.Select(
++                dimension => new CommitmentDimensionLimit(
++                    dimension,
++                    dimension == CommitmentDimension.DropEtaTotalMs ? dropHardLimit : otherHardLimit,
++                    CommitmentPhase.AllActive)),
++            new MaterialRevisionRule(1, null),
++            dropEtaDeadlineSlack: fixedSlack is long slack ? new Duration(slack) : null,
++            dropEtaDeadlineRelaxed: relaxed || relaxedWithoutDeadline,
++            dropEtaBudgetSlackPermille: budgetPermille,
++            dropEtaDeadlineSlackPermille: deadlinePermille);
++
++    private static RideRequest WaitingRequest()
++    {
++        var request = RideRequest.CreatePending(
++            Request,
++            new SimTime(0),
++            PickupNode,
++            DropNode,
++            new SimTime(0),
++            new SimTime(600_000),
++            new Duration(MaxRide),
++            1,
++            "service-class-1",
++            "policy-1").Value!;
++        return request.Accept(Vehicle).Value!.ConfirmWaitingPickup().Value!;
++    }
++
++    private static PromiseProjection Projection(long pickupMs, long dropMs) =>
++        new(
++            Request,
++            Vehicle,
++            PickupStop,
++            PickupNode,
++            DropStop,
++            DropNode,
++            new SimTime(pickupMs),
++            new SimTime(dropMs),
++            [
++                new PromiseServiceToken(PickupStop, Request, RouteStopKind.Pickup),
++                new PromiseServiceToken(DropStop, Request, RouteStopKind.DropOff),
++            ]);
++}
+diff --git a/tests/RideBound.Runner.Tests/Configuration/CommitmentPolicyConfigurationTests.cs b/tests/RideBound.Runner.Tests/Configuration/CommitmentPolicyConfigurationTests.cs
+index 7597e2b..4eda238 100644
+--- a/tests/RideBound.Runner.Tests/Configuration/CommitmentPolicyConfigurationTests.cs
++++ b/tests/RideBound.Runner.Tests/Configuration/CommitmentPolicyConfigurationTests.cs
+@@ -337,6 +337,72 @@ public sealed class CommitmentPolicyConfigurationTests
+         Assert.Equal(hashes.Length, hashes.Distinct(StringComparer.Ordinal).Count());
+     }
+ 
++    [Fact]
++    public void Slack_proportional_budget_and_deadline_are_read_when_present()
++    {
++        var budget = CommitmentPolicyConfiguration.Decode(PolicyJson("\"dropEtaBudgetSlackPermille\":350"));
++        var deadline = CommitmentPolicyConfiguration.Decode(
++            PolicyJson("\"dropEtaDeadlineRelaxed\":true,\"dropEtaDeadlineSlackPermille\":350"));
++        var absent = CommitmentPolicyConfiguration.Decode(PolicyJson(null));
++
++        Assert.True(budget.TryGetPolicy("uniform-v1", out var rce));
++        Assert.Equal(350, rce.DropEtaBudgetSlackPermille);
++        Assert.Null(rce.DropEtaDeadlineSlackPermille);
++        Assert.Null(rce.DropEtaDeadlineSlack);
++        Assert.True(deadline.TryGetPolicy("uniform-v1", out var eohz));
++        Assert.Equal(350, eohz.DropEtaDeadlineSlackPermille);
++        Assert.True(eohz.DropEtaDeadlineRelaxed);
++        Assert.Null(eohz.DropEtaDeadlineSlack);
++        Assert.Null(eohz.DropEtaBudgetSlackPermille);
++        Assert.True(absent.TryGetPolicy("uniform-v1", out var plain));
++        Assert.Null(plain.DropEtaBudgetSlackPermille);
++        Assert.Null(plain.DropEtaDeadlineSlackPermille);
++        Assert.False(plain.ReadsInitialPromise);
++    }
++
++    [Theory]
++    [InlineData("\"dropEtaBudgetSlackPermille\":0", "must be positive")]
++    [InlineData("\"dropEtaBudgetSlackPermille\":1001", "'dropEtaBudgetSlackPermille' must be 1 to 1000")]
++    [InlineData("\"dropEtaDeadlineSlackPermille\":1001", "'dropEtaDeadlineSlackPermille' must be 1 to 1000")]
++    [InlineData(
++        "\"dropEtaDeadlineSlackMs\":30000,\"dropEtaDeadlineSlackPermille\":350",
++        "'dropEtaDeadlineSlackMs' cannot be combined with 'dropEtaDeadlineSlackPermille'")]
++    [InlineData(
++        "\"dropEtaDeadlineTwoSided\":true,\"dropEtaBudgetSlackPermille\":350",
++        "'dropEtaDeadlineTwoSided' requires 'dropEtaDeadlineSlackMs' or 'dropEtaDeadlineSlackPermille'")]
++    [InlineData("\"dropEtaSlackPermille\":350", "Unknown field 'dropEtaSlackPermille'")]
++    public void Invalid_slack_proportional_settings_are_rejected(string extraFields, string expectedMessage)
++    {
++        var error = Assert.Throws<InvalidDataException>(
++            () => CommitmentPolicyConfiguration.Decode(PolicyJson(extraFields)));
++
++        Assert.Contains(expectedMessage, error.Message);
++    }
++
++    [Fact]
++    public void A_slack_proportional_permille_given_as_a_string_is_rejected()
++    {
++        // Same shared integer reader as Drop_eta_deadline_given_as_a_string_is_rejected.
++        Assert.ThrowsAny<InvalidOperationException>(
++            () => CommitmentPolicyConfiguration.Decode(PolicyJson("\"dropEtaBudgetSlackPermille\":\"350\"")));
++    }
++
++    [Fact]
++    public void A_slack_proportional_budget_cannot_coexist_with_a_fixed_drop_eta_total_limit()
++    {
++        var withFixedLimit = Encoding.UTF8.GetString(PolicyJson("\"dropEtaBudgetSlackPermille\":350"))
++            .Replace(
++                "{\"dimension\":\"drop_eta_total_ms\",\"applicablePhases\":[\"accepted\"]}",
++                "{\"dimension\":\"drop_eta_total_ms\",\"hardLimit\":120000,\"applicablePhases\":[\"accepted\"]}",
++                StringComparison.Ordinal);
++        Assert.Contains("\"hardLimit\":120000", withFixedLimit, StringComparison.Ordinal);
++
++        var error = Assert.Throws<InvalidDataException>(
++            () => CommitmentPolicyConfiguration.Decode(Encoding.UTF8.GetBytes(withFixedLimit)));
++
++        Assert.Contains("'dropEtaBudgetSlackPermille' replaces the drop_eta_total_ms hardLimit", error.Message);
++    }
++
+     private static byte[] PolicyJson(string? extraFields)
+     {
+         var limits = string.Join(

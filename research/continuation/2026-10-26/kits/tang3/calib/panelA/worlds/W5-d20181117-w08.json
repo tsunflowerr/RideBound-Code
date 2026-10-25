@@ -1,0 +1,1 @@
+{ "worldVersion": "world-v1", "worldSeed": 101, "rho": 0.7, "shockMean": 0.4, "shockHalfLife": 2.0, "shockWindow": 12, "sigma": 0.0, "shockRate": 0.0, "base": {"day": "2018-11-17", "exponent": 1, "windowStart": 28800} }

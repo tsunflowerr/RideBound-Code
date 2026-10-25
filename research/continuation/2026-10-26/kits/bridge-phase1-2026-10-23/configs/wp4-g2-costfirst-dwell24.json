@@ -1,0 +1,28 @@
+{
+  "configurationVersion": "1.0.0",
+  "policyId": "ridebound-hard-vector",
+  "policyVersion": "tier3-exploratory-v1",
+  "initialPromiseTrigger": "booking-confirmation",
+  "emitSolverExecutionEvidence": true,
+  "commitmentRecovery": "no-worse-than-reference-v1",
+  "lateBoarding": "record-v1",
+  "selectionObjectiveOrder": "cost-first",
+  "candidateGeneration": {
+    "maximumCandidatesPerVehicle": 100,
+    "maximumNewRequestsPerVehicle": 2,
+    "exactSmallMode": false,
+    "scheduleStrategy": "earliest-feasible",
+    "maximumExplorationWorkUnits": 10000,
+    "retentionStrategy": "service-set-stability-portfolio-v1",
+    "stopServiceDurationMs": 24000,
+    "waitingRiderRelocation": {}
+  },
+  "solverExecution": {
+    "adapterVersion": "google-ortools-9.15.6755",
+    "maximumGenerationWorkUnits": 10000,
+    "maximumValidationWorkUnits": 10000,
+    "maximumSolverWorkUnits": 100000,
+    "maximumSolverDeterministicTimeMicros": 1000000,
+    "randomSeed": 7
+  }
+}

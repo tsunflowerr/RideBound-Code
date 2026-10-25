@@ -1,0 +1,89 @@
+{
+  "finishedJobs": 3,
+  "cellArmsCompared": 3,
+  "cellArmsExact": 3,
+  "riders": 286,
+  "ridersIdentical": 286,
+  "emulatorPredictionsSha256": "447b6e4795a61a4e63603e87e335b3ce6a2e081b32b6b02f9672fce84f4dc1c2",
+  "realRidersTsv": "compare\\g2v3-pilot-2026-10-23-real-riders.tsv",
+  "byArm": {
+    "U": {
+      "cellArms": 0,
+      "exact": 0
+    },
+    "C-120": {
+      "cellArms": 0,
+      "exact": 0
+    },
+    "C-300": {
+      "cellArms": 0,
+      "exact": 0
+    },
+    "PS-300": {
+      "cellArms": 0,
+      "exact": 0
+    },
+    "DLHZ-120": {
+      "cellArms": 0,
+      "exact": 0
+    },
+    "RCE35": {
+      "cellArms": 0,
+      "exact": 0
+    },
+    "EOHZ35": {
+      "cellArms": 0,
+      "exact": 0
+    },
+    "G2-U": {
+      "cellArms": 1,
+      "exact": 1
+    },
+    "G2-RCE35": {
+      "cellArms": 1,
+      "exact": 1
+    },
+    "G2-EOHZ35": {
+      "cellArms": 1,
+      "exact": 1
+    }
+  },
+  "results": [
+    {
+      "arm": "G2-EOHZ35",
+      "cell": "d20181114-s10-r1-w08",
+      "riders": 94,
+      "identical": 94,
+      "exact": true,
+      "onlyReal": 0,
+      "onlyEmulator": 0,
+      "servedReal": 94,
+      "servedEmulator": 94,
+      "firstDifference": null
+    },
+    {
+      "arm": "G2-RCE35",
+      "cell": "d20181114-s10-r1-w08",
+      "riders": 93,
+      "identical": 93,
+      "exact": true,
+      "onlyReal": 0,
+      "onlyEmulator": 0,
+      "servedReal": 93,
+      "servedEmulator": 93,
+      "firstDifference": null
+    },
+    {
+      "arm": "G2-U",
+      "cell": "d20181114-s10-r1-w08",
+      "riders": 99,
+      "identical": 99,
+      "exact": true,
+      "onlyReal": 0,
+      "onlyEmulator": 0,
+      "servedReal": 99,
+      "servedEmulator": 99,
+      "firstDifference": null
+    }
+  ]
+}

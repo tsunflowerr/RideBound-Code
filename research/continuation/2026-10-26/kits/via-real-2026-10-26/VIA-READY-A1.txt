@@ -1,0 +1,1 @@
+2026-10-25T18:14:35Z READY-A1 for trialA1 (VIA-RCE35-d20190213-vz-r0-w08 with configs/wp4-via-ins-a1.json). Amendment A1 recorded in VIA-LOG.md before this rerun; predictions unchanged (VIA-PREDICTIONS.sha256, 2026-10-25T18:06:24Z); run_via.py check OK for all inputs incl. VIA-WP4-A1.sha256; AC power; RAM 7.1 GiB.

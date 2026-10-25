@@ -1,0 +1,127 @@
+{
+  "finishedJobs": 7,
+  "cellArmsCompared": 7,
+  "cellArmsExact": 7,
+  "riders": 653,
+  "ridersIdentical": 653,
+  "movesEqual": 5,
+  "g2CellArms": 5,
+  "byArm": {
+    "EO35": {
+      "cellArms": 1,
+      "exact": 1
+    },
+    "DLS-120": {
+      "cellArms": 1,
+      "exact": 1
+    },
+    "G2-EO35": {
+      "cellArms": 1,
+      "exact": 1
+    },
+    "G2-DLS-120": {
+      "cellArms": 1,
+      "exact": 1
+    },
+    "G2K3-U": {
+      "cellArms": 1,
+      "exact": 1
+    },
+    "G2K3-RCE35": {
+      "cellArms": 1,
+      "exact": 1
+    },
+    "G2K3-EOHZ35": {
+      "cellArms": 1,
+      "exact": 1
+    }
+  },
+  "realRidersTsv": "compare\\p1pilot-2026-10-23-real-riders.tsv",
+  "results": [
+    {
+      "arm": "DLS-120",
+      "cell": "d20181114-s10-r1-w08",
+      "riders": 91,
+      "identical": 91,
+      "exact": true,
+      "onlyReal": 0,
+      "onlyEmulator": 0,
+      "firstDifference": null
+    },
+    {
+      "arm": "EO35",
+      "cell": "d20181114-s10-r1-w08",
+      "riders": 92,
+      "identical": 92,
+      "exact": true,
+      "onlyReal": 0,
+      "onlyEmulator": 0,
+      "firstDifference": null
+    },
+    {
+      "arm": "G2-DLS-120",
+      "cell": "d20181114-s10-r1-w08",
+      "riders": 93,
+      "identical": 93,
+      "exact": true,
+      "onlyReal": 0,
+      "onlyEmulator": 0,
+      "firstDifference": null,
+      "movesReal": 9,
+      "movesEmulator": 9,
+      "maxMovesPerDecision": 1
+    },
+    {
+      "arm": "G2-EO35",
+      "cell": "d20181114-s10-r1-w08",
+      "riders": 93,
+      "identical": 93,
+      "exact": true,
+      "onlyReal": 0,
+      "onlyEmulator": 0,
+      "firstDifference": null,
+      "movesReal": 8,
+      "movesEmulator": 8,
+      "maxMovesPerDecision": 1
+    },
+    {
+      "arm": "G2K3-EOHZ35",
+      "cell": "d20181114-s10-r1-w08",
+      "riders": 95,
+      "identical": 95,
+      "exact": true,
+      "onlyReal": 0,
+      "onlyEmulator": 0,
+      "firstDifference": null,
+      "movesReal": 3,
+      "movesEmulator": 3,
+      "maxMovesPerDecision": 1
+    },
+    {
+      "arm": "G2K3-RCE35",
+      "cell": "d20181114-s10-r1-w08",
+      "riders": 94,
+      "identical": 94,
+      "exact": true,
+      "onlyReal": 0,
+      "onlyEmulator": 0,
+      "firstDifference": null,
+      "movesReal": 2,
+      "movesEmulator": 2,
+      "maxMovesPerDecision": 1
+    },
+    {
+      "arm": "G2K3-U",
+      "cell": "d20181114-s10-r1-w08",
+      "riders": 95,
+      "identical": 95,
+      "exact": true,
+      "onlyReal": 0,
+      "onlyEmulator": 0,
+      "firstDifference": null,
+      "movesReal": 6,
+      "movesEmulator": 6,
+      "maxMovesPerDecision": 1
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+test_a_different_first_stop_still_fails_closed (test_in_progress_donor_leg.InProgressDonorLegTests) ... ok
+test_a_service_leg_with_a_duration_still_fails_closed (test_in_progress_donor_leg.InProgressDonorLegTests) ... ok
+test_a_vehicle_without_a_locked_leg_gets_exactly_the_runner_route (test_in_progress_donor_leg.InProgressDonorLegTests) ... ok
+test_the_stop_being_served_but_not_yet_reported_is_fleetpys_started_stop (test_in_progress_donor_leg.InProgressDonorLegTests) ... ok
+test_a_late_boarding_at_the_served_stop_does_not_make_the_plan_infeasible (test_in_progress_service_leg.InProgressServiceLegTests) ... ok
+test_a_pickup_at_the_node_being_served_keeps_the_in_progress_stop_first (test_in_progress_service_leg.InProgressServiceLegTests) ... ok
+test_a_vehicle_without_a_locked_leg_gets_exactly_the_runner_route (test_in_progress_service_leg.InProgressServiceLegTests) ... ok
+test_without_the_fix_conditions_the_check_still_fails_closed (test_in_progress_service_leg.InProgressServiceLegTests) ... ok
+
+----------------------------------------------------------------------
+Ran 8 tests in 0.005s
+
+OK
+Loading modules from development content.

@@ -1,0 +1,162 @@
+===== python -B run_stage1b-v6.py plan gate0
+U-d20181116-s10-r1-w08	pending
+C-30-d20181116-s10-r1-w08	pending
+U-d20181116-s10-r1-w17	pending
+C-30-d20181116-s10-r1-w17	pending
+4 {'pending': 4}
+input problems: 
+  - refused: runner-tier3-v3.sha256.tsv does not exist (publish the Runner and write its manifest first)
+  - refused: STAGE1B-PLAN.sha256 does not exist (the plan is not sealed)
+  - stage1b-input-freeze.sha256 does not exist (run `freeze` after approval, before sealing)
+distinct cells across all phases: 35; this phase: 2
+Gate-0 verdict files (behavioural-only, R28 N1): GATE0-BEHAVIOURAL-PASSED.txt / GATE0-BEHAVIOURAL-FAILED.txt
+external trees frozen by `freeze` (verified before a phase, after it, and by the comparator):
+  fleetpy: E:/RideBoundData/wp7/FleetPy-1.0.2 exists True excludes ['.git/']
+  python-env: E:/RideBoundData/wp7/envs/fleetpy-1.0.2 exists True excludes []
+  dotnet-netcore-app: C:/Program Files/dotnet/shared/Microsoft.NETCore.App exists True excludes []
+  dotnet-host-fxr: C:/Program Files/dotnet/host/fxr exists True excludes []
+  git: C:/Program Files/Git exists True excludes []
+resolved tool git (CreateProcess order): job C:/Program Files/Git/mingw64/bin/git.exe | driver C:/Program Files/Git/mingw64/bin/git.exe | sha256 1a0043555d254618f2d56c936c3d9a1fbfb878bc878416a133c346bc7835eda9 | inside frozen trees True | no exception
+resolved tool taskkill (CreateProcess order): job C:/Windows/System32/taskkill.exe | driver C:/Windows/System32/taskkill.exe | sha256 1249717315fc8f4d2df17d5db9da0444795fdb9fb83dfb1f763c3f39282244f7 | inside frozen trees False | declared exception at C:/Windows/System32/taskkill.exe only: satisfied
+steering environment now (names): ['DOTNET_MULTILEVEL_LOOKUP', 'GIT_EDITOR', 'NODEFAULTCURRENTDIRECTORYINEXEPATH', 'PATH', 'PATHEXT']; PATH entries: 26
+forbidden redirects / launch-environment variables set: ['GIT_EDITOR is set; the settled launch environment has no GIT_* variable (R38 s6) - launch from the recorded shell with it unset']
+.pth audit (resolved paths, reviewed import lines; E:/RideBoundData/wp7/envs/fleetpy-1.0.2, E:/RideBoundData/wp7/envs/fleetpy-1.0.2/Lib/site-packages): none (1 .pth line(s))
+study started (R38-2 evidence): no
+required-absent: C:/Users/quang/AppData/Roaming/Python/Python310/site-packages exists False
+drift stop receipt INPUT-DRIFT-STOP.txt exists: False
+power status (ACLineStatus, percent): (1, 100); AC-only predicate True; RB_ALLOW_BATTERY_MIN_PERCENT set: False
+C: free 54997 MiB; floor 51200 MiB + 410 MiB reserved per running job
+example: E:\RideBoundData\wp7\envs\fleetpy-1.0.2\python.exe -B E:\Code\Report_INT3508\ridebound-scratchpad\tang3\world\preflight_world_v1_2.py --label U-d20181116-s10-r1-w08-t38 --fleetpy-root E:\RideBoundData\wp7\FleetPy-1.0.2 --runner-root C:\RideBoundData\research\runner-tier3-v3 --dotnet C:\Program Files\dotnet\dotnet.exe --commitment-config E:\Code\Report_INT3508\ridebound-scratchpad\tang3\configs\U.json --wp4-config E:\Code\Report_INT3508\ridebound-scratchpad\tang3\configs\wp4-tier3-v2.json --scenario C:\RideBoundData\research\fixtures-panelA-v1\d20181116-s10-r1-w08\scenario-content.json --derivative-manifest C:\RideBoundData\research\fixtures-panelA-v1\d20181116-s10-r1-w08\derivative-manifest.json --normalization-report C:\RideBoundData\research\fixtures-panelA-v1\d20181116-s10-r1-w08\normalization-report.json --selection-frame C:\RideBoundData\research\fixtures-panelA-v1\d20181116-s10-r1-w08\selection-frame.json --driver E:\Code\Report_INT3508\ridebound-scratchpad\tang3\calib\panelA\drivers\d20181116-s10-r1-w08.driver.json --output C:\RideBoundData\research\tier3-stage1b-v1\gate0\U-d20181116-s10-r1-w08 --repeats 1 --master-seed 7 --expected-repository-inventory-sha256 0da63eaf2b30ab332fba265a6b2b6e5c36b3ee78950cbac6d6267e60f81e4cbe
+example env: RB_WORLD_CONFIG=E:\Code\Report_INT3508\ridebound-scratchpad\tang3\calib\panelA\worlds\W5-d20181116-w08.json cwd E:\Code\RideBound-deadline
+exit=0
+===== python -B run_stage1b-v6.py plan smoke
+CF-U-d20181114-s10-r1-w08	pending
+CF-C-30-d20181114-s10-r1-w08	pending
+2 {'pending': 2}
+input problems: 
+  - refused: runner-tier3-v3.sha256.tsv does not exist (publish the Runner and write its manifest first)
+  - refused: STAGE1B-PLAN.sha256 does not exist (the plan is not sealed)
+  - stage1b-input-freeze.sha256 does not exist (run `freeze` after approval, before sealing)
+  - refused: GATE0-BEHAVIOURAL-PASSED.txt does not exist
+distinct cells across all phases: 35; this phase: 1
+Gate-0 verdict files (behavioural-only, R28 N1): GATE0-BEHAVIOURAL-PASSED.txt / GATE0-BEHAVIOURAL-FAILED.txt
+external trees frozen by `freeze` (verified before a phase, after it, and by the comparator):
+  fleetpy: E:/RideBoundData/wp7/FleetPy-1.0.2 exists True excludes ['.git/']
+  python-env: E:/RideBoundData/wp7/envs/fleetpy-1.0.2 exists True excludes []
+  dotnet-netcore-app: C:/Program Files/dotnet/shared/Microsoft.NETCore.App exists True excludes []
+  dotnet-host-fxr: C:/Program Files/dotnet/host/fxr exists True excludes []
+  git: C:/Program Files/Git exists True excludes []
+resolved tool git (CreateProcess order): job C:/Program Files/Git/mingw64/bin/git.exe | driver C:/Program Files/Git/mingw64/bin/git.exe | sha256 1a0043555d254618f2d56c936c3d9a1fbfb878bc878416a133c346bc7835eda9 | inside frozen trees True | no exception
+resolved tool taskkill (CreateProcess order): job C:/Windows/System32/taskkill.exe | driver C:/Windows/System32/taskkill.exe | sha256 1249717315fc8f4d2df17d5db9da0444795fdb9fb83dfb1f763c3f39282244f7 | inside frozen trees False | declared exception at C:/Windows/System32/taskkill.exe only: satisfied
+steering environment now (names): ['DOTNET_MULTILEVEL_LOOKUP', 'GIT_EDITOR', 'NODEFAULTCURRENTDIRECTORYINEXEPATH', 'PATH', 'PATHEXT']; PATH entries: 26
+forbidden redirects / launch-environment variables set: ['GIT_EDITOR is set; the settled launch environment has no GIT_* variable (R38 s6) - launch from the recorded shell with it unset']
+.pth audit (resolved paths, reviewed import lines; E:/RideBoundData/wp7/envs/fleetpy-1.0.2, E:/RideBoundData/wp7/envs/fleetpy-1.0.2/Lib/site-packages): none (1 .pth line(s))
+study started (R38-2 evidence): no
+required-absent: C:/Users/quang/AppData/Roaming/Python/Python310/site-packages exists False
+drift stop receipt INPUT-DRIFT-STOP.txt exists: False
+power status (ACLineStatus, percent): (1, 100); AC-only predicate True; RB_ALLOW_BATTERY_MIN_PERCENT set: False
+C: free 54997 MiB; floor 51200 MiB + 410 MiB reserved per running job
+example: E:\RideBoundData\wp7\envs\fleetpy-1.0.2\python.exe -B E:\Code\Report_INT3508\ridebound-scratchpad\tang3\world\preflight_world_v1_2.py --label CF-U-d20181114-s10-r1-w08-s1b --fleetpy-root E:\RideBoundData\wp7\FleetPy-1.0.2 --runner-root C:\RideBoundData\research\runner-tier3-v3 --dotnet C:\Program Files\dotnet\dotnet.exe --commitment-config E:\Code\Report_INT3508\ridebound-scratchpad\tang3\configs\U.json --wp4-config E:\Code\Report_INT3508\ridebound-scratchpad\tang3\stage1b\harness\wp4-tier3-v2-costfirst.json --scenario C:\RideBoundData\research\fixtures-panelA-v1\d20181114-s10-r1-w08\scenario-content.json --derivative-manifest C:\RideBoundData\research\fixtures-panelA-v1\d20181114-s10-r1-w08\derivative-manifest.json --normalization-report C:\RideBoundData\research\fixtures-panelA-v1\d20181114-s10-r1-w08\normalization-report.json --selection-frame C:\RideBoundData\research\fixtures-panelA-v1\d20181114-s10-r1-w08\selection-frame.json --driver E:\Code\Report_INT3508\ridebound-scratchpad\tang3\calib\panelA\drivers\d20181114-s10-r1-w08.driver.json --output C:\RideBoundData\research\tier3-stage1b-v1\smoke\CF-U-d20181114-s10-r1-w08 --repeats 1 --master-seed 7 --expected-repository-inventory-sha256 0da63eaf2b30ab332fba265a6b2b6e5c36b3ee78950cbac6d6267e60f81e4cbe
+example env: RB_WORLD_CONFIG=E:\Code\Report_INT3508\ridebound-scratchpad\tang3\calib\panelA\worlds\W5-d20181114-w08.json cwd E:\Code\RideBound-deadline
+exit=0
+===== python -B run_stage1b-v6.py plan main
+CF-U-d20181114-s10-r3-w07	pending
+CF-C-30-d20181114-s10-r3-w07	pending
+CF-U-d20181114-s10-r3-w08	pending
+CF-C-30-d20181114-s10-r3-w08	pending
+CF-U-d20181114-s10-r3-w17	pending
+CF-C-30-d20181114-s10-r3-w17	pending
+CF-U-d20181114-s10-r4-w07	pending
+CF-C-30-d20181114-s10-r4-w07	pending
+CF-U-d20181114-s10-r4-w08	pending
+CF-C-30-d20181114-s10-r4-w08	pending
+CF-U-d20181114-s10-r4-w17	pending
+CF-C-30-d20181114-s10-r4-w17	pending
+CF-U-d20181115-s10-r1-w07	pending
+CF-C-30-d20181115-s10-r1-w07	pending
+CF-U-d20181115-s10-r1-w08	pending
+CF-C-30-d20181115-s10-r1-w08	pending
+CF-U-d20181115-s10-r2-w07	pending
+CF-C-30-d20181115-s10-r2-w07	pending
+CF-U-d20181115-s10-r2-w08	pending
+CF-C-30-d20181115-s10-r2-w08	pending
+CF-U-d20181115-s10-r4-w07	pending
+CF-C-30-d20181115-s10-r4-w07	pending
+CF-U-d20181115-s10-r4-w08	pending
+CF-C-30-d20181115-s10-r4-w08	pending
+CF-U-d20181116-s10-r1-w07	pending
+CF-C-30-d20181116-s10-r1-w07	pending
+CF-U-d20181116-s10-r1-w08	pending
+CF-C-30-d20181116-s10-r1-w08	pending
+CF-U-d20181116-s10-r1-w17	pending
+CF-C-30-d20181116-s10-r1-w17	pending
+CF-U-d20181116-s10-r2-w07	pending
+CF-C-30-d20181116-s10-r2-w07	pending
+CF-U-d20181116-s10-r2-w08	pending
+CF-C-30-d20181116-s10-r2-w08	pending
+CF-U-d20181116-s10-r2-w17	pending
+CF-C-30-d20181116-s10-r2-w17	pending
+CF-U-d20181116-s10-r4-w07	pending
+CF-C-30-d20181116-s10-r4-w07	pending
+CF-U-d20181116-s10-r4-w08	pending
+CF-C-30-d20181116-s10-r4-w08	pending
+CF-U-d20181116-s10-r4-w17	pending
+CF-C-30-d20181116-s10-r4-w17	pending
+CF-U-d20181117-s10-r1-w08	pending
+CF-C-30-d20181117-s10-r1-w08	pending
+CF-U-d20181117-s10-r1-w17	pending
+CF-C-30-d20181117-s10-r1-w17	pending
+CF-U-d20181117-s10-r2-w08	pending
+CF-C-30-d20181117-s10-r2-w08	pending
+CF-U-d20181117-s10-r2-w17	pending
+CF-C-30-d20181117-s10-r2-w17	pending
+CF-U-d20181117-s10-r3-w07	pending
+CF-C-30-d20181117-s10-r3-w07	pending
+CF-U-d20181117-s10-r3-w08	pending
+CF-C-30-d20181117-s10-r3-w08	pending
+CF-U-d20181117-s10-r3-w17	pending
+CF-C-30-d20181117-s10-r3-w17	pending
+CF-U-d20181118-s10-r2-w08	pending
+CF-C-30-d20181118-s10-r2-w08	pending
+CF-U-d20181118-s10-r2-w17	pending
+CF-C-30-d20181118-s10-r2-w17	pending
+CF-U-d20181118-s10-r3-w08	pending
+CF-C-30-d20181118-s10-r3-w08	pending
+CF-U-d20181118-s10-r3-w17	pending
+CF-C-30-d20181118-s10-r3-w17	pending
+CF-U-d20181118-s10-r4-w08	pending
+CF-C-30-d20181118-s10-r4-w08	pending
+CF-U-d20181118-s10-r4-w17	pending
+CF-C-30-d20181118-s10-r4-w17	pending
+68 {'pending': 68}
+input problems: 
+  - refused: runner-tier3-v3.sha256.tsv does not exist (publish the Runner and write its manifest first)
+  - refused: STAGE1B-PLAN.sha256 does not exist (the plan is not sealed)
+  - stage1b-input-freeze.sha256 does not exist (run `freeze` after approval, before sealing)
+  - refused: GATE0-BEHAVIOURAL-PASSED.txt does not exist
+  - refused: SMOKE-PASSED.txt does not exist
+  - refused: SMOKE-INSPECTION.txt does not exist (record the smoke integration inspection first)
+  - refused: stage1b-analysis-freeze.sha256 does not exist (freeze the main-phase analysis code by a hashed amendment before any main job starts; plan v6 section 12)
+distinct cells across all phases: 35; this phase: 34
+Gate-0 verdict files (behavioural-only, R28 N1): GATE0-BEHAVIOURAL-PASSED.txt / GATE0-BEHAVIOURAL-FAILED.txt
+external trees frozen by `freeze` (verified before a phase, after it, and by the comparator):
+  fleetpy: E:/RideBoundData/wp7/FleetPy-1.0.2 exists True excludes ['.git/']
+  python-env: E:/RideBoundData/wp7/envs/fleetpy-1.0.2 exists True excludes []
+  dotnet-netcore-app: C:/Program Files/dotnet/shared/Microsoft.NETCore.App exists True excludes []
+  dotnet-host-fxr: C:/Program Files/dotnet/host/fxr exists True excludes []
+  git: C:/Program Files/Git exists True excludes []
+resolved tool git (CreateProcess order): job C:/Program Files/Git/mingw64/bin/git.exe | driver C:/Program Files/Git/mingw64/bin/git.exe | sha256 1a0043555d254618f2d56c936c3d9a1fbfb878bc878416a133c346bc7835eda9 | inside frozen trees True | no exception
+resolved tool taskkill (CreateProcess order): job C:/Windows/System32/taskkill.exe | driver C:/Windows/System32/taskkill.exe | sha256 1249717315fc8f4d2df17d5db9da0444795fdb9fb83dfb1f763c3f39282244f7 | inside frozen trees False | declared exception at C:/Windows/System32/taskkill.exe only: satisfied
+steering environment now (names): ['DOTNET_MULTILEVEL_LOOKUP', 'GIT_EDITOR', 'NODEFAULTCURRENTDIRECTORYINEXEPATH', 'PATH', 'PATHEXT']; PATH entries: 26
+forbidden redirects / launch-environment variables set: ['GIT_EDITOR is set; the settled launch environment has no GIT_* variable (R38 s6) - launch from the recorded shell with it unset']
+.pth audit (resolved paths, reviewed import lines; E:/RideBoundData/wp7/envs/fleetpy-1.0.2, E:/RideBoundData/wp7/envs/fleetpy-1.0.2/Lib/site-packages): none (1 .pth line(s))
+study started (R38-2 evidence): no
+analysis freeze stage1b-analysis-freeze.sha256 (required before any main job): ['refused: stage1b-analysis-freeze.sha256 does not exist (freeze the main-phase analysis code by a hashed amendment before any main job starts; plan v6 section 12)']
+analysis binding stage1b-analysis-binding.txt (written once at the first main admission, R41-1): exists False
+required-absent: C:/Users/quang/AppData/Roaming/Python/Python310/site-packages exists False
+drift stop receipt INPUT-DRIFT-STOP.txt exists: False
+power status (ACLineStatus, percent): (1, 100); AC-only predicate True; RB_ALLOW_BATTERY_MIN_PERCENT set: False
+C: free 54997 MiB; floor 51200 MiB + 410 MiB reserved per running job
+example: E:\RideBoundData\wp7\envs\fleetpy-1.0.2\python.exe -B E:\Code\Report_INT3508\ridebound-scratchpad\tang3\world\preflight_world_v1_2.py --label CF-U-d20181114-s10-r3-w07-s1b --fleetpy-root E:\RideBoundData\wp7\FleetPy-1.0.2 --runner-root C:\RideBoundData\research\runner-tier3-v3 --dotnet C:\Program Files\dotnet\dotnet.exe --commitment-config E:\Code\Report_INT3508\ridebound-scratchpad\tang3\configs\U.json --wp4-config E:\Code\Report_INT3508\ridebound-scratchpad\tang3\stage1b\harness\wp4-tier3-v2-costfirst.json --scenario C:\RideBoundData\research\fixtures-panelA-v1\d20181114-s10-r3-w07\scenario-content.json --derivative-manifest C:\RideBoundData\research\fixtures-panelA-v1\d20181114-s10-r3-w07\derivative-manifest.json --normalization-report C:\RideBoundData\research\fixtures-panelA-v1\d20181114-s10-r3-w07\normalization-report.json --selection-frame C:\RideBoundData\research\fixtures-panelA-v1\d20181114-s10-r3-w07\selection-frame.json --driver E:\Code\Report_INT3508\ridebound-scratchpad\tang3\calib\panelA\drivers\d20181114-s10-r3-w07.driver.json --output C:\RideBoundData\research\tier3-stage1b-v1\main\CF-U-d20181114-s10-r3-w07 --repeats 1 --master-seed 7 --expected-repository-inventory-sha256 0da63eaf2b30ab332fba265a6b2b6e5c36b3ee78950cbac6d6267e60f81e4cbe
+example env: RB_WORLD_CONFIG=E:\Code\Report_INT3508\ridebound-scratchpad\tang3\calib\panelA\worlds\W5-d20181114-w07.json cwd E:\Code\RideBound-deadline
+exit=0

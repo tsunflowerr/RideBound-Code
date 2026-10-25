@@ -1,0 +1,2 @@
+Loading modules from development content.
+first-attempt fix: failures 0 errors 1 ["ridebound_fleetpy.errors.AdapterFailure: RBWP7_FLEETPY_PLAN_INFEASIBLE at $.vehicles[0].route: veh plan for vid 0 feasible? False : ['PS: (1, None, None) state "]

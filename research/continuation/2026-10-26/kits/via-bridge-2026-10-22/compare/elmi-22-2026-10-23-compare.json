@@ -1,0 +1,305 @@
+{
+  "finishedJobs": 22,
+  "cellArmsCompared": 22,
+  "cellArmsExact": 22,
+  "riders": 1966,
+  "ridersIdentical": 1966,
+  "emulatorPredictionsSha256": "e42c7e2d344e86a27f7ef0992ee7474c561eb1a871f63be531055e0a496d54b1",
+  "realRidersTsv": "compare\\elmi-22-2026-10-23-real-riders.tsv",
+  "byArm": {
+    "U": {
+      "cellArms": 0,
+      "exact": 0
+    },
+    "C-120": {
+      "cellArms": 0,
+      "exact": 0
+    },
+    "C-300": {
+      "cellArms": 0,
+      "exact": 0
+    },
+    "PS-300": {
+      "cellArms": 0,
+      "exact": 0
+    },
+    "DLHZ-120": {
+      "cellArms": 0,
+      "exact": 0
+    },
+    "RCE35": {
+      "cellArms": 11,
+      "exact": 11
+    },
+    "EOHZ35": {
+      "cellArms": 11,
+      "exact": 11
+    }
+  },
+  "results": [
+    {
+      "arm": "EOHZ35",
+      "cell": "d20181112-s10-r1-w08",
+      "riders": 99,
+      "identical": 99,
+      "exact": true,
+      "onlyReal": 0,
+      "onlyEmulator": 0,
+      "servedReal": 99,
+      "servedEmulator": 99,
+      "firstDifference": null
+    },
+    {
+      "arm": "EOHZ35",
+      "cell": "d20181112-s10-r1-w17",
+      "riders": 104,
+      "identical": 104,
+      "exact": true,
+      "onlyReal": 0,
+      "onlyEmulator": 0,
+      "servedReal": 104,
+      "servedEmulator": 104,
+      "firstDifference": null
+    },
+    {
+      "arm": "EOHZ35",
+      "cell": "d20181113-s10-r1-w08",
+      "riders": 101,
+      "identical": 101,
+      "exact": true,
+      "onlyReal": 0,
+      "onlyEmulator": 0,
+      "servedReal": 101,
+      "servedEmulator": 101,
+      "firstDifference": null
+    },
+    {
+      "arm": "EOHZ35",
+      "cell": "d20181113-s10-r1-w17",
+      "riders": 98,
+      "identical": 98,
+      "exact": true,
+      "onlyReal": 0,
+      "onlyEmulator": 0,
+      "servedReal": 98,
+      "servedEmulator": 98,
+      "firstDifference": null
+    },
+    {
+      "arm": "EOHZ35",
+      "cell": "d20181114-s10-r1-w08",
+      "riders": 92,
+      "identical": 92,
+      "exact": true,
+      "onlyReal": 0,
+      "onlyEmulator": 0,
+      "servedReal": 92,
+      "servedEmulator": 92,
+      "firstDifference": null
+    },
+    {
+      "arm": "EOHZ35",
+      "cell": "d20181114-s10-r1-w17",
+      "riders": 103,
+      "identical": 103,
+      "exact": true,
+      "onlyReal": 0,
+      "onlyEmulator": 0,
+      "servedReal": 103,
+      "servedEmulator": 103,
+      "firstDifference": null
+    },
+    {
+      "arm": "EOHZ35",
+      "cell": "d20181115-s10-r1-w08",
+      "riders": 76,
+      "identical": 76,
+      "exact": true,
+      "onlyReal": 0,
+      "onlyEmulator": 0,
+      "servedReal": 76,
+      "servedEmulator": 76,
+      "firstDifference": null
+    },
+    {
+      "arm": "EOHZ35",
+      "cell": "d20181116-s10-r1-w08",
+      "riders": 83,
+      "identical": 83,
+      "exact": true,
+      "onlyReal": 0,
+      "onlyEmulator": 0,
+      "servedReal": 83,
+      "servedEmulator": 83,
+      "firstDifference": null
+    },
+    {
+      "arm": "EOHZ35",
+      "cell": "d20181117-s10-r1-w08",
+      "riders": 66,
+      "identical": 66,
+      "exact": true,
+      "onlyReal": 0,
+      "onlyEmulator": 0,
+      "servedReal": 66,
+      "servedEmulator": 66,
+      "firstDifference": null
+    },
+    {
+      "arm": "EOHZ35",
+      "cell": "d20181118-s10-r1-w08",
+      "riders": 74,
+      "identical": 74,
+      "exact": true,
+      "onlyReal": 0,
+      "onlyEmulator": 0,
+      "servedReal": 74,
+      "servedEmulator": 74,
+      "firstDifference": null
+    },
+    {
+      "arm": "EOHZ35",
+      "cell": "d20181118-s10-r1-w17",
+      "riders": 88,
+      "identical": 88,
+      "exact": true,
+      "onlyReal": 0,
+      "onlyEmulator": 0,
+      "servedReal": 88,
+      "servedEmulator": 88,
+      "firstDifference": null
+    },
+    {
+      "arm": "RCE35",
+      "cell": "d20181112-s10-r1-w08",
+      "riders": 97,
+      "identical": 97,
+      "exact": true,
+      "onlyReal": 0,
+      "onlyEmulator": 0,
+      "servedReal": 97,
+      "servedEmulator": 97,
+      "firstDifference": null
+    },
+    {
+      "arm": "RCE35",
+      "cell": "d20181112-s10-r1-w17",
+      "riders": 104,
+      "identical": 104,
+      "exact": true,
+      "onlyReal": 0,
+      "onlyEmulator": 0,
+      "servedReal": 104,
+      "servedEmulator": 104,
+      "firstDifference": null
+    },
+    {
+      "arm": "RCE35",
+      "cell": "d20181113-s10-r1-w08",
+      "riders": 101,
+      "identical": 101,
+      "exact": true,
+      "onlyReal": 0,
+      "onlyEmulator": 0,
+      "servedReal": 101,
+      "servedEmulator": 101,
+      "firstDifference": null
+    },
+    {
+      "arm": "RCE35",
+      "cell": "d20181113-s10-r1-w17",
+      "riders": 97,
+      "identical": 97,
+      "exact": true,
+      "onlyReal": 0,
+      "onlyEmulator": 0,
+      "servedReal": 97,
+      "servedEmulator": 97,
+      "firstDifference": null
+    },
+    {
+      "arm": "RCE35",
+      "cell": "d20181114-s10-r1-w08",
+      "riders": 92,
+      "identical": 92,
+      "exact": true,
+      "onlyReal": 0,
+      "onlyEmulator": 0,
+      "servedReal": 92,
+      "servedEmulator": 92,
+      "firstDifference": null
+    },
+    {
+      "arm": "RCE35",
+      "cell": "d20181114-s10-r1-w17",
+      "riders": 103,
+      "identical": 103,
+      "exact": true,
+      "onlyReal": 0,
+      "onlyEmulator": 0,
+      "servedReal": 103,
+      "servedEmulator": 103,
+      "firstDifference": null
+    },
+    {
+      "arm": "RCE35",
+      "cell": "d20181115-s10-r1-w08",
+      "riders": 73,
+      "identical": 73,
+      "exact": true,
+      "onlyReal": 0,
+      "onlyEmulator": 0,
+      "servedReal": 73,
+      "servedEmulator": 73,
+      "firstDifference": null
+    },
+    {
+      "arm": "RCE35",
+      "cell": "d20181116-s10-r1-w08",
+      "riders": 83,
+      "identical": 83,
+      "exact": true,
+      "onlyReal": 0,
+      "onlyEmulator": 0,
+      "servedReal": 83,
+      "servedEmulator": 83,
+      "firstDifference": null
+    },
+    {
+      "arm": "RCE35",
+      "cell": "d20181117-s10-r1-w08",
+      "riders": 67,
+      "identical": 67,
+      "exact": true,
+      "onlyReal": 0,
+      "onlyEmulator": 0,
+      "servedReal": 67,
+      "servedEmulator": 67,
+      "firstDifference": null
+    },
+    {
+      "arm": "RCE35",
+      "cell": "d20181118-s10-r1-w08",
+      "riders": 74,
+      "identical": 74,
+      "exact": true,
+      "onlyReal": 0,
+      "onlyEmulator": 0,
+      "servedReal": 74,
+      "servedEmulator": 74,
+      "firstDifference": null
+    },
+    {
+      "arm": "RCE35",
+      "cell": "d20181118-s10-r1-w17",
+      "riders": 91,
+      "identical": 91,
+      "exact": true,
+      "onlyReal": 0,
+      "onlyEmulator": 0,
+      "servedReal": 91,
+      "servedEmulator": 91,
+      "firstDifference": null
+    }
+  ]
+}

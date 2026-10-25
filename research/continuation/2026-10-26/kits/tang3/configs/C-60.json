@@ -1,0 +1,102 @@
+{
+  "configurationVersion": "1.0.0",
+  "policies": [
+    {
+      "policyId": "wp6-synthetic-policy-overlay-v1",
+      "budgetBasis": "decisionInduced",
+      "limits": [
+        {
+          "dimension": "pickup_eta_total_ms",
+          "applicablePhases": [
+            "accepted",
+            "waitingPickup",
+            "onboard"
+          ]
+        },
+        {
+          "dimension": "drop_eta_total_ms",
+          "applicablePhases": [
+            "accepted",
+            "waitingPickup",
+            "onboard"
+          ],
+          "hardLimit": 60000
+        },
+        {
+          "dimension": "material_eta_revision_count",
+          "applicablePhases": [
+            "accepted",
+            "waitingPickup",
+            "onboard"
+          ]
+        },
+        {
+          "dimension": "vehicle_switch_count",
+          "hardLimit": 0,
+          "applicablePhases": [
+            "accepted",
+            "waitingPickup",
+            "onboard"
+          ]
+        },
+        {
+          "dimension": "pickup_stop_relocation_mm",
+          "applicablePhases": [
+            "accepted",
+            "waitingPickup"
+          ]
+        },
+        {
+          "dimension": "pickup_stop_switch_count",
+          "hardLimit": 0,
+          "applicablePhases": [
+            "accepted",
+            "waitingPickup"
+          ]
+        },
+        {
+          "dimension": "drop_stop_relocation_mm",
+          "applicablePhases": [
+            "accepted",
+            "waitingPickup",
+            "onboard"
+          ]
+        },
+        {
+          "dimension": "drop_stop_switch_count",
+          "hardLimit": 0,
+          "applicablePhases": [
+            "accepted",
+            "waitingPickup",
+            "onboard"
+          ]
+        },
+        {
+          "dimension": "incumbent_order_inversion_count",
+          "applicablePhases": [
+            "accepted",
+            "waitingPickup",
+            "onboard"
+          ]
+        },
+        {
+          "dimension": "pre_pickup_inserted_stop_count",
+          "applicablePhases": [
+            "accepted",
+            "waitingPickup"
+          ]
+        }
+      ],
+      "materialRevisionRule": {
+        "rawEtaThresholdMs": 1000,
+        "displayBucketWidthMs": 60000
+      },
+      "finalConfirmationLocks": [
+        "vehicle",
+        "pickupStop",
+        "pickupEta"
+      ]
+    }
+  ],
+  "stopDistances": []
+}

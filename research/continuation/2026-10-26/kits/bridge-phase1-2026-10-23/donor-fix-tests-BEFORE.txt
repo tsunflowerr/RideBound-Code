@@ -1,0 +1,58 @@
+test_a_different_first_stop_still_fails_closed (test_in_progress_donor_leg.InProgressDonorLegTests) ... ERROR
+test_a_service_leg_with_a_duration_still_fails_closed (test_in_progress_donor_leg.InProgressDonorLegTests) ... ERROR
+test_a_vehicle_without_a_locked_leg_gets_exactly_the_runner_route (test_in_progress_donor_leg.InProgressDonorLegTests) ... ERROR
+test_the_stop_being_served_but_not_yet_reported_is_fleetpys_started_stop (test_in_progress_donor_leg.InProgressDonorLegTests) ... ERROR
+
+======================================================================
+ERROR: test_a_different_first_stop_still_fails_closed (test_in_progress_donor_leg.InProgressDonorLegTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Code\RideBound-p1fix\simulators\fleetpy-ridebound\tests\test_in_progress_donor_leg.py", line 106, in test_a_different_first_stop_still_fails_closed
+    control, vehicle, (pickup_a, pickup_b, drop_a, drop_b) = self._alighting_donor()
+  File "C:\Code\RideBound-p1fix\simulators\fleetpy-ridebound\tests\test_in_progress_donor_leg.py", line 68, in _alighting_donor
+    head = control._fleetpy_stop(drop_a, locked=locked)
+  File "C:\Code\RideBound-p1fix\simulators\fleetpy-ridebound\ridebound_fleetpy\fleet_control.py", line 1062, in _fleetpy_stop
+    raise _fail("RBWP7_DROPOFF_NODE_MISMATCH", "$.route.stop.nodeId", repr(stop.raw_request))
+ridebound_fleetpy.errors.AdapterFailure: RBWP7_DROPOFF_NODE_MISMATCH at $.route.stop.nodeId: 10
+
+======================================================================
+ERROR: test_a_service_leg_with_a_duration_still_fails_closed (test_in_progress_donor_leg.InProgressDonorLegTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Code\RideBound-p1fix\simulators\fleetpy-ridebound\tests\test_in_progress_donor_leg.py", line 116, in test_a_service_leg_with_a_duration_still_fails_closed
+    control, vehicle, stops = self._alighting_donor(duration_ms=30_000)
+  File "C:\Code\RideBound-p1fix\simulators\fleetpy-ridebound\tests\test_in_progress_donor_leg.py", line 68, in _alighting_donor
+    head = control._fleetpy_stop(drop_a, locked=locked)
+  File "C:\Code\RideBound-p1fix\simulators\fleetpy-ridebound\ridebound_fleetpy\fleet_control.py", line 1062, in _fleetpy_stop
+    raise _fail("RBWP7_DROPOFF_NODE_MISMATCH", "$.route.stop.nodeId", repr(stop.raw_request))
+ridebound_fleetpy.errors.AdapterFailure: RBWP7_DROPOFF_NODE_MISMATCH at $.route.stop.nodeId: 10
+
+======================================================================
+ERROR: test_a_vehicle_without_a_locked_leg_gets_exactly_the_runner_route (test_in_progress_donor_leg.InProgressDonorLegTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Code\RideBound-p1fix\simulators\fleetpy-ridebound\tests\test_in_progress_donor_leg.py", line 125, in test_a_vehicle_without_a_locked_leg_gets_exactly_the_runner_route
+    control, vehicle, stops = self._alighting_donor(locked=False)
+  File "C:\Code\RideBound-p1fix\simulators\fleetpy-ridebound\tests\test_in_progress_donor_leg.py", line 68, in _alighting_donor
+    head = control._fleetpy_stop(drop_a, locked=locked)
+  File "C:\Code\RideBound-p1fix\simulators\fleetpy-ridebound\ridebound_fleetpy\fleet_control.py", line 1062, in _fleetpy_stop
+    raise _fail("RBWP7_DROPOFF_NODE_MISMATCH", "$.route.stop.nodeId", repr(stop.raw_request))
+ridebound_fleetpy.errors.AdapterFailure: RBWP7_DROPOFF_NODE_MISMATCH at $.route.stop.nodeId: 10
+
+======================================================================
+ERROR: test_the_stop_being_served_but_not_yet_reported_is_fleetpys_started_stop (test_in_progress_donor_leg.InProgressDonorLegTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Code\RideBound-p1fix\simulators\fleetpy-ridebound\tests\test_in_progress_donor_leg.py", line 85, in test_the_stop_being_served_but_not_yet_reported_is_fleetpys_started_stop
+    control, vehicle, stops = self._alighting_donor()
+  File "C:\Code\RideBound-p1fix\simulators\fleetpy-ridebound\tests\test_in_progress_donor_leg.py", line 68, in _alighting_donor
+    head = control._fleetpy_stop(drop_a, locked=locked)
+  File "C:\Code\RideBound-p1fix\simulators\fleetpy-ridebound\ridebound_fleetpy\fleet_control.py", line 1062, in _fleetpy_stop
+    raise _fail("RBWP7_DROPOFF_NODE_MISMATCH", "$.route.stop.nodeId", repr(stop.raw_request))
+ridebound_fleetpy.errors.AdapterFailure: RBWP7_DROPOFF_NODE_MISMATCH at $.route.stop.nodeId: 10
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.002s
+
+FAILED (errors=4)
+Loading modules from development content.

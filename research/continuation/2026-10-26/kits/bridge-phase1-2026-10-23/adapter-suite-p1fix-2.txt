@@ -1,0 +1,80 @@
+.......................................................................................................................................F................E.E.........................................................................................................................................................................F............................................................................................................E..F........................
+======================================================================
+ERROR: test_fast_audit_reconciles_repository_and_external_dag (test_wp13_full_audit.Wp13FullAuditTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Code\RideBound-p1fix\simulators\fleetpy-ridebound\tests\test_wp13_full_audit.py", line 21, in test_fast_audit_reconciles_repository_and_external_dag
+    result = audit.build_audit(deep_raw_verify=False)
+  File "C:\Code\RideBound-p1fix\simulators\fleetpy-ridebound\wp13_full_audit.py", line 961, in build_audit
+    freeze, legacy_hash = _verify_source_bindings(verified_artifacts)
+  File "C:\Code\RideBound-p1fix\simulators\fleetpy-ridebound\wp13_full_audit.py", line 560, in _verify_source_bindings
+    raise RuntimeError(f"current source binding differs: {relative}")
+RuntimeError: current source binding differs: simulators/fleetpy-ridebound/actual_fleetpy_medium_verify.py
+
+======================================================================
+ERROR: test_schema_rejects_unresolved_priority_two_and_claim_drift (test_wp13_full_audit.Wp13FullAuditTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Code\RideBound-p1fix\simulators\fleetpy-ridebound\tests\test_wp13_full_audit.py", line 114, in test_schema_rejects_unresolved_priority_two_and_claim_drift
+    result = audit.build_audit(deep_raw_verify=False)
+  File "C:\Code\RideBound-p1fix\simulators\fleetpy-ridebound\wp13_full_audit.py", line 961, in build_audit
+    freeze, legacy_hash = _verify_source_bindings(verified_artifacts)
+  File "C:\Code\RideBound-p1fix\simulators\fleetpy-ridebound\wp13_full_audit.py", line 560, in _verify_source_bindings
+    raise RuntimeError(f"current source binding differs: {relative}")
+RuntimeError: current source binding differs: simulators/fleetpy-ridebound/actual_fleetpy_medium_verify.py
+
+======================================================================
+ERROR: test_it_verifies_and_the_builder_reproduces_it (test_wp9_freeze_v6.ReceiptTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Code\RideBound-p1fix\simulators\fleetpy-ridebound\tests\test_wp9_freeze_v6.py", line 185, in test_it_verifies_and_the_builder_reproduces_it
+    result = _MODULE.verify_receipt(_RECEIPT, _REPOSITORY, _RUNNER)
+  File "C:\Code\RideBound-p1fix\simulators\fleetpy-ridebound\wp9_freeze_v6.py", line 325, in verify_receipt
+    raise RuntimeError(f"freeze hash differs: {field}")
+RuntimeError: freeze hash differs: adapterPackageTreeSealSha256
+
+======================================================================
+FAIL: test_undeclared_frozen_files_still_match_the_working_tree (test_wp13_e1_source_divergence.Wp13E1SourceDivergenceTests)
+Anything not declared must be byte-identical on disk, as before.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Code\RideBound-p1fix\simulators\fleetpy-ridebound\tests\test_wp13_e1_source_divergence.py", line 83, in test_undeclared_frozen_files_still_match_the_working_tree
+    self.assertEqual(drifted, [], "undeclared drift in frozen E1 source")
+AssertionError: Lists differ: ['benchmarks/scenarios/wp9-confirmatory/d2[1914 chars].cs'] != []
+
+First list contains 27 additional elements.
+First extra element 0:
+'benchmarks/scenarios/wp9-confirmatory/d20181114-s10-r1.veh4.driver.json'
+
+Diff is 2047 characters long. Set self.maxDiff to None to see it. : undeclared drift in frozen E1 source
+
+======================================================================
+FAIL: test_receipt_verifies_under_the_exact_child_environment (test_wp14r_freeze_v6.FreezeV6Tests)
+The freeze-v2 regression, carried forward.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Code\RideBound-p1fix\simulators\fleetpy-ridebound\tests\test_wp14r_freeze_v6.py", line 65, in test_receipt_verifies_under_the_exact_child_environment
+    self.assertEqual(
+AssertionError: 2 != 0 : child-environment verify failed: WP14R_FREEZE_V6_ERROR: WP14-v1 scientific freeze no longer verifies: freeze receipt differs from its sources or is not canonical
+
+======================================================================
+FAIL: test_the_v5_receipt_bytes_are_untouched (test_wp9_freeze_v6.RetainedV5Tests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Code\RideBound-p1fix\simulators\fleetpy-ridebound\tests\test_wp9_freeze_v6.py", line 135, in test_the_v5_receipt_bytes_are_untouched
+    self.assertEqual(
+AssertionError: '18b0b6e44a78fb80c77f8949de83b9a8e3bf635f1a17e0f80923b2c31a196801' != '84f6eff31addbdd12349a19201d79c872fbd05aaf5e0aa45dd73aee6d5c3dee2'
+- 18b0b6e44a78fb80c77f8949de83b9a8e3bf635f1a17e0f80923b2c31a196801
++ 84f6eff31addbdd12349a19201d79c872fbd05aaf5e0aa45dd73aee6d5c3dee2
+
+
+----------------------------------------------------------------------
+Ran 461 tests in 123.266s
+
+FAILED (failures=3, errors=3)
+Loading modules from development content.
+{
+ "output": "C:\\Users\\quang\\AppData\\Local\\Temp\\tmp23333u85\\out\\report.json",
+ "sha256": "d2df2a9aeb46486eac78453a7a51e066d610ec3ccdc4bd339333e6385f7afc04",
+ "ratchetInertOnThisEvidence": true
+}

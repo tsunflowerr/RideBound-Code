@@ -1,0 +1,16 @@
+G2-READY-v3 (2026-10-23 07:28)
+
+The G2 bridge v3 phases may run with runner-g2-v3 and the G2 worktree adapter.
+
+1. Code, frozen:
+   - staged tree 6d071153f8d690e98e6489165db57ef18a85f0ed = v2 tree + the Contracts evidence fix (AMENDMENTS A6);
+   - patch g2-A-G-v3.patch (sha256 23ef453b…);
+   - dotnet test RideBound.slnx 1225/1225;
+   - runner-g2-v3, tree ff7b09a3…;
+   - inventory 90957b387d923d9ea7a9fff518b49ee9af7f2f8e0d799832c29473805a019316, re-checked 07:28.
+2. Review: as in G2-READY.txt. A6 fixes the Contracts gap left by S1.
+3. G2-off replay through runner-g2-v3, all 80 finished jobs: 80/80 byte-identical, 59,330/59,330 frames
+   (G2OFFV3-GATE-SUMMARY.json, dbac0bbe…).
+4. Dev smoke (diagnostic, not evidence): 3/3 G2 cell-arms on d20181114-s10-r1-w08 exact against the sealed emulator,
+   286/286 riders (AMENDMENTS A6).
+5. Emulator predictions sealed 2026-10-22T22:11Z (EMULATOR-PREDICTIONS-G2.sha256).

@@ -1,0 +1,68 @@
+[
+  {
+    "cellId": "d20181112-s10-r1-w08",
+    "source": "wp14-development/grid-v1.json",
+    "sourceCellId": "d20181112-s10-r1-w08",
+    "scenarioId": "fleetpy-manhattan-v1-wp14-development-v1-d20181112-s10-r1-w08"
+  },
+  {
+    "cellId": "d20181113-s10-r1-w08",
+    "source": "wp14-development/grid-v1.json",
+    "sourceCellId": "d20181113-s10-r1-w08",
+    "scenarioId": "fleetpy-manhattan-v1-wp14-development-v1-d20181113-s10-r1-w08"
+  },
+  {
+    "cellId": "d20181112-s10-r1-w17",
+    "source": "wp14-development/grid-v1.json",
+    "sourceCellId": "d20181112-s10-r1-w17",
+    "scenarioId": "fleetpy-manhattan-v1-wp14-development-v1-d20181112-s10-r1-w17"
+  },
+  {
+    "cellId": "d20181113-s10-r1-w17",
+    "source": "wp14-development/grid-v1.json",
+    "sourceCellId": "d20181113-s10-r1-w17",
+    "scenarioId": "fleetpy-manhattan-v1-wp14-development-v1-d20181113-s10-r1-w17"
+  },
+  {
+    "cellId": "d20181114-s10-r1-w08",
+    "source": "wp9-confirmatory/grid-v2.json",
+    "sourceCellId": "d20181114-s10-r1",
+    "scenarioId": "fleetpy-manhattan-v1-wp9-confirmatory-v2-d20181114-s10-r1"
+  },
+  {
+    "cellId": "d20181115-s10-r1-w08",
+    "source": "wp9-confirmatory/grid-v2.json",
+    "sourceCellId": "d20181115-s10-r1",
+    "scenarioId": "fleetpy-manhattan-v1-wp9-confirmatory-v2-d20181115-s10-r1"
+  },
+  {
+    "cellId": "d20181116-s10-r1-w08",
+    "source": "wp9-confirmatory/grid-v2.json",
+    "sourceCellId": "d20181116-s10-r1",
+    "scenarioId": "fleetpy-manhattan-v1-wp9-confirmatory-v2-d20181116-s10-r1"
+  },
+  {
+    "cellId": "d20181117-s10-r1-w08",
+    "source": "wp9-confirmatory/grid-v2.json",
+    "sourceCellId": "d20181117-s10-r1",
+    "scenarioId": "fleetpy-manhattan-v1-wp9-confirmatory-v2-d20181117-s10-r1"
+  },
+  {
+    "cellId": "d20181118-s10-r1-w08",
+    "source": "wp9-confirmatory/grid-v2.json",
+    "sourceCellId": "d20181118-s10-r1",
+    "scenarioId": "fleetpy-manhattan-v1-wp9-confirmatory-v2-d20181118-s10-r1"
+  },
+  {
+    "cellId": "d20181114-s10-r1-w17",
+    "source": "panelA/grid-panel-a-extra-v1.json",
+    "sourceCellId": "d20181114-s10-r1-w17",
+    "scenarioId": "fleetpy-manhattan-v1-tier3-panel-a-extra-v1-d20181114-s10-r1-w17"
+  },
+  {
+    "cellId": "d20181118-s10-r1-w17",
+    "source": "panelA/grid-panel-a-extra-v1.json",
+    "sourceCellId": "d20181118-s10-r1-w17",
+    "scenarioId": "fleetpy-manhattan-v1-tier3-panel-a-extra-v1-d20181118-s10-r1-w17"
+  }
+]

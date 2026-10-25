@@ -1,0 +1,107 @@
+===== python -B run_stage1b.py plan gate0
+U-d20181116-s10-r1-w08	pending
+C-30-d20181116-s10-r1-w08	pending
+U-d20181116-s10-r1-w17	pending
+C-30-d20181116-s10-r1-w17	pending
+4 {'pending': 4}
+input problems: 
+  - refused: runner-tier3-v3.sha256.tsv does not exist (publish the Runner and write its manifest first)
+  - refused: STAGE1B-PLAN.sha256 does not exist (the plan is not sealed)
+  - stage1b-input-freeze.sha256 does not exist (run `freeze` after approval, before sealing)
+C: free 60895 MiB; floor 51200 MiB + 410 MiB per job
+example: E:\RideBoundData\wp7\envs\fleetpy-1.0.2\python.exe -B E:\Code\Report_INT3508\ridebound-scratchpad\tang3\world\preflight_world_v1_2.py --label U-d20181116-s10-r1-w08-t38 --fleetpy-root E:\RideBoundData\wp7\FleetPy-1.0.2 --runner-root C:\RideBoundData\research\runner-tier3-v3 --dotnet C:\Program Files\dotnet\dotnet.exe --commitment-config E:\Code\Report_INT3508\ridebound-scratchpad\tang3\configs\U.json --wp4-config E:\Code\Report_INT3508\ridebound-scratchpad\tang3\configs\wp4-tier3-v2.json --scenario C:\RideBoundData\research\fixtures-panelA-v1\d20181116-s10-r1-w08\scenario-content.json --derivative-manifest C:\RideBoundData\research\fixtures-panelA-v1\d20181116-s10-r1-w08\derivative-manifest.json --normalization-report C:\RideBoundData\research\fixtures-panelA-v1\d20181116-s10-r1-w08\normalization-report.json --selection-frame C:\RideBoundData\research\fixtures-panelA-v1\d20181116-s10-r1-w08\selection-frame.json --driver E:\Code\Report_INT3508\ridebound-scratchpad\tang3\calib\panelA\drivers\d20181116-s10-r1-w08.driver.json --output C:\RideBoundData\research\tier3-stage1b-v1\gate0\U-d20181116-s10-r1-w08 --repeats 1 --master-seed 7 --expected-repository-inventory-sha256 0da63eaf2b30ab332fba265a6b2b6e5c36b3ee78950cbac6d6267e60f81e4cbe
+example env: RB_WORLD_CONFIG=E:\Code\Report_INT3508\ridebound-scratchpad\tang3\calib\panelA\worlds\W5-d20181116-w08.json cwd E:\Code\RideBound-deadline
+exit=0
+===== python -B run_stage1b.py plan smoke
+CF-U-d20181114-s10-r1-w08	pending
+CF-C-30-d20181114-s10-r1-w08	pending
+2 {'pending': 2}
+input problems: 
+  - refused: runner-tier3-v3.sha256.tsv does not exist (publish the Runner and write its manifest first)
+  - refused: STAGE1B-PLAN.sha256 does not exist (the plan is not sealed)
+  - stage1b-input-freeze.sha256 does not exist (run `freeze` after approval, before sealing)
+  - refused: GATE0-PASSED.txt does not exist
+C: free 60895 MiB; floor 51200 MiB + 410 MiB per job
+example: E:\RideBoundData\wp7\envs\fleetpy-1.0.2\python.exe -B E:\Code\Report_INT3508\ridebound-scratchpad\tang3\world\preflight_world_v1_2.py --label CF-U-d20181114-s10-r1-w08-s1b --fleetpy-root E:\RideBoundData\wp7\FleetPy-1.0.2 --runner-root C:\RideBoundData\research\runner-tier3-v3 --dotnet C:\Program Files\dotnet\dotnet.exe --commitment-config E:\Code\Report_INT3508\ridebound-scratchpad\tang3\configs\U.json --wp4-config E:\Code\Report_INT3508\ridebound-scratchpad\tang3\stage1b\harness\wp4-tier3-v2-costfirst.json --scenario C:\RideBoundData\research\fixtures-panelA-v1\d20181114-s10-r1-w08\scenario-content.json --derivative-manifest C:\RideBoundData\research\fixtures-panelA-v1\d20181114-s10-r1-w08\derivative-manifest.json --normalization-report C:\RideBoundData\research\fixtures-panelA-v1\d20181114-s10-r1-w08\normalization-report.json --selection-frame C:\RideBoundData\research\fixtures-panelA-v1\d20181114-s10-r1-w08\selection-frame.json --driver E:\Code\Report_INT3508\ridebound-scratchpad\tang3\calib\panelA\drivers\d20181114-s10-r1-w08.driver.json --output C:\RideBoundData\research\tier3-stage1b-v1\smoke\CF-U-d20181114-s10-r1-w08 --repeats 1 --master-seed 7 --expected-repository-inventory-sha256 0da63eaf2b30ab332fba265a6b2b6e5c36b3ee78950cbac6d6267e60f81e4cbe
+example env: RB_WORLD_CONFIG=E:\Code\Report_INT3508\ridebound-scratchpad\tang3\calib\panelA\worlds\W5-d20181114-w08.json cwd E:\Code\RideBound-deadline
+exit=0
+===== python -B run_stage1b.py plan main
+CF-U-d20181114-s10-r3-w07	pending
+CF-C-30-d20181114-s10-r3-w07	pending
+CF-U-d20181114-s10-r3-w08	pending
+CF-C-30-d20181114-s10-r3-w08	pending
+CF-U-d20181114-s10-r3-w17	pending
+CF-C-30-d20181114-s10-r3-w17	pending
+CF-U-d20181114-s10-r4-w07	pending
+CF-C-30-d20181114-s10-r4-w07	pending
+CF-U-d20181114-s10-r4-w08	pending
+CF-C-30-d20181114-s10-r4-w08	pending
+CF-U-d20181114-s10-r4-w17	pending
+CF-C-30-d20181114-s10-r4-w17	pending
+CF-U-d20181115-s10-r1-w07	pending
+CF-C-30-d20181115-s10-r1-w07	pending
+CF-U-d20181115-s10-r1-w08	pending
+CF-C-30-d20181115-s10-r1-w08	pending
+CF-U-d20181115-s10-r2-w07	pending
+CF-C-30-d20181115-s10-r2-w07	pending
+CF-U-d20181115-s10-r2-w08	pending
+CF-C-30-d20181115-s10-r2-w08	pending
+CF-U-d20181115-s10-r4-w07	pending
+CF-C-30-d20181115-s10-r4-w07	pending
+CF-U-d20181115-s10-r4-w08	pending
+CF-C-30-d20181115-s10-r4-w08	pending
+CF-U-d20181116-s10-r1-w07	pending
+CF-C-30-d20181116-s10-r1-w07	pending
+CF-U-d20181116-s10-r1-w08	pending
+CF-C-30-d20181116-s10-r1-w08	pending
+CF-U-d20181116-s10-r1-w17	pending
+CF-C-30-d20181116-s10-r1-w17	pending
+CF-U-d20181116-s10-r2-w07	pending
+CF-C-30-d20181116-s10-r2-w07	pending
+CF-U-d20181116-s10-r2-w08	pending
+CF-C-30-d20181116-s10-r2-w08	pending
+CF-U-d20181116-s10-r2-w17	pending
+CF-C-30-d20181116-s10-r2-w17	pending
+CF-U-d20181116-s10-r4-w07	pending
+CF-C-30-d20181116-s10-r4-w07	pending
+CF-U-d20181116-s10-r4-w08	pending
+CF-C-30-d20181116-s10-r4-w08	pending
+CF-U-d20181116-s10-r4-w17	pending
+CF-C-30-d20181116-s10-r4-w17	pending
+CF-U-d20181117-s10-r1-w08	pending
+CF-C-30-d20181117-s10-r1-w08	pending
+CF-U-d20181117-s10-r1-w17	pending
+CF-C-30-d20181117-s10-r1-w17	pending
+CF-U-d20181117-s10-r2-w08	pending
+CF-C-30-d20181117-s10-r2-w08	pending
+CF-U-d20181117-s10-r2-w17	pending
+CF-C-30-d20181117-s10-r2-w17	pending
+CF-U-d20181117-s10-r3-w07	pending
+CF-C-30-d20181117-s10-r3-w07	pending
+CF-U-d20181117-s10-r3-w08	pending
+CF-C-30-d20181117-s10-r3-w08	pending
+CF-U-d20181117-s10-r3-w17	pending
+CF-C-30-d20181117-s10-r3-w17	pending
+CF-U-d20181118-s10-r2-w08	pending
+CF-C-30-d20181118-s10-r2-w08	pending
+CF-U-d20181118-s10-r2-w17	pending
+CF-C-30-d20181118-s10-r2-w17	pending
+CF-U-d20181118-s10-r3-w08	pending
+CF-C-30-d20181118-s10-r3-w08	pending
+CF-U-d20181118-s10-r3-w17	pending
+CF-C-30-d20181118-s10-r3-w17	pending
+CF-U-d20181118-s10-r4-w08	pending
+CF-C-30-d20181118-s10-r4-w08	pending
+CF-U-d20181118-s10-r4-w17	pending
+CF-C-30-d20181118-s10-r4-w17	pending
+68 {'pending': 68}
+input problems: 
+  - refused: runner-tier3-v3.sha256.tsv does not exist (publish the Runner and write its manifest first)
+  - refused: STAGE1B-PLAN.sha256 does not exist (the plan is not sealed)
+  - stage1b-input-freeze.sha256 does not exist (run `freeze` after approval, before sealing)
+  - refused: GATE0-PASSED.txt does not exist
+  - refused: SMOKE-PASSED.txt does not exist
+C: free 60895 MiB; floor 51200 MiB + 410 MiB per job
+example: E:\RideBoundData\wp7\envs\fleetpy-1.0.2\python.exe -B E:\Code\Report_INT3508\ridebound-scratchpad\tang3\world\preflight_world_v1_2.py --label CF-U-d20181114-s10-r3-w07-s1b --fleetpy-root E:\RideBoundData\wp7\FleetPy-1.0.2 --runner-root C:\RideBoundData\research\runner-tier3-v3 --dotnet C:\Program Files\dotnet\dotnet.exe --commitment-config E:\Code\Report_INT3508\ridebound-scratchpad\tang3\configs\U.json --wp4-config E:\Code\Report_INT3508\ridebound-scratchpad\tang3\stage1b\harness\wp4-tier3-v2-costfirst.json --scenario C:\RideBoundData\research\fixtures-panelA-v1\d20181114-s10-r3-w07\scenario-content.json --derivative-manifest C:\RideBoundData\research\fixtures-panelA-v1\d20181114-s10-r3-w07\derivative-manifest.json --normalization-report C:\RideBoundData\research\fixtures-panelA-v1\d20181114-s10-r3-w07\normalization-report.json --selection-frame C:\RideBoundData\research\fixtures-panelA-v1\d20181114-s10-r3-w07\selection-frame.json --driver E:\Code\Report_INT3508\ridebound-scratchpad\tang3\calib\panelA\drivers\d20181114-s10-r3-w07.driver.json --output C:\RideBoundData\research\tier3-stage1b-v1\main\CF-U-d20181114-s10-r3-w07 --repeats 1 --master-seed 7 --expected-repository-inventory-sha256 0da63eaf2b30ab332fba265a6b2b6e5c36b3ee78950cbac6d6267e60f81e4cbe
+example env: RB_WORLD_CONFIG=E:\Code\Report_INT3508\ridebound-scratchpad\tang3\calib\panelA\worlds\W5-d20181114-w07.json cwd E:\Code\RideBound-deadline
+exit=0

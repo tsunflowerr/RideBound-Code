@@ -1,0 +1,25 @@
+{
+  "gridId": "tier3-panel-a-extra-v1",
+  "cells": [
+    {
+      "cellId": "d20181117-s10-r2-w07",
+      "scenarioId": "fleetpy-manhattan-v1-tier3-panel-a-extra-v1-d20181117-s10-r2-w07",
+      "demandMemberPath": "FleetPy_Manhattan/demand/Manhattan_2018/matched/Manhattan_2019_corrected/2018-11-17_sample_10_2.csv",
+      "travelFactorMemberPath": "FleetPy_Manhattan/networks/Manhattan_2019_corrected/2018-11-17_tt_factors.csv",
+      "sourceLocalDate": "2018-11-17",
+      "sourceWindowStartSeconds": 25200,
+      "sourceWindowEndSeconds": 32400,
+      "travelFactorAtSeconds": 0,
+      "requestTarget": 108,
+      "vehicleCount": 8,
+      "maximumNodeCount": 96,
+      "vehicleCapacity": 4,
+      "pickupWindowMs": 600000,
+      "maximumRideTimePermille": 1500,
+      "drainDurationMs": 7200000,
+      "selectionLabel": "ridebound-tier3-panel-a-extra-v1-selection-retry3",
+      "pseudonymizationLabel": "ridebound-tier3-panel-a-extra-v1-pseudonymization-retry3",
+      "commitmentPolicyId": "wp6-synthetic-policy-overlay-v1"
+    }
+  ]
+}

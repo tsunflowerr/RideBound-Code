@@ -1,0 +1,76 @@
+{
+  "finishedJobs": 4,
+  "cellArmsCompared": 4,
+  "cellArmsExact": 4,
+  "riders": 475,
+  "ridersIdentical": 475,
+  "movesEqual": 2,
+  "g2CellArms": 2,
+  "byArm": {
+    "R128-U": {
+      "cellArms": 1,
+      "exact": 1
+    },
+    "R128-RCE35": {
+      "cellArms": 1,
+      "exact": 1
+    },
+    "R128-G2K8-U": {
+      "cellArms": 1,
+      "exact": 1
+    },
+    "R128-G2K8-RCE35": {
+      "cellArms": 1,
+      "exact": 1
+    }
+  },
+  "realRidersTsv": "compare\\r128v2pilot-2026-10-24-real-riders.tsv",
+  "results": [
+    {
+      "arm": "R128-G2K8-RCE35",
+      "cell": "d20181114-s10-r1-w08",
+      "riders": 118,
+      "identical": 118,
+      "exact": true,
+      "onlyReal": 0,
+      "onlyEmulator": 0,
+      "firstDifference": null,
+      "movesReal": 3,
+      "movesEmulator": 3,
+      "maxMovesPerDecision": 1
+    },
+    {
+      "arm": "R128-G2K8-U",
+      "cell": "d20181114-s10-r1-w08",
+      "riders": 122,
+      "identical": 122,
+      "exact": true,
+      "onlyReal": 0,
+      "onlyEmulator": 0,
+      "firstDifference": null,
+      "movesReal": 10,
+      "movesEmulator": 10,
+      "maxMovesPerDecision": 1
+    },
+    {
+      "arm": "R128-RCE35",
+      "cell": "d20181114-s10-r1-w08",
+      "riders": 113,
+      "identical": 113,
+      "exact": true,
+      "onlyReal": 0,
+      "onlyEmulator": 0,
+      "firstDifference": null
+    },
+    {
+      "arm": "R128-U",
+      "cell": "d20181114-s10-r1-w08",
+      "riders": 122,
+      "identical": 122,
+      "exact": true,
+      "onlyReal": 0,
+      "onlyEmulator": 0,
+      "firstDifference": null
+    }
+  ]
+}

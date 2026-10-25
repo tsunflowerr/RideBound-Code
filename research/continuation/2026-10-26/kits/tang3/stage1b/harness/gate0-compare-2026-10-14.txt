@@ -1,0 +1,67 @@
+# compare_equivalence_stage1b-v7.py gate0 gate0-compare-2026-10-14.txt
+old runner: ok True tree ac251ef32a4865ea3bd3d8d87b4b1bcaccc4462a9b80160b4d205b8d474cff3f dll a631038b6ea4850ffa29be2d5e4058fba2e57b725ee568075686d7a43c6f5fac []
+new runner: ok True tree d08c0057d8239c6c51cceb0d2ba2d7f41dc899a9ac085671c363ede388a0b4b8 dll 1839a54413b2729cf353db7ef8b2359d32f4698709bba75a96eca492e36c69a9 []
+BEHAVIOURAL-ONLY GATE 0 (owner decision 2026-10-12; Codex R28 N1): the criterion is amended from R22's full-validity criterion. Checked: the recomputable digests (manifest, initial state, decision 1, every checkpoint, final state, closure), exact equality of every behavioural component, and link and content checks for decisions 2..N. The decision 2..N digests are not validated by the production .NET code, so a protocol-invalid tape with identical actions, ledgers and frame content could pass. Results are exploratory.
+pair U-d20181116-s10-r1-w08 (reference) vs U-d20181116-s10-r1-w08 (new)
+  decisions: identical
+  table: identical
+  served: identical
+  lifecycle: identical
+  boarded: identical
+  alighted: identical
+  frames: identical
+  finalOnlineState: identical
+  commitmentLedger: identical
+  incidentLedger: identical
+  runSemantic: identical
+  info: raw runId equal True; frames 2020/2020; new binarySha256 1839a54413b2729cf353db7ef8b2359d32f4698709bba75a96eca492e36c69a9
+  info: digests content-verified reference {'manifestHash': 1, 'initialStateHash': 1, 'decision1Hash': 1, 'checkpointHash': 1, 'checkpointStateHash': 1, 'checkpointClosure': 1} new {'manifestHash': 1, 'initialStateHash': 1, 'decision1Hash': 1, 'checkpointHash': 1, 'checkpointStateHash': 1, 'checkpointClosure': 1}; decisions 2..N decisionHash and intermediate state hashes are link- and content-checked only, NOT validated by the production .NET code (R28 N1)
+  PAIR BEHAVIOURALLY EQUIVALENT
+pair C-30-d20181116-s10-r1-w08 (reference) vs C-30-d20181116-s10-r1-w08 (new)
+  decisions: identical
+  table: identical
+  served: identical
+  lifecycle: identical
+  boarded: identical
+  alighted: identical
+  frames: identical
+  finalOnlineState: identical
+  commitmentLedger: identical
+  incidentLedger: identical
+  runSemantic: identical
+  info: raw runId equal True; frames 2035/2035; new binarySha256 1839a54413b2729cf353db7ef8b2359d32f4698709bba75a96eca492e36c69a9
+  info: digests content-verified reference {'manifestHash': 1, 'initialStateHash': 1, 'decision1Hash': 1, 'checkpointHash': 1, 'checkpointStateHash': 1, 'checkpointClosure': 1} new {'manifestHash': 1, 'initialStateHash': 1, 'decision1Hash': 1, 'checkpointHash': 1, 'checkpointStateHash': 1, 'checkpointClosure': 1}; decisions 2..N decisionHash and intermediate state hashes are link- and content-checked only, NOT validated by the production .NET code (R28 N1)
+  PAIR BEHAVIOURALLY EQUIVALENT
+pair U-d20181116-s10-r1-w17 (reference) vs U-d20181116-s10-r1-w17 (new)
+  decisions: identical
+  table: identical
+  served: identical
+  lifecycle: identical
+  boarded: identical
+  alighted: identical
+  frames: identical
+  finalOnlineState: identical
+  commitmentLedger: identical
+  incidentLedger: identical
+  runSemantic: identical
+  info: raw runId equal True; frames 2284/2284; new binarySha256 1839a54413b2729cf353db7ef8b2359d32f4698709bba75a96eca492e36c69a9
+  info: digests content-verified reference {'manifestHash': 1, 'initialStateHash': 1, 'decision1Hash': 1, 'checkpointHash': 1, 'checkpointStateHash': 1, 'checkpointClosure': 1} new {'manifestHash': 1, 'initialStateHash': 1, 'decision1Hash': 1, 'checkpointHash': 1, 'checkpointStateHash': 1, 'checkpointClosure': 1}; decisions 2..N decisionHash and intermediate state hashes are link- and content-checked only, NOT validated by the production .NET code (R28 N1)
+  PAIR BEHAVIOURALLY EQUIVALENT
+pair C-30-d20181116-s10-r1-w17 (reference) vs C-30-d20181116-s10-r1-w17 (new)
+  decisions: identical
+  table: identical
+  served: identical
+  lifecycle: identical
+  boarded: identical
+  alighted: identical
+  frames: identical
+  finalOnlineState: identical
+  commitmentLedger: identical
+  incidentLedger: identical
+  runSemantic: identical
+  info: raw runId equal True; frames 2146/2146; new binarySha256 1839a54413b2729cf353db7ef8b2359d32f4698709bba75a96eca492e36c69a9
+  info: digests content-verified reference {'manifestHash': 1, 'initialStateHash': 1, 'decision1Hash': 1, 'checkpointHash': 1, 'checkpointStateHash': 1, 'checkpointClosure': 1} new {'manifestHash': 1, 'initialStateHash': 1, 'decision1Hash': 1, 'checkpointHash': 1, 'checkpointStateHash': 1, 'checkpointClosure': 1}; decisions 2..N decisionHash and intermediate state hashes are link- and content-checked only, NOT validated by the production .NET code (R28 N1)
+  PAIR BEHAVIOURALLY EQUIVALENT
+runnerDllSha256 1839a54413b2729cf353db7ef8b2359d32f4698709bba75a96eca492e36c69a9
+runnerTreeSha256 d08c0057d8239c6c51cceb0d2ba2d7f41dc899a9ac085671c363ede388a0b4b8
+GATE0 BEHAVIOURAL PASSED

@@ -1,0 +1,6 @@
+DWELL-READY (2026-10-24 03:37)
+- C# option stopServiceDurationMs in C:/Code/RideBound-p1dwell (patch p1dwell-tracked-changes.patch + 2 new test files); dotnet test 1230/1230;
+- runner-p1-dwell-v1 tree f8ced3fa (runner-p1-dwell-v1.sha256.tsv); inventory 7b97072c (DWELL-INVENTORY.txt);
+- dwell-off replay gate: 228/228 recorded jobs byte-identical, 176,074 frames (DWELLOFF-GATE-SUMMARY.json);
+- step-1.3 emulator predictions sealed (EMULATOR-PREDICTIONS-DWELL.sha256, 17:41:50Z), 0 step-1.3 jobs at sealing;
+- outputs on E: (PHASE1-LOG P8).

@@ -1,0 +1,99 @@
+{
+  "transcript": "E:\\RideBoundData\\research\\tier3-world-smoke-v1\\world-b\\transcript-00.ndjson",
+  "transcriptSha256": "a4507c51b74f5804a032e1415a7b85625a7621032218d6caaf3fda4c06459ee8",
+  "frames": 1678,
+  "frameSha256Mismatches": 0,
+  "messageCounts": {
+    "adapterToRunner:checkpoint": 1,
+    "adapterToRunner:decisionApplied": 557,
+    "adapterToRunner:eventBatch": 557,
+    "adapterToRunner:hello": 1,
+    "adapterToRunner:initializeRun": 1,
+    "adapterToRunner:shutdown": 1,
+    "runnerToAdapter:checkpoint": 1,
+    "runnerToAdapter:decision": 557,
+    "runnerToAdapter:helloAck": 1,
+    "runnerToAdapter:initialized": 1
+  },
+  "decisionFrames": 557,
+  "distinctDecisionHashes": 557,
+  "decisionAppliedFrames": 557,
+  "acksWithoutDecision": 0,
+  "acksPrecedingTheirDecision": 0,
+  "finalCheckpoint": true,
+  "acknowledgedDecisionsWithoutCertificateBody": 0,
+  "supplementary": {
+    "sumPickupC_open": 0,
+    "sumPickupX_open": 754596,
+    "sumPickupV_open": 754596,
+    "revisionCounts": {
+      "pickupOpen": 739,
+      "pickupClosed": 839,
+      "dropOpen": 1578,
+      "dropClosed": 0
+    },
+    "cvarTailStartIndexExact": 61,
+    "cvarTailStartIndexFloat": 61,
+    "cvarTailLength": 4,
+    "cvarTailLengthCeil5pct": 4,
+    "ridersWithDropVAbove60s": 6,
+    "ridersWithDropVEqual60s": 0,
+    "ledgerRidersWithoutRequest": 0,
+    "ledgerRidersWithoutActualPickup": 0,
+    "breachesMissingKind": 0,
+    "latePickupsKeyPresent": true,
+    "entryKindViolations": 0,
+    "firstEntryKindViolation": null
+  },
+  "episodeTable": {
+    "finalCheckpoint": true,
+    "decisionsAcknowledged": 557,
+    "nonNormalCertificates": 0,
+    "requests": 108,
+    "lifecycle": {
+      "completed": 65,
+      "rejected": 43
+    },
+    "E1ServedShare": 0.6018518518518519,
+    "promisedRiders": 65,
+    "E2ShareDropVAbove60s": 0.09230769230769231,
+    "dropVCvar95Ms": 564620.75,
+    "sumDropC": 26484,
+    "sumDropX": 3434331,
+    "sumDropV": 3460815,
+    "breaches": {
+      "exogenousServiceQuality": 222
+    },
+    "latePickups": 1,
+    "latePickupMaxMs": 247440
+  },
+  "crossChecks": {
+    "chainContinuityEta": {
+      "pass": true,
+      "failures": 0,
+      "firstCounterexample": null
+    },
+    "chainContinuityFullPreviousPromise_supplementary": {
+      "pass": true,
+      "failures": 0,
+      "firstCounterexample": null
+    },
+    "check1_deltaTotals": {
+      "pass": true,
+      "revisionsChecked": 1578,
+      "dropFailures": 0,
+      "pickupFailures": 0,
+      "firstCounterexample": null
+    },
+    "check2_publications": {
+      "pass": true,
+      "ledgerEntries": 1643,
+      "acknowledgedPromisePublishedActions": 1643,
+      "distinctAcknowledgedPublicationIds": 1643,
+      "acknowledgedPublicationsMissingFromLedger": 0,
+      "publicationsInUnacknowledgedDecisions": 0,
+      "failures": 0,
+      "firstCounterexample": null
+    }
+  }
+}

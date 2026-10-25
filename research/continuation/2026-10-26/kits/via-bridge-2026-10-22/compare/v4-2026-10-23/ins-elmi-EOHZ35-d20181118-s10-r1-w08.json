@@ -1,0 +1,19 @@
+{
+  "runA": "C:\\RideBoundData\\research\\via-bridge-man-v1\\elmi\\EOHZ35-d20181118-s10-r1-w08",
+  "runB": "C:\\RideBoundData\\research\\via-bridge-man-v1\\g2v4\\inselmi\\EOHZ35-d20181118-s10-r1-w08",
+  "framesA": 1882,
+  "framesB": 1882,
+  "framesCompared": 1882,
+  "framesIdentical": 1881,
+  "firstDifference": {
+    "ordinal": 2,
+    "direction": "adapterToRunner",
+    "type": "initializeRun",
+    "path": "$.payload.manifest.coreCommitSha",
+    "a": "'1ce15e92d2c1459d4254bbbcd581529197257fb2'",
+    "b": "'7435661fa748608897cfeec7af212d1820c8c368'"
+  },
+  "summaryIdentical": true,
+  "summaryDifference": null,
+  "identical": false
+}

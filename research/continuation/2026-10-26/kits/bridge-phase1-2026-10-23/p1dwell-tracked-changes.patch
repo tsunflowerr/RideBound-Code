@@ -1,0 +1,290 @@
+diff --git a/simulators/fleetpy-ridebound/ridebound_fleetpy/fleet_control.py b/simulators/fleetpy-ridebound/ridebound_fleetpy/fleet_control.py
+index d2ff360..8512d33 100644
+--- a/simulators/fleetpy-ridebound/ridebound_fleetpy/fleet_control.py
++++ b/simulators/fleetpy-ridebound/ridebound_fleetpy/fleet_control.py
+@@ -964,6 +964,15 @@ class RideBoundFleetControl(FleetControlBase):
+                 self.routing_engine,
+                 [in_progress, *self._fleetpy_stops(route)],
+             )
++        else:
++            started = self._started_first_stop(vid, plan, simulation_time)
++            if started is not None:
++                plan = VehiclePlan(
++                    self._require_vehicle(vid),
++                    simulation_time,
++                    self.routing_engine,
++                    [started, *self._fleetpy_stops(route)[1:]],
++                )
+         if not plan.is_feasible() or not plan.is_structural_feasible():
+             raise _fail("RBWP7_FLEETPY_PLAN_INFEASIBLE", f"$.vehicles[{vid}].route", str(plan))
+         return plan
+@@ -1037,6 +1046,59 @@ class RideBoundFleetControl(FleetControlBase):
+         in_progress.max_trip_time_dict = {}
+         return in_progress
+ 
++    def _started_first_stop(self, vid, plan, simulation_time):
++        """FleetPy's own started stop to use in place of the Runner's first stop, or None.
++
++        The twin of _in_progress_service_stop for a stop the Runner does not yet count as executed. A vehicle that has
++        just arrived serves the stop in a zero-duration leg that FleetPy keeps locked for the rest of the step, but the
++        event batch of that instant may not report it yet, so the Runner still holds the stop as remaining and
++        unlocked. A new route decided in that step that starts with that same stop (for example a G2 donor giving a
++        waiting rider away) then builds a first leg that differs from FleetPy's only in `locked`, and FleetPy refuses
++        to replace a locked leg (Vehicles.py:351-366). This returns a copy of FleetPy's started stop, to take the place
++        of the Runner's first stop (it is the same stop), only when all of the following hold; otherwise the plan is
++        exactly the Runner's route, as before:
++          - the current leg is a locked BOARDING leg of zero duration;
++          - the first leg built from the Runner's route is unlocked, not equivalent to the current leg, and equal to it
++            in every other field of the leg signature (status, node, boarding and alighting riders, duration, earliest
++            start and end);
++          - FleetPy's stored plan starts with that started stop (same node, riders, lock, start time).
++        """
++        vehicle = self._require_vehicle(vid)
++        if not vehicle.assigned_route:
++            return None
++        current = vehicle.assigned_route[0]
++        if not current.locked or current.status != VRL_STATES.BOARDING or current.duration != 0:
++            return None
++        new_legs = self._build_VRLs(plan, vehicle, simulation_time)
++        if not new_legs or new_legs[0].locked or self._leg_equivalent(current, new_legs[0]):
++            return None
++        current_signature, first_signature = self._leg_signature(current), self._leg_signature(new_legs[0])
++        lock_field = 4
++        if (current_signature[:lock_field] + current_signature[lock_field + 1:]
++                != first_signature[:lock_field] + first_signature[lock_field + 1:]):
++            return None
++        stored = getattr(self, "veh_plans", {}).get(vid)
++        if stored is None or not stored.list_plan_stops:
++            return None
++        head = stored.list_plan_stops[0]
++        boarding = {request.get_rid_struct() for request in current.rq_dict.get(1, [])}
++        alighting = {request.get_rid_struct() for request in current.rq_dict.get(-1, [])}
++        if (
++            head.get_pos() != current.destination_pos
++            or not head.is_locked()
++            or head.get_started_at() is None
++            or set(head.get_list_boarding_rids()) != boarding
++            or set(head.get_list_alighting_rids()) != alighting
++        ):
++            return None
++        # As in _in_progress_service_stop: the stop is being served now, so its latest-time bounds are history (a late
++        # service is recorded by the Runner, ADR-076). The earliest times stay, so the leg is the same locked leg.
++        started = head.copy()
++        started.latest_pickup_time_dict = {}
++        started.latest_arrival_time_dict = {}
++        started.max_trip_time_dict = {}
++        return started
++
+     def _fleetpy_stop(self, stop: ProtocolStop, locked: bool):
+         position = (stop.raw_node, None, None)
+         duration = float(Decimal(stop.service_duration_ms) / Decimal(1000))
+diff --git a/src/RideBound.Algorithms/Candidates/CandidateModels.cs b/src/RideBound.Algorithms/Candidates/CandidateModels.cs
+index bb69e26..19e98fd 100644
+--- a/src/RideBound.Algorithms/Candidates/CandidateModels.cs
++++ b/src/RideBound.Algorithms/Candidates/CandidateModels.cs
+@@ -213,7 +213,8 @@ public sealed record CandidateGenerationOptions
+         int maximumRepairRequestsConsideredPerVehicle = 0,
+         CandidateRetentionStrategy retentionStrategy =
+             CandidateRetentionStrategy.LegacyAcceptedCountCostSlack,
+-        WaitingRiderRelocationGenerationOptions? waitingRiderRelocation = null)
++        WaitingRiderRelocationGenerationOptions? waitingRiderRelocation = null,
++        long stopServiceDurationMs = 0)
+     {
+         if (maximumCandidatesPerVehicle < 1)
+         {
+@@ -267,8 +268,14 @@ public sealed record CandidateGenerationOptions
+         MaximumExplorationWorkUnits = maximumExplorationWorkUnits;
+         MaximumRepairRequestsConsideredPerVehicle =
+             maximumRepairRequestsConsideredPerVehicle;
++        if (stopServiceDurationMs is < 0 or > DomainLimits.MaxCanonicalInteger)
++        {
++            throw new ArgumentOutOfRangeException(nameof(stopServiceDurationMs));
++        }
++
+         RetentionStrategy = retentionStrategy;
+         WaitingRiderRelocation = waitingRiderRelocation;
++        StopServiceDuration = new Duration(stopServiceDurationMs);
+     }
+ 
+     public int MaximumCandidatesPerVehicle { get; }
+@@ -295,6 +302,13 @@ public sealed record CandidateGenerationOptions
+     /// </summary>
+     public WaitingRiderRelocationGenerationOptions? WaitingRiderRelocation { get; }
+ 
++    /// <summary>
++    /// Service duration of every pickup and drop stop the generator inserts (dwell). Zero, the
++    /// default, keeps every earlier candidate, route and identity unchanged; a positive value lets
++    /// the Runner plan a non-zero boarding time (bridge step 1.3, opt-in).
++    /// </summary>
++    public Duration StopServiceDuration { get; }
++
+     public CandidateGenerationOptions WithRepairRequestCap(int maximumRequests) =>
+         new(
+             MaximumCandidatesPerVehicle,
+@@ -304,7 +318,8 @@ public sealed record CandidateGenerationOptions
+             MaximumExplorationWorkUnits,
+             maximumRequests,
+             RetentionStrategy,
+-            WaitingRiderRelocation);
++            WaitingRiderRelocation,
++            StopServiceDuration.Milliseconds);
+ 
+     public static CandidateGenerationOptions ExactSmall { get; } =
+         new(
+diff --git a/src/RideBound.Algorithms/Candidates/InsertionCandidateGenerator.cs b/src/RideBound.Algorithms/Candidates/InsertionCandidateGenerator.cs
+index 3353f9a..d924c92 100644
+--- a/src/RideBound.Algorithms/Candidates/InsertionCandidateGenerator.cs
++++ b/src/RideBound.Algorithms/Candidates/InsertionCandidateGenerator.cs
+@@ -718,7 +718,7 @@ public sealed class InsertionCandidateGenerator
+                 continue;
+             }
+ 
+-            var children = Expand(node, requests[node.RequestIndex])
++            var children = Expand(node, requests[node.RequestIndex], options.StopServiceDuration)
+                 .Select(
+                     child => new PrioritizedNode(
+                         child,
+@@ -790,7 +790,8 @@ public sealed class InsertionCandidateGenerator
+ 
+     private static IEnumerable<ExplorationNode> Expand(
+         ExplorationNode node,
+-        RideRequest request)
++        RideRequest request,
++        Duration serviceDuration)
+     {
+         yield return CreateNode(
+             node.RequestIndex + 1,
+@@ -798,18 +799,19 @@ public sealed class InsertionCandidateGenerator
+             node.InsertedRequestIds,
+             node.RepairedIncumbentRequestId);
+ 
++        // The dwell of an inserted stop is CandidateGenerationOptions.StopServiceDuration (0 by default).
+         var pickup = new RouteStop(
+             CandidateIdentity.CreateStopId(request.Id, RouteStopKind.Pickup),
+             request.OriginNodeId,
+             RouteStopKind.Pickup,
+             request.Id,
+-            new Duration(0));
++            serviceDuration);
+         var dropOff = new RouteStop(
+             CandidateIdentity.CreateStopId(request.Id, RouteStopKind.DropOff),
+             request.DestinationNodeId,
+             RouteStopKind.DropOff,
+             request.Id,
+-            new Duration(0));
++            serviceDuration);
+ 
+         var baseStops = node.Suffix;
+ 
+diff --git a/src/RideBound.Runner/Configuration/Wp4RunnerConfiguration.cs b/src/RideBound.Runner/Configuration/Wp4RunnerConfiguration.cs
+index 09626d0..355f314 100644
+--- a/src/RideBound.Runner/Configuration/Wp4RunnerConfiguration.cs
++++ b/src/RideBound.Runner/Configuration/Wp4RunnerConfiguration.cs
+@@ -85,7 +85,8 @@ public sealed class Wp4RunnerConfiguration : ICommitmentWarningProfileProvider
+         "scheduleStrategy",
+         "maximumExplorationWorkUnits",
+         "retentionStrategy",
+-        "waitingRiderRelocation");
++        "waitingRiderRelocation",
++        "stopServiceDurationMs");
+     private static readonly IReadOnlySet<string> RelocationGenerationFields = Fields(
+         "maximumRidersPerVehicle",
+         "maximumTargetVehicles");
+@@ -585,6 +586,21 @@ public sealed class Wp4RunnerConfiguration : ICommitmentWarningProfileProvider
+                     : null);
+         }
+ 
++        // Dwell of inserted stops (bridge step 1.3). Absent means 0, so every earlier configuration
++        // keeps its canonical bytes, content hash and candidates.
++        var stopServiceDurationMs = 0;
++
++        if (element.TryGetProperty("stopServiceDurationMs", out var dwellElement))
++        {
++            stopServiceDurationMs = NonNegativeInt32(dwellElement, "stopServiceDurationMs");
++
++            if (stopServiceDurationMs > MaximumStopServiceDurationMs)
++            {
++                throw new InvalidDataException(
++                    "'candidateGeneration.stopServiceDurationMs' must be at most 3600000 (one hour).");
++            }
++        }
++
+         return new CandidateGenerationOptions(
+             PositiveInt32(
+                 element.GetProperty("maximumCandidatesPerVehicle"),
+@@ -600,9 +616,12 @@ public sealed class Wp4RunnerConfiguration : ICommitmentWarningProfileProvider
+                 element.GetProperty("maximumExplorationWorkUnits"),
+                 "maximumExplorationWorkUnits"),
+             retentionStrategy: retentionStrategy,
+-            waitingRiderRelocation: relocation);
++            waitingRiderRelocation: relocation,
++            stopServiceDurationMs: stopServiceDurationMs);
+     }
+ 
++    private const int MaximumStopServiceDurationMs = 3_600_000;
++
+     private static DeterministicCandidateSelectionExecutionBudget
+         ReadSolverBudget(JsonElement element)
+     {
+diff --git a/tests/RideBound.Runner.Tests/Configuration/Wp4RunnerConfigurationTests.cs b/tests/RideBound.Runner.Tests/Configuration/Wp4RunnerConfigurationTests.cs
+index 28e2365..58df4f0 100644
+--- a/tests/RideBound.Runner.Tests/Configuration/Wp4RunnerConfigurationTests.cs
++++ b/tests/RideBound.Runner.Tests/Configuration/Wp4RunnerConfigurationTests.cs
+@@ -852,6 +852,57 @@ public sealed class Wp4RunnerConfigurationTests
+         }
+     }
+ 
++    [Fact]
++    public void Stop_service_duration_is_optional_bounded_and_off_by_default()
++    {
++        // Bridge step 1.3: the dwell of the stops the generator inserts. Absent means 0, so the
++        // archived tier-3 configuration keeps its content hash.
++        var reference = File.ReadAllText(Path.Combine(
++            RepositoryRoot(),
++            "benchmarks",
++            "configurations",
++            "wp14-c1-h6-reference-v1.json"));
++        var commitment = CommitmentPolicyConfiguration.Decode(Encoding.UTF8.GetBytes(reference));
++        string WithDwell(string value) => Tier3Wp4V2Json.Replace(
++            "\"retentionStrategy\": \"service-set-stability-portfolio-v1\"",
++            "\"retentionStrategy\": \"service-set-stability-portfolio-v1\",\n"
++                + "    \"stopServiceDurationMs\": " + value,
++            StringComparison.Ordinal);
++
++        var off = Wp4RunnerConfiguration.Decode(Encoding.UTF8.GetBytes(Tier3Wp4V2Json), commitment);
++        var dwell = Wp4RunnerConfiguration.Decode(Encoding.UTF8.GetBytes(WithDwell("24000")), commitment);
++        var zero = Wp4RunnerConfiguration.Decode(Encoding.UTF8.GetBytes(WithDwell("0")), commitment);
++
++        Assert.Equal(0, off.CandidateGeneration.StopServiceDuration.Milliseconds);
++        Assert.Equal(
++            "fb2813c4036d309490e12df77e37de1683b92b92a9ebdd71e16cad35d50ecd42",
++            off.ContentHash.Value);
++        Assert.Equal(24_000, dwell.CandidateGeneration.StopServiceDuration.Milliseconds);
++        Assert.Equal(0, zero.CandidateGeneration.StopServiceDuration.Milliseconds);
++        Assert.NotEqual(off.ContentHash, dwell.ContentHash);
++        Assert.Equal(
++            24_000,
++            dwell.CandidateGeneration.WithRepairRequestCap(3).StopServiceDuration.Milliseconds);
++
++        foreach (var value in new[] { "-1", "3600001", "\"24000\"", "true" })
++        {
++            Assert.Contains(
++                "stopServiceDurationMs",
++                Assert.Throws<InvalidDataException>(
++                    () => Wp4RunnerConfiguration.Decode(
++                        Encoding.UTF8.GetBytes(WithDwell(value)),
++                        commitment)).Message);
++        }
++
++        // A fraction never reaches the field reader: canonical JSON refuses it first, at the same path.
++        Assert.Contains(
++            "$.candidateGeneration.stopServiceDurationMs",
++            Assert.Throws<RideBound.Contracts.Serialization.CanonicalJsonException>(
++                () => Wp4RunnerConfiguration.Decode(
++                    Encoding.UTF8.GetBytes(WithDwell("1.5")),
++                    commitment)).Message);
++    }
++
+     private static string HardVectorJson(string? selectionObjectiveOrder)
+     {
+         var json = File.ReadAllText(Path.Combine(

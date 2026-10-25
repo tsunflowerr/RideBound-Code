@@ -1,0 +1,3 @@
+R128-PILOT-REVIEWED-v2 (2026-10-24 00:07)
+compare_r128.py on r128v2pilot (4 jobs, d20181114-s10-r1-w08, 128 requests, 10 vehicles): cell-arms exact 4/4; riders identical 475/475; G2 moves equal 2/2.
+Files: compare/r128v2pilot-2026-10-24-compare.json, -real-riders.tsv.

@@ -1,0 +1,19 @@
+{
+  "runA": "C:\\RideBoundData\\research\\via-bridge-man-v1\\main\\PS-300-d20181113-s10-r1-w08",
+  "runB": "C:\\RideBoundData\\research\\via-bridge-man-v1\\g2v4\\insmain\\PS-300-d20181113-s10-r1-w08",
+  "framesA": 2446,
+  "framesB": 2446,
+  "framesCompared": 2446,
+  "framesIdentical": 2445,
+  "firstDifference": {
+    "ordinal": 2,
+    "direction": "adapterToRunner",
+    "type": "initializeRun",
+    "path": "$.payload.manifest.coreCommitSha",
+    "a": "'1ce15e92d2c1459d4254bbbcd581529197257fb2'",
+    "b": "'7435661fa748608897cfeec7af212d1820c8c368'"
+  },
+  "summaryIdentical": true,
+  "summaryDifference": null,
+  "identical": false
+}

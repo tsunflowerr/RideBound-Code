@@ -1,0 +1,1 @@
+2026-10-25T18:43:32Z MAINA1-EARLY-START (amendment A2 in VIA-LOG.md): mainA1 (11 jobs, A1 configs) starts while trialA1 runs (simulated 4,007 s at 01:42, no error). Predictions sealed 2026-10-25T18:06:24Z; review R1 no blocker; cap diagnostic 0 hits. TRIAL-REVIEWED.txt will still be written after compare_via.py on trialA1.

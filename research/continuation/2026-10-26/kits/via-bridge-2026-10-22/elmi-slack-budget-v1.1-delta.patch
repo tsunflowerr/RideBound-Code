@@ -1,0 +1,332 @@
+diff --git a/src/RideBound.Domain/Commitments/CommitmentPolicy.cs b/src/RideBound.Domain/Commitments/CommitmentPolicy.cs
+index 60ba03f..bfa8e88 100644
+--- a/src/RideBound.Domain/Commitments/CommitmentPolicy.cs
++++ b/src/RideBound.Domain/Commitments/CommitmentPolicy.cs
+@@ -295,8 +295,9 @@ public sealed class CommitmentPolicy
+             throw new ArgumentOutOfRangeException(nameof(permille));
+         }
+ 
+-        // Canonical non-negative integers below 2^53, so the sums fit in a long and the
+-        // slack converts to double without loss.
++        // Canonical non-negative integers below 2^53, so the sums fit in a long. The slack
++        // converts to double without loss only below 2^53 ms (about 285,000 years); beyond
++        // that the limit may leave the canonical range and the Duration constructor throws.
+         var slack = Math.Max(
+             0L,
+             initialPromise.PickupEta.Milliseconds
+diff --git a/src/RideBound.Runner/Configuration/Wp4RunnerConfiguration.cs b/src/RideBound.Runner/Configuration/Wp4RunnerConfiguration.cs
+index 46cea74..d8b4e23 100644
+--- a/src/RideBound.Runner/Configuration/Wp4RunnerConfiguration.cs
++++ b/src/RideBound.Runner/Configuration/Wp4RunnerConfiguration.cs
+@@ -387,6 +387,20 @@ public sealed class Wp4RunnerConfiguration : ICommitmentWarningProfileProvider
+                 "selectionObjectiveOrder 'cost-first' requires the solver-backed C1 policy.");
+         }
+ 
++        // Hard utilization reads the fixed hard limit only, so a per-rider drop budget would
++        // silently drop out of the stability-first C1 and C2 ranking. Fail closed instead.
++        if (policyKind is RidePoolingPolicyKind.RideBoundHardVector
++                or RidePoolingPolicyKind.CommitSoftHardHybrid
++            && selectionObjectiveOrder != SolverBackedSelectionObjectiveOrder.CostFirst
++            && commitmentConfiguration.PolicyIds.Any(
++                id => commitmentConfiguration.TryGetPolicy(id, out var policy)
++                    && policy.DropEtaBudgetSlackPermille is not null))
++        {
++            throw new InvalidDataException(
++                "'dropEtaBudgetSlackPermille' is not ranked by hard utilization; the C1 and C2 "
++                + "policies accept it only with selectionObjectiveOrder 'cost-first'.");
++        }
++
+         SolverBackedRidePoolingPolicyOptions? solverOptions = null;
+         MultiplePlanPoolOptions? multipleOptions = null;
+         var warningProfiles = Array.Empty<CommitmentWarningProfile>();
+diff --git a/tests/RideBound.Application.Tests/Commitments/CommitmentSlackProportionalValidatorTests.cs b/tests/RideBound.Application.Tests/Commitments/CommitmentSlackProportionalValidatorTests.cs
+index fe2ce97..53c4d63 100644
+--- a/tests/RideBound.Application.Tests/Commitments/CommitmentSlackProportionalValidatorTests.cs
++++ b/tests/RideBound.Application.Tests/Commitments/CommitmentSlackProportionalValidatorTests.cs
+@@ -4,6 +4,8 @@ using RideBound.Application.Scheduling;
+ using RideBound.Application.State;
+ using RideBound.Domain.Commitments;
+ using RideBound.Domain.Common;
++using RideBound.Domain.Incidents;
++using RideBound.Domain.Requests;
+ using RideBound.Domain.Routes;
+ using RideBound.Domain.Runs;
+ using RideBound.Domain.Vehicles;
+@@ -141,15 +143,122 @@ public sealed class CommitmentSlackProportionalValidatorTests
+         }
+     }
+ 
++    [Fact]
++    public void No_worse_recovery_under_a_rider_budget_allows_no_more_than_the_kept_overrun()
++    {
++        // Visible basis, 500 ms drift: the kept route charges 500 ms, past the rider's 315 ms. A
++        // changed route that keeps the drop charges the same 500 ms and is exempted; one that adds
++        // 300 ms charges 800 ms and stays rejected. A fixed 315 ms limit decides the same way.
++        var forced = new HashSet<VehicleId> { ApplicationTestData.VehicleId };
++
++        foreach (var (policy, isProportional) in new[]
++                 {
++                     (Policy(budgetPermille: 350, basis: CommitmentBudgetBasis.CustomerVisible), true),
++                     (Policy(dropBudget: RiderBudget, basis: CommitmentBudgetBasis.CustomerVisible), false),
++                 })
++        {
++            var baseline = Decision(policy, reducedAt: Now + 500);
++            var kept = new CommitmentDecisionValidator().Validate(
++                WithCandidateRoute(baseline, AppendAfterDrop)
++                    with { ForcedReferenceVehicles = forced, ForcedNoWorse = true });
++            var worse = new CommitmentDecisionValidator().Validate(
++                WithCandidateRoute(baseline, route => WaitBeforeDrop(route, "added", 300))
++                    with { ForcedReferenceVehicles = forced, ForcedNoWorse = true });
++
++            Assert.True(kept.IsValid, $"{isProportional}: " + string.Join("; ", kept.Witnesses.Select(w => w.Message)));
++            var breach = Assert.Single(kept.ForcedBreaches);
++            Assert.Equal(CommitmentBreachKind.ForcedNoWorse, breach.Kind);
++            Assert.Equal([CommitmentFailureCodes.BudgetExceeded], breach.WitnessCodes);
++            Assert.Equal(500, breach.AttemptedBudgetAfter.DropEtaTotalMs);
++            Assert.True(Assert.Single(kept.ForcedExemptions).NoWorse);
++            Assert.False(worse.IsValid);
++            Assert.Empty(worse.ForcedBreaches);
++            var witness = Assert.Single(worse.Witnesses);
++            Assert.Equal(CommitmentFailureCodes.BudgetExceeded, witness.Code);
++            Assert.Equal(RiderBudget, witness.Limit);
++            Assert.Equal(800, witness.After);
++        }
++    }
++
++    [Fact]
++    public void A_two_sided_rider_deadline_holds_the_floor_at_drop0_minus_the_rider_budget()
++    {
++        // A 500 ms dwell before the drop makes the first promise 1100/1700 ms, so the rider's slack is
++        // 1100 + 1000 - 1700 = 400 ms and 35% of it is 140 ms: window 1560..1840 ms. Shortening the
++        // dwell by 140 ms drops at 1560 ms (allowed); by 141 ms, at 1559 ms (too early). A one-sided
++        // deadline allows both, and a fixed two-sided 140 ms slack decides the same way.
++        foreach (var (cut, expectValid) in new[] { (1L, true), (140L, true), (141L, false), (500L, false) })
++        {
++            var proportional = new CommitmentDecisionValidator().Validate(
++                WithCandidateRoute(
++                    Decision(Policy(deadlinePermille: 350, twoSided: true), initialDwell: 500),
++                    route => ShortenDwell(route, cut)));
++            var fixedSlack = new CommitmentDecisionValidator().Validate(
++                WithCandidateRoute(
++                    Decision(Policy(deadlineSlack: 140, twoSided: true), initialDwell: 500),
++                    route => ShortenDwell(route, cut)));
++            var oneSided = new CommitmentDecisionValidator().Validate(
++                WithCandidateRoute(
++                    Decision(Policy(deadlinePermille: 350), initialDwell: 500),
++                    route => ShortenDwell(route, cut)));
++
++            Assert.True(expectValid == proportional.IsValid, $"cut {cut}: " + string.Join("; ", proportional.Witnesses.Select(w => $"{w.Code} {w.Rule} {w.Limit} {w.After} {w.Message}")));
++            Assert.Equal(
++                fixedSlack.Witnesses.Select(w => (w.Code, w.Rule, w.Limit, w.After)),
++                proportional.Witnesses.Select(w => (w.Code, w.Rule, w.Limit, w.After)));
++            Assert.Equal(fixedSlack.IsValid, proportional.IsValid);
++            Assert.True(oneSided.IsValid, string.Join("; ", oneSided.Witnesses.Select(w => w.Message)));
++
++            if (!expectValid)
++            {
++                var witness = Assert.Single(proportional.Witnesses);
++                Assert.Equal(CommitmentFailureCodes.DeadlineExceeded, witness.Code);
++            }
++        }
++    }
++
++    [Theory]
++    [InlineData(RiderBudget, true)]
++    [InlineData(RiderBudget + 1, false)]
++    public void An_onboard_rider_keeps_the_budget_measured_on_the_first_promise(long delay, bool expectValid)
++    {
++        // Boarded at the promised 1100 ms; only the drop remains. The budget is still 35% of the
++        // first-promise slack (315 ms), not re-measured from the onboard state.
++        var result = new CommitmentDecisionValidator().Validate(
++            WithCandidateRoute(
++                Decision(Policy(budgetPermille: 350), reducedAt: 1_100, boardAt: 1_100),
++                route => WaitBeforeDrop(route, "added", delay)));
++        var fixedLimit = new CommitmentDecisionValidator().Validate(
++            WithCandidateRoute(
++                Decision(Policy(dropBudget: RiderBudget), reducedAt: 1_100, boardAt: 1_100),
++                route => WaitBeforeDrop(route, "added", delay)));
++
++        Assert.Equal(
++            RequestLifecycle.Onboard,
++            Decision(Policy(budgetPermille: 350), reducedAt: 1_100, boardAt: 1_100)
++                .CandidateState.Run.Requests[ApplicationTestData.Request().Id].Lifecycle);
++        Assert.Equal(expectValid, result.IsValid);
++        Assert.Equal(fixedLimit.IsValid, result.IsValid);
++
++        if (!expectValid)
++        {
++            var witness = Assert.Single(result.Witnesses);
++            Assert.Equal(CommitmentFailureCodes.BudgetExceeded, witness.Code);
++            Assert.Equal(RiderBudget, witness.Limit);
++        }
++    }
++
+     private static CommitmentPolicy Policy(
+         int? budgetPermille = null,
+         int? deadlinePermille = null,
+         long? dropBudget = null,
+         long? deadlineSlack = null,
+-        bool relaxed = false) =>
++        bool relaxed = false,
++        bool twoSided = false,
++        CommitmentBudgetBasis basis = CommitmentBudgetBasis.DecisionInduced) =>
+         new(
+             ApplicationTestData.Request().CommitmentPolicyId,
+-            CommitmentBudgetBasis.DecisionInduced,
++            basis,
+             CommitmentDimensionVocabulary.Ordered.Select(
+                 dimension => new CommitmentDimensionLimit(
+                     dimension,
+@@ -157,6 +266,7 @@ public sealed class CommitmentSlackProportionalValidatorTests
+                     CommitmentPhase.AllActive)),
+             new MaterialRevisionRule(1, null),
+             dropEtaDeadlineSlack: deadlineSlack is long slack ? new Duration(slack) : null,
++            dropEtaDeadlineTwoSided: twoSided,
+             dropEtaDeadlineRelaxed: relaxed,
+             dropEtaBudgetSlackPermille: budgetPermille,
+             dropEtaDeadlineSlackPermille: deadlinePermille);
+@@ -164,8 +274,14 @@ public sealed class CommitmentSlackProportionalValidatorTests
+     /// <summary>
+     /// The decision at <paramref name="reducedAt"/> on the kept route (pickup, drop), whose first
+     /// promise was published at <see cref="Now"/>. Same fixture as CommitmentRevisionCapValidatorTests.
++    /// <paramref name="initialDwell"/> adds a waypoint dwell before the drop (in the first promise and
++    /// the kept route); <paramref name="boardAt"/> boards the rider at that time before the decision.
+     /// </summary>
+-    private static CommitmentValidationContext Decision(CommitmentPolicy policy, long reducedAt = Now)
++    private static CommitmentValidationContext Decision(
++        CommitmentPolicy policy,
++        long reducedAt = Now,
++        long initialDwell = 0,
++        long? boardAt = null)
+     {
+         var request = ApplicationTestData.Request();
+         var stops = new List<RouteStop>
+@@ -173,6 +289,14 @@ public sealed class CommitmentSlackProportionalValidatorTests
+             new(new StopId("pickup"), ApplicationTestData.NodeOne, RouteStopKind.Pickup, request.Id, new Duration(0)),
+             new(new StopId("drop"), ApplicationTestData.NodeTwo, RouteStopKind.DropOff, request.Id, new Duration(0)),
+         };
++
++        if (initialDwell > 0)
++        {
++            stops.Insert(
++                1,
++                new RouteStop(new StopId("dwell"), ApplicationTestData.NodeOne, RouteStopKind.Waypoint, null, new Duration(initialDwell)));
++        }
++
+         var route = RoutePlan.Create(new PlanVersion(0), 0, [], stops).Value!;
+         var vehicle = VehicleState.Create(
+             ApplicationTestData.VehicleId,
+@@ -197,7 +321,7 @@ public sealed class CommitmentSlackProportionalValidatorTests
+             new SimTime(Now)).Schedule!;
+         var initial = new PromiseProjector().Project(run, run.Vehicles[vehicle.Id], route, schedule, request.Id).Value!;
+         Assert.Equal(1_100, initial.PickupEta.Milliseconds);
+-        Assert.Equal(1_200, initial.DropEta.Milliseconds);
++        Assert.Equal(1_200 + initialDwell, initial.DropEta.Milliseconds);
+         var ledger = CommitmentLedger.Empty.OpenInitial(
+             "initial-publication",
+             initial,
+@@ -206,9 +330,23 @@ public sealed class CommitmentSlackProportionalValidatorTests
+             "INITIAL_ACCEPTANCE",
+             3).Ledger!;
+         var before = new OnlineState(run, travel, 4, travel.SnapshotHash, ledger);
++        var reducedRun = run;
++
++        if (boardAt is long boarded)
++        {
++            reducedRun = reducedRun.ConfirmWaitingPickup(request.Id).Value!;
++            reducedRun = reducedRun.ReachStop(
++                vehicle.Id,
++                new StopId("pickup"),
++                new PlanVersion(0),
++                new NodePosition(ApplicationTestData.NodeOne),
++                2).Value!;
++            reducedRun = reducedRun.Board(vehicle.Id, request.Id, new PlanVersion(0), new SimTime(boarded)).Value!;
++        }
++
+         var reduced = before with
+         {
+-            Run = run.AdvanceEpoch(2, new SimTime(reducedAt)).Value!,
++            Run = reducedRun.AdvanceEpoch(2, new SimTime(reducedAt)).Value!,
+             NextEventSequence = 5,
+         };
+ 
+@@ -257,4 +395,22 @@ public sealed class CommitmentSlackProportionalValidatorTests
+             new RouteStop(new StopId(stopId), ApplicationTestData.NodeOne, RouteStopKind.Waypoint, null, new Duration(milliseconds)));
+         return RoutePlan.Create(new PlanVersion(route.Version.Value + 1), route.ExecutedStopCount, route.FrozenPrefix, stops).Value!;
+     }
++
++    /// <summary>A changed route that keeps the drop time: a zero-dwell waypoint after the drop.</summary>
++    private static RoutePlan AppendAfterDrop(RoutePlan route)
++    {
++        var stops = route.MutableSuffix.ToList();
++        stops.Add(new RouteStop(new StopId("after"), ApplicationTestData.NodeZero, RouteStopKind.Waypoint, null, new Duration(0)));
++        return RoutePlan.Create(new PlanVersion(route.Version.Value + 1), route.ExecutedStopCount, route.FrozenPrefix, stops).Value!;
++    }
++
++    private static RoutePlan ShortenDwell(RoutePlan route, long milliseconds)
++    {
++        var stops = route.MutableSuffix
++            .Select(value => value.StopId == new StopId("dwell")
++                ? new RouteStop(value.StopId, value.NodeId, value.Kind, value.RequestId, new Duration(value.ServiceDuration.Milliseconds - milliseconds))
++                : value)
++            .ToList();
++        return RoutePlan.Create(new PlanVersion(route.Version.Value + 1), route.ExecutedStopCount, route.FrozenPrefix, stops).Value!;
++    }
+ }
+diff --git a/tests/RideBound.Runner.Tests/Configuration/Wp4RunnerConfigurationTests.cs b/tests/RideBound.Runner.Tests/Configuration/Wp4RunnerConfigurationTests.cs
+index e8dc685..8489092 100644
+--- a/tests/RideBound.Runner.Tests/Configuration/Wp4RunnerConfigurationTests.cs
++++ b/tests/RideBound.Runner.Tests/Configuration/Wp4RunnerConfigurationTests.cs
+@@ -745,6 +745,52 @@ public sealed class Wp4RunnerConfigurationTests
+         Assert.NotEqual(wp4.ContentHash, costFirst.ContentHash);
+     }
+ 
++    [Fact]
++    public void A_per_rider_drop_budget_is_accepted_by_C1_only_under_cost_first()
++    {
++        // Hard utilization reads the fixed hard limit only, so under stability-first the per-rider
++        // budget would silently leave the ranking; the configuration fails closed instead.
++        var json = JsonNode.Parse(File.ReadAllText(Path.Combine(
++            RepositoryRoot(),
++            "benchmarks",
++            "configurations",
++            "wp14-c1-h6-reference-v1.json")))!;
++        var policy = json["policies"]![0]!.AsObject();
++        policy["limits"]!.AsArray()
++            .Single(value => (string?)value!["dimension"] == "drop_eta_total_ms")!
++            .AsObject()
++            .Remove("hardLimit");
++        policy["dropEtaBudgetSlackPermille"] = 350;
++        var commitment = CommitmentPolicyConfiguration.Decode(
++            Encoding.UTF8.GetBytes(json.ToJsonString()));
++        var costFirstJson = Tier3Wp4V2Json.Replace(
++            "\"lateBoarding\": \"record-v1\"",
++            "\"lateBoarding\": \"record-v1\",\n  \"selectionObjectiveOrder\": \"cost-first\"",
++            StringComparison.Ordinal);
++
++        var costFirst = Wp4RunnerConfiguration.Decode(Encoding.UTF8.GetBytes(costFirstJson), commitment);
++        var rollingCost = Wp4RunnerConfiguration.Decode(Encoding.UTF8.GetBytes(PublishedJson()), commitment);
++
++        Assert.Equal(
++            SolverBackedSelectionObjectiveOrder.CostFirst,
++            costFirst.SolverPolicyOptions!.SelectionObjectiveOrder);
++        Assert.Equal(RidePoolingPolicyRegistry.RollingCost, rollingCost.PolicyId);
++
++        foreach (var stabilityFirst in new[]
++                 {
++                     Tier3Wp4V2Json,
++                     costFirstJson.Replace("\"cost-first\"", "\"stability-first\"", StringComparison.Ordinal),
++                 })
++        {
++            Assert.Contains(
++                "'dropEtaBudgetSlackPermille' is not ranked by hard utilization",
++                Assert.Throws<InvalidDataException>(
++                    () => Wp4RunnerConfiguration.Decode(
++                        Encoding.UTF8.GetBytes(stabilityFirst),
++                        commitment)).Message);
++        }
++    }
++
+     private static string HardVectorJson(string? selectionObjectiveOrder)
+     {
+         var json = File.ReadAllText(Path.Combine(

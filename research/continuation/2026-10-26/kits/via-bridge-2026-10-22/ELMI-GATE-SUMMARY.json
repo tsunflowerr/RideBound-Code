@@ -1,0 +1,474 @@
+{
+  "replayed": 58,
+  "identical": 58,
+  "framesTotal": 43154,
+  "framesIdentical": 43154,
+  "notIdentical": [],
+  "rows": [
+    {
+      "file": "elmi-main-C-120-d20181112-s10-r1-w08.json",
+      "identical": true,
+      "frames": 819,
+      "framesIdentical": 819,
+      "runnerCpuSeconds": 62.17,
+      "firstDifference": null
+    },
+    {
+      "file": "elmi-main-C-120-d20181112-s10-r1-w17.json",
+      "identical": true,
+      "frames": 838,
+      "framesIdentical": 838,
+      "runnerCpuSeconds": 64.19,
+      "firstDifference": null
+    },
+    {
+      "file": "elmi-main-C-120-d20181113-s10-r1-w08.json",
+      "identical": true,
+      "frames": 823,
+      "framesIdentical": 823,
+      "runnerCpuSeconds": 54.06,
+      "firstDifference": null
+    },
+    {
+      "file": "elmi-main-C-120-d20181113-s10-r1-w17.json",
+      "identical": true,
+      "frames": 796,
+      "framesIdentical": 796,
+      "runnerCpuSeconds": 49.72,
+      "firstDifference": null
+    },
+    {
+      "file": "elmi-main-C-120-d20181114-s10-r1-w08.json",
+      "identical": true,
+      "frames": 760,
+      "framesIdentical": 760,
+      "runnerCpuSeconds": 49.67,
+      "firstDifference": null
+    },
+    {
+      "file": "elmi-main-C-120-d20181114-s10-r1-w17.json",
+      "identical": true,
+      "frames": 811,
+      "framesIdentical": 811,
+      "runnerCpuSeconds": 53.97,
+      "firstDifference": null
+    },
+    {
+      "file": "elmi-main-C-120-d20181115-s10-r1-w08.json",
+      "identical": true,
+      "frames": 648,
+      "framesIdentical": 648,
+      "runnerCpuSeconds": 37.95,
+      "firstDifference": null
+    },
+    {
+      "file": "elmi-main-C-120-d20181116-s10-r1-w08.json",
+      "identical": true,
+      "frames": 690,
+      "framesIdentical": 690,
+      "runnerCpuSeconds": 39.8,
+      "firstDifference": null
+    },
+    {
+      "file": "elmi-main-C-120-d20181117-s10-r1-w08.json",
+      "identical": true,
+      "frames": 590,
+      "framesIdentical": 590,
+      "runnerCpuSeconds": 33.3,
+      "firstDifference": null
+    },
+    {
+      "file": "elmi-main-C-120-d20181118-s10-r1-w08.json",
+      "identical": true,
+      "frames": 574,
+      "framesIdentical": 574,
+      "runnerCpuSeconds": 30.95,
+      "firstDifference": null
+    },
+    {
+      "file": "elmi-main-C-120-d20181118-s10-r1-w17.json",
+      "identical": true,
+      "frames": 700,
+      "framesIdentical": 700,
+      "runnerCpuSeconds": 54.34,
+      "firstDifference": null
+    },
+    {
+      "file": "elmi-main-C-300-d20181112-s10-r1-w08.json",
+      "identical": true,
+      "frames": 787,
+      "framesIdentical": 787,
+      "runnerCpuSeconds": 70.05,
+      "firstDifference": null
+    },
+    {
+      "file": "elmi-main-C-300-d20181112-s10-r1-w17.json",
+      "identical": true,
+      "frames": 830,
+      "framesIdentical": 830,
+      "runnerCpuSeconds": 75.48,
+      "firstDifference": null
+    },
+    {
+      "file": "elmi-main-C-300-d20181113-s10-r1-w08.json",
+      "identical": true,
+      "frames": 811,
+      "framesIdentical": 811,
+      "runnerCpuSeconds": 53.05,
+      "firstDifference": null
+    },
+    {
+      "file": "elmi-main-C-300-d20181113-s10-r1-w17.json",
+      "identical": true,
+      "frames": 762,
+      "framesIdentical": 762,
+      "runnerCpuSeconds": 46.22,
+      "firstDifference": null
+    },
+    {
+      "file": "elmi-main-C-300-d20181114-s10-r1-w08.json",
+      "identical": true,
+      "frames": 795,
+      "framesIdentical": 795,
+      "runnerCpuSeconds": 51.62,
+      "firstDifference": null
+    },
+    {
+      "file": "elmi-main-C-300-d20181114-s10-r1-w17.json",
+      "identical": true,
+      "frames": 842,
+      "framesIdentical": 842,
+      "runnerCpuSeconds": 58.88,
+      "firstDifference": null
+    },
+    {
+      "file": "elmi-main-C-300-d20181115-s10-r1-w08.json",
+      "identical": true,
+      "frames": 671,
+      "framesIdentical": 671,
+      "runnerCpuSeconds": 39.02,
+      "firstDifference": null
+    },
+    {
+      "file": "elmi-main-C-300-d20181116-s10-r1-w08.json",
+      "identical": true,
+      "frames": 726,
+      "framesIdentical": 726,
+      "runnerCpuSeconds": 44.42,
+      "firstDifference": null
+    },
+    {
+      "file": "elmi-main-C-300-d20181117-s10-r1-w08.json",
+      "identical": true,
+      "frames": 580,
+      "framesIdentical": 580,
+      "runnerCpuSeconds": 35.61,
+      "firstDifference": null
+    },
+    {
+      "file": "elmi-main-C-300-d20181118-s10-r1-w08.json",
+      "identical": true,
+      "frames": 635,
+      "framesIdentical": 635,
+      "runnerCpuSeconds": 63.78,
+      "firstDifference": null
+    },
+    {
+      "file": "elmi-main-C-300-d20181118-s10-r1-w17.json",
+      "identical": true,
+      "frames": 756,
+      "framesIdentical": 756,
+      "runnerCpuSeconds": 57.08,
+      "firstDifference": null
+    },
+    {
+      "file": "elmi-main-DLHZ-120-d20181112-s10-r1-w08.json",
+      "identical": true,
+      "frames": 802,
+      "framesIdentical": 802,
+      "runnerCpuSeconds": 47.94,
+      "firstDifference": null
+    },
+    {
+      "file": "elmi-main-DLHZ-120-d20181112-s10-r1-w17.json",
+      "identical": true,
+      "frames": 837,
+      "framesIdentical": 837,
+      "runnerCpuSeconds": 58.62,
+      "firstDifference": null
+    },
+    {
+      "file": "elmi-main-DLHZ-120-d20181113-s10-r1-w08.json",
+      "identical": true,
+      "frames": 813,
+      "framesIdentical": 813,
+      "runnerCpuSeconds": 49.66,
+      "firstDifference": null
+    },
+    {
+      "file": "elmi-main-DLHZ-120-d20181113-s10-r1-w17.json",
+      "identical": true,
+      "frames": 796,
+      "framesIdentical": 796,
+      "runnerCpuSeconds": 47.98,
+      "firstDifference": null
+    },
+    {
+      "file": "elmi-main-DLHZ-120-d20181114-s10-r1-w08.json",
+      "identical": true,
+      "frames": 760,
+      "framesIdentical": 760,
+      "runnerCpuSeconds": 50.73,
+      "firstDifference": null
+    },
+    {
+      "file": "elmi-main-DLHZ-120-d20181114-s10-r1-w17.json",
+      "identical": true,
+      "frames": 811,
+      "framesIdentical": 811,
+      "runnerCpuSeconds": 51.8,
+      "firstDifference": null
+    },
+    {
+      "file": "elmi-main-DLHZ-120-d20181115-s10-r1-w08.json",
+      "identical": true,
+      "frames": 648,
+      "framesIdentical": 648,
+      "runnerCpuSeconds": 52.81,
+      "firstDifference": null
+    },
+    {
+      "file": "elmi-main-DLHZ-120-d20181116-s10-r1-w08.json",
+      "identical": true,
+      "frames": 704,
+      "framesIdentical": 704,
+      "runnerCpuSeconds": 46.05,
+      "firstDifference": null
+    },
+    {
+      "file": "elmi-main-DLHZ-120-d20181117-s10-r1-w08.json",
+      "identical": true,
+      "frames": 591,
+      "framesIdentical": 591,
+      "runnerCpuSeconds": 31.06,
+      "firstDifference": null
+    },
+    {
+      "file": "elmi-main-DLHZ-120-d20181118-s10-r1-w08.json",
+      "identical": true,
+      "frames": 574,
+      "framesIdentical": 574,
+      "runnerCpuSeconds": 30.34,
+      "firstDifference": null
+    },
+    {
+      "file": "elmi-main-DLHZ-120-d20181118-s10-r1-w17.json",
+      "identical": true,
+      "frames": 700,
+      "framesIdentical": 700,
+      "runnerCpuSeconds": 44.36,
+      "firstDifference": null
+    },
+    {
+      "file": "elmi-main-PS-300-d20181112-s10-r1-w08.json",
+      "identical": true,
+      "frames": 800,
+      "framesIdentical": 800,
+      "runnerCpuSeconds": 50.73,
+      "firstDifference": null
+    },
+    {
+      "file": "elmi-main-PS-300-d20181112-s10-r1-w17.json",
+      "identical": true,
+      "frames": 824,
+      "framesIdentical": 824,
+      "runnerCpuSeconds": 55.33,
+      "firstDifference": null
+    },
+    {
+      "file": "elmi-main-PS-300-d20181113-s10-r1-w08.json",
+      "identical": true,
+      "frames": 816,
+      "framesIdentical": 816,
+      "runnerCpuSeconds": 49.3,
+      "firstDifference": null
+    },
+    {
+      "file": "elmi-main-PS-300-d20181113-s10-r1-w17.json",
+      "identical": true,
+      "frames": 802,
+      "framesIdentical": 802,
+      "runnerCpuSeconds": 49.2,
+      "firstDifference": null
+    },
+    {
+      "file": "elmi-main-PS-300-d20181114-s10-r1-w08.json",
+      "identical": true,
+      "frames": 795,
+      "framesIdentical": 795,
+      "runnerCpuSeconds": 48.84,
+      "firstDifference": null
+    },
+    {
+      "file": "elmi-main-PS-300-d20181114-s10-r1-w17.json",
+      "identical": true,
+      "frames": 842,
+      "framesIdentical": 842,
+      "runnerCpuSeconds": 55.97,
+      "firstDifference": null
+    },
+    {
+      "file": "elmi-main-PS-300-d20181115-s10-r1-w08.json",
+      "identical": true,
+      "frames": 679,
+      "framesIdentical": 679,
+      "runnerCpuSeconds": 37.73,
+      "firstDifference": null
+    },
+    {
+      "file": "elmi-main-PS-300-d20181116-s10-r1-w08.json",
+      "identical": true,
+      "frames": 725,
+      "framesIdentical": 725,
+      "runnerCpuSeconds": 41.78,
+      "firstDifference": null
+    },
+    {
+      "file": "elmi-main-PS-300-d20181117-s10-r1-w08.json",
+      "identical": true,
+      "frames": 587,
+      "framesIdentical": 587,
+      "runnerCpuSeconds": 32.7,
+      "firstDifference": null
+    },
+    {
+      "file": "elmi-main-PS-300-d20181118-s10-r1-w08.json",
+      "identical": true,
+      "frames": 619,
+      "framesIdentical": 619,
+      "runnerCpuSeconds": 30.56,
+      "firstDifference": null
+    },
+    {
+      "file": "elmi-main-PS-300-d20181118-s10-r1-w17.json",
+      "identical": true,
+      "frames": 775,
+      "framesIdentical": 775,
+      "runnerCpuSeconds": 54.8,
+      "firstDifference": null
+    },
+    {
+      "file": "elmi-main-U-d20181112-s10-r1-w08.json",
+      "identical": true,
+      "frames": 807,
+      "framesIdentical": 807,
+      "runnerCpuSeconds": 50.73,
+      "firstDifference": null
+    },
+    {
+      "file": "elmi-main-U-d20181112-s10-r1-w17.json",
+      "identical": true,
+      "frames": 834,
+      "framesIdentical": 834,
+      "runnerCpuSeconds": 61.55,
+      "firstDifference": null
+    },
+    {
+      "file": "elmi-main-U-d20181113-s10-r1-w08.json",
+      "identical": true,
+      "frames": 815,
+      "framesIdentical": 815,
+      "runnerCpuSeconds": 51.52,
+      "firstDifference": null
+    },
+    {
+      "file": "elmi-main-U-d20181113-s10-r1-w17.json",
+      "identical": true,
+      "frames": 781,
+      "framesIdentical": 781,
+      "runnerCpuSeconds": 51.05,
+      "firstDifference": null
+    },
+    {
+      "file": "elmi-main-U-d20181114-s10-r1-w08.json",
+      "identical": true,
+      "frames": 795,
+      "framesIdentical": 795,
+      "runnerCpuSeconds": 52.02,
+      "firstDifference": null
+    },
+    {
+      "file": "elmi-main-U-d20181114-s10-r1-w17.json",
+      "identical": true,
+      "frames": 834,
+      "framesIdentical": 834,
+      "runnerCpuSeconds": 57.16,
+      "firstDifference": null
+    },
+    {
+      "file": "elmi-main-U-d20181115-s10-r1-w08.json",
+      "identical": true,
+      "frames": 689,
+      "framesIdentical": 689,
+      "runnerCpuSeconds": 42.14,
+      "firstDifference": null
+    },
+    {
+      "file": "elmi-main-U-d20181116-s10-r1-w08.json",
+      "identical": true,
+      "frames": 702,
+      "framesIdentical": 702,
+      "runnerCpuSeconds": 44.33,
+      "firstDifference": null
+    },
+    {
+      "file": "elmi-main-U-d20181117-s10-r1-w08.json",
+      "identical": true,
+      "frames": 625,
+      "framesIdentical": 625,
+      "runnerCpuSeconds": 40.69,
+      "firstDifference": null
+    },
+    {
+      "file": "elmi-main-U-d20181118-s10-r1-w08.json",
+      "identical": true,
+      "frames": 635,
+      "framesIdentical": 635,
+      "runnerCpuSeconds": 35.75,
+      "firstDifference": null
+    },
+    {
+      "file": "elmi-main-U-d20181118-s10-r1-w17.json",
+      "identical": true,
+      "frames": 767,
+      "framesIdentical": 767,
+      "runnerCpuSeconds": 75.45,
+      "firstDifference": null
+    },
+    {
+      "file": "elmi-regress-REG-CF-U-d20181114-s10-r1-w08-1500.json",
+      "identical": true,
+      "frames": 771,
+      "framesIdentical": 771,
+      "runnerCpuSeconds": 61.5,
+      "firstDifference": null
+    },
+    {
+      "file": "elmi-smoke-DLHZ-120-d20181114-s10-r1-w08.json",
+      "identical": true,
+      "frames": 760,
+      "framesIdentical": 760,
+      "runnerCpuSeconds": 59.06,
+      "firstDifference": null
+    },
+    {
+      "file": "elmi-smoke-PS-300-d20181114-s10-r1-w08.json",
+      "identical": true,
+      "frames": 795,
+      "framesIdentical": 795,
+      "runnerCpuSeconds": 61.59,
+      "firstDifference": null
+    }
+  ],
+  "runner": "C:/RideBoundData/research/runner-via-elmi-v1"
+}

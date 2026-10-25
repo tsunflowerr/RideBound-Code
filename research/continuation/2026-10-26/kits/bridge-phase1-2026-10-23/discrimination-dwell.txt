@@ -1,0 +1,6 @@
+D24-U vs dwell 0: riders differ 414 / 414
+D24-RCE35 vs dwell 0: riders differ 412 / 412
+D24-EOHZ35 vs dwell 0: riders differ 414 / 414
+D24-G2-U vs dwell 0: riders differ 413 / 413
+D24-G2-RCE35 vs dwell 0: riders differ 405 / 405
+D24-G2-EOHZ35 vs dwell 0: riders differ 416 / 416

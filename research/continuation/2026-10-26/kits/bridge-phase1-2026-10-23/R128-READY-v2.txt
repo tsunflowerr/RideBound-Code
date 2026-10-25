@@ -1,0 +1,4 @@
+R128-READY-v2 (2026-10-24 00:00)
+- as R128-READY.txt, with drivers-r128-v2 (declared cardinality 128/10; PHASE1-LOG P4);
+- emulator predictions unchanged (EMULATOR-PREDICTIONS-R128.sha256), 0 completed step-1.4 jobs;
+- run_r128.py check passed except the gate files.

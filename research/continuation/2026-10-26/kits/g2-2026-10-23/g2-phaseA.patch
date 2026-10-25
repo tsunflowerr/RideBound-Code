@@ -1,0 +1,736 @@
+diff --git a/src/RideBound.Domain/Commitments/CommitmentLockEvaluator.cs b/src/RideBound.Domain/Commitments/CommitmentLockEvaluator.cs
+index 2e45465..f70388e 100644
+--- a/src/RideBound.Domain/Commitments/CommitmentLockEvaluator.cs
++++ b/src/RideBound.Domain/Commitments/CommitmentLockEvaluator.cs
+@@ -48,7 +48,12 @@ public sealed class CommitmentLockEvaluator
+                 "Lock evaluation request and promise identities must match.");
+         }
+ 
+-        var activeLocks = PromiseLock.Vehicle;
++        // Waiting-rider relocation lifts only this rule's vehicle lock, and only for a
++        // confirmed waiting rider; the onboard and configured rules still apply.
++        var activeLocks = policy.WaitingRiderRelocation
++            && request.Lifecycle == RequestLifecycle.WaitingPickup
++                ? PromiseLock.None
++                : PromiseLock.Vehicle;
+         var rules = new List<(PromiseLock Locks, string Rule)>();
+ 
+         if (request.Lifecycle == RequestLifecycle.Onboard)
+diff --git a/src/RideBound.Domain/Commitments/CommitmentPolicy.cs b/src/RideBound.Domain/Commitments/CommitmentPolicy.cs
+index bfa8e88..ae589ce 100644
+--- a/src/RideBound.Domain/Commitments/CommitmentPolicy.cs
++++ b/src/RideBound.Domain/Commitments/CommitmentPolicy.cs
+@@ -140,7 +140,8 @@ public sealed class CommitmentPolicy
+         bool dropEtaDeadlineRelaxed = false,
+         Duration? dropEtaRevisionLimit = null,
+         int? dropEtaBudgetSlackPermille = null,
+-        int? dropEtaDeadlineSlackPermille = null)
++        int? dropEtaDeadlineSlackPermille = null,
++        bool waitingRiderRelocation = false)
+     {
+         ArgumentNullException.ThrowIfNull(limits);
+         ArgumentNullException.ThrowIfNull(materialRevisionRule);
+@@ -260,6 +261,28 @@ public sealed class CommitmentPolicy
+                 nameof(dropEtaBudgetSlackPermille));
+         }
+ 
++        // Relocation lifts the vehicle lock of a waiting rider. A final-confirmation vehicle
++        // lock, or a zero switch limit while waiting, would forbid every move and leave the
++        // flag silently inert, so both are rejected.
++        if (waitingRiderRelocation
++            && (finalConfirmationLocks & PromiseLock.Vehicle) != 0)
++        {
++            throw new ArgumentException(
++                "Waiting-rider relocation cannot keep a vehicle lock at final confirmation.",
++                nameof(waitingRiderRelocation));
++        }
++
++        if (waitingRiderRelocation
++            && materialized.Single(value => value.Dimension == CommitmentDimension.VehicleSwitchCount)
++                is { HardLimit: 0 } switchLimit
++            && (switchLimit.ApplicablePhases & CommitmentPhase.WaitingPickup) != 0)
++        {
++            throw new ArgumentException(
++                "Waiting-rider relocation cannot run under a zero vehicle_switch_count limit "
++                + "for waiting riders.",
++                nameof(waitingRiderRelocation));
++        }
++
+         BudgetBasis = budgetBasis;
+         _limits = materialized.ToFrozenDictionary(value => value.Dimension);
+         MaterialRevisionRule = materialRevisionRule;
+@@ -273,6 +296,7 @@ public sealed class CommitmentPolicy
+         DropEtaRevisionLimit = dropEtaRevisionLimit;
+         DropEtaBudgetSlackPermille = dropEtaBudgetSlackPermille;
+         DropEtaDeadlineSlackPermille = dropEtaDeadlineSlackPermille;
++        WaitingRiderRelocation = waitingRiderRelocation;
+     }
+ 
+     /// <summary>
+@@ -443,4 +467,12 @@ public sealed class CommitmentPolicy
+     /// Research probe; null disables the rule.
+     /// </summary>
+     public int? DropEtaDeadlineSlackPermille { get; }
++
++    /// <summary>
++    /// Waiting-rider relocation (G2): the accepted-assignment vehicle lock is lifted for a
++    /// confirmed waiting rider, so one decision may move it to another vehicle. Accepted
++    /// (unconfirmed) and onboard riders keep the lock. Research probe; false keeps every
++    /// rider on its vehicle.
++    /// </summary>
++    public bool WaitingRiderRelocation { get; }
+ }
+diff --git a/src/RideBound.Domain/Requests/RideRequest.cs b/src/RideBound.Domain/Requests/RideRequest.cs
+index 91d3efa..82b7b60 100644
+--- a/src/RideBound.Domain/Requests/RideRequest.cs
++++ b/src/RideBound.Domain/Requests/RideRequest.cs
+@@ -234,6 +234,29 @@ public sealed record RideRequest
+             ? Success(RequestLifecycle.WaitingPickup, AssignedVehicleId)
+             : InvalidTransition(RequestLifecycle.WaitingPickup);
+ 
++    /// <summary>
++    /// Moves a confirmed waiting rider to another vehicle (waiting-rider relocation). An
++    /// offered, onboard or terminal rider never moves, and the lifecycle is unchanged.
++    /// </summary>
++    public DomainResult<RideRequest> ReassignWaiting(VehicleId receiverVehicleId)
++    {
++        if (Lifecycle != RequestLifecycle.WaitingPickup)
++        {
++            return InvalidTransition(RequestLifecycle.WaitingPickup);
++        }
++
++        if (AssignedVehicleId == receiverVehicleId)
++        {
++            return DomainResult<RideRequest>.Fail(
++                RequestFailureCodes.AssignmentMismatch,
++                "A relocation must name a vehicle other than the current assignment.",
++                Id.Value,
++                "vehicleId");
++        }
++
++        return Success(RequestLifecycle.WaitingPickup, receiverVehicleId);
++    }
++
+     public DomainResult<RideRequest> Reject() =>
+         Lifecycle == RequestLifecycle.Pending
+             ? Success(RequestLifecycle.Rejected, null)
+diff --git a/src/RideBound.Domain/Runs/RideBoundRun.cs b/src/RideBound.Domain/Runs/RideBoundRun.cs
+index e5799a4..91e1163 100644
+--- a/src/RideBound.Domain/Runs/RideBoundRun.cs
++++ b/src/RideBound.Domain/Runs/RideBoundRun.cs
+@@ -501,6 +501,101 @@ public sealed class RideBoundRun
+             : FromFailure(updated.Failure!);
+     }
+ 
++    /// <summary>
++    /// Moves one waiting rider from its vehicle (donor) to <paramref name="receiverVehicleId"/>
++    /// in one step: the request's assignment and both accepted sets change together. Both
++    /// routes must already be applied: the donor route has no remaining stop of the rider and
++    /// the receiver's mutable suffix has its pickup before its drop, once each.
++    /// </summary>
++    public DomainResult<RideBoundRun> ReassignWaitingRequest(
++        RequestId requestId,
++        VehicleId receiverVehicleId)
++    {
++        if (!TryGetRequestAndVehicle(
++                requestId,
++                receiverVehicleId,
++                out var request,
++                out var receiver,
++                out var failure))
++        {
++            return failure!;
++        }
++
++        var reassigned = request!.ReassignWaiting(receiverVehicleId);
++
++        if (!reassigned.IsSuccess)
++        {
++            return FromFailure(reassigned.Failure!);
++        }
++
++        if (request.AssignedVehicleId is not VehicleId donorId
++            || !Vehicles.TryGetValue(donorId, out var donor))
++        {
++            return DomainResult<RideBoundRun>.Fail(
++                RunFailureCodes.VehicleRiderMismatch,
++                "Waiting request has no matching donor vehicle state.",
++                requestId.Value,
++                "assignedVehicleId");
++        }
++
++        var suffix = receiver!.Route.MutableSuffix;
++        var pickupIndexes = Enumerable.Range(0, suffix.Count)
++            .Where(index => suffix[index].RequestId == requestId
++                && suffix[index].Kind == RouteStopKind.Pickup)
++            .ToArray();
++        var dropIndexes = Enumerable.Range(0, suffix.Count)
++            .Where(index => suffix[index].RequestId == requestId
++                && suffix[index].Kind == RouteStopKind.DropOff)
++            .ToArray();
++
++        if (pickupIndexes.Length != 1
++            || dropIndexes.Length != 1
++            || pickupIndexes[0] > dropIndexes[0]
++            || receiver.Route.RemainingStops.Count(stop => stop.RequestId == requestId) != 2)
++        {
++            return DomainResult<RideBoundRun>.Fail(
++                RunFailureCodes.VehicleRiderMismatch,
++                "Receiver route must carry the relocated request's pickup before its drop, once each.",
++                requestId.Value,
++                "routeStops");
++        }
++
++        var released = donor.Release(requestId);
++
++        if (!released.IsSuccess)
++        {
++            return FromFailure(released.Failure!);
++        }
++
++        var assigned = receiver.Assign(requestId);
++
++        if (!assigned.IsSuccess)
++        {
++            return FromFailure(assigned.Failure!);
++        }
++
++        return DomainResult<RideBoundRun>.Success(
++            Copy(
++                AppliedEpoch,
++                SimulationTime,
++                Requests.Select(
++                    pair => pair.Key == requestId
++                        ? new KeyValuePair<RequestId, RideRequest>(
++                            requestId,
++                            reassigned.Value!)
++                        : pair),
++                Vehicles.Select(
++                    pair => pair.Key == donorId
++                        ? new KeyValuePair<VehicleId, VehicleState>(
++                            donorId,
++                            released.Value!)
++                        : pair.Key == receiverVehicleId
++                            ? new KeyValuePair<VehicleId, VehicleState>(
++                                receiverVehicleId,
++                                assigned.Value!)
++                            : pair)));
++    }
++
+     private bool TryGetRequestAndVehicle(
+         RequestId requestId,
+         VehicleId vehicleId,
+diff --git a/src/RideBound.Domain/Vehicles/VehicleState.cs b/src/RideBound.Domain/Vehicles/VehicleState.cs
+index bd4bf33..84008cd 100644
+--- a/src/RideBound.Domain/Vehicles/VehicleState.cs
++++ b/src/RideBound.Domain/Vehicles/VehicleState.cs
+@@ -346,6 +346,43 @@ public sealed class VehicleState
+                 route.Failure.Dimension);
+     }
+ 
++    /// <summary>
++    /// Removes a waiting rider that moves to another vehicle from the accepted set. Unlike
++    /// <see cref="CancelAccepted"/> it leaves the route alone: the donor route without the
++    /// rider's stops must already be applied.
++    /// </summary>
++    public DomainResult<VehicleState> Release(RequestId requestId)
++    {
++        if (OnboardRequestIds.Contains(requestId)
++            || !AcceptedRequestIds.Contains(requestId))
++        {
++            return DomainResult<VehicleState>.Fail(
++                VehicleFailureCodes.RiderStateMismatch,
++                "A released request must be assigned to the vehicle and not onboard.",
++                requestId.Value,
++                "acceptedRequestIds");
++        }
++
++        if (Route.RemainingStops.Any(stop => stop.RequestId == requestId))
++        {
++            return DomainResult<VehicleState>.Fail(
++                VehicleFailureCodes.RiderStateMismatch,
++                "A released request must have no remaining stop on the vehicle route.",
++                requestId.Value,
++                "routeStops");
++        }
++
++        return Create(
++            Id,
++            Capacity,
++            OccupiedSeats,
++            Position,
++            OnboardRequestIds,
++            AcceptedRequestIds.Where(value => value != requestId),
++            Route,
++            LastObservedEpoch);
++    }
++
+     public DomainResult<VehicleState> UpdateRoute(RoutePlan route)
+     {
+         ArgumentNullException.ThrowIfNull(route);
+diff --git a/src/RideBound.Runner/Configuration/CommitmentPolicyConfiguration.cs b/src/RideBound.Runner/Configuration/CommitmentPolicyConfiguration.cs
+index 55d5e35..d9a9bf1 100644
+--- a/src/RideBound.Runner/Configuration/CommitmentPolicyConfiguration.cs
++++ b/src/RideBound.Runner/Configuration/CommitmentPolicyConfiguration.cs
+@@ -31,7 +31,8 @@ public sealed class CommitmentPolicyConfiguration :
+         "dropEtaDeadlineRelaxed",
+         "dropEtaRevisionLimitMs",
+         "dropEtaBudgetSlackPermille",
+-        "dropEtaDeadlineSlackPermille");
++        "dropEtaDeadlineSlackPermille",
++        "waitingRiderRelocation");
+     private static readonly IReadOnlySet<string> LimitFields = Fields(
+         "dimension",
+         "hardLimit",
+@@ -179,6 +180,8 @@ public sealed class CommitmentPolicyConfiguration :
+             "dropEtaRevisionLimitMs");
+         var budgetPermille = OptionalPermille(element, "dropEtaBudgetSlackPermille");
+         var deadlinePermille = OptionalPermille(element, "dropEtaDeadlineSlackPermille");
++        var relocation = OptionalBoolean(element, "waitingRiderRelocation");
++        var finalConfirmationLocks = ReadLocks(element, "finalConfirmationLocks");
+ 
+         if (deadlineSlack is not null && deadlinePermille is not null)
+         {
+@@ -214,6 +217,21 @@ public sealed class CommitmentPolicyConfiguration :
+                 "'dropEtaDeadlineRelaxed' cannot be combined with 'dropEtaDeadlineTwoSided'.");
+         }
+ 
++        if (relocation && (finalConfirmationLocks & PromiseLock.Vehicle) != 0)
++        {
++            throw new InvalidDataException(
++                "'waitingRiderRelocation' requires 'finalConfirmationLocks' without 'vehicle'.");
++        }
++
++        if (relocation
++            && limits.FirstOrDefault(value => value.Dimension == CommitmentDimension.VehicleSwitchCount)
++                is { HardLimit: 0 } switchLimit
++            && (switchLimit.ApplicablePhases & CommitmentPhase.WaitingPickup) != 0)
++        {
++            throw new InvalidDataException(
++                "'waitingRiderRelocation' cannot run under a vehicle_switch_count hardLimit of 0 for waiting riders.");
++        }
++
+         return new CommitmentPolicy(
+             Text(element, "policyId"),
+             Text(element, "budgetBasis") switch
+@@ -229,14 +247,15 @@ public sealed class CommitmentPolicyConfiguration :
+                 ? new Duration(PositiveInteger(freeze, "freezeHorizonMs"))
+                 : null,
+             ReadLocks(element, "freezeHorizonLocks"),
+-            ReadLocks(element, "finalConfirmationLocks"),
++            finalConfirmationLocks,
+             ReadLocks(element, "ratchetLocks"),
+             deadlineSlack is long slack ? new Duration(slack) : null,
+             deadlineTwoSided,
+             deadlineRelaxed,
+             revisionLimit is long limit ? new Duration(limit) : null,
+             budgetPermille,
+-            deadlinePermille);
++            deadlinePermille,
++            relocation);
+     }
+ 
+     private static int? OptionalPermille(JsonElement element, string propertyName)
+diff --git a/tests/RideBound.Domain.Tests/Commitments/WaitingRiderRelocationLockTests.cs b/tests/RideBound.Domain.Tests/Commitments/WaitingRiderRelocationLockTests.cs
+new file mode 100644
+index 0000000..fb6442c
+--- /dev/null
++++ b/tests/RideBound.Domain.Tests/Commitments/WaitingRiderRelocationLockTests.cs
+@@ -0,0 +1,133 @@
++using RideBound.Domain.Commitments;
++using RideBound.Domain.Common;
++using RideBound.Domain.Requests;
++
++namespace RideBound.Domain.Tests.Commitments;
++
++/// <summary>
++/// The waiting-rider relocation flag lifts the accepted-assignment vehicle lock for a confirmed
++/// waiting rider only; every other rule and lifecycle keeps its locks.
++/// </summary>
++public sealed class WaitingRiderRelocationLockTests
++{
++    private static readonly RideRequest Accepted =
++        TestData.PendingRequest().Accept(TestData.VehicleOne).Value!;
++
++    private static readonly RideRequest Waiting = Accepted.ConfirmWaitingPickup().Value!;
++
++    private static readonly RideRequest Onboard =
++        Waiting.Board(TestData.VehicleOne, new SimTime(1_200)).Value!;
++
++    [Fact]
++    public void A_waiting_rider_may_change_vehicle_only_with_the_flag()
++    {
++        var moved = CommitmentTestData.Projection(vehicleId: TestData.VehicleTwo);
++
++        Assert.Empty(Evaluate(Waiting, moved, Policy(relocation: true)));
++
++        var locked = Assert.Single(Evaluate(Waiting, moved, Policy(relocation: false)));
++        Assert.Equal(("vehicle_id", "accepted_assignment"), (locked.Dimension, locked.Rule));
++    }
++
++    [Fact]
++    public void Accepted_and_onboard_riders_keep_the_vehicle_lock_under_the_flag()
++    {
++        var moved = CommitmentTestData.Projection(vehicleId: TestData.VehicleTwo);
++
++        var accepted = Assert.Single(Evaluate(Accepted, moved, Policy(relocation: true)));
++        Assert.Equal(("vehicle_id", "accepted_assignment"), (accepted.Dimension, accepted.Rule));
++
++        var onboard = Evaluate(Onboard, moved, Policy(relocation: true));
++        Assert.Equal(
++            [("vehicle_id", "accepted_assignment"), ("vehicle_id", "onboard")],
++            onboard.Select(value => (value.Dimension, value.Rule)));
++    }
++
++    [Fact]
++    public void A_moved_waiting_rider_still_meets_the_pickup_ratchet_and_stop_locks()
++    {
++        // The emulator's G2 lock: pickup no later than the kept route, same pickup stop.
++        var policy = Policy(
++            relocation: true,
++            confirmationLocks: PromiseLock.PickupStop | PromiseLock.PickupEta,
++            ratchet: PromiseLock.PickupEta);
++
++        Assert.Empty(Evaluate(
++            Waiting,
++            CommitmentTestData.Projection(vehicleId: TestData.VehicleTwo, pickupEta: 9_000),
++            policy));
++
++        var later = Assert.Single(Evaluate(
++            Waiting,
++            CommitmentTestData.Projection(vehicleId: TestData.VehicleTwo, pickupEta: 10_001),
++            policy));
++        Assert.Equal(("pickup_eta_ms", "final_confirmation"), (later.Dimension, later.Rule));
++
++        var otherStop = Assert.Single(Evaluate(
++            Waiting,
++            CommitmentTestData.Projection(
++                vehicleId: TestData.VehicleTwo,
++                pickupStopId: new StopId("pickup-other")),
++            policy));
++        Assert.Equal(("pickup_stop", "final_confirmation"), (otherStop.Dimension, otherStop.Rule));
++    }
++
++    [Fact]
++    public void The_flag_is_rejected_where_it_would_be_silently_inert()
++    {
++        Assert.Contains(
++            "vehicle lock at final confirmation",
++            Assert.Throws<ArgumentException>(
++                () => Policy(relocation: true, confirmationLocks: PromiseLock.Vehicle | PromiseLock.PickupEta)).Message);
++        Assert.Contains(
++            "zero vehicle_switch_count limit",
++            Assert.Throws<ArgumentException>(() => Policy(relocation: true, switchLimit: 0)).Message);
++        Assert.Contains(
++            "zero vehicle_switch_count limit",
++            Assert.Throws<ArgumentException>(
++                () => Policy(relocation: true, switchLimit: 0, switchPhases: CommitmentPhase.WaitingPickup)).Message);
++
++        // A zero limit outside the waiting phase, a positive limit, or the flag off are allowed.
++        Assert.True(Policy(relocation: true, switchLimit: 0, switchPhases: CommitmentPhase.Onboard).WaitingRiderRelocation);
++        Assert.True(Policy(relocation: true, switchLimit: 1).WaitingRiderRelocation);
++        Assert.False(Policy(relocation: false, switchLimit: 0, confirmationLocks: PromiseLock.Vehicle).WaitingRiderRelocation);
++    }
++
++    private static IReadOnlyList<CommitmentLockWitness> Evaluate(
++        RideRequest request,
++        PromiseProjection candidate,
++        CommitmentPolicy policy)
++    {
++        var previous = new PublishedPromise(
++            new PromiseVersion(1),
++            1,
++            new SimTime(1_000),
++            CommitmentTestData.Projection());
++
++        return new CommitmentLockEvaluator().Evaluate(
++            request,
++            previous,
++            previous.Projection,
++            candidate,
++            new SimTime(1_000),
++            policy);
++    }
++
++    private static CommitmentPolicy Policy(
++        bool relocation,
++        PromiseLock confirmationLocks = PromiseLock.None,
++        PromiseLock ratchet = PromiseLock.None,
++        long? switchLimit = null,
++        CommitmentPhase switchPhases = CommitmentPhase.AllActive) =>
++        new(
++            "test-boundary-v1",
++            CommitmentBudgetBasis.DecisionInduced,
++            CommitmentDimensionVocabulary.Ordered.Select(
++                dimension => dimension == CommitmentDimension.VehicleSwitchCount
++                    ? new CommitmentDimensionLimit(dimension, switchLimit, switchPhases)
++                    : new CommitmentDimensionLimit(dimension, null, CommitmentPhase.AllActive)),
++            new MaterialRevisionRule(1_000, 60_000),
++            finalConfirmationLocks: confirmationLocks,
++            ratchetLocks: ratchet,
++            waitingRiderRelocation: relocation);
++}
+diff --git a/tests/RideBound.Domain.Tests/Runs/WaitingRiderRelocationTests.cs b/tests/RideBound.Domain.Tests/Runs/WaitingRiderRelocationTests.cs
+new file mode 100644
+index 0000000..cb2da18
+--- /dev/null
++++ b/tests/RideBound.Domain.Tests/Runs/WaitingRiderRelocationTests.cs
+@@ -0,0 +1,188 @@
++using RideBound.Domain.Common;
++using RideBound.Domain.Requests;
++using RideBound.Domain.Routes;
++using RideBound.Domain.Runs;
++using RideBound.Domain.Vehicles;
++
++namespace RideBound.Domain.Tests.Runs;
++
++/// <summary>
++/// Waiting-rider relocation (G2) at the domain level: the routes are applied first, then one
++/// atomic reassignment moves the request and both accepted sets together.
++/// </summary>
++public sealed class WaitingRiderRelocationTests
++{
++    [Fact]
++    public void A_waiting_rider_moves_with_both_accepted_sets_and_the_result_rehydrates()
++    {
++        var moved = Moved(Waiting());
++
++        var result = moved.ReassignWaitingRequest(TestData.RequestOne, TestData.VehicleTwo);
++
++        Assert.True(result.IsSuccess, result.Failure?.Message);
++        var run = result.Value!;
++        var request = run.Requests[TestData.RequestOne];
++        Assert.Equal(RequestLifecycle.WaitingPickup, request.Lifecycle);
++        Assert.Equal(TestData.VehicleTwo, request.AssignedVehicleId);
++        Assert.Empty(run.Vehicles[TestData.VehicleOne].AcceptedRequestIds);
++        Assert.Equal([TestData.RequestOne], run.Vehicles[TestData.VehicleTwo].AcceptedRequestIds);
++        Assert.Equal(moved.Vehicles[TestData.VehicleOne].Route, run.Vehicles[TestData.VehicleOne].Route);
++        Assert.Equal(moved.Vehicles[TestData.VehicleTwo].Route, run.Vehicles[TestData.VehicleTwo].Route);
++        Assert.Equal(TestData.VehicleOne, moved.Requests[TestData.RequestOne].AssignedVehicleId);
++
++        var rehydrated = RideBoundRun.Rehydrate(
++            run.Id,
++            run.ScenarioId,
++            run.AppliedEpoch,
++            run.SimulationTime,
++            run.Requests.Values,
++            run.Vehicles.Values);
++        Assert.True(rehydrated.IsSuccess, rehydrated.Failure?.Message);
++
++        // The moved rider now boards the receiver, not the donor.
++        var atPickup = run.ReachStop(
++            TestData.VehicleTwo,
++            new StopId("pickup"),
++            new PlanVersion(1),
++            new NodePosition(TestData.NodeOne),
++            0).Value!;
++        Assert.True(atPickup.Board(TestData.VehicleTwo, TestData.RequestOne, new PlanVersion(1), new SimTime(1200)).IsSuccess);
++        Assert.Equal(
++            RequestFailureCodes.AssignmentMismatch,
++            run.Board(TestData.VehicleOne, TestData.RequestOne, new PlanVersion(1), new SimTime(1200)).Failure?.Code);
++    }
++
++    [Fact]
++    public void Only_a_confirmed_waiting_rider_moves()
++    {
++        var accepted = TwoVehicles().AcceptRequest(TestData.RequestOne, TestData.VehicleOne).Value!;
++        var onboard = Waiting()
++            .ReachStop(TestData.VehicleOne, new StopId("pickup"), new PlanVersion(0), new NodePosition(TestData.NodeOne), 0).Value!
++            .Board(TestData.VehicleOne, TestData.RequestOne, new PlanVersion(0), new SimTime(1200)).Value!;
++        var cancelled = Waiting().CancelAfterAcceptance(TestData.RequestOne).Value!;
++
++        foreach (var run in new[] { accepted, onboard, cancelled })
++        {
++            var result = run.ReassignWaitingRequest(TestData.RequestOne, TestData.VehicleTwo);
++
++            Assert.False(result.IsSuccess);
++            Assert.Equal(RequestFailureCodes.InvalidLifecycleTransition, result.Failure?.Code);
++        }
++
++        var pending = TwoVehicles().ReassignWaitingRequest(TestData.RequestOne, TestData.VehicleTwo);
++        Assert.Equal(RequestFailureCodes.InvalidLifecycleTransition, pending.Failure?.Code);
++    }
++
++    [Fact]
++    public void A_move_to_the_same_vehicle_or_an_unknown_id_is_rejected()
++    {
++        var run = Moved(Waiting());
++
++        Assert.Equal(
++            RequestFailureCodes.AssignmentMismatch,
++            run.ReassignWaitingRequest(TestData.RequestOne, TestData.VehicleOne).Failure?.Code);
++        Assert.Equal(
++            RunFailureCodes.UnknownRequest,
++            run.ReassignWaitingRequest(new RequestId("r-unknown"), TestData.VehicleTwo).Failure?.Code);
++        Assert.Equal(
++            RunFailureCodes.UnknownVehicle,
++            run.ReassignWaitingRequest(TestData.RequestOne, new VehicleId("v-unknown")).Failure?.Code);
++    }
++
++    [Fact]
++    public void A_half_applied_move_fails_closed_and_changes_nothing()
++    {
++        var waiting = Waiting();
++        // Receiver route applied, donor route still carries the rider.
++        var donorNotCleared = waiting.UpdateVehicleRoute(
++            TestData.VehicleTwo,
++            TestData.Route(mutable: [TestData.Pickup(), TestData.DropOff()], version: 1)).Value!;
++        // Donor route cleared, receiver route lacks the rider.
++        var receiverMissing = waiting.UpdateVehicleRoute(
++            TestData.VehicleOne,
++            TestData.Route(version: 1)).Value!;
++        // Receiver carries the drop before the pickup.
++        var receiverReversed = receiverMissing.UpdateVehicleRoute(
++            TestData.VehicleTwo,
++            TestData.Route(mutable: [TestData.DropOff(), TestData.Pickup()], version: 1)).Value!;
++        // Receiver carries only the pickup.
++        var receiverHalf = receiverMissing.UpdateVehicleRoute(
++            TestData.VehicleTwo,
++            TestData.Route(mutable: [TestData.Pickup()], version: 1)).Value!;
++
++        var donor = donorNotCleared.ReassignWaitingRequest(TestData.RequestOne, TestData.VehicleTwo);
++        Assert.Equal(VehicleFailureCodes.RiderStateMismatch, donor.Failure?.Code);
++        Assert.Equal("routeStops", donor.Failure?.Dimension);
++
++        foreach (var run in new[] { receiverMissing, receiverReversed, receiverHalf })
++        {
++            var result = run.ReassignWaitingRequest(TestData.RequestOne, TestData.VehicleTwo);
++
++            Assert.Equal(RunFailureCodes.VehicleRiderMismatch, result.Failure?.Code);
++            Assert.Equal("routeStops", result.Failure?.Dimension);
++            Assert.Equal(TestData.VehicleOne, run.Requests[TestData.RequestOne].AssignedVehicleId);
++            Assert.Contains(TestData.RequestOne, run.Vehicles[TestData.VehicleOne].AcceptedRequestIds);
++        }
++    }
++
++    [Fact]
++    public void A_rider_whose_pickup_is_in_the_donors_frozen_prefix_cannot_move()
++    {
++        // The frozen prefix cannot change, so the donor keeps the pickup and the move fails closed.
++        var frozenRoute = TestData.Route(frozen: [TestData.Pickup()], mutable: [TestData.DropOff()]);
++        var run = TwoVehicles(frozenRoute)
++            .AcceptRequest(TestData.RequestOne, TestData.VehicleOne).Value!
++            .ConfirmWaitingPickup(TestData.RequestOne).Value!;
++        run = run.UpdateVehicleRoute(
++            TestData.VehicleOne,
++            TestData.Route(frozen: [TestData.Pickup()], version: 1)).Value!;
++        run = run.UpdateVehicleRoute(
++            TestData.VehicleTwo,
++            TestData.Route(mutable: [TestData.Pickup(), TestData.DropOff()], version: 1)).Value!;
++
++        var result = run.ReassignWaitingRequest(TestData.RequestOne, TestData.VehicleTwo);
++
++        Assert.False(result.IsSuccess);
++        Assert.Equal(VehicleFailureCodes.RiderStateMismatch, result.Failure?.Code);
++    }
++
++    [Fact]
++    public void Release_alone_requires_an_assigned_waiting_rider_without_remaining_stops()
++    {
++        var vehicle = TestData.EmptyVehicle(TestData.Route(mutable: [TestData.Pickup(), TestData.DropOff()]))
++            .Assign(TestData.RequestOne).Value!;
++
++        Assert.Equal(
++            VehicleFailureCodes.RiderStateMismatch,
++            vehicle.Release(new RequestId("r-other")).Failure?.Code);
++        Assert.Equal("routeStops", vehicle.Release(TestData.RequestOne).Failure?.Dimension);
++
++        var cleared = vehicle.UpdateRoute(TestData.Route(version: 1)).Value!;
++        var released = cleared.Release(TestData.RequestOne);
++
++        Assert.True(released.IsSuccess);
++        Assert.Empty(released.Value!.AcceptedRequestIds);
++        Assert.Same(cleared.Route, released.Value.Route);
++    }
++
++    private static RideBoundRun TwoVehicles(RoutePlan? donorRoute = null)
++    {
++        var run = TestData.EmptyRun().AddRequest(TestData.PendingRequest()).Value!;
++        run = run.BootstrapVehicle(TestData.EmptyVehicle(
++            donorRoute ?? TestData.Route(mutable: [TestData.Pickup(), TestData.DropOff()]))).Value!;
++        return run.BootstrapVehicle(TestData.EmptyVehicle(id: TestData.VehicleTwo)).Value!;
++    }
++
++    private static RideBoundRun Waiting() =>
++        TwoVehicles()
++            .AcceptRequest(TestData.RequestOne, TestData.VehicleOne).Value!
++            .ConfirmWaitingPickup(TestData.RequestOne).Value!;
++
++    /// <summary>Both routes applied: the donor without the rider, the receiver with it.</summary>
++    private static RideBoundRun Moved(RideBoundRun waiting) =>
++        waiting
++            .UpdateVehicleRoute(TestData.VehicleOne, TestData.Route(version: 1)).Value!
++            .UpdateVehicleRoute(
++                TestData.VehicleTwo,
++                TestData.Route(mutable: [TestData.Pickup(), TestData.DropOff()], version: 1)).Value!;
++}
+diff --git a/tests/RideBound.Runner.Tests/Configuration/CommitmentPolicyConfigurationTests.cs b/tests/RideBound.Runner.Tests/Configuration/CommitmentPolicyConfigurationTests.cs
+index 4eda238..7cd8230 100644
+--- a/tests/RideBound.Runner.Tests/Configuration/CommitmentPolicyConfigurationTests.cs
++++ b/tests/RideBound.Runner.Tests/Configuration/CommitmentPolicyConfigurationTests.cs
+@@ -403,6 +403,65 @@ public sealed class CommitmentPolicyConfigurationTests
+         Assert.Contains("'dropEtaBudgetSlackPermille' replaces the drop_eta_total_ms hardLimit", error.Message);
+     }
+ 
++    [Fact]
++    public void Waiting_rider_relocation_is_read_when_present_and_off_when_absent()
++    {
++        var on = CommitmentPolicyConfiguration.Decode(PolicyJson(
++            "\"waitingRiderRelocation\":true,\"finalConfirmationLocks\":[\"pickupStop\",\"pickupEta\"],"
++            + "\"ratchetLocks\":[\"pickupEta\"]"));
++        var off = CommitmentPolicyConfiguration.Decode(PolicyJson("\"waitingRiderRelocation\":false"));
++        var absent = CommitmentPolicyConfiguration.Decode(PolicyJson(null));
++
++        Assert.True(on.TryGetPolicy("uniform-v1", out var g2));
++        Assert.True(g2.WaitingRiderRelocation);
++        Assert.Equal(PromiseLock.PickupStop | PromiseLock.PickupEta, g2.FinalConfirmationLocks);
++        Assert.Equal(PromiseLock.PickupEta, g2.RatchetLocks);
++        Assert.True(off.TryGetPolicy("uniform-v1", out var explicitOff));
++        Assert.False(explicitOff.WaitingRiderRelocation);
++        Assert.True(absent.TryGetPolicy("uniform-v1", out var plain));
++        Assert.False(plain.WaitingRiderRelocation);
++        // Declaring the key is a different configuration, so archived bindings omit it.
++        Assert.NotEqual(absent.ContentHash, off.ContentHash);
++    }
++
++    [Theory]
++    [InlineData(
++        "\"waitingRiderRelocation\":true,\"finalConfirmationLocks\":[\"vehicle\",\"pickupEta\"]",
++        "'waitingRiderRelocation' requires 'finalConfirmationLocks' without 'vehicle'")]
++    [InlineData("\"waitingRiderRelocation\":\"true\"", "waitingRiderRelocation")]
++    public void Invalid_waiting_rider_relocation_settings_are_rejected(string extraFields, string expectedMessage)
++    {
++        var error = Assert.ThrowsAny<Exception>(
++            () => CommitmentPolicyConfiguration.Decode(PolicyJson(extraFields)));
++
++        Assert.True(error is InvalidDataException or InvalidOperationException, error.GetType().Name);
++        Assert.Contains(expectedMessage, error.Message);
++    }
++
++    [Fact]
++    public void Waiting_rider_relocation_cannot_run_under_a_zero_switch_limit_while_waiting()
++    {
++        var json = Encoding.UTF8.GetString(PolicyJson("\"waitingRiderRelocation\":true"));
++        var waiting = json.Replace(
++            "{\"dimension\":\"vehicle_switch_count\",\"applicablePhases\":[\"accepted\"]}",
++            "{\"dimension\":\"vehicle_switch_count\",\"hardLimit\":0,\"applicablePhases\":[\"accepted\",\"waitingPickup\"]}",
++            StringComparison.Ordinal);
++        var acceptedOnly = json.Replace(
++            "{\"dimension\":\"vehicle_switch_count\",\"applicablePhases\":[\"accepted\"]}",
++            "{\"dimension\":\"vehicle_switch_count\",\"hardLimit\":0,\"applicablePhases\":[\"accepted\"]}",
++            StringComparison.Ordinal);
++        Assert.NotEqual(json, waiting);
++        Assert.NotEqual(json, acceptedOnly);
++
++        var error = Assert.Throws<InvalidDataException>(
++            () => CommitmentPolicyConfiguration.Decode(Encoding.UTF8.GetBytes(waiting)));
++
++        Assert.Contains("vehicle_switch_count hardLimit of 0 for waiting riders", error.Message);
++        Assert.True(CommitmentPolicyConfiguration.Decode(Encoding.UTF8.GetBytes(acceptedOnly))
++            .TryGetPolicy("uniform-v1", out var allowed));
++        Assert.True(allowed.WaitingRiderRelocation);
++    }
++
+     private static byte[] PolicyJson(string? extraFields)
+     {
+         var limits = string.Join(

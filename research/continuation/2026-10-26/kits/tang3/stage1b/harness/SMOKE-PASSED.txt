@@ -1,0 +1,59 @@
+# compare_equivalence_stage1b-v7.py smoke smoke-check-2026-10-14.txt
+old runner: ok True tree ac251ef32a4865ea3bd3d8d87b4b1bcaccc4462a9b80160b4d205b8d474cff3f dll a631038b6ea4850ffa29be2d5e4058fba2e57b725ee568075686d7a43c6f5fac []
+new runner: ok True tree d08c0057d8239c6c51cceb0d2ba2d7f41dc899a9ac085671c363ede388a0b4b8 dll 1839a54413b2729cf353db7ef8b2359d32f4698709bba75a96eca492e36c69a9 []
+digest validity as in Gate 0: decisions 2..N digests are not validated by the production .NET code (R28 N1)
+smoke CF-U-d20181114-s10-r1-w08 (ON, arm U); configuration identity = verified ON binding (R22:242); objective diagnostics below are supporting evidence; decisions 2..N digests are not validated by the production .NET code (R28 N1)
+  max per-rider drop sum|c| 420455 ms
+  served 94; nonNormalCertificates 0; breaches {'exogenousServiceQuality': 88}
+  digests content-verified {'manifestHash': 1, 'initialStateHash': 1, 'decision1Hash': 1, 'checkpointHash': 1, 'checkpointStateHash': 1, 'checkpointClosure': 1}
+  decisions: 768
+  executionPath=validatedIncumbent: 768
+  finalSolveStatus=optimal: 768
+  primarySolveStatus=optimal: 768
+  selection.consumedGenerationWorkUnits(sum): 12015
+  selection.consumedValidationWorkUnits(sum): 7189
+  selection.fallbackValidationAttempts(sum): 0
+  selection.omittedCandidateCount(sum): 0
+  solver.status=completed: 768
+  final.consumedWorkUnits sum/max: 0/0
+  final.consumedDeterministicTimeMicros sum/max: 8082/28
+  primary.consumedWorkUnits sum/max: 0/0
+  primary.consumedDeterministicTimeMicros sum/max: 8082/28
+  bound final:accepted-request-count: n/sum incumbent/sum bestBound/unproven: 768/94/94/0
+  bound final:candidate-id-rank:*: n/sum incumbent/sum bestBound/unproven: 6144/121/121/0
+  bound final:operational-cost: n/sum incumbent/sum bestBound/unproven: 768/2816562810/2816562810/0
+  bound primary:accepted-request-count: n/sum incumbent/sum bestBound/unproven: 768/94/94/0
+  bound primary:candidate-id-rank:*: n/sum incumbent/sum bestBound/unproven: 6144/121/121/0
+  bound primary:operational-cost: n/sum incumbent/sum bestBound/unproven: 768/2816562810/2816562810/0
+  level shape primary: accepted-request-count > operational-cost > candidate-id-rank:*x8: 768
+  level shape final: accepted-request-count > operational-cost > candidate-id-rank:*x8: 768
+  SMOKE PASS
+smoke CF-C-30-d20181114-s10-r1-w08 (ON, arm C-30); configuration identity = verified ON binding (R22:242); objective diagnostics below are supporting evidence; decisions 2..N digests are not validated by the production .NET code (R28 N1)
+  max per-rider drop sum|c| 28860 ms
+  served 90; nonNormalCertificates 0; breaches {}
+  digests content-verified {'manifestHash': 1, 'initialStateHash': 1, 'decision1Hash': 1, 'checkpointHash': 1, 'checkpointStateHash': 1, 'checkpointClosure': 1}
+  decisions: 746
+  executionPath=validatedIncumbent: 746
+  finalSolveStatus=optimal: 746
+  primarySolveStatus=optimal: 746
+  selection.consumedGenerationWorkUnits(sum): 11679
+  selection.consumedValidationWorkUnits(sum): 6994
+  selection.fallbackValidationAttempts(sum): 0
+  selection.omittedCandidateCount(sum): 0
+  solver.status=completed: 746
+  final.consumedWorkUnits sum/max: 0/0
+  final.consumedDeterministicTimeMicros sum/max: 7813/26
+  primary.consumedWorkUnits sum/max: 0/0
+  primary.consumedDeterministicTimeMicros sum/max: 7813/26
+  bound final:accepted-request-count: n/sum incumbent/sum bestBound/unproven: 746/90/90/0
+  bound final:candidate-id-rank:*: n/sum incumbent/sum bestBound/unproven: 5968/114/114/0
+  bound final:operational-cost: n/sum incumbent/sum bestBound/unproven: 746/2620510206/2620510206/0
+  bound primary:accepted-request-count: n/sum incumbent/sum bestBound/unproven: 746/90/90/0
+  bound primary:candidate-id-rank:*: n/sum incumbent/sum bestBound/unproven: 5968/114/114/0
+  bound primary:operational-cost: n/sum incumbent/sum bestBound/unproven: 746/2620510206/2620510206/0
+  level shape primary: accepted-request-count > operational-cost > candidate-id-rank:*x8: 746
+  level shape final: accepted-request-count > operational-cost > candidate-id-rank:*x8: 746
+  SMOKE PASS
+runnerDllSha256 1839a54413b2729cf353db7ef8b2359d32f4698709bba75a96eca492e36c69a9
+runnerTreeSha256 d08c0057d8239c6c51cceb0d2ba2d7f41dc899a9ac085671c363ede388a0b4b8
+SMOKE PASSED

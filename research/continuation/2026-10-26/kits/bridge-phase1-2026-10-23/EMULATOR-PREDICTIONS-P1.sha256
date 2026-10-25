@@ -1,0 +1,10 @@
+# phase-1 emulator predictions (steps 1.1, 1.2) written before any phase-1 RideBound job; C:/RideBoundData/research/via-bridge-man-v1/p1 does not exist
+2026-10-23T15:25:15Z
+2083d28236f2e9bad5bb589dc0058fe58fea65f7487a64ea2c413e7b0f1ede7a *emulator-riders-p1.tsv
+94077f9c8678a5df78d5d81ef1006ea58f5664328bcd10ad15a04a8db3e036de *emulator-riders-p1-counts.tsv
+3b716593fefc9cbf90f93a78aaa854c9a3ee08538414954f86b7c65376c514ef *emulate_p1.js
+771a211e3a4be909d11b883ab116bc6dff3dfe0c091927bb921c6a08b3d7191a *emulate_wf15_equiv.js
+a2a65cee88835421864e284f898130ec43d684e017baec8617ba8c57f6a568e4 *discrimination.txt
+cf52e699f978f31c6781f07fa0a21a5aef3da9a883b0ed8d8b1c2a60954210f8 *configs-p1.sha256.txt
+fbdd49bbdd158754f07e173b709a23edf334087652b8b3a93e383c1cc381980e *C:/RideBoundContinuation/2026-10-23/emulator-wf15/MANIFEST.sha256
+908a29619f55a134f9ed5a0d35d4be1d3c502f07de78dc6fc704963690e7496f *C:/RideBoundContinuation/2026-10-23/emulator-wf15/engine.js

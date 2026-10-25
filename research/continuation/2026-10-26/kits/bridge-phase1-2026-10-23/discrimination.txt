@@ -1,0 +1,7 @@
+EO35         vs EOHZ35    : riders differ 207/1004 in 5/11 cells
+DLS-120      vs DLHZ-120  : riders differ 91/983 in 3/11 cells
+G2-EO35      vs G2-EOHZ35 : riders differ 228/1025 in 6/11 cells
+G2-DLS-120   vs G2-EOHZ35 : riders differ 789/1056 in 11/11 cells
+G2K3-U       vs G2-U      : riders differ 166/1031 in 3/11 cells
+G2K3-RCE35   vs G2-RCE35  : riders differ 93/987 in 4/11 cells
+G2K3-EOHZ35  vs G2-EOHZ35 : riders differ 98/997 in 5/11 cells

@@ -1,0 +1,19 @@
+ELMI-READY (2026-10-23)
+
+The elmi phase (RCE35, EOHZ35 on the 11 Manhattan bridge cells) may run with runner-via-elmi-v1.
+
+1. Independent review of elmi-slack-budget-v1.patch (sha256 c67c77f1...; tree 321551564d6b86f66662552b4f140a3fbbe6ee98):
+   no blocking issue. It found 2 should-fix items:
+   - Hard-utilization ranking reads only the fixed limit. Fixed in v1.1 by failing closed outside cost-first; this
+     cannot affect cost-first runs.
+   - Missing tests. Added in v1.1.
+   See AMENDMENTS.md A2. The bridge Runner stays built from v1.
+
+2. Replay gate: every finished regress, smoke and main job (58) was replayed through runner-via-elmi-v1
+   (a0_gate.py --runner C:/RideBoundData/research/runner-via-elmi-v1 --tag elmi). Result:
+   58/58 jobs byte-identical, 43154/43154 Runner->adapter frames identical.
+   Summary: ELMI-GATE-SUMMARY.json (sha256 b1635e5bb44a629f5f418db879840e3b3a34c5cfd4a080979fb6a93329d9e0d7).
+   The new keys are absent in those configs, so this shows that the patch changes nothing when it is off.
+
+3. Emulator predictions for the elmi arms were sealed before any elmi job ran: EMULATOR-PREDICTIONS-ELMI.sha256
+   (emulator-riders-elmi-2000.tsv e42c7e2d..., sealed 2026-10-22T17:06Z).

@@ -1,0 +1,5 @@
+R128-READY (2026-10-23 22:51)
+- 10 cells at the contract-v1 bound (128 requests, 10 vehicles, 96 nodes); d20181118-w08 cannot be built (node cap);
+- step-1.4 predictions sealed (EMULATOR-PREDICTIONS-R128.sha256, 15:49:52Z), 0 step-1.4 jobs at sealing;
+- run_r128.py check passed except the gate files; see PHASE1-LOG.md P2.
+- To start only after p1main has finished (shared instance lock).

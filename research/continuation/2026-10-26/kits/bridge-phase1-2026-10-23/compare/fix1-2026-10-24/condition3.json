@@ -1,0 +1,815 @@
+{
+  "previous": [
+    {
+      "job": "G2-DLS-120-d20181112-s10-r1-w08",
+      "pass": true,
+      "why": "identical",
+      "framesIdentical": 2365,
+      "framesCompared": 2365
+    },
+    {
+      "job": "G2-DLS-120-d20181112-s10-r1-w17",
+      "pass": true,
+      "why": "identical",
+      "framesIdentical": 2470,
+      "framesCompared": 2470
+    },
+    {
+      "job": "G2-DLS-120-d20181113-s10-r1-w08",
+      "pass": true,
+      "why": "identical",
+      "framesIdentical": 2479,
+      "framesCompared": 2479
+    },
+    {
+      "job": "G2-DLS-120-d20181113-s10-r1-w17",
+      "pass": true,
+      "why": "identical",
+      "framesIdentical": 2443,
+      "framesCompared": 2443
+    },
+    {
+      "job": "G2-DLS-120-d20181114-s10-r1-w08",
+      "pass": true,
+      "why": "identical",
+      "framesIdentical": 2296,
+      "framesCompared": 2296
+    },
+    {
+      "job": "G2-DLS-120-d20181114-s10-r1-w17",
+      "pass": true,
+      "why": "identical",
+      "framesIdentical": 2485,
+      "framesCompared": 2485
+    },
+    {
+      "job": "G2-DLS-120-d20181115-s10-r1-w08",
+      "pass": true,
+      "why": "identical",
+      "framesIdentical": 1960,
+      "framesCompared": 1960
+    },
+    {
+      "job": "G2-DLS-120-d20181116-s10-r1-w08",
+      "pass": true,
+      "why": "identical",
+      "framesIdentical": 2068,
+      "framesCompared": 2068
+    },
+    {
+      "job": "G2-DLS-120-d20181117-s10-r1-w08",
+      "pass": true,
+      "why": "identical",
+      "framesIdentical": 1711,
+      "framesCompared": 1711
+    },
+    {
+      "job": "G2-DLS-120-d20181118-s10-r1-w08",
+      "pass": true,
+      "why": "identical",
+      "framesIdentical": 1774,
+      "framesCompared": 1774
+    },
+    {
+      "job": "G2-DLS-120-d20181118-s10-r1-w17",
+      "pass": true,
+      "why": "identical",
+      "framesIdentical": 2089,
+      "framesCompared": 2089
+    },
+    {
+      "job": "G2-EO35-d20181112-s10-r1-w08",
+      "pass": true,
+      "why": "identical",
+      "framesIdentical": 2347,
+      "framesCompared": 2347
+    },
+    {
+      "job": "G2-EO35-d20181112-s10-r1-w17",
+      "pass": true,
+      "why": "identical",
+      "framesIdentical": 2518,
+      "framesCompared": 2518
+    },
+    {
+      "job": "G2-EO35-d20181113-s10-r1-w08",
+      "pass": true,
+      "why": "identical",
+      "framesIdentical": 2440,
+      "framesCompared": 2440
+    },
+    {
+      "job": "G2-EO35-d20181113-s10-r1-w17",
+      "pass": true,
+      "why": "identical",
+      "framesIdentical": 2446,
+      "framesCompared": 2446
+    },
+    {
+      "job": "G2-EO35-d20181114-s10-r1-w08",
+      "pass": true,
+      "why": "identical",
+      "framesIdentical": 2290,
+      "framesCompared": 2290
+    },
+    {
+      "job": "G2-EO35-d20181114-s10-r1-w17",
+      "pass": true,
+      "why": "identical",
+      "framesIdentical": 2482,
+      "framesCompared": 2482
+    },
+    {
+      "job": "G2-EO35-d20181115-s10-r1-w08",
+      "pass": true,
+      "why": "identical",
+      "framesIdentical": 1915,
+      "framesCompared": 1915
+    },
+    {
+      "job": "G2-EO35-d20181116-s10-r1-w08",
+      "pass": true,
+      "why": "identical",
+      "framesIdentical": 2092,
+      "framesCompared": 2092
+    },
+    {
+      "job": "G2-EO35-d20181117-s10-r1-w08",
+      "pass": true,
+      "why": "identical",
+      "framesIdentical": 1702,
+      "framesCompared": 1702
+    },
+    {
+      "job": "G2-EO35-d20181118-s10-r1-w08",
+      "pass": true,
+      "why": "identical",
+      "framesIdentical": 1882,
+      "framesCompared": 1882
+    },
+    {
+      "job": "G2-EO35-d20181118-s10-r1-w17",
+      "pass": true,
+      "why": "identical",
+      "framesIdentical": 2125,
+      "framesCompared": 2125
+    },
+    {
+      "job": "G2-EOHZ35-d20181112-s10-r1-w08",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 2349,
+      "framesCompared": 2350
+    },
+    {
+      "job": "G2-EOHZ35-d20181112-s10-r1-w17",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 2535,
+      "framesCompared": 2536
+    },
+    {
+      "job": "G2-EOHZ35-d20181113-s10-r1-w08",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 2439,
+      "framesCompared": 2440
+    },
+    {
+      "job": "G2-EOHZ35-d20181113-s10-r1-w17",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 2445,
+      "framesCompared": 2446
+    },
+    {
+      "job": "G2-EOHZ35-d20181114-s10-r1-w08",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 2316,
+      "framesCompared": 2317
+    },
+    {
+      "job": "G2-EOHZ35-d20181114-s10-r1-w17",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 2481,
+      "framesCompared": 2482
+    },
+    {
+      "job": "G2-EOHZ35-d20181115-s10-r1-w08",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 1965,
+      "framesCompared": 1966
+    },
+    {
+      "job": "G2-EOHZ35-d20181116-s10-r1-w08",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 2097,
+      "framesCompared": 2098
+    },
+    {
+      "job": "G2-EOHZ35-d20181117-s10-r1-w08",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 1746,
+      "framesCompared": 1747
+    },
+    {
+      "job": "G2-EOHZ35-d20181118-s10-r1-w08",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 1881,
+      "framesCompared": 1882
+    },
+    {
+      "job": "G2-EOHZ35-d20181118-s10-r1-w17",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 2124,
+      "framesCompared": 2125
+    },
+    {
+      "job": "G2-RCE35-d20181112-s10-r1-w08",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 2421,
+      "framesCompared": 2422
+    },
+    {
+      "job": "G2-RCE35-d20181112-s10-r1-w17",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 2517,
+      "framesCompared": 2518
+    },
+    {
+      "job": "G2-RCE35-d20181113-s10-r1-w08",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 2418,
+      "framesCompared": 2419
+    },
+    {
+      "job": "G2-RCE35-d20181113-s10-r1-w17",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 2223,
+      "framesCompared": 2224
+    },
+    {
+      "job": "G2-RCE35-d20181114-s10-r1-w08",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 2295,
+      "framesCompared": 2296
+    },
+    {
+      "job": "G2-RCE35-d20181114-s10-r1-w17",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 2478,
+      "framesCompared": 2479
+    },
+    {
+      "job": "G2-RCE35-d20181115-s10-r1-w08",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 1929,
+      "framesCompared": 1930
+    },
+    {
+      "job": "G2-RCE35-d20181116-s10-r1-w08",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 2085,
+      "framesCompared": 2086
+    },
+    {
+      "job": "G2-RCE35-d20181117-s10-r1-w08",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 1734,
+      "framesCompared": 1735
+    },
+    {
+      "job": "G2-RCE35-d20181118-s10-r1-w08",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 1881,
+      "framesCompared": 1882
+    },
+    {
+      "job": "G2-RCE35-d20181118-s10-r1-w17",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 2229,
+      "framesCompared": 2230
+    },
+    {
+      "job": "G2-U-d20181112-s10-r1-w08",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 2481,
+      "framesCompared": 2482
+    },
+    {
+      "job": "G2-U-d20181112-s10-r1-w17",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 2478,
+      "framesCompared": 2479
+    },
+    {
+      "job": "G2-U-d20181113-s10-r1-w08",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 2445,
+      "framesCompared": 2446
+    },
+    {
+      "job": "G2-U-d20181113-s10-r1-w17",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 2382,
+      "framesCompared": 2383
+    },
+    {
+      "job": "G2-U-d20181114-s10-r1-w08",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 2409,
+      "framesCompared": 2410
+    },
+    {
+      "job": "G2-U-d20181114-s10-r1-w17",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 2478,
+      "framesCompared": 2479
+    },
+    {
+      "job": "G2-U-d20181115-s10-r1-w08",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 2082,
+      "framesCompared": 2083
+    },
+    {
+      "job": "G2-U-d20181116-s10-r1-w08",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 2160,
+      "framesCompared": 2161
+    },
+    {
+      "job": "G2-U-d20181117-s10-r1-w08",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 1872,
+      "framesCompared": 1873
+    },
+    {
+      "job": "G2-U-d20181118-s10-r1-w08",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 1875,
+      "framesCompared": 1876
+    },
+    {
+      "job": "G2-U-d20181118-s10-r1-w17",
+      "pass": true,
+      "why": "A5: only frame 2 differs, at ['$.payload.manifest.coreCommitSha']",
+      "framesIdentical": 2265,
+      "framesCompared": 2266
+    },
+    {
+      "job": "G2K3-EOHZ35-d20181112-s10-r1-w08",
+      "pass": true,
+      "why": "identical",
+      "framesIdentical": 2350,
+      "framesCompared": 2350
+    },
+    {
+      "job": "G2K3-EOHZ35-d20181112-s10-r1-w17",
+      "pass": true,
+      "why": "identical",
+      "framesIdentical": 2536,
+      "framesCompared": 2536
+    },
+    {
+      "job": "G2K3-EOHZ35-d20181113-s10-r1-w08",
+      "pass": true,
+      "why": "identical",
+      "framesIdentical": 2443,
+      "framesCompared": 2443
+    },
+    {
+      "job": "G2K3-EOHZ35-d20181113-s10-r1-w17",
+      "pass": true,
+      "why": "identical",
+      "framesIdentical": 2446,
+      "framesCompared": 2446
+    },
+    {
+      "job": "G2K3-EOHZ35-d20181114-s10-r1-w08",
+      "pass": true,
+      "why": "identical",
+      "framesIdentical": 2335,
+      "framesCompared": 2335
+    },
+    {
+      "job": "G2K3-EOHZ35-d20181114-s10-r1-w17",
+      "pass": true,
+      "why": "identical",
+      "framesIdentical": 2482,
+      "framesCompared": 2482
+    },
+    {
+      "job": "G2K3-EOHZ35-d20181115-s10-r1-w08",
+      "pass": true,
+      "why": "identical",
+      "framesIdentical": 1921,
+      "framesCompared": 1921
+    },
+    {
+      "job": "G2K3-EOHZ35-d20181116-s10-r1-w08",
+      "pass": true,
+      "why": "identical",
+      "framesIdentical": 2098,
+      "framesCompared": 2098
+    },
+    {
+      "job": "G2K3-EOHZ35-d20181117-s10-r1-w08",
+      "pass": true,
+      "why": "identical",
+      "framesIdentical": 1747,
+      "framesCompared": 1747
+    },
+    {
+      "job": "G2K3-EOHZ35-d20181118-s10-r1-w08",
+      "pass": true,
+      "why": "identical",
+      "framesIdentical": 1882,
+      "framesCompared": 1882
+    },
+    {
+      "job": "G2K3-EOHZ35-d20181118-s10-r1-w17",
+      "pass": true,
+      "why": "identical",
+      "framesIdentical": 2125,
+      "framesCompared": 2125
+    },
+    {
+      "job": "G2K3-RCE35-d20181112-s10-r1-w08",
+      "pass": true,
+      "why": "identical",
+      "framesIdentical": 2422,
+      "framesCompared": 2422
+    },
+    {
+      "job": "G2K3-RCE35-d20181112-s10-r1-w17",
+      "pass": true,
+      "why": "identical",
+      "framesIdentical": 2518,
+      "framesCompared": 2518
+    },
+    {
+      "job": "G2K3-RCE35-d20181113-s10-r1-w08",
+      "pass": true,
+      "why": "identical",
+      "framesIdentical": 2419,
+      "framesCompared": 2419
+    },
+    {
+      "job": "G2K3-RCE35-d20181113-s10-r1-w17",
+      "pass": true,
+      "why": "identical",
+      "framesIdentical": 2224,
+      "framesCompared": 2224
+    },
+    {
+      "job": "G2K3-RCE35-d20181114-s10-r1-w08",
+      "pass": true,
+      "why": "identical",
+      "framesIdentical": 2317,
+      "framesCompared": 2317
+    },
+    {
+      "job": "G2K3-RCE35-d20181114-s10-r1-w17",
+      "pass": true,
+      "why": "identical",
+      "framesIdentical": 2479,
+      "framesCompared": 2479
+    },
+    {
+      "job": "G2K3-RCE35-d20181115-s10-r1-w08",
+      "pass": true,
+      "why": "identical",
+      "framesIdentical": 1864,
+      "framesCompared": 1864
+    },
+    {
+      "job": "G2K3-RCE35-d20181116-s10-r1-w08",
+      "pass": true,
+      "why": "identical",
+      "framesIdentical": 2086,
+      "framesCompared": 2086
+    },
+    {
+      "job": "G2K3-RCE35-d20181117-s10-r1-w08",
+      "pass": true,
+      "why": "identical",
+      "framesIdentical": 1735,
+      "framesCompared": 1735
+    },
+    {
+      "job": "G2K3-RCE35-d20181118-s10-r1-w08",
+      "pass": true,
+      "why": "identical",
+      "framesIdentical": 1882,
+      "framesCompared": 1882
+    },
+    {
+      "job": "G2K3-RCE35-d20181118-s10-r1-w17",
+      "pass": true,
+      "why": "identical",
+      "framesIdentical": 2230,
+      "framesCompared": 2230
+    },
+    {
+      "job": "G2K3-U-d20181112-s10-r1-w08",
+      "pass": null,
+      "why": "earlier run stopped; judged by (b) only"
+    },
+    {
+      "job": "G2K3-U-d20181112-s10-r1-w17",
+      "pass": true,
+      "why": "identical",
+      "framesIdentical": 2479,
+      "framesCompared": 2479
+    },
+    {
+      "job": "G2K3-U-d20181113-s10-r1-w08",
+      "pass": true,
+      "why": "identical",
+      "framesIdentical": 2446,
+      "framesCompared": 2446
+    },
+    {
+      "job": "G2K3-U-d20181113-s10-r1-w17",
+      "pass": true,
+      "why": "identical",
+      "framesIdentical": 2383,
+      "framesCompared": 2383
+    },
+    {
+      "job": "G2K3-U-d20181114-s10-r1-w08",
+      "pass": true,
+      "why": "identical",
+      "framesIdentical": 2341,
+      "framesCompared": 2341
+    },
+    {
+      "job": "G2K3-U-d20181114-s10-r1-w17",
+      "pass": true,
+      "why": "identical",
+      "framesIdentical": 2479,
+      "framesCompared": 2479
+    },
+    {
+      "job": "G2K3-U-d20181115-s10-r1-w08",
+      "pass": true,
+      "why": "identical",
+      "framesIdentical": 2083,
+      "framesCompared": 2083
+    },
+    {
+      "job": "G2K3-U-d20181116-s10-r1-w08",
+      "pass": true,
+      "why": "identical",
+      "framesIdentical": 2161,
+      "framesCompared": 2161
+    },
+    {
+      "job": "G2K3-U-d20181117-s10-r1-w08",
+      "pass": true,
+      "why": "identical",
+      "framesIdentical": 1819,
+      "framesCompared": 1819
+    },
+    {
+      "job": "G2K3-U-d20181118-s10-r1-w08",
+      "pass": true,
+      "why": "identical",
+      "framesIdentical": 1876,
+      "framesCompared": 1876
+    },
+    {
+      "job": "G2K3-U-d20181118-s10-r1-w17",
+      "pass": true,
+      "why": "identical",
+      "framesIdentical": 2266,
+      "framesCompared": 2266
+    },
+    {
+      "job": "R128-G2K8-RCE35-d20181112-s10-r1-w08",
+      "pass": true,
+      "why": "identical",
+      "framesIdentical": 2959,
+      "framesCompared": 2959
+    },
+    {
+      "job": "R128-G2K8-RCE35-d20181112-s10-r1-w17",
+      "pass": true,
+      "why": "identical",
+      "framesIdentical": 2953,
+      "framesCompared": 2953
+    },
+    {
+      "job": "R128-G2K8-RCE35-d20181113-s10-r1-w08",
+      "pass": true,
+      "why": "identical",
+      "framesIdentical": 2935,
+      "framesCompared": 2935
+    },
+    {
+      "job": "R128-G2K8-RCE35-d20181113-s10-r1-w17",
+      "pass": true,
+      "why": "identical",
+      "framesIdentical": 2854,
+      "framesCompared": 2854
+    },
+    {
+      "job": "R128-G2K8-RCE35-d20181114-s10-r1-w08",
+      "pass": true,
+      "why": "identical",
+      "framesIdentical": 2872,
+      "framesCompared": 2872
+    },
+    {
+      "job": "R128-G2K8-RCE35-d20181114-s10-r1-w17",
+      "pass": true,
+      "why": "identical",
+      "framesIdentical": 2986,
+      "framesCompared": 2986
+    },
+    {
+      "job": "R128-G2K8-RCE35-d20181115-s10-r1-w08",
+      "pass": true,
+      "why": "identical",
+      "framesIdentical": 2578,
+      "framesCompared": 2578
+    },
+    {
+      "job": "R128-G2K8-RCE35-d20181116-s10-r1-w08",
+      "pass": true,
+      "why": "identical",
+      "framesIdentical": 2530,
+      "framesCompared": 2530
+    },
+    {
+      "job": "R128-G2K8-RCE35-d20181117-s10-r1-w08",
+      "pass": true,
+      "why": "identical",
+      "framesIdentical": 2251,
+      "framesCompared": 2251
+    },
+    {
+      "job": "R128-G2K8-RCE35-d20181118-s10-r1-w17",
+      "pass": true,
+      "why": "identical",
+      "framesIdentical": 2695,
+      "framesCompared": 2695
+    },
+    {
+      "job": "R128-G2K8-U-d20181112-s10-r1-w08",
+      "pass": true,
+      "why": "identical",
+      "framesIdentical": 2977,
+      "framesCompared": 2977
+    },
+    {
+      "job": "R128-G2K8-U-d20181112-s10-r1-w17",
+      "pass": true,
+      "why": "identical",
+      "framesIdentical": 2995,
+      "framesCompared": 2995
+    },
+    {
+      "job": "R128-G2K8-U-d20181113-s10-r1-w08",
+      "pass": true,
+      "why": "identical",
+      "framesIdentical": 2950,
+      "framesCompared": 2950
+    },
+    {
+      "job": "R128-G2K8-U-d20181113-s10-r1-w17",
+      "pass": null,
+      "why": "earlier run stopped; judged by (b) only"
+    },
+    {
+      "job": "R128-G2K8-U-d20181114-s10-r1-w08",
+      "pass": true,
+      "why": "identical",
+      "framesIdentical": 2938,
+      "framesCompared": 2938
+    },
+    {
+      "job": "R128-G2K8-U-d20181114-s10-r1-w17",
+      "pass": true,
+      "why": "identical",
+      "framesIdentical": 2983,
+      "framesCompared": 2983
+    },
+    {
+      "job": "R128-G2K8-U-d20181115-s10-r1-w08",
+      "pass": true,
+      "why": "identical",
+      "framesIdentical": 2827,
+      "framesCompared": 2827
+    },
+    {
+      "job": "R128-G2K8-U-d20181116-s10-r1-w08",
+      "pass": true,
+      "why": "identical",
+      "framesIdentical": 2581,
+      "framesCompared": 2581
+    },
+    {
+      "job": "R128-G2K8-U-d20181117-s10-r1-w08",
+      "pass": true,
+      "why": "identical",
+      "framesIdentical": 2329,
+      "framesCompared": 2329
+    },
+    {
+      "job": "R128-G2K8-U-d20181118-s10-r1-w17",
+      "pass": true,
+      "why": "identical",
+      "framesIdentical": 2800,
+      "framesCompared": 2800
+    }
+  ],
+  "emulator": {
+    "bridge-C": [
+      "jobs 6; cell-arms exact 6/6; riders identical 604/604",
+      "  U         exact 0/0",
+      "  C-120     exact 0/0",
+      "  C-300     exact 0/0",
+      "  PS-300    exact 0/0",
+      "  DLHZ-120  exact 0/0",
+      "  RCE35     exact 0/0",
+      "  EOHZ35    exact 0/0",
+      "  G2-U      exact 2/2",
+      "  G2-RCE35  exact 2/2",
+      "  G2-EOHZ35 exact 2/2"
+    ],
+    "bridge-E": [
+      "jobs 27; cell-arms exact 27/27; riders identical 2390/2390",
+      "  U         exact 0/0",
+      "  C-120     exact 0/0",
+      "  C-300     exact 0/0",
+      "  PS-300    exact 0/0",
+      "  DLHZ-120  exact 0/0",
+      "  RCE35     exact 0/0",
+      "  EOHZ35    exact 0/0",
+      "  G2-U      exact 9/9",
+      "  G2-RCE35  exact 9/9",
+      "  G2-EOHZ35 exact 9/9"
+    ],
+    "p1": [
+      "jobs 55; cell-arms exact 55/55; riders identical 4948/4948; G2 moves equal 55/55",
+      "  EO35         exact 0/0",
+      "  DLS-120      exact 0/0",
+      "  G2-EO35      exact 11/11",
+      "  G2-DLS-120   exact 11/11",
+      "  G2K3-U       exact 11/11",
+      "  G2K3-RCE35   exact 11/11",
+      "  G2K3-EOHZ35  exact 11/11"
+    ],
+    "r128": [
+      "jobs 20; cell-arms exact 20/20; riders identical 2310/2310; G2 moves equal 20/20",
+      "  R128-U       exact 0/0",
+      "  R128-RCE35   exact 0/0",
+      "  R128-G2K8-U  exact 10/10",
+      "  R128-G2K8-RCE35 exact 10/10"
+    ]
+  },
+  "summary": {
+    "previousIdenticalOrA5": "106/106",
+    "a5Only": 33,
+    "earlierStopped": [
+      "G2K3-U-d20181112-s10-r1-w08",
+      "R128-G2K8-U-d20181113-s10-r1-w17"
+    ],
+    "emulator": {
+      "bridge-C": "jobs 6; cell-arms exact 6/6; riders identical 604/604",
+      "bridge-E": "jobs 27; cell-arms exact 27/27; riders identical 2390/2390",
+      "p1": "jobs 55; cell-arms exact 55/55; riders identical 4948/4948; G2 moves equal 55/55",
+      "r128": "jobs 20; cell-arms exact 20/20; riders identical 2310/2310; G2 moves equal 20/20"
+    }
+  }
+}

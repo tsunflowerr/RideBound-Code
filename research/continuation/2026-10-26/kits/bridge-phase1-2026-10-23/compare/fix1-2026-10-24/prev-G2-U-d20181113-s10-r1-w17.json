@@ -1,0 +1,19 @@
+{
+  "runA": "C:\\RideBoundData\\research\\via-bridge-man-v1\\g2v4\\g2all\\G2-U-d20181113-s10-r1-w17",
+  "runB": "E:\\RideBoundData\\research\\via-bridge-man-v1\\fix1\\fix1bridge\\G2-U-d20181113-s10-r1-w17",
+  "framesA": 2383,
+  "framesB": 2383,
+  "framesCompared": 2383,
+  "framesIdentical": 2382,
+  "firstDifference": {
+    "ordinal": 2,
+    "direction": "adapterToRunner",
+    "type": "initializeRun",
+    "path": "$.payload.manifest.coreCommitSha",
+    "a": "'7435661fa748608897cfeec7af212d1820c8c368'",
+    "b": "'937bb3188c02155148d885adbf0c9a1cd00460ea'"
+  },
+  "summaryIdentical": true,
+  "summaryDifference": null,
+  "identical": false
+}

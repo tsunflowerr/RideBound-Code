@@ -1,0 +1,55 @@
+{
+  "finishedJobs": 1,
+  "cellArmsCompared": 1,
+  "cellArmsExact": 1,
+  "riders": 102,
+  "ridersIdentical": 102,
+  "movesEqual": 1,
+  "g2CellArms": 1,
+  "byArm": {
+    "EO35": {
+      "cellArms": 0,
+      "exact": 0
+    },
+    "DLS-120": {
+      "cellArms": 0,
+      "exact": 0
+    },
+    "G2-EO35": {
+      "cellArms": 0,
+      "exact": 0
+    },
+    "G2-DLS-120": {
+      "cellArms": 0,
+      "exact": 0
+    },
+    "G2K3-U": {
+      "cellArms": 1,
+      "exact": 1
+    },
+    "G2K3-RCE35": {
+      "cellArms": 0,
+      "exact": 0
+    },
+    "G2K3-EOHZ35": {
+      "cellArms": 0,
+      "exact": 0
+    }
+  },
+  "realRidersTsv": "compare\\fixsmoke-diag-2026-10-24-real-riders.tsv",
+  "results": [
+    {
+      "arm": "G2K3-U",
+      "cell": "d20181112-s10-r1-w08",
+      "riders": 102,
+      "identical": 102,
+      "exact": true,
+      "onlyReal": 0,
+      "onlyEmulator": 0,
+      "firstDifference": null,
+      "movesReal": 11,
+      "movesEmulator": 11,
+      "maxMovesPerDecision": 1
+    }
+  ]
+}

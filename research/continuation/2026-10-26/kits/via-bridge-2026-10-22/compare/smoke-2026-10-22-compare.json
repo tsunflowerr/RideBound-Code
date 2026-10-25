@@ -1,0 +1,57 @@
+{
+  "finishedJobs": 2,
+  "cellArmsCompared": 2,
+  "cellArmsExact": 2,
+  "riders": 189,
+  "ridersIdentical": 189,
+  "emulatorPredictionsSha256": "06742da62c45af96c1310b85a811088fbaaa7ad9674f2e068557592a8a13d17a",
+  "realRidersTsv": "E:\\Code\\Report_INT3508\\ridebound-scratchpad\\via-bridge-2026-10-22\\compare\\smoke-2026-10-22-real-riders.tsv",
+  "byArm": {
+    "U": {
+      "cellArms": 0,
+      "exact": 0
+    },
+    "C-120": {
+      "cellArms": 0,
+      "exact": 0
+    },
+    "C-300": {
+      "cellArms": 0,
+      "exact": 0
+    },
+    "PS-300": {
+      "cellArms": 1,
+      "exact": 1
+    },
+    "DLHZ-120": {
+      "cellArms": 1,
+      "exact": 1
+    }
+  },
+  "results": [
+    {
+      "arm": "DLHZ-120",
+      "cell": "d20181114-s10-r1-w08",
+      "riders": 92,
+      "identical": 92,
+      "exact": true,
+      "onlyReal": 0,
+      "onlyEmulator": 0,
+      "servedReal": 92,
+      "servedEmulator": 92,
+      "firstDifference": null
+    },
+    {
+      "arm": "PS-300",
+      "cell": "d20181114-s10-r1-w08",
+      "riders": 97,
+      "identical": 97,
+      "exact": true,
+      "onlyReal": 0,
+      "onlyEmulator": 0,
+      "servedReal": 97,
+      "servedEmulator": 97,
+      "firstDifference": null
+    }
+  ]
+}

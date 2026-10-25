@@ -1,0 +1,29 @@
+{
+  "finishedJobs": 0,
+  "cellArmsCompared": 0,
+  "cellArmsExact": 0,
+  "riders": 0,
+  "ridersIdentical": 0,
+  "movesEqual": 0,
+  "g2CellArms": 0,
+  "byArm": {
+    "R128-U": {
+      "cellArms": 0,
+      "exact": 0
+    },
+    "R128-RCE35": {
+      "cellArms": 0,
+      "exact": 0
+    },
+    "R128-G2K8-U": {
+      "cellArms": 0,
+      "exact": 0
+    },
+    "R128-G2K8-RCE35": {
+      "cellArms": 0,
+      "exact": 0
+    }
+  },
+  "realRidersTsv": "compare\\r128pilot-2026-10-23-real-riders.tsv",
+  "results": []
+}

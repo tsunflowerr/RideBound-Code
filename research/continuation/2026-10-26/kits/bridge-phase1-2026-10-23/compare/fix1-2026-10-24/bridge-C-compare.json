@@ -1,0 +1,125 @@
+{
+  "finishedJobs": 6,
+  "cellArmsCompared": 6,
+  "cellArmsExact": 6,
+  "riders": 604,
+  "ridersIdentical": 604,
+  "emulatorPredictionsSha256": "447b6e4795a61a4e63603e87e335b3ce6a2e081b32b6b02f9672fce84f4dc1c2",
+  "realRidersTsv": "E:\\Code\\Report_INT3508\\ridebound-scratchpad\\bridge-phase1-2026-10-23\\compare\\fix1-2026-10-24\\bridge-C-real-riders.tsv",
+  "byArm": {
+    "U": {
+      "cellArms": 0,
+      "exact": 0
+    },
+    "C-120": {
+      "cellArms": 0,
+      "exact": 0
+    },
+    "C-300": {
+      "cellArms": 0,
+      "exact": 0
+    },
+    "PS-300": {
+      "cellArms": 0,
+      "exact": 0
+    },
+    "DLHZ-120": {
+      "cellArms": 0,
+      "exact": 0
+    },
+    "RCE35": {
+      "cellArms": 0,
+      "exact": 0
+    },
+    "EOHZ35": {
+      "cellArms": 0,
+      "exact": 0
+    },
+    "G2-U": {
+      "cellArms": 2,
+      "exact": 2
+    },
+    "G2-RCE35": {
+      "cellArms": 2,
+      "exact": 2
+    },
+    "G2-EOHZ35": {
+      "cellArms": 2,
+      "exact": 2
+    }
+  },
+  "results": [
+    {
+      "arm": "G2-EOHZ35",
+      "cell": "d20181112-s10-r1-w08",
+      "riders": 97,
+      "identical": 97,
+      "exact": true,
+      "onlyReal": 0,
+      "onlyEmulator": 0,
+      "servedReal": 97,
+      "servedEmulator": 97,
+      "firstDifference": null
+    },
+    {
+      "arm": "G2-EOHZ35",
+      "cell": "d20181113-s10-r1-w08",
+      "riders": 102,
+      "identical": 102,
+      "exact": true,
+      "onlyReal": 0,
+      "onlyEmulator": 0,
+      "servedReal": 102,
+      "servedEmulator": 102,
+      "firstDifference": null
+    },
+    {
+      "arm": "G2-RCE35",
+      "cell": "d20181112-s10-r1-w08",
+      "riders": 100,
+      "identical": 100,
+      "exact": true,
+      "onlyReal": 0,
+      "onlyEmulator": 0,
+      "servedReal": 100,
+      "servedEmulator": 100,
+      "firstDifference": null
+    },
+    {
+      "arm": "G2-RCE35",
+      "cell": "d20181113-s10-r1-w08",
+      "riders": 100,
+      "identical": 100,
+      "exact": true,
+      "onlyReal": 0,
+      "onlyEmulator": 0,
+      "servedReal": 100,
+      "servedEmulator": 100,
+      "firstDifference": null
+    },
+    {
+      "arm": "G2-U",
+      "cell": "d20181112-s10-r1-w08",
+      "riders": 103,
+      "identical": 103,
+      "exact": true,
+      "onlyReal": 0,
+      "onlyEmulator": 0,
+      "servedReal": 103,
+      "servedEmulator": 103,
+      "firstDifference": null
+    },
+    {
+      "arm": "G2-U",
+      "cell": "d20181113-s10-r1-w08",
+      "riders": 102,
+      "identical": 102,
+      "exact": true,
+      "onlyReal": 0,
+      "onlyEmulator": 0,
+      "servedReal": 102,
+      "servedEmulator": 102,
+      "firstDifference": null
+    }
+  ]
+}

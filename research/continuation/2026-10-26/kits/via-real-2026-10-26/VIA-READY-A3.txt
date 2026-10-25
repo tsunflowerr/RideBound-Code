@@ -1,0 +1,1 @@
+2026-10-25T19:46:40Z READY-A3 for runA3 (12 jobs, A1 WP4 configs, GC heap cap 6 GiB, launcher bridge_launcher_via_a3.py sealed in VIA-KIT-A3.sha256, 3 workers, admissions 600 s apart). Amendment A3 recorded in VIA-LOG.md before the run; predictions unchanged (sealed 2026-10-25T18:06:24Z).

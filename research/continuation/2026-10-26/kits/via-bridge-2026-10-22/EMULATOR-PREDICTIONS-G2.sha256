@@ -1,0 +1,4 @@
+# sealed 2026-10-22T22:11Z before any G2 Runner job; emulator C:/RideBoundContinuation/2026-10-22/emulator-wf5-eoc (engine.js 4d2aefa2bb976ab9...), opts {reopt:{g2:99}, lock:'ratchet'}
+447b6e4795a61a4e63603e87e335b3ce6a2e081b32b6b02f9672fce84f4dc1c2 *emulator-riders-g2-2000.tsv
+1b08534f2c432df75551e40e00afbc75c196189ec59ccaff40d6935b70066142 *emulator-riders-g2-2000-counts.tsv
+f81708abf403151b9051c6462d2f68f38108f3659751c8dcb762695b6e42210b *bridge_emulate_g2.js

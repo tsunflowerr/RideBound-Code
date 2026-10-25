@@ -1,0 +1,1 @@
+36d70c9cab1be869586e7b34eda07f1e79672e7a485a4aa96a6beb1928bf21df inventory of C:/Code/RideBound-g2 at HEAD 937bb3188c02155148d885adbf0c9a1cd00460ea (clean; code tree = v4 0b930c4f + docs commit), computed 2026-10-23 by inventory.py (self-check: E:/Code/RideBound-deadline -> 0da63eaf, as every earlier bridge job). DO NOT edit the G2 worktree while phase-1 jobs run.

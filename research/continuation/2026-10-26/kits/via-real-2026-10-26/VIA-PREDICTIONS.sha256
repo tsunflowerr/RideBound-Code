@@ -1,0 +1,4 @@
+# Via-zone emulator predictions, sealed 2026-10-25T18:06:24Z before any RideBound job (no runs/ folder exists).
+# engine C:/RideBoundContinuation/2026-10-23/emulator-wf15; driver emulate_via.js df1ed5a8358defe76eae2e6739e4d945e8d43ca41609bb99e9e4abdc63c4fb86
+c0cd48de54cab3565c78a7e86f20351a2d6b7aab610ddfeaeabf39ceba40e53d *emulator-riders-via.tsv
+02f53959e044851d6ab35ddc457ca0c8e466388620ff10ca993607263db1c65e *emulator-riders-via-counts.tsv

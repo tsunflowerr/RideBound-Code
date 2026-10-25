@@ -1,0 +1,10 @@
+# Elmi-arm emulator predictions written before any Elmi-arm RideBound job existed (0 jobs in via-bridge-man-v1/elmi)
+2026-10-22T17:06:14Z
+main
+regress
+smoke
+e42c7e2d344e86a27f7ef0992ee7474c561eb1a871f63be531055e0a496d54b1 *emulator-riders-elmi-2000.tsv
+cd1b0858274911622a2d9ec01c307dc3f5d00168275ddcb9de0d873cd3c85fba *bridge_emulate_elmi.js
+4d2aefa2bb976ab9bb85c9a6dd5455c8cac5d12df45ddb08a6ad6470b95f8852 *C:/RideBoundContinuation/2026-10-22/emulator-wf5-eoc/engine.js
+8af7ff3ccca2a2ab2f44b22bf6aab5d6461867c5494c02ad6eb42399be718ed6 *C:/RideBoundContinuation/2026-10-22/emulator-wf5-eoc/fixtures.js
+d0fb566c3bed1c992fae41eb4a9de2e0e7922c217db51e54b4a5dbec0c7ea321 *C:/RideBoundContinuation/2026-10-22/emulator-wf5-eoc/lib.js

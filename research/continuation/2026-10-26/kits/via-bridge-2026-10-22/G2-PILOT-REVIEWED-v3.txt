@@ -1,0 +1,16 @@
+G2-PILOT-REVIEWED-v3 (2026-10-23 07:35)
+
+Formal v3 pilot: runner-g2-v3 with the G2 worktree adapter (inventory 90957b38…), G2-U, G2-RCE35 and G2-EOHZ35 on
+d20181114-s10-r1-w08. All 3 jobs ended status-pass (07:31–07:34).
+
+Against the sealed emulator predictions (EMULATOR-PREDICTIONS-G2.sha256, sealed 2026-10-22T22:11Z):
+- bridge_compare.py: 3/3 cell-arms exact, 286/286 riders identical in t0, p0, A, served, sumAbsC, nonzeroC, netC,
+  maxAbsC and shared (compare/g2v3-pilot-2026-10-23-compare.json, sha256 510b31db…).
+- Real moves (g2_moves.py: ledger revisions whose published vehicle differs from the keep-route vehicle): G2-U 4,
+  G2-RCE35 6, G2-EOHZ35 10. The emulator's relocation counts for this cell are 4, 6 and 10
+  (emulator-riders-g2-2000-counts.tsv).
+- Evidence: 801 + 763 + 770 decisions, all version 1.3.0, 0 failures under actual_fleetpy_medium_verify (1.3.0)
+  (compare/g2v3-pilot-2026-10-23-moves.jsonl, sha256 0386dbbb…).
+
+The decision-cadence risk (the observation decision) and the frozen-prefix risk did not show on this cell. The 30
+remaining jobs (g2main) may run.

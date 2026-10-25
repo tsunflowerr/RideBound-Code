@@ -1,0 +1,57 @@
+{
+  "finishedJobs": 2,
+  "cellArmsCompared": 2,
+  "cellArmsExact": 2,
+  "riders": 201,
+  "ridersIdentical": 201,
+  "emulatorPredictionsSha256": "06742da62c45af96c1310b85a811088fbaaa7ad9674f2e068557592a8a13d17a",
+  "realRidersTsv": "E:\\Code\\Report_INT3508\\ridebound-scratchpad\\via-bridge-2026-10-22\\compare\\main-2jobs-2026-10-22-real-riders.tsv",
+  "byArm": {
+    "U": {
+      "cellArms": 1,
+      "exact": 1
+    },
+    "C-120": {
+      "cellArms": 1,
+      "exact": 1
+    },
+    "C-300": {
+      "cellArms": 0,
+      "exact": 0
+    },
+    "PS-300": {
+      "cellArms": 0,
+      "exact": 0
+    },
+    "DLHZ-120": {
+      "cellArms": 0,
+      "exact": 0
+    }
+  },
+  "results": [
+    {
+      "arm": "C-120",
+      "cell": "d20181112-s10-r1-w08",
+      "riders": 101,
+      "identical": 101,
+      "exact": true,
+      "onlyReal": 0,
+      "onlyEmulator": 0,
+      "servedReal": 101,
+      "servedEmulator": 101,
+      "firstDifference": null
+    },
+    {
+      "arm": "U",
+      "cell": "d20181112-s10-r1-w08",
+      "riders": 100,
+      "identical": 100,
+      "exact": true,
+      "onlyReal": 0,
+      "onlyEmulator": 0,
+      "servedReal": 100,
+      "servedEmulator": 100,
+      "firstDifference": null
+    }
+  ]
+}

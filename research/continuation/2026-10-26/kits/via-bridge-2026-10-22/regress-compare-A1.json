@@ -1,0 +1,12 @@
+{
+  "runA": "C:/RideBoundData/research/tier3-stage1b-v1/smoke/CF-U-d20181114-s10-r1-w08",
+  "runB": "C:/RideBoundData/research/via-bridge-man-v1/regress/REG-CF-U-d20181114-s10-r1-w08-1500",
+  "framesA": 2311,
+  "framesB": 2311,
+  "framesCompared": 2311,
+  "framesIdentical": 2311,
+  "firstDifference": null,
+  "summaryIdentical": true,
+  "summaryDifference": null,
+  "identical": true
+}

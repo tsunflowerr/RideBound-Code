@@ -1,0 +1,1624 @@
+{
+  "runner": "C:/RideBoundData/research/runner-p1-dwell-v1",
+  "replayed": 228,
+  "identical": 228,
+  "framesTotal": 176074,
+  "framesIdentical": 176074,
+  "byFamily": {
+    "ins": {
+      "jobs": 80,
+      "identical": 80
+    },
+    "g2": {
+      "jobs": 33,
+      "identical": 33
+    },
+    "p1": {
+      "jobs": 76,
+      "identical": 76
+    },
+    "r128": {
+      "jobs": 39,
+      "identical": 39
+    }
+  },
+  "notIdentical": [],
+  "rows": [
+    {
+      "file": "g2-G2-EOHZ35-d20181112-s10-r1-w08.json",
+      "identical": true,
+      "frames": 784,
+      "framesIdentical": 784,
+      "firstDifference": null
+    },
+    {
+      "file": "g2-G2-EOHZ35-d20181112-s10-r1-w17.json",
+      "identical": true,
+      "frames": 846,
+      "framesIdentical": 846,
+      "firstDifference": null
+    },
+    {
+      "file": "g2-G2-EOHZ35-d20181113-s10-r1-w08.json",
+      "identical": true,
+      "frames": 814,
+      "framesIdentical": 814,
+      "firstDifference": null
+    },
+    {
+      "file": "g2-G2-EOHZ35-d20181113-s10-r1-w17.json",
+      "identical": true,
+      "frames": 816,
+      "framesIdentical": 816,
+      "firstDifference": null
+    },
+    {
+      "file": "g2-G2-EOHZ35-d20181114-s10-r1-w08.json",
+      "identical": true,
+      "frames": 773,
+      "framesIdentical": 773,
+      "firstDifference": null
+    },
+    {
+      "file": "g2-G2-EOHZ35-d20181114-s10-r1-w17.json",
+      "identical": true,
+      "frames": 828,
+      "framesIdentical": 828,
+      "firstDifference": null
+    },
+    {
+      "file": "g2-G2-EOHZ35-d20181115-s10-r1-w08.json",
+      "identical": true,
+      "frames": 656,
+      "framesIdentical": 656,
+      "firstDifference": null
+    },
+    {
+      "file": "g2-G2-EOHZ35-d20181116-s10-r1-w08.json",
+      "identical": true,
+      "frames": 700,
+      "framesIdentical": 700,
+      "firstDifference": null
+    },
+    {
+      "file": "g2-G2-EOHZ35-d20181117-s10-r1-w08.json",
+      "identical": true,
+      "frames": 583,
+      "framesIdentical": 583,
+      "firstDifference": null
+    },
+    {
+      "file": "g2-G2-EOHZ35-d20181118-s10-r1-w08.json",
+      "identical": true,
+      "frames": 628,
+      "framesIdentical": 628,
+      "firstDifference": null
+    },
+    {
+      "file": "g2-G2-EOHZ35-d20181118-s10-r1-w17.json",
+      "identical": true,
+      "frames": 709,
+      "framesIdentical": 709,
+      "firstDifference": null
+    },
+    {
+      "file": "g2-G2-RCE35-d20181112-s10-r1-w08.json",
+      "identical": true,
+      "frames": 808,
+      "framesIdentical": 808,
+      "firstDifference": null
+    },
+    {
+      "file": "g2-G2-RCE35-d20181112-s10-r1-w17.json",
+      "identical": true,
+      "frames": 840,
+      "framesIdentical": 840,
+      "firstDifference": null
+    },
+    {
+      "file": "g2-G2-RCE35-d20181113-s10-r1-w08.json",
+      "identical": true,
+      "frames": 807,
+      "framesIdentical": 807,
+      "firstDifference": null
+    },
+    {
+      "file": "g2-G2-RCE35-d20181113-s10-r1-w17.json",
+      "identical": true,
+      "frames": 742,
+      "framesIdentical": 742,
+      "firstDifference": null
+    },
+    {
+      "file": "g2-G2-RCE35-d20181114-s10-r1-w08.json",
+      "identical": true,
+      "frames": 766,
+      "framesIdentical": 766,
+      "firstDifference": null
+    },
+    {
+      "file": "g2-G2-RCE35-d20181114-s10-r1-w17.json",
+      "identical": true,
+      "frames": 827,
+      "framesIdentical": 827,
+      "firstDifference": null
+    },
+    {
+      "file": "g2-G2-RCE35-d20181115-s10-r1-w08.json",
+      "identical": true,
+      "frames": 644,
+      "framesIdentical": 644,
+      "firstDifference": null
+    },
+    {
+      "file": "g2-G2-RCE35-d20181116-s10-r1-w08.json",
+      "identical": true,
+      "frames": 696,
+      "framesIdentical": 696,
+      "firstDifference": null
+    },
+    {
+      "file": "g2-G2-RCE35-d20181117-s10-r1-w08.json",
+      "identical": true,
+      "frames": 579,
+      "framesIdentical": 579,
+      "firstDifference": null
+    },
+    {
+      "file": "g2-G2-RCE35-d20181118-s10-r1-w08.json",
+      "identical": true,
+      "frames": 628,
+      "framesIdentical": 628,
+      "firstDifference": null
+    },
+    {
+      "file": "g2-G2-RCE35-d20181118-s10-r1-w17.json",
+      "identical": true,
+      "frames": 744,
+      "framesIdentical": 744,
+      "firstDifference": null
+    },
+    {
+      "file": "g2-G2-U-d20181112-s10-r1-w08.json",
+      "identical": true,
+      "frames": 828,
+      "framesIdentical": 828,
+      "firstDifference": null
+    },
+    {
+      "file": "g2-G2-U-d20181112-s10-r1-w17.json",
+      "identical": true,
+      "frames": 827,
+      "framesIdentical": 827,
+      "firstDifference": null
+    },
+    {
+      "file": "g2-G2-U-d20181113-s10-r1-w08.json",
+      "identical": true,
+      "frames": 816,
+      "framesIdentical": 816,
+      "firstDifference": null
+    },
+    {
+      "file": "g2-G2-U-d20181113-s10-r1-w17.json",
+      "identical": true,
+      "frames": 795,
+      "framesIdentical": 795,
+      "firstDifference": null
+    },
+    {
+      "file": "g2-G2-U-d20181114-s10-r1-w08.json",
+      "identical": true,
+      "frames": 804,
+      "framesIdentical": 804,
+      "firstDifference": null
+    },
+    {
+      "file": "g2-G2-U-d20181114-s10-r1-w17.json",
+      "identical": true,
+      "frames": 827,
+      "framesIdentical": 827,
+      "firstDifference": null
+    },
+    {
+      "file": "g2-G2-U-d20181115-s10-r1-w08.json",
+      "identical": true,
+      "frames": 695,
+      "framesIdentical": 695,
+      "firstDifference": null
+    },
+    {
+      "file": "g2-G2-U-d20181116-s10-r1-w08.json",
+      "identical": true,
+      "frames": 721,
+      "framesIdentical": 721,
+      "firstDifference": null
+    },
+    {
+      "file": "g2-G2-U-d20181117-s10-r1-w08.json",
+      "identical": true,
+      "frames": 625,
+      "framesIdentical": 625,
+      "firstDifference": null
+    },
+    {
+      "file": "g2-G2-U-d20181118-s10-r1-w08.json",
+      "identical": true,
+      "frames": 626,
+      "framesIdentical": 626,
+      "firstDifference": null
+    },
+    {
+      "file": "g2-G2-U-d20181118-s10-r1-w17.json",
+      "identical": true,
+      "frames": 756,
+      "framesIdentical": 756,
+      "firstDifference": null
+    },
+    {
+      "file": "ins-C-120-d20181112-s10-r1-w08.json",
+      "identical": true,
+      "frames": 819,
+      "framesIdentical": 819,
+      "firstDifference": null
+    },
+    {
+      "file": "ins-C-120-d20181112-s10-r1-w17.json",
+      "identical": true,
+      "frames": 838,
+      "framesIdentical": 838,
+      "firstDifference": null
+    },
+    {
+      "file": "ins-C-120-d20181113-s10-r1-w08.json",
+      "identical": true,
+      "frames": 823,
+      "framesIdentical": 823,
+      "firstDifference": null
+    },
+    {
+      "file": "ins-C-120-d20181113-s10-r1-w17.json",
+      "identical": true,
+      "frames": 796,
+      "framesIdentical": 796,
+      "firstDifference": null
+    },
+    {
+      "file": "ins-C-120-d20181114-s10-r1-w08.json",
+      "identical": true,
+      "frames": 760,
+      "framesIdentical": 760,
+      "firstDifference": null
+    },
+    {
+      "file": "ins-C-120-d20181114-s10-r1-w17.json",
+      "identical": true,
+      "frames": 811,
+      "framesIdentical": 811,
+      "firstDifference": null
+    },
+    {
+      "file": "ins-C-120-d20181115-s10-r1-w08.json",
+      "identical": true,
+      "frames": 648,
+      "framesIdentical": 648,
+      "firstDifference": null
+    },
+    {
+      "file": "ins-C-120-d20181116-s10-r1-w08.json",
+      "identical": true,
+      "frames": 690,
+      "framesIdentical": 690,
+      "firstDifference": null
+    },
+    {
+      "file": "ins-C-120-d20181117-s10-r1-w08.json",
+      "identical": true,
+      "frames": 590,
+      "framesIdentical": 590,
+      "firstDifference": null
+    },
+    {
+      "file": "ins-C-120-d20181118-s10-r1-w08.json",
+      "identical": true,
+      "frames": 574,
+      "framesIdentical": 574,
+      "firstDifference": null
+    },
+    {
+      "file": "ins-C-120-d20181118-s10-r1-w17.json",
+      "identical": true,
+      "frames": 700,
+      "framesIdentical": 700,
+      "firstDifference": null
+    },
+    {
+      "file": "ins-C-300-d20181112-s10-r1-w08.json",
+      "identical": true,
+      "frames": 787,
+      "framesIdentical": 787,
+      "firstDifference": null
+    },
+    {
+      "file": "ins-C-300-d20181112-s10-r1-w17.json",
+      "identical": true,
+      "frames": 830,
+      "framesIdentical": 830,
+      "firstDifference": null
+    },
+    {
+      "file": "ins-C-300-d20181113-s10-r1-w08.json",
+      "identical": true,
+      "frames": 811,
+      "framesIdentical": 811,
+      "firstDifference": null
+    },
+    {
+      "file": "ins-C-300-d20181113-s10-r1-w17.json",
+      "identical": true,
+      "frames": 762,
+      "framesIdentical": 762,
+      "firstDifference": null
+    },
+    {
+      "file": "ins-C-300-d20181114-s10-r1-w08.json",
+      "identical": true,
+      "frames": 795,
+      "framesIdentical": 795,
+      "firstDifference": null
+    },
+    {
+      "file": "ins-C-300-d20181114-s10-r1-w17.json",
+      "identical": true,
+      "frames": 842,
+      "framesIdentical": 842,
+      "firstDifference": null
+    },
+    {
+      "file": "ins-C-300-d20181115-s10-r1-w08.json",
+      "identical": true,
+      "frames": 671,
+      "framesIdentical": 671,
+      "firstDifference": null
+    },
+    {
+      "file": "ins-C-300-d20181116-s10-r1-w08.json",
+      "identical": true,
+      "frames": 726,
+      "framesIdentical": 726,
+      "firstDifference": null
+    },
+    {
+      "file": "ins-C-300-d20181117-s10-r1-w08.json",
+      "identical": true,
+      "frames": 580,
+      "framesIdentical": 580,
+      "firstDifference": null
+    },
+    {
+      "file": "ins-C-300-d20181118-s10-r1-w08.json",
+      "identical": true,
+      "frames": 635,
+      "framesIdentical": 635,
+      "firstDifference": null
+    },
+    {
+      "file": "ins-C-300-d20181118-s10-r1-w17.json",
+      "identical": true,
+      "frames": 756,
+      "framesIdentical": 756,
+      "firstDifference": null
+    },
+    {
+      "file": "ins-DLHZ-120-d20181112-s10-r1-w08.json",
+      "identical": true,
+      "frames": 802,
+      "framesIdentical": 802,
+      "firstDifference": null
+    },
+    {
+      "file": "ins-DLHZ-120-d20181112-s10-r1-w17.json",
+      "identical": true,
+      "frames": 837,
+      "framesIdentical": 837,
+      "firstDifference": null
+    },
+    {
+      "file": "ins-DLHZ-120-d20181113-s10-r1-w08.json",
+      "identical": true,
+      "frames": 813,
+      "framesIdentical": 813,
+      "firstDifference": null
+    },
+    {
+      "file": "ins-DLHZ-120-d20181113-s10-r1-w17.json",
+      "identical": true,
+      "frames": 796,
+      "framesIdentical": 796,
+      "firstDifference": null
+    },
+    {
+      "file": "ins-DLHZ-120-d20181114-s10-r1-w08.json",
+      "identical": true,
+      "frames": 760,
+      "framesIdentical": 760,
+      "firstDifference": null
+    },
+    {
+      "file": "ins-DLHZ-120-d20181114-s10-r1-w17.json",
+      "identical": true,
+      "frames": 811,
+      "framesIdentical": 811,
+      "firstDifference": null
+    },
+    {
+      "file": "ins-DLHZ-120-d20181115-s10-r1-w08.json",
+      "identical": true,
+      "frames": 648,
+      "framesIdentical": 648,
+      "firstDifference": null
+    },
+    {
+      "file": "ins-DLHZ-120-d20181116-s10-r1-w08.json",
+      "identical": true,
+      "frames": 704,
+      "framesIdentical": 704,
+      "firstDifference": null
+    },
+    {
+      "file": "ins-DLHZ-120-d20181117-s10-r1-w08.json",
+      "identical": true,
+      "frames": 591,
+      "framesIdentical": 591,
+      "firstDifference": null
+    },
+    {
+      "file": "ins-DLHZ-120-d20181118-s10-r1-w08.json",
+      "identical": true,
+      "frames": 574,
+      "framesIdentical": 574,
+      "firstDifference": null
+    },
+    {
+      "file": "ins-DLHZ-120-d20181118-s10-r1-w17.json",
+      "identical": true,
+      "frames": 700,
+      "framesIdentical": 700,
+      "firstDifference": null
+    },
+    {
+      "file": "ins-EOHZ35-d20181112-s10-r1-w08.json",
+      "identical": true,
+      "frames": 805,
+      "framesIdentical": 805,
+      "firstDifference": null
+    },
+    {
+      "file": "ins-EOHZ35-d20181112-s10-r1-w17.json",
+      "identical": true,
+      "frames": 839,
+      "framesIdentical": 839,
+      "firstDifference": null
+    },
+    {
+      "file": "ins-EOHZ35-d20181113-s10-r1-w08.json",
+      "identical": true,
+      "frames": 814,
+      "framesIdentical": 814,
+      "firstDifference": null
+    },
+    {
+      "file": "ins-EOHZ35-d20181113-s10-r1-w17.json",
+      "identical": true,
+      "frames": 795,
+      "framesIdentical": 795,
+      "firstDifference": null
+    },
+    {
+      "file": "ins-EOHZ35-d20181114-s10-r1-w08.json",
+      "identical": true,
+      "frames": 756,
+      "framesIdentical": 756,
+      "firstDifference": null
+    },
+    {
+      "file": "ins-EOHZ35-d20181114-s10-r1-w17.json",
+      "identical": true,
+      "frames": 827,
+      "framesIdentical": 827,
+      "firstDifference": null
+    },
+    {
+      "file": "ins-EOHZ35-d20181115-s10-r1-w08.json",
+      "identical": true,
+      "frames": 640,
+      "framesIdentical": 640,
+      "firstDifference": null
+    },
+    {
+      "file": "ins-EOHZ35-d20181116-s10-r1-w08.json",
+      "identical": true,
+      "frames": 695,
+      "framesIdentical": 695,
+      "firstDifference": null
+    },
+    {
+      "file": "ins-EOHZ35-d20181117-s10-r1-w08.json",
+      "identical": true,
+      "frames": 571,
+      "framesIdentical": 571,
+      "firstDifference": null
+    },
+    {
+      "file": "ins-EOHZ35-d20181118-s10-r1-w08.json",
+      "identical": true,
+      "frames": 628,
+      "framesIdentical": 628,
+      "firstDifference": null
+    },
+    {
+      "file": "ins-EOHZ35-d20181118-s10-r1-w17.json",
+      "identical": true,
+      "frames": 725,
+      "framesIdentical": 725,
+      "firstDifference": null
+    },
+    {
+      "file": "ins-main-DLHZ-120-d20181114-s10-r1-w08.json",
+      "identical": true,
+      "frames": 760,
+      "framesIdentical": 760,
+      "firstDifference": null
+    },
+    {
+      "file": "ins-main-PS-300-d20181114-s10-r1-w08.json",
+      "identical": true,
+      "frames": 795,
+      "framesIdentical": 795,
+      "firstDifference": null
+    },
+    {
+      "file": "ins-PS-300-d20181112-s10-r1-w08.json",
+      "identical": true,
+      "frames": 800,
+      "framesIdentical": 800,
+      "firstDifference": null
+    },
+    {
+      "file": "ins-PS-300-d20181112-s10-r1-w17.json",
+      "identical": true,
+      "frames": 824,
+      "framesIdentical": 824,
+      "firstDifference": null
+    },
+    {
+      "file": "ins-PS-300-d20181113-s10-r1-w08.json",
+      "identical": true,
+      "frames": 816,
+      "framesIdentical": 816,
+      "firstDifference": null
+    },
+    {
+      "file": "ins-PS-300-d20181113-s10-r1-w17.json",
+      "identical": true,
+      "frames": 802,
+      "framesIdentical": 802,
+      "firstDifference": null
+    },
+    {
+      "file": "ins-PS-300-d20181114-s10-r1-w08.json",
+      "identical": true,
+      "frames": 795,
+      "framesIdentical": 795,
+      "firstDifference": null
+    },
+    {
+      "file": "ins-PS-300-d20181114-s10-r1-w17.json",
+      "identical": true,
+      "frames": 842,
+      "framesIdentical": 842,
+      "firstDifference": null
+    },
+    {
+      "file": "ins-PS-300-d20181115-s10-r1-w08.json",
+      "identical": true,
+      "frames": 679,
+      "framesIdentical": 679,
+      "firstDifference": null
+    },
+    {
+      "file": "ins-PS-300-d20181116-s10-r1-w08.json",
+      "identical": true,
+      "frames": 725,
+      "framesIdentical": 725,
+      "firstDifference": null
+    },
+    {
+      "file": "ins-PS-300-d20181117-s10-r1-w08.json",
+      "identical": true,
+      "frames": 587,
+      "framesIdentical": 587,
+      "firstDifference": null
+    },
+    {
+      "file": "ins-PS-300-d20181118-s10-r1-w08.json",
+      "identical": true,
+      "frames": 619,
+      "framesIdentical": 619,
+      "firstDifference": null
+    },
+    {
+      "file": "ins-PS-300-d20181118-s10-r1-w17.json",
+      "identical": true,
+      "frames": 775,
+      "framesIdentical": 775,
+      "firstDifference": null
+    },
+    {
+      "file": "ins-RCE35-d20181112-s10-r1-w08.json",
+      "identical": true,
+      "frames": 792,
+      "framesIdentical": 792,
+      "firstDifference": null
+    },
+    {
+      "file": "ins-RCE35-d20181112-s10-r1-w17.json",
+      "identical": true,
+      "frames": 839,
+      "framesIdentical": 839,
+      "firstDifference": null
+    },
+    {
+      "file": "ins-RCE35-d20181113-s10-r1-w08.json",
+      "identical": true,
+      "frames": 814,
+      "framesIdentical": 814,
+      "firstDifference": null
+    },
+    {
+      "file": "ins-RCE35-d20181113-s10-r1-w17.json",
+      "identical": true,
+      "frames": 788,
+      "framesIdentical": 788,
+      "firstDifference": null
+    },
+    {
+      "file": "ins-RCE35-d20181114-s10-r1-w08.json",
+      "identical": true,
+      "frames": 756,
+      "framesIdentical": 756,
+      "firstDifference": null
+    },
+    {
+      "file": "ins-RCE35-d20181114-s10-r1-w17.json",
+      "identical": true,
+      "frames": 827,
+      "framesIdentical": 827,
+      "firstDifference": null
+    },
+    {
+      "file": "ins-RCE35-d20181115-s10-r1-w08.json",
+      "identical": true,
+      "frames": 622,
+      "framesIdentical": 622,
+      "firstDifference": null
+    },
+    {
+      "file": "ins-RCE35-d20181116-s10-r1-w08.json",
+      "identical": true,
+      "frames": 692,
+      "framesIdentical": 692,
+      "firstDifference": null
+    },
+    {
+      "file": "ins-RCE35-d20181117-s10-r1-w08.json",
+      "identical": true,
+      "frames": 579,
+      "framesIdentical": 579,
+      "firstDifference": null
+    },
+    {
+      "file": "ins-RCE35-d20181118-s10-r1-w08.json",
+      "identical": true,
+      "frames": 628,
+      "framesIdentical": 628,
+      "firstDifference": null
+    },
+    {
+      "file": "ins-RCE35-d20181118-s10-r1-w17.json",
+      "identical": true,
+      "frames": 744,
+      "framesIdentical": 744,
+      "firstDifference": null
+    },
+    {
+      "file": "ins-REG-CF-U-d20181114-s10-r1-w08-1500.json",
+      "identical": true,
+      "frames": 771,
+      "framesIdentical": 771,
+      "firstDifference": null
+    },
+    {
+      "file": "ins-U-d20181112-s10-r1-w08.json",
+      "identical": true,
+      "frames": 807,
+      "framesIdentical": 807,
+      "firstDifference": null
+    },
+    {
+      "file": "ins-U-d20181112-s10-r1-w17.json",
+      "identical": true,
+      "frames": 834,
+      "framesIdentical": 834,
+      "firstDifference": null
+    },
+    {
+      "file": "ins-U-d20181113-s10-r1-w08.json",
+      "identical": true,
+      "frames": 815,
+      "framesIdentical": 815,
+      "firstDifference": null
+    },
+    {
+      "file": "ins-U-d20181113-s10-r1-w17.json",
+      "identical": true,
+      "frames": 781,
+      "framesIdentical": 781,
+      "firstDifference": null
+    },
+    {
+      "file": "ins-U-d20181114-s10-r1-w08.json",
+      "identical": true,
+      "frames": 795,
+      "framesIdentical": 795,
+      "firstDifference": null
+    },
+    {
+      "file": "ins-U-d20181114-s10-r1-w17.json",
+      "identical": true,
+      "frames": 834,
+      "framesIdentical": 834,
+      "firstDifference": null
+    },
+    {
+      "file": "ins-U-d20181115-s10-r1-w08.json",
+      "identical": true,
+      "frames": 689,
+      "framesIdentical": 689,
+      "firstDifference": null
+    },
+    {
+      "file": "ins-U-d20181116-s10-r1-w08.json",
+      "identical": true,
+      "frames": 702,
+      "framesIdentical": 702,
+      "firstDifference": null
+    },
+    {
+      "file": "ins-U-d20181117-s10-r1-w08.json",
+      "identical": true,
+      "frames": 625,
+      "framesIdentical": 625,
+      "firstDifference": null
+    },
+    {
+      "file": "ins-U-d20181118-s10-r1-w08.json",
+      "identical": true,
+      "frames": 635,
+      "framesIdentical": 635,
+      "firstDifference": null
+    },
+    {
+      "file": "ins-U-d20181118-s10-r1-w17.json",
+      "identical": true,
+      "frames": 767,
+      "framesIdentical": 767,
+      "firstDifference": null
+    },
+    {
+      "file": "p1-DLS-120-d20181112-s10-r1-w08.json",
+      "identical": true,
+      "frames": 795,
+      "framesIdentical": 795,
+      "firstDifference": null
+    },
+    {
+      "file": "p1-DLS-120-d20181112-s10-r1-w17.json",
+      "identical": true,
+      "frames": 837,
+      "framesIdentical": 837,
+      "firstDifference": null
+    },
+    {
+      "file": "p1-DLS-120-d20181113-s10-r1-w08.json",
+      "identical": true,
+      "frames": 813,
+      "framesIdentical": 813,
+      "firstDifference": null
+    },
+    {
+      "file": "p1-DLS-120-d20181113-s10-r1-w17.json",
+      "identical": true,
+      "frames": 796,
+      "framesIdentical": 796,
+      "firstDifference": null
+    },
+    {
+      "file": "p1-DLS-120-d20181114-s10-r1-w08.json",
+      "identical": true,
+      "frames": 753,
+      "framesIdentical": 753,
+      "firstDifference": null
+    },
+    {
+      "file": "p1-DLS-120-d20181114-s10-r1-w17.json",
+      "identical": true,
+      "frames": 811,
+      "framesIdentical": 811,
+      "firstDifference": null
+    },
+    {
+      "file": "p1-DLS-120-d20181115-s10-r1-w08.json",
+      "identical": true,
+      "frames": 648,
+      "framesIdentical": 648,
+      "firstDifference": null
+    },
+    {
+      "file": "p1-DLS-120-d20181116-s10-r1-w08.json",
+      "identical": true,
+      "frames": 704,
+      "framesIdentical": 704,
+      "firstDifference": null
+    },
+    {
+      "file": "p1-DLS-120-d20181117-s10-r1-w08.json",
+      "identical": true,
+      "frames": 591,
+      "framesIdentical": 591,
+      "firstDifference": null
+    },
+    {
+      "file": "p1-DLS-120-d20181118-s10-r1-w08.json",
+      "identical": true,
+      "frames": 574,
+      "framesIdentical": 574,
+      "firstDifference": null
+    },
+    {
+      "file": "p1-DLS-120-d20181118-s10-r1-w17.json",
+      "identical": true,
+      "frames": 700,
+      "framesIdentical": 700,
+      "firstDifference": null
+    },
+    {
+      "file": "p1-EO35-d20181112-s10-r1-w08.json",
+      "identical": true,
+      "frames": 803,
+      "framesIdentical": 803,
+      "firstDifference": null
+    },
+    {
+      "file": "p1-EO35-d20181112-s10-r1-w17.json",
+      "identical": true,
+      "frames": 841,
+      "framesIdentical": 841,
+      "firstDifference": null
+    },
+    {
+      "file": "p1-EO35-d20181113-s10-r1-w08.json",
+      "identical": true,
+      "frames": 814,
+      "framesIdentical": 814,
+      "firstDifference": null
+    },
+    {
+      "file": "p1-EO35-d20181113-s10-r1-w17.json",
+      "identical": true,
+      "frames": 795,
+      "framesIdentical": 795,
+      "firstDifference": null
+    },
+    {
+      "file": "p1-EO35-d20181114-s10-r1-w08.json",
+      "identical": true,
+      "frames": 756,
+      "framesIdentical": 756,
+      "firstDifference": null
+    },
+    {
+      "file": "p1-EO35-d20181114-s10-r1-w17.json",
+      "identical": true,
+      "frames": 827,
+      "framesIdentical": 827,
+      "firstDifference": null
+    },
+    {
+      "file": "p1-EO35-d20181115-s10-r1-w08.json",
+      "identical": true,
+      "frames": 637,
+      "framesIdentical": 637,
+      "firstDifference": null
+    },
+    {
+      "file": "p1-EO35-d20181116-s10-r1-w08.json",
+      "identical": true,
+      "frames": 707,
+      "framesIdentical": 707,
+      "firstDifference": null
+    },
+    {
+      "file": "p1-EO35-d20181117-s10-r1-w08.json",
+      "identical": true,
+      "frames": 572,
+      "framesIdentical": 572,
+      "firstDifference": null
+    },
+    {
+      "file": "p1-EO35-d20181118-s10-r1-w08.json",
+      "identical": true,
+      "frames": 628,
+      "framesIdentical": 628,
+      "firstDifference": null
+    },
+    {
+      "file": "p1-EO35-d20181118-s10-r1-w17.json",
+      "identical": true,
+      "frames": 725,
+      "framesIdentical": 725,
+      "firstDifference": null
+    },
+    {
+      "file": "p1-G2-DLS-120-d20181112-s10-r1-w08.json",
+      "identical": true,
+      "frames": 789,
+      "framesIdentical": 789,
+      "firstDifference": null
+    },
+    {
+      "file": "p1-G2-DLS-120-d20181112-s10-r1-w17.json",
+      "identical": true,
+      "frames": 824,
+      "framesIdentical": 824,
+      "firstDifference": null
+    },
+    {
+      "file": "p1-G2-DLS-120-d20181113-s10-r1-w08.json",
+      "identical": true,
+      "frames": 827,
+      "framesIdentical": 827,
+      "firstDifference": null
+    },
+    {
+      "file": "p1-G2-DLS-120-d20181113-s10-r1-w17.json",
+      "identical": true,
+      "frames": 815,
+      "framesIdentical": 815,
+      "firstDifference": null
+    },
+    {
+      "file": "p1-G2-DLS-120-d20181114-s10-r1-w08.json",
+      "identical": true,
+      "frames": 766,
+      "framesIdentical": 766,
+      "firstDifference": null
+    },
+    {
+      "file": "p1-G2-DLS-120-d20181114-s10-r1-w17.json",
+      "identical": true,
+      "frames": 829,
+      "framesIdentical": 829,
+      "firstDifference": null
+    },
+    {
+      "file": "p1-G2-DLS-120-d20181115-s10-r1-w08.json",
+      "identical": true,
+      "frames": 654,
+      "framesIdentical": 654,
+      "firstDifference": null
+    },
+    {
+      "file": "p1-G2-DLS-120-d20181116-s10-r1-w08.json",
+      "identical": true,
+      "frames": 690,
+      "framesIdentical": 690,
+      "firstDifference": null
+    },
+    {
+      "file": "p1-G2-DLS-120-d20181117-s10-r1-w08.json",
+      "identical": true,
+      "frames": 571,
+      "framesIdentical": 571,
+      "firstDifference": null
+    },
+    {
+      "file": "p1-G2-DLS-120-d20181118-s10-r1-w08.json",
+      "identical": true,
+      "frames": 592,
+      "framesIdentical": 592,
+      "firstDifference": null
+    },
+    {
+      "file": "p1-G2-DLS-120-d20181118-s10-r1-w17.json",
+      "identical": true,
+      "frames": 697,
+      "framesIdentical": 697,
+      "firstDifference": null
+    },
+    {
+      "file": "p1-G2-EO35-d20181112-s10-r1-w08.json",
+      "identical": true,
+      "frames": 783,
+      "framesIdentical": 783,
+      "firstDifference": null
+    },
+    {
+      "file": "p1-G2-EO35-d20181112-s10-r1-w17.json",
+      "identical": true,
+      "frames": 840,
+      "framesIdentical": 840,
+      "firstDifference": null
+    },
+    {
+      "file": "p1-G2-EO35-d20181113-s10-r1-w08.json",
+      "identical": true,
+      "frames": 814,
+      "framesIdentical": 814,
+      "firstDifference": null
+    },
+    {
+      "file": "p1-G2-EO35-d20181113-s10-r1-w17.json",
+      "identical": true,
+      "frames": 816,
+      "framesIdentical": 816,
+      "firstDifference": null
+    },
+    {
+      "file": "p1-G2-EO35-d20181114-s10-r1-w08.json",
+      "identical": true,
+      "frames": 764,
+      "framesIdentical": 764,
+      "firstDifference": null
+    },
+    {
+      "file": "p1-G2-EO35-d20181114-s10-r1-w17.json",
+      "identical": true,
+      "frames": 828,
+      "framesIdentical": 828,
+      "firstDifference": null
+    },
+    {
+      "file": "p1-G2-EO35-d20181115-s10-r1-w08.json",
+      "identical": true,
+      "frames": 639,
+      "framesIdentical": 639,
+      "firstDifference": null
+    },
+    {
+      "file": "p1-G2-EO35-d20181116-s10-r1-w08.json",
+      "identical": true,
+      "frames": 698,
+      "framesIdentical": 698,
+      "firstDifference": null
+    },
+    {
+      "file": "p1-G2-EO35-d20181117-s10-r1-w08.json",
+      "identical": true,
+      "frames": 568,
+      "framesIdentical": 568,
+      "firstDifference": null
+    },
+    {
+      "file": "p1-G2-EO35-d20181118-s10-r1-w08.json",
+      "identical": true,
+      "frames": 628,
+      "framesIdentical": 628,
+      "firstDifference": null
+    },
+    {
+      "file": "p1-G2-EO35-d20181118-s10-r1-w17.json",
+      "identical": true,
+      "frames": 709,
+      "framesIdentical": 709,
+      "firstDifference": null
+    },
+    {
+      "file": "p1-G2K3-EOHZ35-d20181112-s10-r1-w08.json",
+      "identical": true,
+      "frames": 784,
+      "framesIdentical": 784,
+      "firstDifference": null
+    },
+    {
+      "file": "p1-G2K3-EOHZ35-d20181112-s10-r1-w17.json",
+      "identical": true,
+      "frames": 846,
+      "framesIdentical": 846,
+      "firstDifference": null
+    },
+    {
+      "file": "p1-G2K3-EOHZ35-d20181113-s10-r1-w08.json",
+      "identical": true,
+      "frames": 815,
+      "framesIdentical": 815,
+      "firstDifference": null
+    },
+    {
+      "file": "p1-G2K3-EOHZ35-d20181113-s10-r1-w17.json",
+      "identical": true,
+      "frames": 816,
+      "framesIdentical": 816,
+      "firstDifference": null
+    },
+    {
+      "file": "p1-G2K3-EOHZ35-d20181114-s10-r1-w08.json",
+      "identical": true,
+      "frames": 779,
+      "framesIdentical": 779,
+      "firstDifference": null
+    },
+    {
+      "file": "p1-G2K3-EOHZ35-d20181114-s10-r1-w17.json",
+      "identical": true,
+      "frames": 828,
+      "framesIdentical": 828,
+      "firstDifference": null
+    },
+    {
+      "file": "p1-G2K3-EOHZ35-d20181115-s10-r1-w08.json",
+      "identical": true,
+      "frames": 641,
+      "framesIdentical": 641,
+      "firstDifference": null
+    },
+    {
+      "file": "p1-G2K3-EOHZ35-d20181116-s10-r1-w08.json",
+      "identical": true,
+      "frames": 700,
+      "framesIdentical": 700,
+      "firstDifference": null
+    },
+    {
+      "file": "p1-G2K3-EOHZ35-d20181117-s10-r1-w08.json",
+      "identical": true,
+      "frames": 583,
+      "framesIdentical": 583,
+      "firstDifference": null
+    },
+    {
+      "file": "p1-G2K3-EOHZ35-d20181118-s10-r1-w08.json",
+      "identical": true,
+      "frames": 628,
+      "framesIdentical": 628,
+      "firstDifference": null
+    },
+    {
+      "file": "p1-G2K3-EOHZ35-d20181118-s10-r1-w17.json",
+      "identical": true,
+      "frames": 709,
+      "framesIdentical": 709,
+      "firstDifference": null
+    },
+    {
+      "file": "p1-G2K3-RCE35-d20181112-s10-r1-w08.json",
+      "identical": true,
+      "frames": 808,
+      "framesIdentical": 808,
+      "firstDifference": null
+    },
+    {
+      "file": "p1-G2K3-RCE35-d20181112-s10-r1-w17.json",
+      "identical": true,
+      "frames": 840,
+      "framesIdentical": 840,
+      "firstDifference": null
+    },
+    {
+      "file": "p1-G2K3-RCE35-d20181113-s10-r1-w08.json",
+      "identical": true,
+      "frames": 807,
+      "framesIdentical": 807,
+      "firstDifference": null
+    },
+    {
+      "file": "p1-G2K3-RCE35-d20181113-s10-r1-w17.json",
+      "identical": true,
+      "frames": 742,
+      "framesIdentical": 742,
+      "firstDifference": null
+    },
+    {
+      "file": "p1-G2K3-RCE35-d20181114-s10-r1-w08.json",
+      "identical": true,
+      "frames": 773,
+      "framesIdentical": 773,
+      "firstDifference": null
+    },
+    {
+      "file": "p1-G2K3-RCE35-d20181114-s10-r1-w17.json",
+      "identical": true,
+      "frames": 827,
+      "framesIdentical": 827,
+      "firstDifference": null
+    },
+    {
+      "file": "p1-G2K3-RCE35-d20181115-s10-r1-w08.json",
+      "identical": true,
+      "frames": 622,
+      "framesIdentical": 622,
+      "firstDifference": null
+    },
+    {
+      "file": "p1-G2K3-RCE35-d20181116-s10-r1-w08.json",
+      "identical": true,
+      "frames": 696,
+      "framesIdentical": 696,
+      "firstDifference": null
+    },
+    {
+      "file": "p1-G2K3-RCE35-d20181117-s10-r1-w08.json",
+      "identical": true,
+      "frames": 579,
+      "framesIdentical": 579,
+      "firstDifference": null
+    },
+    {
+      "file": "p1-G2K3-RCE35-d20181118-s10-r1-w08.json",
+      "identical": true,
+      "frames": 628,
+      "framesIdentical": 628,
+      "firstDifference": null
+    },
+    {
+      "file": "p1-G2K3-RCE35-d20181118-s10-r1-w17.json",
+      "identical": true,
+      "frames": 744,
+      "framesIdentical": 744,
+      "firstDifference": null
+    },
+    {
+      "file": "p1-G2K3-U-d20181112-s10-r1-w17.json",
+      "identical": true,
+      "frames": 827,
+      "framesIdentical": 827,
+      "firstDifference": null
+    },
+    {
+      "file": "p1-G2K3-U-d20181113-s10-r1-w08.json",
+      "identical": true,
+      "frames": 816,
+      "framesIdentical": 816,
+      "firstDifference": null
+    },
+    {
+      "file": "p1-G2K3-U-d20181113-s10-r1-w17.json",
+      "identical": true,
+      "frames": 795,
+      "framesIdentical": 795,
+      "firstDifference": null
+    },
+    {
+      "file": "p1-G2K3-U-d20181114-s10-r1-w08.json",
+      "identical": true,
+      "frames": 781,
+      "framesIdentical": 781,
+      "firstDifference": null
+    },
+    {
+      "file": "p1-G2K3-U-d20181114-s10-r1-w17.json",
+      "identical": true,
+      "frames": 827,
+      "framesIdentical": 827,
+      "firstDifference": null
+    },
+    {
+      "file": "p1-G2K3-U-d20181115-s10-r1-w08.json",
+      "identical": true,
+      "frames": 695,
+      "framesIdentical": 695,
+      "firstDifference": null
+    },
+    {
+      "file": "p1-G2K3-U-d20181116-s10-r1-w08.json",
+      "identical": true,
+      "frames": 721,
+      "framesIdentical": 721,
+      "firstDifference": null
+    },
+    {
+      "file": "p1-G2K3-U-d20181117-s10-r1-w08.json",
+      "identical": true,
+      "frames": 607,
+      "framesIdentical": 607,
+      "firstDifference": null
+    },
+    {
+      "file": "p1-G2K3-U-d20181118-s10-r1-w08.json",
+      "identical": true,
+      "frames": 626,
+      "framesIdentical": 626,
+      "firstDifference": null
+    },
+    {
+      "file": "p1-G2K3-U-d20181118-s10-r1-w17.json",
+      "identical": true,
+      "frames": 756,
+      "framesIdentical": 756,
+      "firstDifference": null
+    },
+    {
+      "file": "r128-R128-G2K8-RCE35-d20181112-s10-r1-w08.json",
+      "identical": true,
+      "frames": 987,
+      "framesIdentical": 987,
+      "firstDifference": null
+    },
+    {
+      "file": "r128-R128-G2K8-RCE35-d20181112-s10-r1-w17.json",
+      "identical": true,
+      "frames": 985,
+      "framesIdentical": 985,
+      "firstDifference": null
+    },
+    {
+      "file": "r128-R128-G2K8-RCE35-d20181113-s10-r1-w08.json",
+      "identical": true,
+      "frames": 979,
+      "framesIdentical": 979,
+      "firstDifference": null
+    },
+    {
+      "file": "r128-R128-G2K8-RCE35-d20181113-s10-r1-w17.json",
+      "identical": true,
+      "frames": 952,
+      "framesIdentical": 952,
+      "firstDifference": null
+    },
+    {
+      "file": "r128-R128-G2K8-RCE35-d20181114-s10-r1-w08.json",
+      "identical": true,
+      "frames": 958,
+      "framesIdentical": 958,
+      "firstDifference": null
+    },
+    {
+      "file": "r128-R128-G2K8-RCE35-d20181114-s10-r1-w17.json",
+      "identical": true,
+      "frames": 996,
+      "framesIdentical": 996,
+      "firstDifference": null
+    },
+    {
+      "file": "r128-R128-G2K8-RCE35-d20181115-s10-r1-w08.json",
+      "identical": true,
+      "frames": 860,
+      "framesIdentical": 860,
+      "firstDifference": null
+    },
+    {
+      "file": "r128-R128-G2K8-RCE35-d20181116-s10-r1-w08.json",
+      "identical": true,
+      "frames": 844,
+      "framesIdentical": 844,
+      "firstDifference": null
+    },
+    {
+      "file": "r128-R128-G2K8-RCE35-d20181117-s10-r1-w08.json",
+      "identical": true,
+      "frames": 751,
+      "framesIdentical": 751,
+      "firstDifference": null
+    },
+    {
+      "file": "r128-R128-G2K8-RCE35-d20181118-s10-r1-w17.json",
+      "identical": true,
+      "frames": 899,
+      "framesIdentical": 899,
+      "firstDifference": null
+    },
+    {
+      "file": "r128-R128-G2K8-U-d20181112-s10-r1-w08.json",
+      "identical": true,
+      "frames": 993,
+      "framesIdentical": 993,
+      "firstDifference": null
+    },
+    {
+      "file": "r128-R128-G2K8-U-d20181112-s10-r1-w17.json",
+      "identical": true,
+      "frames": 999,
+      "framesIdentical": 999,
+      "firstDifference": null
+    },
+    {
+      "file": "r128-R128-G2K8-U-d20181113-s10-r1-w08.json",
+      "identical": true,
+      "frames": 984,
+      "framesIdentical": 984,
+      "firstDifference": null
+    },
+    {
+      "file": "r128-R128-G2K8-U-d20181114-s10-r1-w08.json",
+      "identical": true,
+      "frames": 980,
+      "framesIdentical": 980,
+      "firstDifference": null
+    },
+    {
+      "file": "r128-R128-G2K8-U-d20181114-s10-r1-w17.json",
+      "identical": true,
+      "frames": 995,
+      "framesIdentical": 995,
+      "firstDifference": null
+    },
+    {
+      "file": "r128-R128-G2K8-U-d20181115-s10-r1-w08.json",
+      "identical": true,
+      "frames": 943,
+      "framesIdentical": 943,
+      "firstDifference": null
+    },
+    {
+      "file": "r128-R128-G2K8-U-d20181116-s10-r1-w08.json",
+      "identical": true,
+      "frames": 861,
+      "framesIdentical": 861,
+      "firstDifference": null
+    },
+    {
+      "file": "r128-R128-G2K8-U-d20181117-s10-r1-w08.json",
+      "identical": true,
+      "frames": 777,
+      "framesIdentical": 777,
+      "firstDifference": null
+    },
+    {
+      "file": "r128-R128-G2K8-U-d20181118-s10-r1-w17.json",
+      "identical": true,
+      "frames": 934,
+      "framesIdentical": 934,
+      "firstDifference": null
+    },
+    {
+      "file": "r128-R128-RCE35-d20181112-s10-r1-w08.json",
+      "identical": true,
+      "frames": 987,
+      "framesIdentical": 987,
+      "firstDifference": null
+    },
+    {
+      "file": "r128-R128-RCE35-d20181112-s10-r1-w17.json",
+      "identical": true,
+      "frames": 1012,
+      "framesIdentical": 1012,
+      "firstDifference": null
+    },
+    {
+      "file": "r128-R128-RCE35-d20181113-s10-r1-w08.json",
+      "identical": true,
+      "frames": 982,
+      "framesIdentical": 982,
+      "firstDifference": null
+    },
+    {
+      "file": "r128-R128-RCE35-d20181113-s10-r1-w17.json",
+      "identical": true,
+      "frames": 972,
+      "framesIdentical": 972,
+      "firstDifference": null
+    },
+    {
+      "file": "r128-R128-RCE35-d20181114-s10-r1-w08.json",
+      "identical": true,
+      "frames": 923,
+      "framesIdentical": 923,
+      "firstDifference": null
+    },
+    {
+      "file": "r128-R128-RCE35-d20181114-s10-r1-w17.json",
+      "identical": true,
+      "frames": 997,
+      "framesIdentical": 997,
+      "firstDifference": null
+    },
+    {
+      "file": "r128-R128-RCE35-d20181115-s10-r1-w08.json",
+      "identical": true,
+      "frames": 876,
+      "framesIdentical": 876,
+      "firstDifference": null
+    },
+    {
+      "file": "r128-R128-RCE35-d20181116-s10-r1-w08.json",
+      "identical": true,
+      "frames": 851,
+      "framesIdentical": 851,
+      "firstDifference": null
+    },
+    {
+      "file": "r128-R128-RCE35-d20181117-s10-r1-w08.json",
+      "identical": true,
+      "frames": 756,
+      "framesIdentical": 756,
+      "firstDifference": null
+    },
+    {
+      "file": "r128-R128-RCE35-d20181118-s10-r1-w17.json",
+      "identical": true,
+      "frames": 892,
+      "framesIdentical": 892,
+      "firstDifference": null
+    },
+    {
+      "file": "r128-R128-U-d20181112-s10-r1-w08.json",
+      "identical": true,
+      "frames": 998,
+      "framesIdentical": 998,
+      "firstDifference": null
+    },
+    {
+      "file": "r128-R128-U-d20181112-s10-r1-w17.json",
+      "identical": true,
+      "frames": 1005,
+      "framesIdentical": 1005,
+      "firstDifference": null
+    },
+    {
+      "file": "r128-R128-U-d20181113-s10-r1-w08.json",
+      "identical": true,
+      "frames": 983,
+      "framesIdentical": 983,
+      "firstDifference": null
+    },
+    {
+      "file": "r128-R128-U-d20181113-s10-r1-w17.json",
+      "identical": true,
+      "frames": 977,
+      "framesIdentical": 977,
+      "firstDifference": null
+    },
+    {
+      "file": "r128-R128-U-d20181114-s10-r1-w08.json",
+      "identical": true,
+      "frames": 984,
+      "framesIdentical": 984,
+      "firstDifference": null
+    },
+    {
+      "file": "r128-R128-U-d20181114-s10-r1-w17.json",
+      "identical": true,
+      "frames": 1003,
+      "framesIdentical": 1003,
+      "firstDifference": null
+    },
+    {
+      "file": "r128-R128-U-d20181115-s10-r1-w08.json",
+      "identical": true,
+      "frames": 881,
+      "framesIdentical": 881,
+      "firstDifference": null
+    },
+    {
+      "file": "r128-R128-U-d20181116-s10-r1-w08.json",
+      "identical": true,
+      "frames": 862,
+      "framesIdentical": 862,
+      "firstDifference": null
+    },
+    {
+      "file": "r128-R128-U-d20181117-s10-r1-w08.json",
+      "identical": true,
+      "frames": 757,
+      "framesIdentical": 757,
+      "firstDifference": null
+    },
+    {
+      "file": "r128-R128-U-d20181118-s10-r1-w17.json",
+      "identical": true,
+      "frames": 917,
+      "framesIdentical": 917,
+      "firstDifference": null
+    }
+  ]
+}

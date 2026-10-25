@@ -1,0 +1,1 @@
+290c698b6760a9123a384ac5de95d5ba6c578380 base-tree 321551564d6b86f66662552b4f140a3fbbe6ee98 (v1) + elmi-slack-budget-v1.1-delta.patch (sha256 3ba1f0bc7bfbdb8df097cc8d745ceb22b16ed481316eeac8076d5e4834edef2c); dotnet test RideBound.slnx 1178/1178 on 2026-10-23

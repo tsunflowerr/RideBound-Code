@@ -1,0 +1,6 @@
+FIX1-READY (2026-10-24 00:59)
+- conditions 1-2 met (PHASE1-LOG P6): dwell 0 confirmed; job-level reproduction (p1-diag run2); unit test failed before (donor-fix-tests-BEFORE-2.txt) and passes after (AFTER-2);
+- adapter suite 461 tests with the same 6 known failures (adapter-suite-p1fix-2.txt);
+- fix worktree C:/Code/RideBound-p1fix frozen, inventory 4cd1c77b... (FIX1-INVENTORY.txt);
+- step 1.4 finished first (r128v2main: 35 pass + 1 stopped with RBWP7_LOCKED_LEG_MISMATCH at vehicles[9], R128-G2K8-U-d20181113-s10-r1-w17, old adapter; it is part of fix1r128);
+- run_fix1.py: 108 G2 jobs (33 bridge + 55 phase-1 + 20 step-1.4), original inputs, Runner runner-g2-v3.

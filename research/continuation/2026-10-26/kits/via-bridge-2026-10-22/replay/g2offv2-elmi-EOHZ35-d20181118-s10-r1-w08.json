@@ -1,0 +1,15 @@
+{
+  "runner": "C:\\RideBoundData\\research\\runner-g2-v2\\RideBound.Runner.dll",
+  "runnerDllSha256": "4904c6bbf6d644c2445cf0a80ff6ea4b9ae9cc7ec1ff4669a75d963e25a865fb",
+  "transcript": "C:\\RideBoundData\\research\\via-bridge-man-v1\\elmi\\EOHZ35-d20181118-s10-r1-w08\\transcript-00.ndjson",
+  "selfcheck": false,
+  "framesSent": 1254,
+  "framesCompared": 628,
+  "framesIdentical": 628,
+  "identical": true,
+  "firstDifference": null,
+  "runnerExitCode": 0,
+  "runnerCpuSeconds": 31.08,
+  "wallSeconds": 27.9,
+  "runnerPeakRssMiB": 238
+}

@@ -1,0 +1,4 @@
+# NW prediction, written 2026-10-25T00:36:39+0700 BEFORE any DLS-120-NW job
+config sha256 152fbafac5cc8146758207cfc5f050ee00dc4896bd5ca2323b82160275580f31 (configs/DLS-120.json = via-bridge DLHZ-120.json without dropEtaDeadlineRelaxed)
+prediction: every DLS-120-NW cell rider-identical to role DLHZ-120 in via-bridge-2026-10-22/emulator-riders-2000.tsv (sha 06742da6..., sealed 2026-10-21T17:45:23Z)
+reason: ADR-077/080 and audit KT:559 - M+-B with no-worse-than-reference-v1 recovery is p <= max(p0 + B, e)

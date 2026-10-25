@@ -1,0 +1,15 @@
+# h3_estimate.py (planning estimate on development outputs; not a calibration)
+episode | C-30: S_j = max_r X_r (s), riders with X_r > 60 s | U: p90 of V_r (s), half of it (s)
+d20181112-s10-r1-w07 |   123.8    7/87 |    54.5    27.2
+d20181112-s10-r2-w07 |   112.2    7/82 |    53.1    26.6
+d20181112-s10-r3-w07 |   112.3    6/97 |    52.8    26.4
+d20181112-s10-r4-w07 |   164.4    3/86 |    45.6    22.8
+d20181113-s10-r1-w07 |   106.2   11/68 |    71.7    35.9
+d20181113-s10-r2-w07 |   204.1    5/65 |    47.5    23.8
+d20181113-s10-r3-w07 |    94.4    5/83 |    53.8    26.9
+d20181113-s10-r4-w07 |   119.7   13/92 |    67.1    33.6
+W5-d20181112-s10-r1-w08 |    84.4    2/90 |    38.8    19.4
+W5-d20181112-s10-r1-w17 |    65.1    2/99 |    34.1    17.1
+07-09h episodes: S_j min 94.4 median 116.0 max 204.1 s
+after-peak episodes (W5 08-10, 17-19): S_j [84.4, 65.1] s
+usefulness proposal (half p90 of V_r under U): median over episodes 26.5 s, range 17.1-35.9 s

@@ -1,0 +1,12 @@
+# step 1.4 emulator predictions (10 cells x 128 requests x 10 vehicles) written before any 1.4 RideBound job; via-bridge-man-v1/p1/r128* absent
+2026-10-23T15:49:52Z
+d8aa4afd2515a9f3c76139efe418dfd376d659a275f6174e0cedc520e5cab1c5 *emulator-riders-r128.tsv
+117918a059f472ccd4908f0eac53ba6688b1fdc454e4d9b9d6bd4de1a61439a3 *emulator-riders-r128-counts.tsv
+5f8f16c4f7595b3375e98d2274e228ae7983fe4e371a130b47b5054ad0e26800 *emulator-riders-r128-info-g2all.tsv
+4756f9f848bb2cce2806367bec3e41a50b422eb627321f1ef0b41c7ee2ff0006 *emulate_r128.js
+15c12bb5667096aa3cc92e4a16a290cd002bf3ebde4d4a80d7e7647bc918873b *discrimination-r128.txt
+238e08cb6026737e3b16e84de2faf7d68c9b8d67f983594dac64d6a2f8725d67 *configs-r128.sha256.txt
+669b248d61773073f2ac38ca9b58874ac86a3c5750c3677710a6feb8e303f175 *fixtures-via-bridge-r128-v1.sha256.txt
+f5658b0fe2cd2ce6af9e8aa18c394d883e06a9595976a29e3c70732ce36f4a3f *drivers-r128.sha256.txt
+c6f52357f97154e97f129d5e1f82670c80a4d2e4423017bff3878090a4ae8a33 *grid-bridge-r128.json
+908a29619f55a134f9ed5a0d35d4be1d3c502f07de78dc6fc704963690e7496f *C:/RideBoundContinuation/2026-10-23/emulator-wf15/engine.js

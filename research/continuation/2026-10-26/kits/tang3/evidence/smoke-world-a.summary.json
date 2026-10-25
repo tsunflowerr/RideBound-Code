@@ -1,0 +1,23 @@
+{
+ "E1ServedShare": 0.8611111111111112,
+ "E2ShareDropVAbove60s": 0.043010752688172046,
+ "breaches": {
+  "exogenousServiceQuality": 213
+ },
+ "decisionsAcknowledged": 756,
+ "dropVCvar95Ms": 179538.2,
+ "finalCheckpoint": true,
+ "latePickupMaxMs": 8872,
+ "latePickups": 2,
+ "lifecycle": {
+  "completed": 93,
+  "rejected": 15
+ },
+ "nonNormalCertificates": 0,
+ "promisedRiders": 93,
+ "requests": 108,
+ "sumDropC": 26484,
+ "sumDropV": 2157188,
+ "sumDropX": 2130704,
+ "transcript": "E:\\RideBoundData\\research\\tier3-world-smoke-v1\\world-a\\transcript-00.ndjson"
+}
