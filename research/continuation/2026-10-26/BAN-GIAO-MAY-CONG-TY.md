@@ -155,19 +155,29 @@ script.
 | Dữ liệu TLC HVFHV 2019 | Tải từ trang TLC; dựng lại bằng `kits/p7-tlc-2026-10-25/` (DuckDB) |
 | Mạng FleetPy Manhattan | Zenodo 15187906 |
 | Nhật ký job (transcript, mỗi job 1–2 GB), thư mục `runs/` | Chỉ ở máy nhà, `E:/RideBoundData/research/...` |
-| **Bản sửa khóa luận** | Chỉ ở máy nhà, xem mục 5 |
+| Bản sửa khóa luận | Repo `Report_INT3508`, nhánh `thesis/audit-fixes-2026-10-25` (mục 5) |
+| Tóm tắt tài liệu công ty (`CON-THIEU-SO-VOI-KE-HOACH-CONG-TY.md`, `TIEP-TUC-PHIEN-MOI-2026-10-24.md`) | Chỉ ở máy nhà; cố ý không đưa lên repo công khai vì có e-mail công ty và thông tin nội bộ. Máy công ty đã có tài liệu gốc |
 
 ---
 
 ## 5. Khóa luận
 
-- Repo khóa luận: `Report_INT3508` (GitHub, công khai).
-- Bản sửa sau kiểm toán ở **nhánh `thesis/audit-fixes-2026-10-25`, CHƯA push**: worktree máy nhà
-  `C:/Code/Report_INT3508-audit`, tới commit `f1a0c73`, 85 trang, build sạch. Nội dung:
+- Repo khóa luận: `Report_INT3508` (GitHub, công khai). Lấy về:
+
+  ```bash
+  git clone https://github.com/tsunflowerr/Report_INT3508.git   # nếu chưa có
+  git fetch origin
+  git checkout thesis/audit-fixes-2026-10-25                    # commit f1a0c73
+  ```
+
+  Khóa luận LaTeX nằm ở `ridebound/` (`main.tex`; các chương ở `ridebound/noi-dung/`). Ở gốc repo là báo cáo thực tập,
+  một tài liệu khác: không sửa.
+- Bản sửa sau kiểm toán ở **nhánh `thesis/audit-fixes-2026-10-25`** (đã push 26/10; worktree máy nhà
+  `C:/Code/Report_INT3508-audit`), tới commit `f1a0c73`, 85 trang, build sạch. Nội dung:
   - sửa lỗi sự thật;
   - mục mới `noi-dung/08c-via-elmi.tex` (so với Elmi, cầu nối);
   - tóm tắt, kết luận, N1/N2, bảng "theo định nghĩa / đo được", trích dẫn bằng sáng chế Via.
-- Máy công ty sẽ KHÔNG có nhánh này nếu chủ chưa push.
+- Nhánh này chưa trộn vào `main` của repo khóa luận; chủ duyệt rồi mới trộn.
 - **Chưa đưa vào khóa luận:** kết quả cầu nối cỡ Via (6/6, 2.407 khách) và phép hòa vốn (w\* = 0,94). Câu đề xuất ở
   docs/18 ADR-085, phần Consequences.
 - Quy tắc: **không nhắc tới AI** trong khóa luận. Câu kiểm bằng tác tử phải viết là "kiểm lại bằng chương trình đọc
@@ -188,6 +198,16 @@ script.
 | Cầu nối giai đoạn 1 | `bridge-phase1-2026-10-23/PHASE1-LOG.md`, `SOLVER-EVIDENCE-RESULT.md` |
 | Cầu nối Manhattan ban đầu | `via-bridge-2026-10-22/BRIDGE-REPORT.md`, `AMENDMENTS.md` |
 | Danh sách tệp đã chép, sha256 | `COPY-MANIFEST.tsv`, `COPY-UPDATE-*.tsv` |
+
+Ghi chú của máy nhà, ở `research/continuation/2026-10-26/ghi-chu-may-nha/` (bản chép, tiếng Việt):
+
+| Tệp | Nội dung |
+|---|---|
+| `TIEN-DO-2026-10-26.md` | Diễn biến đêm 26/10: hòa vốn, chạy Via thật, ba lần push |
+| `TIEN-DO-THUC-HIEN.md` | Diễn biến 25/10: P5, P7, N1, N2, viết lại tác giả commit, sửa khóa luận |
+| `VIEC-BAN-TU-LAM.md` | Việc chỉ chủ làm được: thứ tự duyệt commit (P4), các số tự kiểm (§8.2), họp thầy, đính chính slide 20/10. Bản chép bỏ mục 5 (lấy tệp từ máy công ty) |
+| `MAU-DANG-KY-DOT-3.md` | Mẫu đăng ký trước cho đợt xác nhận 3 |
+| `DINH-CHINH-KE-HOACH-MAY-NHA-23-10.md` | 14 điểm đính chính kế hoạch máy nhà 23/10 |
 
 ---
 
@@ -233,7 +253,7 @@ script.
 
 1. **Chủ gặp thầy** với 3 câu hỏi:
    - có làm đợt xác nhận 3 không (ngày mới, giả thuyết do sinh viên viết và có dấu thời gian, đối thủ EOHZ35; mẫu
-     `MAU-DANG-KY-DOT-3.md` ở máy nhà, `C:/RideBoundContinuation/2026-10-25/`);
+     `ghi-chu-may-nha/MAU-DANG-KY-DOT-3.md`);
    - có cần khảo sát nhỏ để đo w không;
    - có khai báo dùng AI không.
 2. **Đưa vào khóa luận**, nhánh khóa luận ở máy nhà:
