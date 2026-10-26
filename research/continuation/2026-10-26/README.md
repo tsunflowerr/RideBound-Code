@@ -1,5 +1,7 @@
 # Bộ script nghiên cứu tháng 10/2026 (Via, Elmi, cầu nối, hòa vốn)
 
+> **Máy mới / máy công ty: đọc `BAN-GIAO-MAY-CONG-TY.md` trước** (toàn bộ ngữ cảnh, kết quả, quy tắc, việc còn mở).
+
 Thư mục này mang các script, cấu hình và kết quả nhỏ của đợt nghiên cứu 22–26/10/2026 lên nhánh
 `research/via-zone-2026-10-26`, để máy khác (máy công ty) pull về và chạy tiếp. Quyết định và kết quả chính ghi ở
 `docs/18-status-and-decision-log.md` (ADR-080 tới ADR-085). Mọi kết quả ở đây là **thăm dò**, không phải xác nhận.
