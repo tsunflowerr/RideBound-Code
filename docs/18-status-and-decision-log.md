@@ -5674,7 +5674,10 @@ không chép nguyên văn.
    trong 2–9/2019.
 7. ADR-081: mọi job đều chạy với `RIDEBOUND_STATE_HASH` không đặt (`RunnerSession.cs:75-81`; không có tài liệu, không có
    test).
-8. Câu G2: "không muộn hơn giờ đón **đã công bố**"; có những lần dời trước khi khách nhận lời hứa đầu.
+8. Câu G2 (sửa lại sau khi đọc mã): đề xuất "không muộn hơn giờ đón đã công bố" của máy công ty **không khớp mã**. Bộ mô
+   phỏng dùng khóa `ratchet` là giờ đón ≤ `e` (`engine.js:19`); RideBound so ứng viên với phép chiếu ngoại sinh `e` và chỉ
+   cấm làm giờ đón muộn hơn (`CommitmentLockEvaluator.cs:183-186, 284-287`). Câu đúng: "không muộn hơn giờ đón dự kiến theo
+   kế hoạch cũ". Khóa luận vẫn viết như vậy.
 9. Câu "số của bộ mô phỏng đáng tin ở cỡ Via" trong tài liệu bàn giao: giới hạn vào kịch bản Via **gộp theo khu**, ngày
    13/2/2019. Chính các ô P512 thì chưa bắc cầu.
 10. Cấu hình `wp4-via-*-a1.json` dùng `no-worse-than-reference-v1`. Không dùng chúng cho EO35 ở cỡ Via; với EO35 dùng
@@ -5700,7 +5703,11 @@ không chép nguyên văn.
   - Không đưa `sp/` lên repo; kiểm ngày 26/10: hai nhánh đã push chỉ có số dòng của tệp này, ngoài vùng 1110–1278.
   - Xóa bản cũ hay không là do chủ quyết.
 - Các lượt chạy mới đều chờ chủ duyệt: hàng "hệ đầy đủ" Shadow + luật C + dự báo; đợt 3; luật C chỉ chèn ở cỡ Via.
-- Sửa khóa luận theo danh sách của máy công ty: sinh viên tự viết lời.
+- Sửa khóa luận theo danh sách của máy công ty: chủ yêu cầu máy nhà viết luôn (26/10 chiều). Đã làm ở commit `91ad6f4`,
+  nhánh `thesis/audit-fixes-2026-10-25` của repo `Report_INT3508` (89 trang; build sạch). Số kiểm được ở máy nhà thì tính
+  lại từ nguồn; số chỉ có trong wf17 thì ghi nguồn "máy công ty, chưa kiểm ở máy nhà" trong chú thích LaTeX. Không đưa
+  câu Kőszegi–Rabin vào vì máy nhà chưa đọc nguồn đó. Câu W9 (luật C ≈ hàng rào nới khi giao thông phẳng) không có trong
+  khóa luận ở `f1a0c73`, nên không sửa. Khai báo dùng AI vẫn chờ chủ quyết.
 
 ## Cập nhật khóa luận — 2026-10-16T00:09:00.907016+07:00
 

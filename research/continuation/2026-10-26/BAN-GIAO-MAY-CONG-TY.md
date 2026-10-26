@@ -47,8 +47,10 @@ nghiên cứu **luật C**:
 
 Hai chế độ điều phối:
 - **INS:** chỉ chèn khách mới.
-- **G2:** mỗi quyết định được dời tối đa một khách đang chờ sang 1 trong 8 xe gần nhất, không muộn hơn giờ đón **đã công
-  bố**. Có những lần dời xảy ra trước khi khách nhận lời hứa đầu.
+- **G2:** mỗi quyết định được dời tối đa một khách đang chờ sang 1 trong 8 xe gần nhất, với giờ đón không muộn hơn giờ đón
+  **dự kiến theo kế hoạch cũ** (`e`). Cả bộ mô phỏng (`engine.js:19`, khóa `ratchet` là ≤ e) lẫn RideBound
+  (`CommitmentLockEvaluator.cs:183-186, 284-287`) so với `e`, không so với giờ đã công bố. Đề xuất "giờ đón đã công bố" của
+  máy công ty (26/10) không khớp mã; xem ADR-086.
 
 **Shadow** (cũng của bài Elmi): khách khó đi chung được bảo đảm tuyệt đối (ngân sách 0). Có ba cách xử lý ngân sách
 đi cùng:
