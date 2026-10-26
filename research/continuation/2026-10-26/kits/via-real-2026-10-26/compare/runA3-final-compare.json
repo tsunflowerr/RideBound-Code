@@ -1,0 +1,110 @@
+{
+  "finishedJobs": 6,
+  "cellArmsCompared": 6,
+  "cellArmsExact": 6,
+  "riders": 2407,
+  "ridersIdentical": 2407,
+  "movesEqual": 4,
+  "g2CellArms": 4,
+  "byArm": {
+    "VIA-U": {
+      "cellArms": 0,
+      "exact": 0
+    },
+    "VIA-RCE35": {
+      "cellArms": 0,
+      "exact": 0
+    },
+    "VIA-EOHZ35": {
+      "cellArms": 2,
+      "exact": 2
+    },
+    "VIA-G2K8-U": {
+      "cellArms": 1,
+      "exact": 1
+    },
+    "VIA-G2K8-RCE35": {
+      "cellArms": 1,
+      "exact": 1
+    },
+    "VIA-G2K8-EOHZ35": {
+      "cellArms": 2,
+      "exact": 2
+    }
+  },
+  "realRidersTsv": "compare\\runA3-final-real-riders.tsv",
+  "results": [
+    {
+      "arm": "VIA-EOHZ35",
+      "cell": "d20190213-vz-r0-w08",
+      "riders": 370,
+      "identical": 370,
+      "exact": true,
+      "onlyReal": 0,
+      "onlyEmulator": 0,
+      "firstDifference": null
+    },
+    {
+      "arm": "VIA-EOHZ35",
+      "cell": "d20190213-vz-r0-w17",
+      "riders": 425,
+      "identical": 425,
+      "exact": true,
+      "onlyReal": 0,
+      "onlyEmulator": 0,
+      "firstDifference": null
+    },
+    {
+      "arm": "VIA-G2K8-EOHZ35",
+      "cell": "d20190213-vz-r0-w08",
+      "riders": 377,
+      "identical": 377,
+      "exact": true,
+      "onlyReal": 0,
+      "onlyEmulator": 0,
+      "firstDifference": null,
+      "movesReal": 17,
+      "movesEmulator": 17,
+      "maxMovesPerDecision": 1
+    },
+    {
+      "arm": "VIA-G2K8-EOHZ35",
+      "cell": "d20190213-vz-r0-w17",
+      "riders": 425,
+      "identical": 425,
+      "exact": true,
+      "onlyReal": 0,
+      "onlyEmulator": 0,
+      "firstDifference": null,
+      "movesReal": 19,
+      "movesEmulator": 19,
+      "maxMovesPerDecision": 1
+    },
+    {
+      "arm": "VIA-G2K8-RCE35",
+      "cell": "d20190213-vz-r0-w17",
+      "riders": 430,
+      "identical": 430,
+      "exact": true,
+      "onlyReal": 0,
+      "onlyEmulator": 0,
+      "firstDifference": null,
+      "movesReal": 8,
+      "movesEmulator": 8,
+      "maxMovesPerDecision": 1
+    },
+    {
+      "arm": "VIA-G2K8-U",
+      "cell": "d20190213-vz-r0-w08",
+      "riders": 380,
+      "identical": 380,
+      "exact": true,
+      "onlyReal": 0,
+      "onlyEmulator": 0,
+      "firstDifference": null,
+      "movesReal": 27,
+      "movesEmulator": 27,
+      "maxMovesPerDecision": 1
+    }
+  ]
+}

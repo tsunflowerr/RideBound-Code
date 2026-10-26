@@ -8,9 +8,9 @@ ADR-085; nhánh `research/via-zone-2026-10-26` (trên `research/p1-dwell`, khôn
 
 | Yêu cầu | Chứng cứ | Trạng thái/giới hạn |
 |---|---|---|
-| Chạy RideBound thật trên dữ liệu Via ở cỡ Via | Bộ chuyển theo khu TLC: 509/508 yêu cầu, 62 xe, 60/58 điểm; dự đoán bộ mô phỏng khóa trước mọi job; **3/3 cặp trùng, 1.127/1.127 khách** (EOHZ35, G2K8-EOHZ35, G2K8-U; G2 dời 17/17, 27/27) | Họ kịch bản mới (điểm gộp theo khu), 1 ô; luật C (RCE35) chưa kiểm vì hết bộ nhớ ở bản chốt cuối |
+| Chạy RideBound thật trên dữ liệu Via ở cỡ Via | Bộ chuyển theo khu TLC: 509/508 yêu cầu, 62 xe, 60/58 điểm; dự đoán bộ mô phỏng khóa trước mọi job; **6/6 cặp trùng, 2.407/2.407 khách, dời G2 4/4** (EOHZ35 ×2, G2K8-EOHZ35 ×2, G2K8-RCE35 w17, G2K8-U w08) | Họ kịch bản mới (điểm gộp theo khu), 1 ngày; luật C chỉ chèn chưa kiểm vì hết bộ nhớ ở bản chốt cuối |
 | Ngân sách mặc định có đủ cho cỡ Via | Không: job thử dừng an toàn, ngân sách sinh phương án cấp quyết định 10.000 bị vượt với 62 xe | Sửa đổi A1 chỉ nâng ngân sách cấp quyết định và bộ giải bằng cấu hình; trần từng xe giữ nguyên |
-| Job Via chạy hết tới bản chốt cuối | Job A1 hỏng ở bản chốt cuối; với A3 (heap 6 GiB) 4/8 job đã xong qua, 4 job (RCE35 ×3, U w08) báo `OutOfMemoryException` ở bản chốt cuối | Bản chốt là một dòng vài trăm MiB; cần đổi cách ghi bản chốt hoặc máy nhiều RAM hơn |
+| Job Via chạy hết tới bản chốt cuối | Với A3 (heap 6 GiB): 6/10 job qua; 4 job (RCE35 w08, G2K8-RCE35 w08, U w08, RCE35 w17) báo `OutOfMemoryException` ở bản chốt cuối; 2 job không chạy vì sàn ổ C | Bản chốt là một dòng vài trăm MiB; cần đổi cách ghi bản chốt hoặc máy nhiều RAM hơn |
 | Điều kiện để luật C đáng dùng (phép hòa vốn) | Kế hoạch khóa trước; cổng 2.520/2.520 lượt trùng P5/N2; G2, cùng số khách, so EOHZ35: w\* = 0,94 (0,46–1,61) | Bộ mô phỏng, 10 ngày đã xem, thăm dò; không đo cảm giác khách; INS không phân biệt được |
 | Đưa code và script lên GitHub cho máy công ty | Nhánh `research/via-zone-2026-10-26`; `research/continuation/2026-10-26/kits/` (danh sách tệp và sha256 trong `COPY-MANIFEST.tsv`) | Không có dữ liệu lớn, transcript, bộ mô phỏng của công ty; repo công khai |
 

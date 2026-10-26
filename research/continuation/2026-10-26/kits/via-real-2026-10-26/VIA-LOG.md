@@ -141,6 +141,31 @@ Owner order 2026-10-26 ~00:45: "Chuẩn bị mọi thứ cho việc chạy bộ 
   this scale. U (insertion-only) w08 also failed the same way.
 - VIA-EOHZ35 w17 passed at 07:51 (after this comparison started); it is compared in a later run.
 
+## V6 — 08:47–09:05 — runA3 finished; final comparison 6/6 exact, 2,407/2,407 riders
+
+- Last jobs: VIA-EOHZ35 w17 pass (95.3 min, peak 5,742 MiB), VIA-G2K8-RCE35 w17 pass (105.7 min, 7,510 MiB),
+  VIA-G2K8-EOHZ35 w17 pass (98.1 min, 6,683 MiB).
+- runA3 ran 10 of its 12 jobs (`PROGRESS-VIA.txt`): **6 passed**; **4 failed** on the final checkpoint with Runner
+  `OutOfMemoryException` (RCE35 w08, G2K8-RCE35 w08, U w08, RCE35 w17); **2 were never started**: VIA-U w17 and
+  VIA-G2K8-U w17 were deferred by the disk rail ("C:\ free 29.8 GiB < floor 30 GiB"). All outputs go to E:; C: dipped
+  during the run (page file peak 3.3 GB; 40 leftover FleetPy temp folders total only 565 KiB) and was back to 33.7 GiB
+  at 09:00. Nothing was deleted.
+- `compare_via.py compare/runA3-final` (all passed runA3 jobs; seal checked; 11.8 min):
+
+| cell-arm | riders identical | G2 moves real / emulator |
+|---|---|---|
+| VIA-EOHZ35 w08 | 370 / 370 | — |
+| VIA-EOHZ35 w17 | 425 / 425 | — |
+| VIA-G2K8-EOHZ35 w08 | 377 / 377 | 17 / 17 |
+| VIA-G2K8-EOHZ35 w17 | 425 / 425 | 19 / 19 |
+| VIA-G2K8-RCE35 w17 | 430 / 430 | 8 / 8 |
+| VIA-G2K8-U w08 | 380 / 380 | 27 / 27 |
+
+- **6/6 cell-arms exact, 2,407/2,407 riders, 4/4 G2 move counts equal, at most 1 move per decision.**
+- Coverage: Elmi relaxed fence (insertion-only and G2, both windows), rule C with G2 (w17), unconstrained with G2 (w08).
+  Not covered: rule C insertion-only (w08 and w17 failed on the checkpoint), rule C with G2 in w08 (failed), U
+  insertion-only (w08 failed, w17 not started), G2-U w17 (not started), and Shadow (not in RideBound).
+
 ## R1 — 01:20–01:30 — independent review (fresh-context agent, read-only) and follow-ups
 
 - **No blocker.** The reviewer rebuilt both fixtures from the source cell and its int32 matrix and matched medoids, the
