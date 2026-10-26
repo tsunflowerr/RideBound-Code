@@ -1,5 +1,17 @@
 # Ma trận truy vết yêu cầu
 
+## Chạy lại bộ mô phỏng công ty ở máy nhà, sửa khóa luận 24 điểm — 2026-10-26 tối
+
+ADR-087; không đổi mã RideBound. Hồ sơ: `research/continuation/2026-10-26/company-emulator/home-rerun-2026-10-26/`.
+
+| Yêu cầu | Chứng cứ | Trạng thái/giới hạn |
+|---|---|---|
+| Số của wf20/fullsys tái lập được ở máy khác | `confirm_digest.js`, panel F14: 1.680/1.680 dòng trùng kể cả từng khách (Node 24 so với 20) | Xong cho F14 (14/30 ngày); F16 chờ đầu vào |
+| Số của wf21/n7 (dự báo so với đệm) tái lập được | `confirm_digest.js`, panel F14: 1.680/1.680; bảng tổng §5 khớp 7/7 | Xong cho F14; chỉ mục CL/PAD là bản dựng lại A1, đúng nhờ phép so từng khách |
+| Đầu vào lấy từ nơi khác có nguồn gốc rõ | A0: 7 tệp mạng FleetPy trùng băm công ty ghi (`wf15/PREREG-SHADOW-HASH.txt:65-67`, `wf15/DEVIATIONS.md:81-84`) | Xong |
+| Đủ 30 ngày | Thiếu `factors.json` 2019, `via_mn_2019-09/12.parquet`, template trích, DuckDB 1.5.5 | Bị chặn; cần gói P0 hoặc 96 ô F16 |
+| Khóa luận theo danh sách 24 điểm của máy công ty | Commit `20ed69a` (92 trang, build sạch): điểm 3, 10, 16, 20–24 mới; 15 điểm khác đã ở `91ad6f4` | Điểm 19 bỏ theo chủ; hai số phụ của điểm 2 không đưa vì không kiểm được |
+
 ## Phản hồi của máy công ty — 2026-10-26 chiều
 
 ADR-086; chỉ tài liệu. Bản phản hồi lưu ở máy nhà (`C:/RideBoundContinuation/2026-10-26/VIEC-CHO-MAY-NHA-TU-CONG-TY-26-10.md`).

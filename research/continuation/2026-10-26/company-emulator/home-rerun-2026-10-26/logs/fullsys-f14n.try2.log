@@ -1,0 +1,16 @@
+cells 84, tasks 168 (of 168), scoreMode causal, alphaS 0.15, stride 0, workers 4
+20/168 22 s
+40/168 44 s
+60/168 63 s
+80/168 82 s
+100/168 118 s
+120/168 159 s
+140/168 193 s
+160/168 229 s
+168/168 244 s
+done 168 tasks in 4.1 min, errors 0
+
+real	4m4.331s
+user	0m0.045s
+sys	0m0.015s
+exit 0

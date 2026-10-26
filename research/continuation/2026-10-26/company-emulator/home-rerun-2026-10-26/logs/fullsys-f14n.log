@@ -1,0 +1,27 @@
+Error: Cannot find module 'E:\RideBoundData\company-intake\2026-10-23\sp\wf5\ds-nyc-via\scripts\network.js'
+Require stack:
+- E:\RideBoundData\company-intake\2026-10-23\sp\wf20\fullsys\code\runner\netfull.js
+- E:\RideBoundData\company-intake\2026-10-23\sp\wf20\fullsys\code\scripts\pool.js
+- E:\RideBoundData\company-intake\2026-10-23\sp\wf20\fullsys\code\scripts\run_sh.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1500:15)
+    at wrapResolveFilename (node:internal/modules/cjs/loader:1071:27)
+    at defaultResolveImplForCJSLoading (node:internal/modules/cjs/loader:1095:10)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1116:12)
+    at Module._load (node:internal/modules/cjs/loader:1285:25)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)
+    at Module.require (node:internal/modules/cjs/loader:1600:12)
+    at require (node:internal/modules/helpers:153:16)
+    at Object.build (E:\RideBoundData\company-intake\2026-10-23\sp\wf20\fullsys\code\runner\netfull.js:20:16)
+    at Object.sharedNet (E:\RideBoundData\company-intake\2026-10-23\sp\wf20\fullsys\code\scripts\pool.js:9:70) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    'E:\\RideBoundData\\company-intake\\2026-10-23\\sp\\wf20\\fullsys\\code\\runner\\netfull.js',
+    'E:\\RideBoundData\\company-intake\\2026-10-23\\sp\\wf20\\fullsys\\code\\scripts\\pool.js',
+    'E:\\RideBoundData\\company-intake\\2026-10-23\\sp\\wf20\\fullsys\\code\\scripts\\run_sh.js'
+  ]
+}
+
+real	0m0.170s
+user	0m0.015s
+sys	0m0.045s
+exit 2

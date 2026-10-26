@@ -1733,6 +1733,16 @@ Date: 2026-08-27
 
 ## 5. Next action
 
+**Cập nhật 2026-10-26 tối (ADR-087):** máy nhà chạy lại gói `company-emulator` trên panel F14 (14/30 ngày):
+wf20/fullsys 1.680/1.680 và wf21/n7 1.680/1.680 dòng trùng hoàn toàn, kể cả từng khách. Khóa luận đã sửa theo danh sách
+24 điểm (nhánh `thesis/audit-fixes-2026-10-25`, commit `20ed69a`). Chủ đã bỏ đợt 3, kho riêng có dấu thời gian,
+họp thầy và khai báo AI (`HUONG-DAN-MAY-NHA.md` §7). Việc kế tiếp, theo thứ tự:
+1. Mang về máy nhà ô F16: hoặc gói P0 của máy công ty (`factors.json` 2019, hai tệp `via_mn_2019-09/12.parquet`, template
+   trích, DuckDB 1.5.5), hoặc thẳng 96 ô F16 (292 tệp, kiểm bằng `expected/wf17-f16-cells.sha256`).
+2. Chạy phần F16 và các bước `gate`, `gatecheck`, `check`, `analyze`, rồi `ours_vs_theirs.js` (đòi đủ 30 ngày); so bằng
+   `confirm_digest.js` (mong đợi 3.600/3.600 mỗi gói).
+3. Chủ duyệt các sửa khóa luận, rồi mới push.
+
 **Cập nhật 2026-10-26 chiều (ADR-086):** máy công ty đã kiểm lại và khớp hai kết quả của máy nhà. Việc kế tiếp, theo thứ
 tự:
 1. Chủ mang bản công ty 24/10 về (qua kênh được phép), rồi chép vào thư mục mới, chạy `sha256sum -c SHA256-TAT-CA.txt`
@@ -5709,6 +5719,86 @@ không chép nguyên văn.
   câu Kőszegi–Rabin vào vì máy nhà chưa đọc nguồn đó. Câu W9 (luật C ≈ hàng rào nới khi giao thông phẳng) không có trong
   khóa luận ở `f1a0c73`, nên không sửa. Khai báo dùng AI vẫn chờ chủ quyết.
 
+### ADR-087 — 2026-10-26 — Proposed (thăm dò; chạy lại bộ mô phỏng của máy công ty ở máy nhà; sửa khóa luận theo 24 điểm; không đổi mã RideBound)
+
+**Context:**
+- Máy công ty push nhánh `research/company-emulator-2026-10-26` (`21af556`), trong thư mục
+  `research/continuation/2026-10-26/company-emulator/`:
+  - mã bộ mô phỏng wf17, wf20, wf21;
+  - bản băm mong đợi `expected/` và công cụ `tools/confirm_digest.js`;
+  - hướng dẫn `HUONG-DAN-MAY-NHA.md`;
+  - danh sách `24-CHO-SUA-KHOA-LUAN-26-10.md` và báo cáo `BAO-CAO-KET-QUA-26-10.md`.
+- Lệnh của chủ (26/10 tối):
+  - chạy F14 trước, xác nhận trùng bằng `confirm_digest.js`;
+  - sau đó sinh ô F16 và chạy đủ 30 ngày;
+  - sửa cả 24 điểm khóa luận. Chủ yêu cầu máy nhà viết luôn, thay quy tắc "chủ tự viết lời" ở `HUONG-DAN-MAY-NHA.md` §7.
+
+**Decision:**
+- Kế hoạch `wf22-home/PLAN.md` được khóa bằng sha256 trước mọi lượt chạy. Có hai sửa đổi, ghi trước khi làm:
+  - **A0:** lượt F14 cũng cần mạng FleetPy đầy đủ (`netfull.js` dòng 11–15), nên chép 7 tệp từ cây P5 ở máy nhà. Băm của
+    chúng trùng băm công ty ghi trong `wf15/PREREG-SHADOW-HASH.txt:65-67` và `wf15/DEVIATIONS.md:81-84`.
+  - **A1:** dựng lại `wf7/.../accuracy-index-2019.json` (thiếu ở máy nhà) bằng hợp các `targets[d].F` trong
+    `wf21/n7/cidx/results/index-old-pertarget.json`: 111 ngày, 729 lần trùng ngày, 0 xung đột. Chỉ dùng sau khi các chế độ
+    không cần chỉ mục đã trùng. Đây không phải tệp gốc (tệp gốc có 153 ngày).
+- Hồ sơ đưa lên repo: `research/continuation/2026-10-26/company-emulator/home-rerun-2026-10-26/` (kế hoạch, sửa đổi,
+  script, log, `RESULT.md`). Không đưa `sp/`, hàng kết quả hay chỉ mục dựng lại.
+
+**Evidence (máy nhà, Node v24.17.0; máy công ty dùng v20.20.2):**
+- Panel F14 (14 ngày, 84 ô), so bằng `confirm_digest.js`:
+  - wf20/fullsys `f14n` + `f14cl`: **1.680/1.680** dòng trùng hoàn toàn, kể cả dấu vân tay từng khách;
+  - wf21/n7 `n14`, `clc14`, `cl14`, `pad14`, `padc14`: **1.680/1.680**.
+- Bảng tổng F14 ở `HUONG-DAN-MAY-NHA.md` §5: 7/7 nhóm trùng từng số (phục vụ, đảo hứa, trễ, độ dài hứa).
+- 0 lỗi. Tổng thời gian chạy khoảng 17 phút.
+- Hệ quả: trên F14, số của báo cáo wf20/fullsys và wf21/n7 được tái lập về tính toán (cùng mã, cùng đầu vào). Đây không
+  phải phép kiểm độc lập về thiết kế, và số "30 ngày" mới được kiểm trên nửa F14.
+
+**Chưa làm được:**
+- Sinh 96 ô F16, vì máy nhà thiếu:
+  - `wf6/via-many-days/work/factors.json` năm 2019 (bản ở `C:/RideBoundContinuation/2026-10-22/emulator-wf5/data/` là năm
+    2018);
+  - `via_mn_2019-09.parquet` và `via_mn_2019-12.parquet`;
+  - template `extract_via_month.sql.tmpl` và `factors_build.js`;
+  - DuckDB 1.5.5 (máy nhà có 1.1.3).
+- Vì vậy chưa chạy được mọi lượt F16, các bước `gate`, `gatecheck`, `check`, `analyze`, và `ours_vs_theirs.js` (đòi đủ
+  30 ngày, dòng 19).
+
+**Khóa luận** (nhánh `thesis/audit-fixes-2026-10-25`, commit `20ed69a`, 92 trang, build sạch). Đối chiếu 24 điểm:
+- Đã làm ở `91ad6f4`: 1, 2, 4, 5, 6, 7, 8, 9, 11, 12, 13, 14, 15, 17, 18.
+- Làm ở commit này:
+  - 3: ghi phép hòa vốn là thăm dò, kế hoạch viết sau lần tính thử 0,77;
+  - 10: một đoạn giới hạn nói thật cách làm;
+  - 16: gần trùng khi giao thông phẳng (Manhattan 10/11 kịch bản; Via chỉ chèn 6/10 ngày);
+  - 20: trần từng lần đã cài và chạy trong cầu nối (ADR-080); ngày nguồn 12/11/2018 là ngày nghỉ bù Veterans Day;
+    khoảng tin cậy dự báo bị lặp giả;
+  - 21: vì sao 512 yêu cầu và 62 xe; quét 7 cỡ đội;
+  - 22 và 24: tiểu mục mới "Ghép với Shadow và dự báo", và câu ghi công đúng ở chương 5;
+  - 23: đối thủ trình bày theo 3 bước.
+- Không làm:
+  - 19 (khai báo AI): chủ đã bỏ;
+  - hai số phụ của điểm 2 (0,18–0,39% cước; 7,4–7,8 phút): báo cáo wf17 không có ở nhà, không kiểm được;
+  - số 16/20 ô của điểm 16: không tìm thấy trong tệp ở nhà, nên dùng số theo ngày của wf17 R2b
+    (`r2_tables.txt:92-130`).
+- Số chỉ có ở máy công ty được ghi nguồn trong chú thích LaTeX. Phần F14 ghi thêm "máy nhà chạy lại trùng".
+- **Chỗ không theo đúng chữ của danh sách, sau một lượt đọc kiểm độc lập các số với tệp nguồn:**
+  - Điểm 23 viết rằng luật C và hàng rào nới "chỉ còn một khác biệt". Mã không cho thấy vậy: `wf15/runner/engine.js:79-80`
+    là `p ≤ max(p0 + B_r, e)` so với `Labs + |c| ≤ B_r`. Hàng rào nới là hạn theo mức, nên khi `e` còn dưới hạn, giao
+    thông vẫn làm hẹp hay nới phần dư của điều phối. Đây là kênh giao thông mà `wf6/via-many-days/T.txt:41-46, 151-152` đã
+    tách. Khóa luận ghi hai khác biệt.
+  - Điểm 21 viết 62 xe ứng với "mức phục vụ 79,2% của tập Manhattan". 79,2% là mức của điều phối không trần trên bộ kịch
+    bản Manhattan trong bộ mô phỏng, ở 2,5× (`wf4/sim/T.txt:20, 238`). Tập kịch bản của chương 4 phục vụ 66,3% ở 1,5×. Lý
+    do giữ 512 là 4 × trần 128 yêu cầu (`am2017/PLAN.md:31-35`); con số 11% đo sau.
+  - Điểm 24: phần lợi quy cho độ dài lời hứa phụ thuộc thiết lập. Có Shadow và đệm đi qua điều phối (N7): khoảng 3/4 cả
+    ngày và 85% buổi sáng. Không có Shadow và đệm chỉ cộng vào lời hứa (wf17 R3, `NOTE.md:119-128`): 38–56%.
+  - Trễ hạn luật C gây thêm theo cỡ đội: mỗi ngày tăng, nhưng tính trên số khách được phục vụ thì giảm, từ 0,90–0,91 xuống
+    0,54–0,63 điểm phần trăm (`am_tables.txt`).
+
+**Consequences:**
+- Quyết định của chủ ngày 26/10 (`HUONG-DAN-MAY-NHA.md` §7):
+  - bỏ đợt xác nhận 3, kho riêng có dấu thời gian, họp thầy, khai báo AI;
+  - đối thủ chính là hàng rào nới, trình bày theo 3 bước;
+  - dự báo là một phần của hệ nhưng phải ghi công đúng từng phần.
+- Việc kế tiếp xem §5.
+
 ## Cập nhật khóa luận — 2026-10-16T00:09:00.907016+07:00
 
 Người dùng yêu cầu cập nhật toàn bộ nội dung theo cách đọc tự nhiên, bổ sung
@@ -5806,6 +5896,10 @@ Claude/Antigravity. Không có quyền commit/push mới trong lượt này.
 
 ## 9. Change history
 
+- 2026-10-26 tối (`research/company-emulator-2026-10-26`, không đổi mã RideBound): ADR-087. Máy nhà chạy lại bộ mô phỏng
+  của máy công ty trên panel F14: wf20/fullsys 1.680/1.680 và wf21/n7 1.680/1.680 dòng trùng từng khách (sửa đổi A0 đầu
+  vào mạng, A1 chỉ mục dự báo). F16 chưa chạy vì máy nhà thiếu đầu vào sinh ô. Khóa luận sửa theo 24 điểm (commit
+  `20ed69a`).
 - 2026-10-26 chiều (`research/via-zone-2026-10-26`, chỉ tài liệu): ADR-086. Nhận phản hồi của máy công ty; sửa 10 chỗ máy
   nhà kiểm lại được (hòa vốn viết sau lần minh họa 0,77; dwell không bị mã chặn; N2 INS 0,4–2,0; phút trễ 97% do điều
   phối; đợt 3 còn 75 ngày; `RIDEBOUND_STATE_HASH`; câu G2; giới hạn "gộp theo khu"; cấu hình A1 không dùng cho EO35). Bản
