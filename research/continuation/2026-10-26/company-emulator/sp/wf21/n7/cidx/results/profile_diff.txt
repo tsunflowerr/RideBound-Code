@@ -1,0 +1,95 @@
+# sources per target (causal file)
+  2019-09-19 ref 2019-08: sources 2019-09-12 2019-09-05 (same-month 2/2)
+  2019-09-20 ref 2019-08: sources 2019-09-13 2019-09-06 (same-month 2/2)
+  2019-09-24 ref 2019-08: sources 2019-09-17 2019-09-10 (same-month 2/2)
+  2019-09-26 ref 2019-08: sources 2019-09-19 2019-09-12 2019-09-05 (same-month 3/3)
+  2019-09-30 ref 2019-08: sources 2019-09-23 2019-09-16 2019-09-09 (same-month 3/3)
+  2019-10-02 ref 2019-09: sources 2019-09-25 2019-09-18 2019-09-11 (same-month 0/3)
+  2019-10-03 ref 2019-09: sources 2019-09-26 2019-09-19 2019-09-12 2019-09-05 (same-month 0/4)
+  2019-10-07 ref 2019-09: sources 2019-09-23 2019-09-16 2019-09-09 (same-month 0/3)
+  2019-10-08 ref 2019-09: sources 2019-09-24 2019-09-17 2019-09-10 (same-month 0/3)
+  2019-10-09 ref 2019-09: sources 2019-10-02 2019-09-25 2019-09-18 2019-09-11 (same-month 1/4)
+  2019-10-10 ref 2019-09: sources 2019-10-03 2019-09-26 2019-09-19 2019-09-12 (same-month 1/4)
+  2019-10-11 ref 2019-09: sources 2019-10-04 2019-09-27 2019-09-20 2019-09-13 (same-month 1/4)
+  2019-10-15 ref 2019-09: sources 2019-10-08 2019-09-24 2019-09-17 (same-month 1/3)
+  2019-10-16 ref 2019-09: sources 2019-10-02 2019-09-25 2019-09-18 (same-month 1/3)
+  2019-10-17 ref 2019-09: sources 2019-10-10 2019-10-03 2019-09-26 2019-09-19 (same-month 2/4)
+  2019-10-18 ref 2019-09: sources 2019-10-11 2019-10-04 2019-09-27 2019-09-20 (same-month 2/4)
+  2019-10-23 ref 2019-09: sources 2019-10-16 2019-10-02 2019-09-25 (same-month 2/3)
+  2019-10-24 ref 2019-09: sources 2019-10-17 2019-10-10 2019-10-03 2019-09-26 (same-month 3/4)
+  2019-10-25 ref 2019-09: sources 2019-10-18 2019-10-11 2019-10-04 2019-09-27 (same-month 3/4)
+  2019-10-28 ref 2019-09: sources 2019-10-21 2019-10-07 (same-month 2/2)
+  2019-10-29 ref 2019-09: sources 2019-10-22 2019-10-15 2019-10-08 (same-month 3/3)
+  2019-12-04 ref 2019-11: sources 2019-11-27 2019-11-20 2019-11-13 2019-11-06 (same-month 0/4)
+  2019-12-05 ref 2019-11: sources 2019-11-21 2019-11-14 2019-11-07 (same-month 0/3)
+  2019-12-09 ref 2019-11: sources 2019-12-02 2019-11-25 2019-11-18 (same-month 1/3)
+  2019-12-10 ref 2019-11: sources 2019-12-03 2019-11-26 2019-11-19 2019-11-12 (same-month 1/4)
+  2019-12-13 ref 2019-11: sources 2019-12-06 2019-11-22 2019-11-15 (same-month 1/3)
+  2019-12-16 ref 2019-11: sources 2019-12-09 2019-12-02 2019-11-25 2019-11-18 (same-month 2/4)
+  2019-12-17 ref 2019-11: sources 2019-12-10 2019-12-03 2019-11-26 2019-11-19 (same-month 2/4)
+  2019-12-18 ref 2019-11: sources 2019-12-11 2019-12-04 2019-11-27 2019-11-20 (same-month 2/4)
+  2019-12-19 ref 2019-11: sources 2019-12-12 2019-12-05 2019-11-21 (same-month 2/3)
+
+# CLc vs CL forecast weights w(b) = m(b)/m(0), b = 1..8 (15 min..2 h): mean and max |w_c - w_old| over b, and mean w (old, causal)
+  2019-09-19 w08: mean|dw| 0.359 %  max|dw| 0.639 %  mean w old 1.1097 causal 1.1124
+  2019-09-19 w17: mean|dw| 0.144 %  max|dw| 0.302 %  mean w old 0.9870 causal 0.9873
+  2019-09-20 w08: mean|dw| 0.271 %  max|dw| 0.805 %  mean w old 1.1677 causal 1.1654
+  2019-09-20 w17: mean|dw| 0.267 %  max|dw| 0.583 %  mean w old 0.9205 causal 0.9225
+  2019-09-24 w08: mean|dw| 0.314 %  max|dw| 0.538 %  mean w old 1.1391 causal 1.1374
+  2019-09-24 w17: mean|dw| 0.129 %  max|dw| 0.298 %  mean w old 0.9535 causal 0.9547
+  2019-09-26 w08: mean|dw| 0.191 %  max|dw| 0.556 %  mean w old 1.1227 causal 1.1238
+  2019-09-26 w17: mean|dw| 0.182 %  max|dw| 0.367 %  mean w old 0.9750 causal 0.9759
+  2019-09-30 w08: mean|dw| 0.314 %  max|dw| 0.672 %  mean w old 1.1005 causal 1.0974
+  2019-09-30 w17: mean|dw| 0.167 %  max|dw| 0.355 %  mean w old 0.9675 causal 0.9689
+  2019-10-02 w08: mean|dw| 0.000 %  max|dw| 0.000 %  mean w old 1.1084 causal 1.1084
+  2019-10-02 w17: mean|dw| 0.000 %  max|dw| 0.000 %  mean w old 0.9439 causal 0.9439
+  2019-10-03 w08: mean|dw| 0.000 %  max|dw| 0.000 %  mean w old 1.1242 causal 1.1242
+  2019-10-03 w17: mean|dw| 0.000 %  max|dw| 0.000 %  mean w old 0.9729 causal 0.9729
+  2019-10-07 w08: mean|dw| 0.000 %  max|dw| 0.000 %  mean w old 1.1005 causal 1.1005
+  2019-10-07 w17: mean|dw| 0.000 %  max|dw| 0.000 %  mean w old 0.9675 causal 0.9675
+  2019-10-08 w08: mean|dw| 0.000 %  max|dw| 0.000 %  mean w old 1.1171 causal 1.1171
+  2019-10-08 w17: mean|dw| 0.000 %  max|dw| 0.000 %  mean w old 0.9466 causal 0.9466
+  2019-10-09 w08: mean|dw| 0.103 %  max|dw| 0.190 %  mean w old 1.1135 causal 1.1142
+  2019-10-09 w17: mean|dw| 0.204 %  max|dw| 0.315 %  mean w old 0.9755 causal 0.9775
+  2019-10-10 w08: mean|dw| 0.102 %  max|dw| 0.272 %  mean w old 1.1327 causal 1.1327
+  2019-10-10 w17: mean|dw| 0.089 %  max|dw| 0.171 %  mean w old 0.9709 causal 0.9717
+  2019-10-11 w08: mean|dw| 0.105 %  max|dw| 0.266 %  mean w old 1.1294 causal 1.1296
+  2019-10-11 w17: mean|dw| 0.072 %  max|dw| 0.211 %  mean w old 0.9302 causal 0.9309
+  2019-10-15 w08: mean|dw| 0.095 %  max|dw| 0.305 %  mean w old 1.1065 causal 1.1066
+  2019-10-15 w17: mean|dw| 0.190 %  max|dw| 0.324 %  mean w old 0.9578 causal 0.9597
+  2019-10-16 w08: mean|dw| 0.140 %  max|dw| 0.264 %  mean w old 1.1075 causal 1.1086
+  2019-10-16 w17: mean|dw| 0.251 %  max|dw| 0.399 %  mean w old 0.9844 causal 0.9869
+  2019-10-17 w08: mean|dw| 0.119 %  max|dw| 0.263 %  mean w old 1.1420 causal 1.1419
+  2019-10-17 w17: mean|dw| 0.052 %  max|dw| 0.165 %  mean w old 0.9661 causal 0.9665
+  2019-10-18 w08: mean|dw| 0.113 %  max|dw| 0.219 %  mean w old 1.1273 causal 1.1276
+  2019-10-18 w17: mean|dw| 0.066 %  max|dw| 0.102 %  mean w old 0.9282 causal 0.9281
+  2019-10-23 w08: mean|dw| 0.191 %  max|dw| 0.305 %  mean w old 1.1153 causal 1.1171
+  2019-10-23 w17: mean|dw| 0.306 %  max|dw| 0.401 %  mean w old 1.0026 causal 1.0057
+  2019-10-24 w08: mean|dw| 0.161 %  max|dw| 0.352 %  mean w old 1.1422 causal 1.1430
+  2019-10-24 w17: mean|dw| 0.080 %  max|dw| 0.152 %  mean w old 0.9802 causal 0.9799
+  2019-10-25 w08: mean|dw| 0.238 %  max|dw| 0.480 %  mean w old 1.1209 causal 1.1232
+  2019-10-25 w17: mean|dw| 0.068 %  max|dw| 0.148 %  mean w old 0.9341 causal 0.9334
+  2019-10-28 w08: mean|dw| 0.188 %  max|dw| 0.424 %  mean w old 1.1039 causal 1.1036
+  2019-10-28 w17: mean|dw| 0.271 %  max|dw| 0.616 %  mean w old 0.9763 causal 0.9737
+  2019-10-29 w08: mean|dw| 0.219 %  max|dw| 0.582 %  mean w old 1.1239 causal 1.1250
+  2019-10-29 w17: mean|dw| 0.372 %  max|dw| 0.619 %  mean w old 0.9858 causal 0.9895
+  2019-12-04 w08: mean|dw| 0.000 %  max|dw| 0.000 %  mean w old 1.1157 causal 1.1157
+  2019-12-04 w17: mean|dw| 0.000 %  max|dw| 0.000 %  mean w old 0.9556 causal 0.9556
+  2019-12-05 w08: mean|dw| 0.000 %  max|dw| 0.000 %  mean w old 1.1285 causal 1.1285
+  2019-12-05 w17: mean|dw| 0.000 %  max|dw| 0.000 %  mean w old 0.9900 causal 0.9900
+  2019-12-09 w08: mean|dw| 0.123 %  max|dw| 0.227 %  mean w old 1.1045 causal 1.1034
+  2019-12-09 w17: mean|dw| 0.126 %  max|dw| 0.193 %  mean w old 0.9799 causal 0.9786
+  2019-12-10 w08: mean|dw| 0.043 %  max|dw| 0.087 %  mean w old 1.1086 causal 1.1086
+  2019-12-10 w17: mean|dw| 0.148 %  max|dw| 0.265 %  mean w old 0.9686 causal 0.9671
+  2019-12-13 w08: mean|dw| 0.214 %  max|dw| 0.310 %  mean w old 1.0995 causal 1.1016
+  2019-12-13 w17: mean|dw| 0.111 %  max|dw| 0.208 %  mean w old 0.9652 causal 0.9651
+  2019-12-16 w08: mean|dw| 0.198 %  max|dw| 0.295 %  mean w old 1.1115 causal 1.1097
+  2019-12-16 w17: mean|dw| 0.205 %  max|dw| 0.430 %  mean w old 0.9765 causal 0.9745
+  2019-12-17 w08: mean|dw| 0.120 %  max|dw| 0.252 %  mean w old 1.1076 causal 1.1078
+  2019-12-17 w17: mean|dw| 0.090 %  max|dw| 0.208 %  mean w old 0.9750 causal 0.9748
+  2019-12-18 w08: mean|dw| 0.086 %  max|dw| 0.143 %  mean w old 1.1219 causal 1.1220
+  2019-12-18 w17: mean|dw| 0.112 %  max|dw| 0.233 %  mean w old 0.9588 causal 0.9581
+  2019-12-19 w08: mean|dw| 0.290 %  max|dw| 0.920 %  mean w old 1.1574 causal 1.1545
+  2019-12-19 w17: mean|dw| 0.197 %  max|dw| 0.375 %  mean w old 0.9664 causal 0.9649
+  w08: max|dw| over days: median 0.272 %, max 0.920 %
+  w17: max|dw| over days: median 0.233 %, max 0.619 %

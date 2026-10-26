@@ -1,0 +1,138 @@
+wf17 R2 (wf17-exploratory-post-audit) - strict-fence tolerance. Generated 2026-10-23T08:14:56.644Z by analysis/r2_analyze.js (sha256 abed09e8407e52f01a3b5c012dc4477c784915d184ccfb9a559131e8342045c5)
+==================== R2a: real traffic (D30 x {w08, w17} x r0; unit = day = w08 + w17) ====================
+
+-- INS (x* = 72)
+   tau  0 s: Gap SHRC-SHF mean 34.20 [29.18, 39.22] SE 2.45 med 34.00 | 0-/30+/0= of 30, sign p 1.9e-9 | rel -4.9% | A 725.80 B 691.60 | rho 1.000
+   tau  1 s: Gap SHRC-SHF mean 20.30 [16.34, 24.26] SE 1.94 med 20.50 | 0-/30+/0= of 30, sign p 1.9e-9 | rel -2.9% | A 725.80 B 705.50 | rho 0.594
+   tau  5 s: Gap SHRC-SHF mean 14.23 [9.73, 18.74] SE 2.20 med 18.50 | 6-/24+/0= of 30, sign p 0.0014 | rel -2.0% | A 725.80 B 711.57 | rho 0.416
+   tau 60 s: Gap SHRC-SHF mean -15.60 [-21.03, -10.17] SE 2.66 med -13.50 | 26-/3+/1= of 30, sign p 1.5e-5 | rel 2.1% | A 725.80 B 741.40 | rho -0.456
+   tau  0 s: Gap SHHZ-SHF mean 39.50 [34.79, 44.21] SE 2.30 med 38.50 | 0-/30+/0= of 30, sign p 1.9e-9 | rel -5.7% | A 731.10 B 691.60 | rhoHZ 1.000
+   tau  1 s: Gap SHHZ-SHF mean 25.60 [21.53, 29.67] SE 1.99 med 25.50 | 0-/30+/0= of 30, sign p 1.9e-9 | rel -3.6% | A 731.10 B 705.50 | rhoHZ 0.648
+   tau  5 s: Gap SHHZ-SHF mean 19.53 [15.40, 23.67] SE 2.02 med 23.00 | 1-/29+/0= of 30, sign p 5.8e-8 | rel -2.7% | A 731.10 B 711.57 | rhoHZ 0.495
+   tau 60 s: Gap SHHZ-SHF mean -10.30 [-14.83, -5.77] SE 2.22 med -9.00 | 23-/7+/0= of 30, sign p 0.0052 | rel 1.4% | A 731.10 B 741.40 | rhoHZ -0.261
+   tau  1 s: EO35_tau - EO35_0 served mean 0.17 [-0.83, 1.17] SE 0.49 med 0.00 | 9-/11+/10= of 30, sign p 0.82 | rel -0.0% | A 729.63 B 729.47
+   tau  5 s: EO35_tau - EO35_0 served mean 1.57 [-0.63, 3.76] SE 1.07 med 1.50 | 11-/17+/2= of 30, sign p 0.34 | rel -0.2% | A 731.03 B 729.47
+   tau 60 s: EO35_tau - EO35_0 served mean 12.50 [7.81, 17.19] SE 2.29 med 9.50 | 5-/24+/1= of 30, sign p 0.00055 | rel -1.7% | A 741.97 B 729.47
+   SHF72 tau 0 s: forced vehicle-decisions/day 23394.7; exceedance <=1 s / 1-5 s / 5-60 s / >60 s per day 11475.2 / 1653.2 / 8538.0 / 1728.3
+   SHF72 tau 1 s: forced vehicle-decisions/day 12120.3; exceedance <=1 s / 1-5 s / 5-60 s / >60 s per day 0.0 / 1604.5 / 8525.3 / 1990.5
+   SHF72 tau 5 s: forced vehicle-decisions/day 10669.2; exceedance <=1 s / 1-5 s / 5-60 s / >60 s per day 0.0 / 0.0 / 8640.4 / 2028.8
+   SHF72 tau 60 s: forced vehicle-decisions/day 2743.7; exceedance <=1 s / 1-5 s / 5-60 s / >60 s per day 0.0 / 0.0 / 0.0 / 2743.7
+   EO35 tau 0 s: forced vehicle-decisions/day 2571.2; exceedance <=1 s / 1-5 s / 5-60 s / >60 s per day 33.9 / 151.3 / 1315.0 / 1071.0
+   EO35 tau 1 s: forced vehicle-decisions/day 2565.4; exceedance <=1 s / 1-5 s / 5-60 s / >60 s per day 0.0 / 160.3 / 1306.4 / 1098.6
+   EO35 tau 5 s: forced vehicle-decisions/day 2474.9; exceedance <=1 s / 1-5 s / 5-60 s / >60 s per day 0.0 / 0.0 / 1346.2 / 1128.7
+   EO35 tau 60 s: forced vehicle-decisions/day 2151.0; exceedance <=1 s / 1-5 s / 5-60 s / >60 s per day 0.0 / 0.0 / 0.0 / 2151.0
+   SHF72 tau 0 s      guaranteed/day: n 475.5, dispAny1 2.50 (0.53%), dispUp5 1.97, late60First 16.60 (3.49%)
+   SHF72 tau 1 s      guaranteed/day: n 485.5, dispAny1 3.17 (0.65%), dispUp5 2.57, late60First 18.37 (3.78%)
+   SHF72 tau 5 s      guaranteed/day: n 491.0, dispAny1 7.37 (1.50%), dispUp5 2.97, late60First 18.67 (3.80%)
+   SHF72 tau 60 s     guaranteed/day: n 516.9, dispAny1 46.17 (8.93%), dispUp5 41.90, late60First 27.70 (5.36%)
+   SHHZ72             guaranteed/day: n 506.2, dispAny1 3.73 (0.74%), dispUp5 3.10, late60First 20.90 (4.13%)
+   SHRC72             guaranteed/day: n 501.2, dispAny1 0.00 (0.00%), dispUp5 0.00, late60First 20.60 (4.11%)
+   levels per day: arm | served | visRev60 | TV5/served s | Pchg % | pDispAny1 % | late60First % | breachDeadline60 % | breachLedger % [BY-CONSTRUCTION for RC] | relocations | switchedRiders
+   SHF72@0s     691.6 | 32.17 | 197.5 | 21.61 | 21.74 | 24.59 | 2.54 | 0.68 | 0.0 | 0.0
+   SHF72@1s     705.5 | 32.70 | 192.5 | 20.97 | 21.10 | 24.39 | 2.79 | 0.75 | 0.0 | 0.0
+   SHF72@5s     711.6 | 33.20 | 192.4 | 20.93 | 21.59 | 24.39 | 2.82 | 1.39 | 0.0 | 0.0
+   SHF72@60s    741.4 | 35.47 | 201.0 | 25.71 | 26.38 | 25.00 | 3.97 | 6.49 | 0.0 | 0.0
+   SHHZ72       731.1 | 32.57 | 201.3 | 20.81 | 20.98 | 24.42 | 3.09 | 0.83 | 0.0 | 0.0
+   SHRC72       725.8 | 31.43 | 202.0 | 20.62 | 20.68 | 24.62 | 3.08 | 0.00 | 0.0 | 0.0
+   EO35@0s      729.5 | 23.33 | 114.6 | 31.83 | 32.38 | 32.82 | 1.09 | 1.24 | 0.0 | 0.0
+   EO35@1s      729.6 | 23.60 | 115.3 | 31.97 | 32.49 | 33.01 | 1.11 | 1.26 | 0.0 | 0.0
+   EO35@5s      731.0 | 23.93 | 116.3 | 32.18 | 32.70 | 33.17 | 1.15 | 1.67 | 0.0 | 0.0
+   EO35@60s     742.0 | 26.63 | 131.7 | 35.58 | 36.05 | 36.52 | 2.69 | 7.51 | 0.0 | 0.0
+   EOHZ35       731.4 | 23.50 | 114.5 | 31.95 | 32.50 | 32.83 | 1.09 | 1.23 | 0.0 | 0.0
+   RCE35        733.2 | 21.50 | 113.9 | 31.88 | 32.43 | 32.23 | 1.78 | 0.00 | 0.0 | 0.0
+   SHF_tau 0 s - SHHZ served mean -39.50 [-44.21, -34.79] SE 2.30 med -38.50 | 30-/0+/0= of 30, sign p 1.9e-9 | rel 5.4% | A 691.60 B 731.10
+   SHF_tau 1 s - SHHZ served mean -25.60 [-29.67, -21.53] SE 1.99 med -25.50 | 30-/0+/0= of 30, sign p 1.9e-9 | rel 3.5% | A 705.50 B 731.10
+   SHF_tau 5 s - SHHZ served mean -19.53 [-23.67, -15.40] SE 2.02 med -23.00 | 29-/1+/0= of 30, sign p 5.8e-8 | rel 2.7% | A 711.57 B 731.10
+   SHF_tau 60 s - SHHZ served mean 10.30 [5.77, 14.83] SE 2.22 med 9.00 | 7-/23+/0= of 30, sign p 0.0052 | rel -1.4% | A 741.40 B 731.10
+
+-- G2 (x* = 71)
+   tau  0 s: Gap SHRC-SHF mean 29.17 [24.93, 33.41] SE 2.07 med 30.50 | 0-/30+/0= of 30, sign p 1.9e-9 | rel -4.2% | A 728.77 B 699.60 | rho 1.000
+   tau  1 s: Gap SHRC-SHF mean 10.07 [6.10, 14.04] SE 1.94 med 9.00 | 5-/24+/1= of 30, sign p 0.00055 | rel -1.4% | A 728.77 B 718.70 | rho 0.345
+   tau  5 s: Gap SHRC-SHF mean 5.37 [1.26, 9.48] SE 2.01 med 7.00 | 7-/23+/0= of 30, sign p 0.0052 | rel -0.7% | A 728.77 B 723.40 | rho 0.184
+   tau 60 s: Gap SHRC-SHF mean -20.83 [-24.80, -16.87] SE 1.94 med -19.00 | 29-/1+/0= of 30, sign p 5.8e-8 | rel 2.8% | A 728.77 B 749.60 | rho -0.714
+   tau  0 s: Gap SHHZ-SHF mean 40.27 [36.06, 44.47] SE 2.06 med 39.50 | 0-/30+/0= of 30, sign p 1.9e-9 | rel -5.8% | A 739.87 B 699.60 | rhoHZ 1.000
+   tau  1 s: Gap SHHZ-SHF mean 21.17 [16.93, 25.40] SE 2.07 med 19.50 | 0-/30+/0= of 30, sign p 1.9e-9 | rel -2.9% | A 739.87 B 718.70 | rhoHZ 0.526
+   tau  5 s: Gap SHHZ-SHF mean 16.47 [12.48, 20.46] SE 1.95 med 17.00 | 2-/28+/0= of 30, sign p 8.7e-7 | rel -2.3% | A 739.87 B 723.40 | rhoHZ 0.409
+   tau 60 s: Gap SHHZ-SHF mean -9.73 [-12.64, -6.83] SE 1.42 med -9.50 | 27-/2+/1= of 30, sign p 1.6e-6 | rel 1.3% | A 739.87 B 749.60 | rhoHZ -0.242
+   tau  1 s: EO35_tau - EO35_0 served mean 0.57 [-0.40, 1.53] SE 0.47 med 0.00 | 8-/14+/8= of 30, sign p 0.29 | rel -0.1% | A 741.97 B 741.40
+   tau  5 s: EO35_tau - EO35_0 served mean 1.00 [-1.24, 3.24] SE 1.10 med 0.00 | 14-/14+/2= of 30, sign p 1.0 | rel -0.1% | A 742.40 B 741.40
+   tau 60 s: EO35_tau - EO35_0 served mean 9.27 [4.85, 13.69] SE 2.16 med 7.50 | 6-/23+/1= of 30, sign p 0.0023 | rel -1.2% | A 750.67 B 741.40
+   SHF71 tau 0 s: forced vehicle-decisions/day 65477.0; exceedance <=1 s / 1-5 s / 5-60 s / >60 s per day 32355.1 / 4714.2 / 23231.8 / 5175.9
+   SHF71 tau 1 s: forced vehicle-decisions/day 34662.1; exceedance <=1 s / 1-5 s / 5-60 s / >60 s per day 0.0 / 4619.3 / 23914.8 / 6127.9
+   SHF71 tau 5 s: forced vehicle-decisions/day 30501.6; exceedance <=1 s / 1-5 s / 5-60 s / >60 s per day 0.0 / 0.0 / 24350.6 / 6151.0
+   SHF71 tau 60 s: forced vehicle-decisions/day 8564.2; exceedance <=1 s / 1-5 s / 5-60 s / >60 s per day 0.0 / 0.0 / 0.0 / 8564.2
+   EO35 tau 0 s: forced vehicle-decisions/day 7296.4; exceedance <=1 s / 1-5 s / 5-60 s / >60 s per day 113.4 / 453.0 / 3820.8 / 2909.1
+   EO35 tau 1 s: forced vehicle-decisions/day 7369.8; exceedance <=1 s / 1-5 s / 5-60 s / >60 s per day 0.0 / 470.5 / 3948.7 / 2950.5
+   EO35 tau 5 s: forced vehicle-decisions/day 7174.9; exceedance <=1 s / 1-5 s / 5-60 s / >60 s per day 0.0 / 0.0 / 4100.5 / 3074.3
+   EO35 tau 60 s: forced vehicle-decisions/day 5772.3; exceedance <=1 s / 1-5 s / 5-60 s / >60 s per day 0.0 / 0.0 / 0.0 / 5772.3
+   SHF71 tau 0 s      guaranteed/day: n 476.7, dispAny1 21.00 (4.41%), dispUp5 6.03, late60First 17.13 (3.59%)
+   SHF71 tau 1 s      guaranteed/day: n 492.4, dispAny1 32.07 (6.51%), dispUp5 8.83, late60First 18.70 (3.80%)
+   SHF71 tau 5 s      guaranteed/day: n 495.1, dispAny1 35.90 (7.25%), dispUp5 9.33, late60First 18.97 (3.83%)
+   SHF71 tau 60 s     guaranteed/day: n 519.5, dispAny1 70.80 (13.63%), dispUp5 48.17, late60First 28.83 (5.55%)
+   SHHZ71             guaranteed/day: n 508.9, dispAny1 30.47 (5.99%), dispUp5 8.07, late60First 20.80 (4.09%)
+   SHRC71             guaranteed/day: n 494.5, dispAny1 0.00 (0.00%), dispUp5 0.00, late60First 20.67 (4.18%)
+   levels per day: arm | served | visRev60 | TV5/served s | Pchg % | pDispAny1 % | late60First % | breachDeadline60 % | breachLedger % [BY-CONSTRUCTION for RC] | relocations | switchedRiders
+   SHF71@0s     699.6 | 50.90 | 228.0 | 22.48 | 25.18 | 24.31 | 2.61 | 4.49 | 34.9 | 34.0
+   SHF71@1s     718.7 | 57.60 | 227.9 | 22.25 | 26.09 | 23.99 | 2.79 | 6.01 | 45.1 | 44.2
+   SHF71@5s     723.4 | 58.30 | 230.0 | 22.51 | 26.70 | 24.30 | 2.81 | 6.49 | 44.2 | 43.4
+   SHF71@60s    749.6 | 57.43 | 227.4 | 26.80 | 30.18 | 24.85 | 4.07 | 10.90 | 39.5 | 38.8
+   SHHZ71       739.9 | 55.90 | 226.1 | 21.97 | 25.28 | 24.28 | 3.04 | 5.45 | 39.2 | 38.5
+   SHRC71       728.8 | 38.30 | 210.2 | 21.51 | 21.89 | 25.21 | 3.08 | 0.00 | 9.2 | 9.1
+   EO35@0s      741.4 | 42.47 | 133.7 | 32.94 | 35.28 | 32.41 | 1.00 | 4.37 | 31.4 | 30.8
+   EO35@1s      742.0 | 42.70 | 133.9 | 33.00 | 35.36 | 32.50 | 1.02 | 4.38 | 31.2 | 30.6
+   EO35@5s      742.4 | 42.83 | 134.4 | 33.23 | 35.50 | 32.58 | 1.07 | 4.67 | 30.5 | 29.9
+   EO35@60s     750.7 | 48.20 | 153.2 | 36.70 | 39.09 | 35.95 | 2.39 | 10.73 | 34.0 | 33.3
+   EOHZ35       742.0 | 42.07 | 133.2 | 32.87 | 35.16 | 32.34 | 0.95 | 4.26 | 30.4 | 29.7
+   RCE35        737.3 | 24.63 | 116.0 | 32.24 | 33.82 | 32.40 | 1.77 | 0.00 | 13.9 | 13.8
+   SHF_tau 0 s - SHHZ served mean -40.27 [-44.47, -36.06] SE 2.06 med -39.50 | 30-/0+/0= of 30, sign p 1.9e-9 | rel 5.4% | A 699.60 B 739.87
+   SHF_tau 1 s - SHHZ served mean -21.17 [-25.40, -16.93] SE 2.07 med -19.50 | 30-/0+/0= of 30, sign p 1.9e-9 | rel 2.9% | A 718.70 B 739.87
+   SHF_tau 5 s - SHHZ served mean -16.47 [-20.46, -12.48] SE 1.95 med -17.00 | 28-/2+/0= of 30, sign p 8.7e-7 | rel 2.2% | A 723.40 B 739.87
+   SHF_tau 60 s - SHHZ served mean 9.73 [6.83, 12.64] SE 1.42 med 9.50 | 2-/27+/1= of 30, sign p 1.6e-6 | rel -1.3% | A 749.60 B 739.87
+
+==================== R2b: flat world (factors = factors[0]; D10 x {w08, w17} x r0) ====================
+
+-- INS
+   SHF72@0s     - SHHZ72 served mean -51.30 [-58.19, -44.41] SE 3.05 med -50.50 | 10-/0+/0= of 10, sign p 0.0020 | rel 6.9% | A 696.00 B 747.30
+   SHF72@1s     - SHHZ72 served mean 2.60 [-2.22, 7.42] SE 2.13 med 2.50 | 2-/8+/0= of 10, sign p 0.11 | rel -0.3% | A 749.90 B 747.30
+   SHF72@5s     - SHHZ72 served mean 2.60 [-2.59, 7.79] SE 2.30 med 0.50 | 4-/5+/1= of 10, sign p 1.0 | rel -0.3% | A 749.90 B 747.30
+   SHRC72       - SHHZ72 served mean -6.20 [-11.71, -0.69] SE 2.43 med -3.50 | 9-/1+/0= of 10, sign p 0.021 | rel 0.8% | A 741.10 B 747.30
+   EO35@0s      - SHHZ72 served mean 3.80 [-5.54, 13.14] SE 4.13 med 2.00 | 4-/6+/0= of 10, sign p 0.75 | rel -0.5% | A 751.10 B 747.30
+   EO35@5s      - SHHZ72 served mean 4.50 [-4.13, 13.13] SE 3.82 med 2.00 | 3-/7+/0= of 10, sign p 0.34 | rel -0.6% | A 751.80 B 747.30
+   EOHZ35       - SHHZ72 served mean 3.80 [-5.54, 13.14] SE 4.13 med 2.00 | 4-/6+/0= of 10, sign p 0.75 | rel -0.5% | A 751.10 B 747.30
+   RCE35        - SHHZ72 served mean 3.70 [-5.76, 13.16] SE 4.18 med 2.00 | 4-/6+/0= of 10, sign p 0.75 | rel -0.5% | A 751.00 B 747.30
+   EO35@0s      - EOHZ35 served mean 0.00 [0.00, 0.00] SE 0.00 med 0.00 | 0-/0+/10= of 10, sign p 1.0 | rel 0.0% | A 751.10 B 751.10
+   EO35@5s      - EOHZ35 served mean 0.70 [-3.32, 4.72] SE 1.78 med 2.00 | 4-/6+/0= of 10, sign p 0.75 | rel -0.1% | A 751.80 B 751.10
+   RCE35        - EOHZ35 served mean -0.10 [-0.73, 0.53] SE 0.28 med 0.00 | 2-/2+/6= of 10, sign p 1.0 | rel 0.0% | A 751.00 B 751.10
+   SHF72 tau 0 s: forced/day 27881.1; exceedance <=1 s / 1-5 s / 5-60 s / >60 s 26729.9 / 1151.2 / 0.0 / 0.0
+   SHF72 tau 1 s: forced/day 1085.9; exceedance <=1 s / 1-5 s / 5-60 s / >60 s 0.0 / 1085.9 / 0.0 / 0.0
+   SHF72 tau 5 s: forced/day 0.0; exceedance <=1 s / 1-5 s / 5-60 s / >60 s 0.0 / 0.0 / 0.0 / 0.0
+   EO35 tau 0 s: forced/day 36.2; exceedance <=1 s / 1-5 s / 5-60 s / >60 s 33.5 / 2.7 / 0.0 / 0.0
+   EO35 tau 5 s: forced/day 10.0; exceedance <=1 s / 1-5 s / 5-60 s / >60 s 0.0 / 0.0 / 10.0 / 0.0
+   levels per day (served / visRev60 / late60First / G_dispAny1): SHF72|0 696.0/0.0/154.3/0.0; SHF72|1000 749.9/0.0/157.6/0.0; SHF72|5000 749.9/0.0/155.9/4.7; SHHZ72|0 747.3/0.0/155.9/0.0; SHRC72|0 741.1/0.0/155.6/0.0; EO35|0 751.1/0.0/212.3/NA; EO35|5000 751.8/0.0/215.1/NA; EOHZ35|0 751.1/0.0/212.3/NA; RCE35|0 751.0/0.0/212.1/NA
+
+-- G2
+   SHF71@0s     - SHHZ71 served mean -46.80 [-51.66, -41.94] SE 2.15 med -46.00 | 10-/0+/0= of 10, sign p 0.0020 | rel 6.2% | A 705.40 B 752.20
+   SHF71@1s     - SHHZ71 served mean 2.00 [0.31, 3.69] SE 0.75 med 2.00 | 1-/8+/1= of 10, sign p 0.039 | rel -0.3% | A 754.20 B 752.20
+   SHF71@5s     - SHHZ71 served mean 4.30 [0.84, 7.76] SE 1.53 med 4.50 | 2-/7+/1= of 10, sign p 0.18 | rel -0.6% | A 756.50 B 752.20
+   SHRC71       - SHHZ71 served mean -4.20 [-14.84, 6.44] SE 4.70 med -1.50 | 6-/4+/0= of 10, sign p 0.75 | rel 0.6% | A 748.00 B 752.20
+   EO35@0s      - SHHZ71 served mean 4.40 [-2.78, 11.58] SE 3.17 med 4.00 | 3-/7+/0= of 10, sign p 0.34 | rel -0.6% | A 756.60 B 752.20
+   EO35@5s      - SHHZ71 served mean 4.20 [-2.44, 10.84] SE 2.94 med 3.50 | 3-/7+/0= of 10, sign p 0.34 | rel -0.6% | A 756.40 B 752.20
+   EOHZ35       - SHHZ71 served mean 4.30 [-2.80, 11.40] SE 3.14 med 4.00 | 3-/7+/0= of 10, sign p 0.34 | rel -0.6% | A 756.50 B 752.20
+   RCE35        - SHHZ71 served mean 1.60 [-7.43, 10.63] SE 3.99 med -1.00 | 5-/5+/0= of 10, sign p 1.0 | rel -0.2% | A 753.80 B 752.20
+   EO35@0s      - EOHZ35 served mean 0.10 [-0.13, 0.33] SE 0.10 med 0.00 | 0-/1+/9= of 10, sign p 1.0 | rel -0.0% | A 756.60 B 756.50
+   EO35@5s      - EOHZ35 served mean -0.10 [-2.95, 2.75] SE 1.26 med 0.50 | 4-/5+/1= of 10, sign p 1.0 | rel 0.0% | A 756.40 B 756.50
+   RCE35        - EOHZ35 served mean -2.70 [-11.65, 6.25] SE 3.96 med -3.00 | 6-/4+/0= of 10, sign p 0.75 | rel 0.4% | A 753.80 B 756.50
+   SHF71 tau 0 s: forced/day 80321.1; exceedance <=1 s / 1-5 s / 5-60 s / >60 s 76919.3 / 3401.8 / 0.0 / 0.0
+   SHF71 tau 1 s: forced/day 3317.3; exceedance <=1 s / 1-5 s / 5-60 s / >60 s 0.0 / 3317.3 / 0.0 / 0.0
+   SHF71 tau 5 s: forced/day 2.7; exceedance <=1 s / 1-5 s / 5-60 s / >60 s 0.0 / 0.0 / 2.7 / 0.0
+   EO35 tau 0 s: forced/day 108.2; exceedance <=1 s / 1-5 s / 5-60 s / >60 s 92.9 / 15.3 / 0.0 / 0.0
+   EO35 tau 5 s: forced/day 32.5; exceedance <=1 s / 1-5 s / 5-60 s / >60 s 0.0 / 0.0 / 32.5 / 0.0
+   levels per day (served / visRev60 / late60First / G_dispAny1): SHF71|0 705.4/31.6/152.7/27.1; SHF71|1000 754.2/27.1/159.9/30.3; SHF71|5000 756.5/26.3/159.1/34.2; SHHZ71|0 752.2/25.2/157.5/30.2; SHRC71|0 748.0/5.4/160.7/0.0; EO35|0 756.6/21.2/213.4/NA; EO35|5000 756.4/22.1/212.3/NA; EOHZ35|0 756.5/21.2/213.4/NA; RCE35|0 753.8/1.8/214.5/NA
+
+==================== Decision labels ====================
+C5 "SHRC > SHF is mostly a strict-fence rounding artefact": INCONCLUSIVE (rho(5 s) SHRC version: INS 0.416, G2 0.184; SHHZ version: INS 0.495, G2 0.409; R2b |SHF0 - SHHZ| <= 2/day: INS false, G2 false)
+INS: "EO35 barely affected, wf14 EO35 results stand" HOLDS (EO35_5s - EO35_0 1.57/day, 11-/17+/2=) | "SHHZ fair comparator" REAL IN OUR MODEL, NOT IN ELMI'S (SHF at 5 s still > 8/day below SHHZ) (SHF_5s - SHHZ -19.53/day)
+G2: "EO35 barely affected, wf14 EO35 results stand" HOLDS (EO35_5s - EO35_0 1.00/day, 14-/14+/2=) | "SHHZ fair comparator" REAL IN OUR MODEL, NOT IN ELMI'S (SHF at 5 s still > 8/day below SHHZ) (SHF_5s - SHHZ -16.47/day)
+
+==================== Log ====================
+rows R2a 1440, R2b 360

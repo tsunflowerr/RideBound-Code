@@ -1,0 +1,25 @@
+wf17 r1-identity-fence-pad CODE-HASH (wf17-exploratory-post-audit). Written 2026-10-23T14:48:01+07:00. sha256 of every copied or patched file; source and status.
+engine17.js = wf15/runner/engine.js (908a2961...) + P1 (a3 engine_tol.js edits, identity require kept relative) + P2 (a5 g2PenaltyMs/g2MaxSwitches) + P3 (forecast.flatRatio). First build of engine17 in wf17; this is the shared hash.
+81d7b47e65c582f92ca30f9fd256c7d55ad0b507f33812e12a02f19c197f12e6  code/runner/engine17.js  <- wf15/runner/engine.js PATCHED P1+P2+P3
+be261baa8cfad3da2c1c357daa04c7f845062fa7bdff63023bb1be1f18468e48  code/runner/identity.js  <- wf15/runner/identity.js copy (identical)
+d27d0bee61cb05aceacab98ec0e94630ab1746f2bf3a1fe34e3042d8bdeb2670  code/runner/scenario.js  <- wf15/runner/scenario.js copy (identical)
+dd47d9e345773705f070dea3dec4906883f0eb4a48e7ee76ed5601190be1db6d  code/runner/normalizer_emul.js  <- wf15/runner/normalizer_emul.js copy (identical)
+c761de69599ba6b4794398079ec6a741228a77195b10855f6338fd1d1909bce4  code/runner/lib.js  <- wf15/runner/lib.js copy (identical)
+b295b8a9a86b7085de9c7760ce7594e0b5c6cf08d41714b6fa16f23ead25c2f0  code/runner/sscore.js  <- wf15/runner/sscore.js copy (identical)
+cceb8e6184faa480ea38491c8290857c6cfdb2795ed5830c6ba9ca0e6cc409d3  code/runner/lambda.js  <- wf15/runner/lambda.js copy (identical)
+e14c5756e71985ad12eb97f785b471c6d1165225c04dc4ab577e9a09f012dacb  code/runner/netfull.js  <- wf15/runner/netfull.js PATCHED (SP absolute)
+f1ee54cc4b9bdf9394b113b323a035115f948268994e280fb7ad0ece4bd294ed  code/scripts/metrics_sh.js  <- wf15/scripts/metrics_sh.js copy (identical)
+c61c518b20ba1221c8dffaf56d9f788052fc1fc601ba23a5d034e6482878709a  code/scripts/shlib.js  <- wf15/scripts/shlib.js PATCHED (SP absolute)
+43a21ff6831ae307da7602b365b67827b18e9a20520013b9482e5a361fe9fc04  code/scripts/pool.js  <- wf15/scripts/pool.js copy (identical)
+c703f5194133802138a18f051af88502415c2c121768ee34dd7292fe498a86c1  code/scripts/shworker.js  <- wf15/scripts/shworker.js copy (identical)
+c3076b8358c2b150e9335f1254ed7081b927754d1095d03ef139673686721187  code/scripts/shcore.js  <- wf15/scripts/shcore.js PATCHED (engine17, fence tol/audit, sig fields)
+29287ab32c91f458e514d766608c2531dd7547f73c8607f8b3a5001b13ec3893  code/scripts/shcore.js  <- v2 (R2 fix, see DEVIATIONS): tolerance-aware SHF invariant; v1 kept as work/shcore.v1.js. R3 does not use shcore; R1 and the R2 re-run use v2
+2e4177a8481c759acd8b93cb34591b9f2f271be239d6e224b19d6c343e30e0c5  code/scripts/run_sh.js  <- wf15/scripts/run_sh.js PATCHED (--fence-tol, --audit, --variant, footer)
+a73519337f01d4a288a54968b54d98c740a0922673e49936505112fdd9a6fb6f  code/scripts/gen17.js  <- wf14/scripts/gen_cells_rs.js PATCHED (--seedtag, --nodetag)
+bcd21f2db7985a1e59bbf82dff15afd115a41c14258c27a57133773e0295e1e6  code/scripts/forecast.js  <- wf13/scripts/forecast.js copy
+f183c5341562cf6f84008867003335d6827f9cf55f59ad5f4032b4c343a01d8a  code/scripts/pad.js  <- wf7/c-forecast-review/scripts/pad.js copy
+bc0f31f62e14a46416da97eb1090b9b4e1a1c92b2f3a69a9ae22c1c2906d82ad  code/scripts/r3drive.js  <- new (this key)
+a1a53ebbb9cb411a14466df8dbef0440959842b949d49cfc8e59e3817b377588  code/scripts/rw.js  <- new (this key)
+67799eeff901148e24014c692e51bb3707654ae1ec1e7a805caf8a03ae6ac627  code/scripts/panels.js  <- new (this key)
+334da4980fc25d65410d6723414e1e40704d27baf623820cef51f062bd2efb39  code/scripts/cmp_rows.js  <- new (this key)
+c1c2073a8692397d23249d8b9b3dce543720a83eb96aaf5c5706dc3d709aae6f  code/scripts/gate_p2.js  <- new (this key)

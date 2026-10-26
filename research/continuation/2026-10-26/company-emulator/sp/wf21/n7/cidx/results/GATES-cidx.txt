@@ -1,0 +1,3 @@
+CI-1 old rule rebuilt == accuracy-index-2019.json: 153 days x 96 bins = 14688 values, mismatches 0, JSON string identical true -> PASS
+CI-2 per-target old-rule profiles == CL profiles from accuracy-index-2019.json: 60 day-windows, mismatches 0, both-null 0 -> PASS
+CI-3 causal file: all stored days < target, reference month before target month, >= 2 sources and the same source days as CL -> PASS

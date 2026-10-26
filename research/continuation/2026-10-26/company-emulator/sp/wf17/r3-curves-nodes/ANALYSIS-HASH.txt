@@ -1,0 +1,9 @@
+wf17 r3-curves-nodes ANALYSIS-HASH (wf17-exploratory-post-audit). Each block is written BEFORE the named check's first production run.
+== R6 + R7 (2026-10-23T16:45:29+07:00, before the R6 production run, the R7 cell generation and the R7 production run)
+9d909ee43c8b0a7816b70321cc54297e630af7d54430b8a0561a84a301215037 *analysis/lib17.js
+b51678211c06e3431614b36b0c9f4e8adf7cc39145250cf301af40cfca67b78a *analysis/r6_analyze.js
+7bea0b5c22fd5db00d5167c669fdbf66e890b266748dd276318693840b7d468c *analysis/r6_plot.js
+6889ac2c56e62706b08a02fad26e151016cfbb45e77ac90bb5f2cf54a68d945a *analysis/r7_analyze.js
+8d110a3d5842266a9011a59f973fd4cb135183de2d288c5a72f9d07b660c89dd *analysis/r7_cells_check.js
+c713ecbcd909a5e88eb124478b74336ba398fbf3405e048322f34b28867b92cd *code/RUNBOOK.sh
+563f8fefed1ae7ca5af6faf324f7e828328237d8019fd564bd1b8c16cbe3c399 *work/smoke/synth_r6.js

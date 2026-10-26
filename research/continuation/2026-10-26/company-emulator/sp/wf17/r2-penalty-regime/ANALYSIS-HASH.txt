@@ -1,0 +1,15 @@
+wf17 r2-penalty-regime ANALYSIS-HASH (wf17-exploratory-post-audit). Each block is written BEFORE the named check's first production run.
+== R4 (2026-10-23T15:50:08+07:00, before the R4 production run)
+9d909ee43c8b0a7816b70321cc54297e630af7d54430b8a0561a84a301215037 *analysis/lib17.js
+b22b3755e6164d309582b50718593dc898323301dfa875fc67233e35f2259ed9 *analysis/agg17.js
+a336dd21806d165c63947b686f22eebe8d11f9b43e7f93518ae8e3caddd26e64 *analysis/r4_analyze.js
+fa8ac72d1883504a9291e29af192b3699a8d552a3b69d1c1072a82ff856b1c25 *code/scripts/drive17.js
+60b3ec0d4bb56b367bd59ecb707aa17cb6a48dd418d6c79ec298723176f7dacd *code/RUNBOOK.sh
+== R5 (2026-10-23T15:52:40+07:00, before the R5 production run; written while the R4 job was running and before any R4 result was read)
+9d909ee43c8b0a7816b70321cc54297e630af7d54430b8a0561a84a301215037 *analysis/lib17.js
+b22b3755e6164d309582b50718593dc898323301dfa875fc67233e35f2259ed9 *analysis/agg17.js
+7ff230538f9a70aa07840fb4dd9d902538c41d1d36c65c91de9d213ba44ba3aa *analysis/r5_analyze.js
+fa8ac72d1883504a9291e29af192b3699a8d552a3b69d1c1072a82ff856b1c25 *code/scripts/drive17.js
+60b3ec0d4bb56b367bd59ecb707aa17cb6a48dd418d6c79ec298723176f7dacd *code/RUNBOOK.sh
+43654d12...(first version) -> c1904831c7fc9f36de733f2c285cceb1b7b8d3979251089bd6b450ba954356f0 *analysis/posthoc_r4.js  (POST-HOC, written 16:18 after reading R4; descriptive only; 16:19 comment-only fix of a timestamp, output identical)
+866dc5799bdf91a13ef1bd2f5a527b82f19f9981ef3c897fa087e8867da4d4ee *analysis/posthoc_r4.js  (POST-HOC v3, 2026-10-23T16:28:34+07:00: added the count metrics breachDeadline60 and late60First to the same contrasts, to compute exchange rates; earlier lines unchanged)

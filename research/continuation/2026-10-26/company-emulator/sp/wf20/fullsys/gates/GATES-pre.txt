@@ -1,0 +1,8 @@
+wf20-fullsys-exploratory-post-audit gate check 2026-10-26T04:09:56.385Z rows 120 (E:/RideBoundData/company-intake/2026-10-23/sp/wf20/fullsys/gates/gate_rows.ndjson)
+x* check: PASS (every Shadow row uses frozen x* 72 INS / 71 G2)
+g1  F14 N Shadow rows vs wf15 main: rows 24, compared 24, mismatched 0, no reference 0 -> PASS
+g1x F14 N EOHZ35/RCE35 rows vs wf15 main (extra): rows 16, compared 16, mismatched 0, no reference 0 -> PASS
+g2  EOHZ35/RCE35 rows (N, CL) vs wf17 r3: rows 48, compared 48, mismatched 0, no reference 0 -> PASS
+g3  SHRC N: rows 12, rows with breachLedger/G_ledgerBreach/A_ledgerBreach != 0: 0 -> PASS
+g3  SHRC CL: rows 12, rows with breachLedger/G_ledgerBreach/A_ledgerBreach != 0: 0 -> PASS
+OVERALL (g1, g2, g3): PASS

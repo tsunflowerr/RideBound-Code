@@ -1,0 +1,546 @@
+wf17 R3 (wf17-exploratory-post-audit) - forecast vs equal-time pad + fresh-day replication. Generated 2026-10-23T08:00:44.482Z by analysis/r3_analyze.js (sha256 4e477017e049ee6066782addd779112e346c291acd5a4a26f4813e958cee063f)
+rows E:\RideBoundData\company-intake\2026-10-23\sp\wf17\r1-identity-fence-pad\results\r3.ndjson
+dumps E:\RideBoundData\company-intake\2026-10-23\sp\wf17\r1-identity-fence-pad\dumps\r3.dump.ndjson
+
+==================== INS U ====================
+-- F14 (SEEN) k_w08 2.28% k_w17 0.09%
+   levels (pooled over the panel) Y% / E%: naive 46.56/4.35  display 41.95/4.89  padW 42.89/5.63  padC 42.90/5.70
+   levels w08 Y%: naive 52.27  display 42.85  padW 44.82  padC 44.83 | w17 Y%: naive 41.18  display 41.10  padW 41.08  padC 41.08
+   (a) Y display - naive                          mean -4.64 pp [-5.10, -4.19] SE 0.21 med -4.71 | 14-/0+/0= of 14, sign p 0.00012 | A 0.42 B 0.46
+   (b) Y pad(k_w) - naive                         mean -3.68 pp [-4.12, -3.24] SE 0.20 med -3.58 | 14-/0+/0= of 14, sign p 0.00012 | A 0.43 B 0.46
+   (c) Y display - pad(k_w) [PRIMARY open loop]   mean -0.97 pp [-1.53, -0.41] SE 0.26 med -0.86 | 11-/3+/0= of 14, sign p 0.057 | A 0.42 B 0.43
+   (c2) Y display - pad(k_cell)                    mean -0.96 pp [-1.50, -0.42] SE 0.25 med -1.00 | 11-/3+/0= of 14, sign p 0.057 | A 0.42 B 0.43
+   (a) E display - naive                          mean 0.56 pp [-0.14, 1.26] SE 0.32 med 0.04 | 0-/8+/6= of 14, sign p 0.0078 | A 0.05 B 0.04
+   (b) E pad(k_w) - naive                         mean 1.27 pp [0.68, 1.87] SE 0.28 med 1.51 | 0-/14+/0= of 14, sign p 0.00012 | A 0.06 B 0.04
+   (c) E display - pad(k_w) [PRIMARY open loop]   mean -0.72 pp [-1.42, -0.02] SE 0.32 med -0.91 | 13-/1+/0= of 14, sign p 0.0018 | A 0.05 B 0.06
+   (c2) E display - pad(k_cell)                    mean -0.81 pp [-1.48, -0.14] SE 0.31 med -0.88 | 12-/2+/0= of 14, sign p 0.013 | A 0.05 B 0.06
+   (c) Y w08: mean -2.00 pp [-3.13, -0.88] SE 0.52 med -1.91 | 11-/3+/0= of 14, sign p 0.057 | A 0.43 B 0.45
+   (c) Y w17: mean 0.02 pp [-0.04, 0.09] SE 0.03 med 0.04 | 3-/7+/4= of 14, sign p 0.34 | A 0.41 B 0.41
+-- F16 (FRESH, never simulated before) k_w08 2.38% k_w17 0.09%
+   levels (pooled over the panel) Y% / E%: naive 46.52/4.43  display 41.80/4.93  padW 42.95/5.71  padC 42.95/5.73
+   levels w08 Y%: naive 51.65  display 42.06  padW 44.35  padC 44.30 | w17 Y%: naive 41.78  display 41.57  padW 41.65  padC 41.69
+   (a) Y display - naive                          mean -4.74 pp [-5.24, -4.25] SE 0.23 med -4.75 | 16-/0+/0= of 16, sign p 3.1e-5 | A 0.42 B 0.46
+   (b) Y pad(k_w) - naive                         mean -3.59 pp [-3.91, -3.26] SE 0.15 med -3.39 | 16-/0+/0= of 16, sign p 3.1e-5 | A 0.43 B 0.46
+   (c) Y display - pad(k_w) [PRIMARY open loop]   mean -1.16 pp [-1.72, -0.59] SE 0.26 med -1.10 | 15-/1+/0= of 16, sign p 0.00052 | A 0.42 B 0.43
+   (c2) Y display - pad(k_cell)                    mean -1.15 pp [-1.58, -0.72] SE 0.20 med -1.22 | 15-/1+/0= of 16, sign p 0.00052 | A 0.42 B 0.43
+   (a) E display - naive                          mean 0.50 pp [0.15, 0.85] SE 0.16 med 0.09 | 0-/10+/6= of 16, sign p 0.0020 | A 0.05 B 0.04
+   (b) E pad(k_w) - naive                         mean 1.28 pp [0.63, 1.93] SE 0.30 med 1.02 | 0-/15+/1= of 16, sign p 6.1e-5 | A 0.06 B 0.04
+   (c) E display - pad(k_w) [PRIMARY open loop]   mean -0.79 pp [-1.38, -0.19] SE 0.28 med -0.61 | 13-/3+/0= of 16, sign p 0.021 | A 0.05 B 0.06
+   (c2) E display - pad(k_cell)                    mean -0.81 pp [-1.42, -0.20] SE 0.29 med -0.55 | 13-/3+/0= of 16, sign p 0.021 | A 0.05 B 0.06
+   (c) Y w08: mean -2.37 pp [-3.59, -1.14] SE 0.57 med -1.99 | 15-/1+/0= of 16, sign p 0.00052 | A 0.42 B 0.44
+   (c) Y w17: mean -0.08 pp [-0.29, 0.12] SE 0.10 med 0.09 | 5-/10+/1= of 16, sign p 0.30 | A 0.41 B 0.41
+
+==================== INS EOHZ35 ====================
+-- F14 (SEEN) k_w08 2.24% k_w17 0.10% | kCL_w08 1.59% kCL_w17 -0.93% | mean promise length N/CL/CLF w08 1550.9/1575.6/1574.6 s, w17 1738.0/1721.8/1700.3 s | CLF equal time w08 true w17 false
+   levels (pooled over the panel) Y% / E%: naive 32.40/5.23  display 26.09/5.88  padW 27.50/6.68  padC 27.52/6.80  padCL 29.39/4.07  CL 27.93/1.29  CLF 33.47/2.12
+   levels w08 Y%: naive 38.77  display 25.89  padW 28.86  padC 28.90  padCL 31.30  CL 25.57  CLF 28.34 | w17 Y%: naive 26.37  display 26.27  padW 26.21  padC 26.21  padCL 27.57  CL 30.15  CLF 38.25
+   (a) Y display - naive                          mean -6.35 pp [-6.99, -5.71] SE 0.30 med -6.09 | 14-/0+/0= of 14, sign p 0.00012 | A 0.26 B 0.32
+   (b) Y pad(k_w) - naive                         mean -4.89 pp [-5.45, -4.34] SE 0.26 med -4.80 | 14-/0+/0= of 14, sign p 0.00012 | A 0.27 B 0.32
+   (c) Y display - pad(k_w) [PRIMARY open loop]   mean -1.45 pp [-2.27, -0.64] SE 0.38 med -1.13 | 12-/2+/0= of 14, sign p 0.013 | A 0.26 B 0.27
+   (c2) Y display - pad(k_cell)                    mean -1.45 pp [-2.21, -0.70] SE 0.35 med -1.32 | 10-/4+/0= of 14, sign p 0.18 | A 0.26 B 0.27
+   (d) Y CL - naive                               mean -4.48 pp [-5.54, -3.42] SE 0.49 med -4.51 | 14-/0+/0= of 14, sign p 0.00012 | A 0.28 B 0.32
+   (e) Y CL - padCL [PRIMARY closed loop]         mean -1.47 pp [-2.72, -0.22] SE 0.58 med -1.60 | 10-/4+/0= of 14, sign p 0.18 | A 0.28 B 0.29
+   (f) Y CLF - CL                                 mean 5.60 pp [3.77, 7.44] SE 0.85 med 5.76 | 0-/14+/0= of 14, sign p 0.00012 | A 0.33 B 0.28
+   (a) E display - naive                          mean 0.68 pp [-0.15, 1.52] SE 0.39 med 0.02 | 0-/7+/7= of 14, sign p 0.016 | A 0.06 B 0.05
+   (b) E pad(k_w) - naive                         mean 1.44 pp [0.80, 2.09] SE 0.30 med 1.48 | 0-/14+/0= of 14, sign p 0.00012 | A 0.07 B 0.05
+   (c) E display - pad(k_w) [PRIMARY open loop]   mean -0.76 pp [-1.60, 0.08] SE 0.39 med -0.77 | 13-/1+/0= of 14, sign p 0.0018 | A 0.06 B 0.07
+   (c2) E display - pad(k_cell)                    mean -0.91 pp [-1.67, -0.14] SE 0.35 med -0.99 | 11-/2+/1= of 14, sign p 0.022 | A 0.06 B 0.07
+   (d) E CL - naive                               mean -3.99 pp [-4.94, -3.03] SE 0.44 med -3.97 | 14-/0+/0= of 14, sign p 0.00012 | A 0.01 B 0.05
+   (e) E CL - padCL [PRIMARY closed loop]         mean -2.82 pp [-3.84, -1.79] SE 0.48 med -3.15 | 13-/1+/0= of 14, sign p 0.0018 | A 0.01 B 0.04
+   (f) E CLF - CL                                 mean 0.84 pp [-0.19, 1.87] SE 0.48 med 0.83 | 3-/11+/0= of 14, sign p 0.057 | A 0.02 B 0.01
+   (c) Y w08: mean -3.06 pp [-4.72, -1.40] SE 0.77 med -2.48 | 12-/1+/1= of 14, sign p 0.0034 | A 0.26 B 0.29
+   (c) Y w17: mean 0.06 pp [-0.01, 0.13] SE 0.03 med 0.09 | 3-/9+/2= of 14, sign p 0.15 | A 0.26 B 0.26
+   (e) Y w08: mean -5.80 pp [-7.32, -4.28] SE 0.70 med -5.54 | 14-/0+/0= of 14, sign p 0.00012 | A 0.26 B 0.31
+   (e) Y w17: mean 2.69 pp [0.73, 4.65] SE 0.91 med 1.35 | 2-/12+/0= of 14, sign p 0.013 | A 0.30 B 0.27
+   (d) CL-N served     per day mean 1.98 [-0.31, 4.27] SE 1.06 med 1.33 | 4-/10+/0= of 14, sign p 0.18 | rel -0.3% | A 693.19 B 691.21
+   (d) CL-N visRev60   per day mean -9.12 [-13.94, -4.30] SE 2.23 med -8.67 | 12-/2+/0= of 14, sign p 0.013 | rel 48.5% | A 9.67 B 18.79
+   (d) CL-N late60Last per day mean 0.00 [0.00, 0.00] SE 0.00 med 0.00 | 0-/0+/14= of 14, sign p 1.0 | A 0.00 B 0.00
+   (d) CL-N TV5/served s mean -18.34 [-23.17, -13.52] SE 2.23 med -18.14 | 14-/0+/0= of 14, sign p 0.00012 | A 98.80 B 117.14
+   (f) CLF-CL served     per day mean -3.40 [-5.91, -0.90] SE 1.16 med -3.50 | 12-/2+/0= of 14, sign p 0.013 | rel 0.5% | A 689.79 B 693.19
+   (f) CLF-CL visRev60   per day mean -1.40 [-6.18, 3.37] SE 2.21 med -1.17 | 8-/6+/0= of 14, sign p 0.79 | rel 14.5% | A 8.26 B 9.67
+   (f) CLF-CL late60Last per day mean 0.00 [0.00, 0.00] SE 0.00 med 0.00 | 0-/0+/14= of 14, sign p 1.0 | A 0.00 B 0.00
+   (f) CLF-CL TV5/served s mean 12.51 [6.54, 18.47] SE 2.76 med 14.47 | 2-/12+/0= of 14, sign p 0.013 | A 111.31 B 98.80
+-- F16 (FRESH, never simulated before) k_w08 2.38% k_w17 0.09% | kCL_w08 1.67% kCL_w17 -0.58% | mean promise length N/CL/CLF w08 1554.9/1580.9/1575.4 s, w17 1677.8/1668.0/1643.7 s | CLF equal time w08 true w17 false
+   levels (pooled over the panel) Y% / E%: naive 32.53/5.23  display 25.77/5.80  padW 27.72/6.72  padC 27.70/6.74  padCL 29.83/4.56  CL 27.84/1.57  CLF 33.94/2.36
+   levels w08 Y%: naive 38.85  display 25.08  padW 28.99  padC 28.95  padCL 31.55  CL 24.88  CLF 27.75 | w17 Y%: naive 26.73  display 26.41  padW 26.55  padC 26.56  padCL 28.25  CL 30.54  CLF 39.56
+   (a) Y display - naive                          mean -6.79 pp [-7.44, -6.15] SE 0.30 med -6.62 | 16-/0+/0= of 16, sign p 3.1e-5 | A 0.26 B 0.32
+   (b) Y pad(k_w) - naive                         mean -4.83 pp [-5.30, -4.36] SE 0.22 med -4.93 | 16-/0+/0= of 16, sign p 3.1e-5 | A 0.28 B 0.32
+   (c) Y display - pad(k_w) [PRIMARY open loop]   mean -1.96 pp [-2.69, -1.23] SE 0.34 med -1.86 | 15-/1+/0= of 16, sign p 0.00052 | A 0.26 B 0.28
+   (c2) Y display - pad(k_cell)                    mean -1.94 pp [-2.50, -1.38] SE 0.26 med -2.02 | 15-/1+/0= of 16, sign p 0.00052 | A 0.26 B 0.28
+   (d) Y CL - naive                               mean -4.74 pp [-5.74, -3.73] SE 0.47 med -4.86 | 16-/0+/0= of 16, sign p 3.1e-5 | A 0.28 B 0.32
+   (e) Y CL - padCL [PRIMARY closed loop]         mean -2.04 pp [-3.00, -1.09] SE 0.45 med -1.74 | 15-/1+/0= of 16, sign p 0.00052 | A 0.28 B 0.30
+   (f) Y CLF - CL                                 mean 6.20 pp [4.76, 7.65] SE 0.68 med 5.84 | 0-/16+/0= of 16, sign p 3.1e-5 | A 0.34 B 0.28
+   (a) E display - naive                          mean 0.57 pp [0.18, 0.96] SE 0.18 med 0.14 | 0-/11+/5= of 16, sign p 0.00098 | A 0.06 B 0.05
+   (b) E pad(k_w) - naive                         mean 1.48 pp [0.76, 2.20] SE 0.34 med 1.10 | 0-/16+/0= of 16, sign p 3.1e-5 | A 0.07 B 0.05
+   (c) E display - pad(k_w) [PRIMARY open loop]   mean -0.91 pp [-1.66, -0.16] SE 0.35 med -0.55 | 13-/3+/0= of 16, sign p 0.021 | A 0.06 B 0.07
+   (c2) E display - pad(k_cell)                    mean -0.95 pp [-1.75, -0.15] SE 0.38 med -0.52 | 13-/3+/0= of 16, sign p 0.021 | A 0.06 B 0.07
+   (d) E CL - naive                               mean -3.68 pp [-4.40, -2.95] SE 0.34 med -3.67 | 16-/0+/0= of 16, sign p 3.1e-5 | A 0.02 B 0.05
+   (e) E CL - padCL [PRIMARY closed loop]         mean -3.00 pp [-3.70, -2.30] SE 0.33 med -3.10 | 16-/0+/0= of 16, sign p 3.1e-5 | A 0.02 B 0.05
+   (f) E CLF - CL                                 mean 0.77 pp [-0.03, 1.58] SE 0.38 med 0.70 | 6-/10+/0= of 16, sign p 0.45 | A 0.02 B 0.02
+   (c) Y w08: mean -4.03 pp [-5.62, -2.45] SE 0.74 med -3.75 | 15-/1+/0= of 16, sign p 0.00052 | A 0.25 B 0.29
+   (c) Y w17: mean -0.14 pp [-0.42, 0.14] SE 0.13 med 0.08 | 7-/9+/0= of 16, sign p 0.80 | A 0.26 B 0.26
+   (e) Y w08: mean -6.81 pp [-8.65, -4.97] SE 0.86 med -6.32 | 16-/0+/0= of 16, sign p 3.1e-5 | A 0.25 B 0.32
+   (e) Y w17: mean 2.26 pp [1.13, 3.40] SE 0.53 med 2.45 | 3-/13+/0= of 16, sign p 0.021 | A 0.30 B 0.28
+   (d) CL-N served     per day mean -0.19 [-2.41, 2.04] SE 1.04 med 0.67 | 7-/9+/0= of 16, sign p 0.80 | rel 0.0% | A 701.42 B 701.60
+   (d) CL-N visRev60   per day mean -7.10 [-11.05, -3.16] SE 1.85 med -8.00 | 13-/3+/0= of 16, sign p 0.021 | rel 40.5% | A 10.46 B 17.56
+   (d) CL-N late60Last per day mean 0.00 [0.00, 0.00] SE 0.00 med 0.00 | 0-/0+/16= of 16, sign p 1.0 | A 0.00 B 0.00
+   (d) CL-N TV5/served s mean -18.29 [-22.42, -14.17] SE 1.94 med -20.14 | 16-/0+/0= of 16, sign p 3.1e-5 | A 97.79 B 116.08
+   (f) CLF-CL served     per day mean -1.23 [-3.80, 1.34] SE 1.20 med -1.83 | 10-/6+/0= of 16, sign p 0.45 | rel 0.2% | A 700.19 B 701.42
+   (f) CLF-CL visRev60   per day mean -1.50 [-5.71, 2.71] SE 1.98 med -2.33 | 10-/6+/0= of 16, sign p 0.45 | rel 14.3% | A 8.96 B 10.46
+   (f) CLF-CL late60Last per day mean 0.00 [0.00, 0.00] SE 0.00 med 0.00 | 0-/0+/16= of 16, sign p 1.0 | A 0.00 B 0.00
+   (f) CLF-CL TV5/served s mean 14.18 [10.85, 17.52] SE 1.57 med 13.47 | 1-/15+/0= of 16, sign p 0.00052 | A 111.97 B 97.79
+
+==================== INS RCE35 ====================
+-- F14 (SEEN) k_w08 2.24% k_w17 0.10% | kCL_w08 1.09% kCL_w17 -1.10% | mean promise length N/CL/CLF w08 1557.5/1574.5/1574.5 s, w17 1739.4/1720.3/1701.8 s | CLF equal time w08 true w17 false
+   levels (pooled over the panel) Y% / E%: naive 32.30/5.56  display 26.40/6.22  padW 27.52/7.05  padC 27.58/7.18  padCL 30.56/3.78  CL 27.74/1.38  CLF 33.56/2.14
+   levels w08 Y%: naive 39.17  display 27.22  padW 29.54  padC 29.66  padCL 33.91  CL 25.42  CLF 28.35 | w17 Y%: naive 25.73  display 25.62  padW 25.60  padC 25.60  padCL 27.36  CL 29.94  CLF 38.42
+   (a) Y display - naive                          mean -5.93 pp [-6.53, -5.34] SE 0.27 med -5.83 | 14-/0+/0= of 14, sign p 0.00012 | A 0.26 B 0.32
+   (b) Y pad(k_w) - naive                         mean -4.77 pp [-5.34, -4.21] SE 0.26 med -4.84 | 14-/0+/0= of 14, sign p 0.00012 | A 0.27 B 0.32
+   (c) Y display - pad(k_w) [PRIMARY open loop]   mean -1.16 pp [-1.89, -0.43] SE 0.34 med -0.93 | 12-/2+/0= of 14, sign p 0.013 | A 0.26 B 0.27
+   (c2) Y display - pad(k_cell)                    mean -1.20 pp [-1.87, -0.52] SE 0.31 med -1.26 | 10-/4+/0= of 14, sign p 0.18 | A 0.26 B 0.28
+   (d) Y CL - naive                               mean -4.58 pp [-5.49, -3.68] SE 0.42 med -4.53 | 14-/0+/0= of 14, sign p 0.00012 | A 0.28 B 0.32
+   (e) Y CL - padCL [PRIMARY closed loop]         mean -2.84 pp [-3.82, -1.87] SE 0.45 med -3.15 | 14-/0+/0= of 14, sign p 0.00012 | A 0.28 B 0.31
+   (f) Y CLF - CL                                 mean 5.90 pp [4.19, 7.61] SE 0.79 med 6.07 | 0-/14+/0= of 14, sign p 0.00012 | A 0.34 B 0.28
+   (a) E display - naive                          mean 0.69 pp [-0.14, 1.52] SE 0.38 med 0.02 | 0-/7+/7= of 14, sign p 0.016 | A 0.06 B 0.06
+   (b) E pad(k_w) - naive                         mean 1.48 pp [0.82, 2.15] SE 0.31 med 1.58 | 0-/14+/0= of 14, sign p 0.00012 | A 0.07 B 0.06
+   (c) E display - pad(k_w) [PRIMARY open loop]   mean -0.80 pp [-1.63, 0.04] SE 0.39 med -0.64 | 13-/1+/0= of 14, sign p 0.0018 | A 0.06 B 0.07
+   (c2) E display - pad(k_cell)                    mean -0.95 pp [-1.70, -0.19] SE 0.35 med -1.06 | 11-/2+/1= of 14, sign p 0.022 | A 0.06 B 0.07
+   (d) E CL - naive                               mean -4.22 pp [-5.21, -3.23] SE 0.46 med -4.00 | 14-/0+/0= of 14, sign p 0.00012 | A 0.01 B 0.06
+   (e) E CL - padCL [PRIMARY closed loop]         mean -2.43 pp [-3.47, -1.40] SE 0.48 med -2.35 | 13-/1+/0= of 14, sign p 0.0018 | A 0.01 B 0.04
+   (f) E CLF - CL                                 mean 0.77 pp [-0.30, 1.83] SE 0.49 med 0.94 | 3-/11+/0= of 14, sign p 0.057 | A 0.02 B 0.01
+   (c) Y w08: mean -2.38 pp [-3.83, -0.94] SE 0.67 med -2.01 | 12-/2+/0= of 14, sign p 0.013 | A 0.27 B 0.30
+   (c) Y w17: mean 0.03 pp [-0.09, 0.14] SE 0.05 med 0.09 | 4-/8+/2= of 14, sign p 0.39 | A 0.25 B 0.25
+   (e) Y w08: mean -8.53 pp [-9.95, -7.10] SE 0.66 med -9.22 | 14-/0+/0= of 14, sign p 0.00012 | A 0.25 B 0.34
+   (e) Y w17: mean 2.65 pp [0.89, 4.41] SE 0.81 med 1.55 | 2-/12+/0= of 14, sign p 0.013 | A 0.30 B 0.27
+   (d) CL-N served     per day mean 1.17 [-1.20, 3.53] SE 1.09 med 1.17 | 4-/8+/2= of 14, sign p 0.39 | rel -0.2% | A 691.88 B 690.71
+   (d) CL-N visRev60   per day mean -7.69 [-12.35, -3.03] SE 2.16 med -6.83 | 12-/2+/0= of 14, sign p 0.013 | rel 45.2% | A 9.31 B 17.00
+   (d) CL-N late60Last per day mean 0.00 [0.00, 0.00] SE 0.00 med 0.00 | 0-/0+/14= of 14, sign p 1.0 | A 0.00 B 0.00
+   (d) CL-N TV5/served s mean -18.65 [-23.12, -14.18] SE 2.07 med -19.12 | 14-/0+/0= of 14, sign p 0.00012 | A 98.68 B 117.34
+   (f) CLF-CL served     per day mean -0.55 [-2.95, 1.86] SE 1.11 med -1.83 | 9-/5+/0= of 14, sign p 0.42 | rel 0.1% | A 691.33 B 691.88
+   (f) CLF-CL visRev60   per day mean -1.67 [-6.22, 2.89] SE 2.11 med -1.67 | 10-/4+/0= of 14, sign p 0.18 | rel 17.9% | A 7.64 B 9.31
+   (f) CLF-CL late60Last per day mean 0.00 [0.00, 0.00] SE 0.00 med 0.00 | 0-/0+/14= of 14, sign p 1.0 | A 0.00 B 0.00
+   (f) CLF-CL TV5/served s mean 15.20 [9.32, 21.07] SE 2.72 med 15.46 | 1-/13+/0= of 14, sign p 0.0018 | A 113.88 B 98.68
+-- F16 (FRESH, never simulated before) k_w08 2.37% k_w17 0.09% | kCL_w08 1.64% kCL_w17 -0.61% | mean promise length N/CL/CLF w08 1555.3/1580.7/1577.3 s, w17 1677.7/1667.5/1648.8 s | CLF equal time w08 true w17 false
+   levels (pooled over the panel) Y% / E%: naive 32.39/5.41  display 26.05/6.01  padW 27.76/6.97  padC 27.73/6.94  padCL 29.88/4.67  CL 27.95/1.71  CLF 33.92/2.54
+   levels w08 Y%: naive 38.83  display 26.02  padW 29.39  padC 29.34  padCL 31.88  CL 24.93  CLF 27.72 | w17 Y%: naive 26.40  display 26.07  padW 26.24  padC 26.23  padCL 28.02  CL 30.72  CLF 39.58
+   (a) Y display - naive                          mean -6.38 pp [-7.04, -5.72] SE 0.31 med -6.18 | 16-/0+/0= of 16, sign p 3.1e-5 | A 0.26 B 0.32
+   (b) Y pad(k_w) - naive                         mean -4.64 pp [-5.10, -4.18] SE 0.22 med -4.56 | 16-/0+/0= of 16, sign p 3.1e-5 | A 0.28 B 0.32
+   (c) Y display - pad(k_w) [PRIMARY open loop]   mean -1.74 pp [-2.47, -1.00] SE 0.35 med -1.60 | 15-/1+/0= of 16, sign p 0.00052 | A 0.26 B 0.28
+   (c2) Y display - pad(k_cell)                    mean -1.70 pp [-2.26, -1.14] SE 0.26 med -1.79 | 15-/1+/0= of 16, sign p 0.00052 | A 0.26 B 0.28
+   (d) Y CL - naive                               mean -4.49 pp [-5.46, -3.51] SE 0.46 med -4.95 | 16-/0+/0= of 16, sign p 3.1e-5 | A 0.28 B 0.32
+   (e) Y CL - padCL [PRIMARY closed loop]         mean -1.98 pp [-2.81, -1.15] SE 0.39 med -1.46 | 15-/1+/0= of 16, sign p 0.00052 | A 0.28 B 0.30
+   (f) Y CLF - CL                                 mean 6.07 pp [4.55, 7.60] SE 0.71 med 5.69 | 0-/16+/0= of 16, sign p 3.1e-5 | A 0.34 B 0.28
+   (a) E display - naive                          mean 0.61 pp [0.19, 1.03] SE 0.20 med 0.14 | 0-/11+/5= of 16, sign p 0.00098 | A 0.06 B 0.05
+   (b) E pad(k_w) - naive                         mean 1.55 pp [0.77, 2.34] SE 0.37 med 1.29 | 0-/16+/0= of 16, sign p 3.1e-5 | A 0.07 B 0.05
+   (c) E display - pad(k_w) [PRIMARY open loop]   mean -0.94 pp [-1.73, -0.16] SE 0.37 med -0.59 | 13-/3+/0= of 16, sign p 0.021 | A 0.06 B 0.07
+   (c2) E display - pad(k_cell)                    mean -0.94 pp [-1.75, -0.12] SE 0.38 med -0.41 | 13-/3+/0= of 16, sign p 0.021 | A 0.06 B 0.07
+   (d) E CL - naive                               mean -3.71 pp [-4.50, -2.92] SE 0.37 med -3.63 | 16-/0+/0= of 16, sign p 3.1e-5 | A 0.02 B 0.05
+   (e) E CL - padCL [PRIMARY closed loop]         mean -2.97 pp [-3.71, -2.22] SE 0.35 med -3.35 | 16-/0+/0= of 16, sign p 3.1e-5 | A 0.02 B 0.05
+   (f) E CLF - CL                                 mean 0.81 pp [-0.09, 1.71] SE 0.42 med 0.70 | 5-/11+/0= of 16, sign p 0.21 | A 0.03 B 0.02
+   (c) Y w08: mean -3.49 pp [-5.06, -1.93] SE 0.73 med -3.23 | 15-/1+/0= of 16, sign p 0.00052 | A 0.26 B 0.29
+   (c) Y w17: mean -0.17 pp [-0.42, 0.08] SE 0.12 med 0.00 | 7-/6+/3= of 16, sign p 1.0 | A 0.26 B 0.26
+   (e) Y w08: mean -7.06 pp [-8.63, -5.49] SE 0.74 med -6.35 | 16-/0+/0= of 16, sign p 3.1e-5 | A 0.25 B 0.32
+   (e) Y w17: mean 2.67 pp [1.46, 3.88] SE 0.57 med 3.35 | 3-/13+/0= of 16, sign p 0.021 | A 0.31 B 0.28
+   (d) CL-N served     per day mean -0.19 [-3.05, 2.68] SE 1.34 med -0.83 | 9-/7+/0= of 16, sign p 0.80 | rel 0.0% | A 703.67 B 703.85
+   (d) CL-N visRev60   per day mean -6.08 [-9.34, -2.83] SE 1.53 med -5.83 | 13-/3+/0= of 16, sign p 0.021 | rel 37.8% | A 10.00 B 16.08
+   (d) CL-N late60Last per day mean 0.00 [0.00, 0.00] SE 0.00 med 0.00 | 0-/0+/16= of 16, sign p 1.0 | A 0.00 B 0.00
+   (d) CL-N TV5/served s mean -18.39 [-21.88, -14.90] SE 1.64 med -19.16 | 16-/0+/0= of 16, sign p 3.1e-5 | A 98.41 B 116.81
+   (f) CLF-CL served     per day mean -0.50 [-3.36, 2.36] SE 1.34 med 0.17 | 7-/8+/1= of 16, sign p 1.0 | rel 0.1% | A 703.17 B 703.67
+   (f) CLF-CL visRev60   per day mean -1.10 [-5.30, 3.09] SE 1.97 med -1.83 | 10-/6+/0= of 16, sign p 0.45 | rel 11.0% | A 8.90 B 10.00
+   (f) CLF-CL late60Last per day mean 0.00 [0.00, 0.00] SE 0.00 med 0.00 | 0-/0+/16= of 16, sign p 1.0 | A 0.00 B 0.00
+   (f) CLF-CL TV5/served s mean 15.90 [12.42, 19.39] SE 1.64 med 15.66 | 0-/16+/0= of 16, sign p 3.1e-5 | A 114.32 B 98.41
+
+==================== G2 U ====================
+-- F14 (SEEN) k_w08 2.30% k_w17 0.09%
+   levels (pooled over the panel) Y% / E%: naive 45.79/6.48  display 41.48/7.14  padW 42.32/7.89  padC 42.31/7.92
+   levels w08 Y%: naive 50.98  display 42.25  padW 43.95  padC 43.95 | w17 Y%: naive 40.84  display 40.75  padW 40.76  padC 40.76
+   (a) Y display - naive                          mean -4.33 pp [-4.80, -3.87] SE 0.22 med -4.19 | 14-/0+/0= of 14, sign p 0.00012 | A 0.41 B 0.46
+   (b) Y pad(k_w) - naive                         mean -3.47 pp [-3.84, -3.09] SE 0.17 med -3.42 | 14-/0+/0= of 14, sign p 0.00012 | A 0.42 B 0.46
+   (c) Y display - pad(k_w) [PRIMARY open loop]   mean -0.87 pp [-1.43, -0.31] SE 0.26 med -0.75 | 11-/3+/0= of 14, sign p 0.057 | A 0.41 B 0.42
+   (c2) Y display - pad(k_cell)                    mean -0.85 pp [-1.41, -0.29] SE 0.26 med -0.83 | 11-/3+/0= of 14, sign p 0.057 | A 0.41 B 0.42
+   (a) E display - naive                          mean 0.69 pp [-0.02, 1.39] SE 0.33 med 0.15 | 0-/14+/0= of 14, sign p 0.00012 | A 0.07 B 0.06
+   (b) E pad(k_w) - naive                         mean 1.42 pp [0.83, 2.01] SE 0.27 med 1.54 | 0-/14+/0= of 14, sign p 0.00012 | A 0.08 B 0.06
+   (c) E display - pad(k_w) [PRIMARY open loop]   mean -0.74 pp [-1.36, -0.11] SE 0.29 med -0.79 | 13-/1+/0= of 14, sign p 0.0018 | A 0.07 B 0.08
+   (c2) E display - pad(k_cell)                    mean -0.78 pp [-1.37, -0.19] SE 0.27 med -0.95 | 12-/1+/1= of 14, sign p 0.0034 | A 0.07 B 0.08
+   (c) Y w08: mean -1.75 pp [-2.88, -0.61] SE 0.52 med -1.52 | 11-/3+/0= of 14, sign p 0.057 | A 0.42 B 0.44
+   (c) Y w17: mean -0.01 pp [-0.05, 0.03] SE 0.02 med 0.00 | 3-/2+/9= of 14, sign p 1.0 | A 0.41 B 0.41
+-- F16 (FRESH, never simulated before) k_w08 2.40% k_w17 0.09%
+   levels (pooled over the panel) Y% / E%: naive 45.62/6.67  display 41.24/7.26  padW 42.11/8.03  padC 42.16/7.97
+   levels w08 Y%: naive 50.22  display 41.31  padW 43.02  padC 43.13 | w17 Y%: naive 41.34  display 41.17  padW 41.25  padC 41.26
+   (a) Y display - naive                          mean -4.39 pp [-4.82, -3.97] SE 0.20 med -4.41 | 16-/0+/0= of 16, sign p 3.1e-5 | A 0.41 B 0.46
+   (b) Y pad(k_w) - naive                         mean -3.52 pp [-3.85, -3.19] SE 0.15 med -3.35 | 16-/0+/0= of 16, sign p 3.1e-5 | A 0.42 B 0.46
+   (c) Y display - pad(k_w) [PRIMARY open loop]   mean -0.88 pp [-1.41, -0.34] SE 0.25 med -0.82 | 13-/3+/0= of 16, sign p 0.021 | A 0.41 B 0.42
+   (c2) Y display - pad(k_cell)                    mean -0.92 pp [-1.38, -0.47] SE 0.21 med -1.06 | 14-/2+/0= of 16, sign p 0.0042 | A 0.41 B 0.42
+   (a) E display - naive                          mean 0.59 pp [0.27, 0.92] SE 0.15 med 0.29 | 0-/16+/0= of 16, sign p 3.1e-5 | A 0.07 B 0.07
+   (b) E pad(k_w) - naive                         mean 1.36 pp [0.71, 2.01] SE 0.30 med 1.16 | 0-/16+/0= of 16, sign p 3.1e-5 | A 0.08 B 0.07
+   (c) E display - pad(k_w) [PRIMARY open loop]   mean -0.77 pp [-1.36, -0.17] SE 0.28 med -0.51 | 12-/4+/0= of 16, sign p 0.077 | A 0.07 B 0.08
+   (c2) E display - pad(k_cell)                    mean -0.72 pp [-1.33, -0.11] SE 0.29 med -0.35 | 12-/4+/0= of 16, sign p 0.077 | A 0.07 B 0.08
+   (c) Y w08: mean -1.78 pp [-2.90, -0.65] SE 0.53 med -1.51 | 14-/2+/0= of 16, sign p 0.0042 | A 0.41 B 0.43
+   (c) Y w17: mean -0.09 pp [-0.25, 0.07] SE 0.07 med 0.00 | 5-/5+/6= of 16, sign p 1.0 | A 0.41 B 0.41
+
+==================== G2 EOHZ35 ====================
+-- F14 (SEEN) k_w08 2.26% k_w17 0.10% | kCL_w08 1.95% kCL_w17 -1.09% | mean promise length N/CL/CLF w08 1556.7/1587.1/1581.8 s, w17 1740.0/1721.0/1709.0 s | CLF equal time w08 true w17 false
+   levels (pooled over the panel) Y% / E%: naive 32.11/6.75  display 25.78/7.52  padW 27.11/8.40  padC 27.18/8.49  padCL 28.57/5.78  CL 27.67/2.87  CLF 33.10/3.68
+   levels w08 Y%: naive 38.29  display 25.41  padW 28.17  padC 28.33  padCL 29.27  CL 25.40  CLF 27.75 | w17 Y%: naive 26.26  display 26.12  padW 26.11  padC 26.09  padCL 27.90  CL 29.81  CLF 38.12
+   (a) Y display - naive                          mean -6.37 pp [-6.92, -5.82] SE 0.25 med -6.03 | 14-/0+/0= of 14, sign p 0.00012 | A 0.26 B 0.32
+   (b) Y pad(k_w) - naive                         mean -4.99 pp [-5.53, -4.45] SE 0.25 med -4.94 | 14-/0+/0= of 14, sign p 0.00012 | A 0.27 B 0.32
+   (c) Y display - pad(k_w) [PRIMARY open loop]   mean -1.38 pp [-2.14, -0.62] SE 0.35 med -1.06 | 13-/1+/0= of 14, sign p 0.0018 | A 0.26 B 0.27
+   (c2) Y display - pad(k_cell)                    mean -1.42 pp [-2.10, -0.74] SE 0.31 med -1.35 | 11-/3+/0= of 14, sign p 0.057 | A 0.26 B 0.27
+   (d) Y CL - naive                               mean -4.45 pp [-5.42, -3.48] SE 0.45 med -4.69 | 14-/0+/0= of 14, sign p 0.00012 | A 0.28 B 0.32
+   (e) Y CL - padCL [PRIMARY closed loop]         mean -0.91 pp [-2.10, 0.29] SE 0.55 med -0.89 | 10-/4+/0= of 14, sign p 0.18 | A 0.28 B 0.29
+   (f) Y CLF - CL                                 mean 5.50 pp [3.79, 7.20] SE 0.79 med 4.34 | 0-/14+/0= of 14, sign p 0.00012 | A 0.33 B 0.28
+   (a) E display - naive                          mean 0.81 pp [-0.06, 1.68] SE 0.40 med 0.15 | 0-/13+/1= of 14, sign p 0.00024 | A 0.08 B 0.07
+   (b) E pad(k_w) - naive                         mean 1.66 pp [0.95, 2.37] SE 0.33 med 1.76 | 0-/14+/0= of 14, sign p 0.00012 | A 0.08 B 0.07
+   (c) E display - pad(k_w) [PRIMARY open loop]   mean -0.85 pp [-1.69, -0.00] SE 0.39 med -1.00 | 13-/1+/0= of 14, sign p 0.0018 | A 0.08 B 0.08
+   (c2) E display - pad(k_cell)                    mean -0.96 pp [-1.76, -0.16] SE 0.37 med -1.24 | 12-/2+/0= of 14, sign p 0.013 | A 0.08 B 0.09
+   (d) E CL - naive                               mean -3.92 pp [-4.93, -2.91] SE 0.47 med -3.89 | 14-/0+/0= of 14, sign p 0.00012 | A 0.03 B 0.07
+   (e) E CL - padCL [PRIMARY closed loop]         mean -2.95 pp [-4.01, -1.88] SE 0.49 med -3.28 | 13-/1+/0= of 14, sign p 0.0018 | A 0.03 B 0.06
+   (f) E CLF - CL                                 mean 0.82 pp [-0.22, 1.87] SE 0.48 med 1.00 | 5-/9+/0= of 14, sign p 0.42 | A 0.04 B 0.03
+   (c) Y w08: mean -2.83 pp [-4.38, -1.28] SE 0.72 med -2.37 | 13-/1+/0= of 14, sign p 0.0018 | A 0.25 B 0.28
+   (c) Y w17: mean 0.01 pp [-0.12, 0.14] SE 0.06 med 0.09 | 5-/9+/0= of 14, sign p 0.42 | A 0.26 B 0.26
+   (e) Y w08: mean -3.91 pp [-5.43, -2.38] SE 0.71 med -3.20 | 14-/0+/0= of 14, sign p 0.00012 | A 0.25 B 0.29
+   (e) Y w17: mean 2.01 pp [0.40, 3.62] SE 0.74 med 1.12 | 4-/10+/0= of 14, sign p 0.18 | A 0.30 B 0.28
+   (d) CL-N served     per day mean 1.14 [-2.54, 4.82] SE 1.70 med 1.00 | 5-/9+/0= of 14, sign p 0.42 | rel -0.2% | A 695.43 B 694.29
+   (d) CL-N visRev60   per day mean -9.88 [-14.83, -4.93] SE 2.29 med -8.67 | 13-/1+/0= of 14, sign p 0.0018 | rel 29.9% | A 23.14 B 33.02
+   (d) CL-N late60Last per day mean 0.00 [0.00, 0.00] SE 0.00 med 0.00 | 0-/0+/14= of 14, sign p 1.0 | A 0.00 B 0.00
+   (d) CL-N TV5/served s mean -19.00 [-23.57, -14.42] SE 2.12 med -18.81 | 14-/0+/0= of 14, sign p 0.00012 | A 113.64 B 132.63
+   (f) CLF-CL served     per day mean -0.52 [-3.83, 2.78] SE 1.53 med -1.67 | 8-/5+/1= of 14, sign p 0.58 | rel 0.1% | A 694.90 B 695.43
+   (f) CLF-CL visRev60   per day mean -0.38 [-4.96, 4.19] SE 2.12 med -0.67 | 7-/7+/0= of 14, sign p 1.0 | rel 1.6% | A 22.76 B 23.14
+   (f) CLF-CL late60Last per day mean 0.00 [0.00, 0.00] SE 0.00 med 0.00 | 0-/0+/14= of 14, sign p 1.0 | A 0.00 B 0.00
+   (f) CLF-CL TV5/served s mean 14.33 [8.55, 20.11] SE 2.67 med 13.78 | 1-/13+/0= of 14, sign p 0.0018 | A 127.97 B 113.64
+-- F16 (FRESH, never simulated before) k_w08 2.38% k_w17 0.09% | kCL_w08 1.82% kCL_w17 -0.70% | mean promise length N/CL/CLF w08 1560.7/1589.1/1583.8 s, w17 1683.7/1671.9/1653.7 s | CLF equal time w08 true w17 false
+   levels (pooled over the panel) Y% / E%: naive 31.98/6.75  display 25.49/7.42  padW 27.21/8.40  padC 27.20/8.39  padCL 29.24/6.15  CL 27.59/3.44  CLF 33.09/4.20
+   levels w08 Y%: naive 37.92  display 24.78  padW 28.26  padC 28.20  padCL 30.21  CL 24.69  CLF 26.94 | w17 Y%: naive 26.46  display 26.15  padW 26.24  padC 26.27  padCL 28.34  CL 30.23  CLF 38.68
+   (a) Y display - naive                          mean -6.54 pp [-7.22, -5.85] SE 0.32 med -6.30 | 16-/0+/0= of 16, sign p 3.1e-5 | A 0.25 B 0.32
+   (b) Y pad(k_w) - naive                         mean -4.79 pp [-5.25, -4.32] SE 0.22 med -4.54 | 16-/0+/0= of 16, sign p 3.1e-5 | A 0.27 B 0.32
+   (c) Y display - pad(k_w) [PRIMARY open loop]   mean -1.75 pp [-2.55, -0.95] SE 0.37 med -1.66 | 15-/1+/0= of 16, sign p 0.00052 | A 0.25 B 0.27
+   (c2) Y display - pad(k_cell)                    mean -1.73 pp [-2.30, -1.15] SE 0.27 med -1.97 | 15-/1+/0= of 16, sign p 0.00052 | A 0.25 B 0.27
+   (d) Y CL - naive                               mean -4.44 pp [-5.48, -3.39] SE 0.49 med -4.55 | 16-/0+/0= of 16, sign p 3.1e-5 | A 0.28 B 0.32
+   (e) Y CL - padCL [PRIMARY closed loop]         mean -1.69 pp [-2.65, -0.73] SE 0.45 med -1.59 | 13-/3+/0= of 16, sign p 0.021 | A 0.28 B 0.29
+   (f) Y CLF - CL                                 mean 5.61 pp [3.96, 7.27] SE 0.78 med 4.87 | 0-/16+/0= of 16, sign p 3.1e-5 | A 0.33 B 0.28
+   (a) E display - naive                          mean 0.68 pp [0.30, 1.06] SE 0.18 med 0.28 | 0-/16+/0= of 16, sign p 3.1e-5 | A 0.07 B 0.07
+   (b) E pad(k_w) - naive                         mean 1.65 pp [0.91, 2.39] SE 0.35 med 1.47 | 0-/16+/0= of 16, sign p 3.1e-5 | A 0.08 B 0.07
+   (c) E display - pad(k_w) [PRIMARY open loop]   mean -0.97 pp [-1.73, -0.21] SE 0.36 med -0.59 | 13-/3+/0= of 16, sign p 0.021 | A 0.07 B 0.08
+   (c2) E display - pad(k_cell)                    mean -0.98 pp [-1.76, -0.20] SE 0.37 med -0.58 | 14-/2+/0= of 16, sign p 0.0042 | A 0.07 B 0.08
+   (d) E CL - naive                               mean -3.31 pp [-4.01, -2.61] SE 0.33 med -2.97 | 16-/0+/0= of 16, sign p 3.1e-5 | A 0.03 B 0.07
+   (e) E CL - padCL [PRIMARY closed loop]         mean -2.71 pp [-3.38, -2.04] SE 0.31 med -2.75 | 16-/0+/0= of 16, sign p 3.1e-5 | A 0.03 B 0.06
+   (f) E CLF - CL                                 mean 0.74 pp [0.03, 1.46] SE 0.34 med 0.83 | 5-/11+/0= of 16, sign p 0.21 | A 0.04 B 0.03
+   (c) Y w08: mean -3.63 pp [-5.32, -1.94] SE 0.79 med -3.16 | 14-/2+/0= of 16, sign p 0.0042 | A 0.25 B 0.28
+   (c) Y w17: mean -0.09 pp [-0.37, 0.19] SE 0.13 med 0.00 | 5-/7+/4= of 16, sign p 0.77 | A 0.26 B 0.26
+   (e) Y w08: mean -5.65 pp [-7.41, -3.89] SE 0.82 med -5.44 | 16-/0+/0= of 16, sign p 3.1e-5 | A 0.25 B 0.30
+   (e) Y w17: mean 1.87 pp [0.59, 3.15] SE 0.60 med 1.50 | 3-/13+/0= of 16, sign p 0.021 | A 0.30 B 0.28
+   (d) CL-N served     per day mean -1.81 [-4.69, 1.07] SE 1.35 med -2.17 | 10-/6+/0= of 16, sign p 0.45 | rel 0.3% | A 708.48 B 710.29
+   (d) CL-N visRev60   per day mean -7.38 [-11.56, -3.19] SE 1.96 med -6.00 | 13-/3+/0= of 16, sign p 0.021 | rel 22.6% | A 25.31 B 32.69
+   (d) CL-N late60Last per day mean 0.00 [0.00, 0.00] SE 0.00 med 0.00 | 0-/0+/16= of 16, sign p 1.0 | A 0.00 B 0.00
+   (d) CL-N TV5/served s mean -17.99 [-22.78, -13.20] SE 2.25 med -18.43 | 16-/0+/0= of 16, sign p 3.1e-5 | A 114.75 B 132.74
+   (f) CLF-CL served     per day mean 0.69 [-2.14, 3.52] SE 1.33 med 1.17 | 7-/9+/0= of 16, sign p 0.80 | rel -0.1% | A 709.17 B 708.48
+   (f) CLF-CL visRev60   per day mean 0.35 [-4.50, 5.21] SE 2.28 med 2.00 | 7-/8+/1= of 16, sign p 1.0 | rel -1.4% | A 25.67 B 25.31
+   (f) CLF-CL late60Last per day mean 0.00 [0.00, 0.00] SE 0.00 med 0.00 | 0-/0+/16= of 16, sign p 1.0 | A 0.00 B 0.00
+   (f) CLF-CL TV5/served s mean 14.88 [10.73, 19.04] SE 1.95 med 15.10 | 1-/15+/0= of 16, sign p 0.00052 | A 129.63 B 114.75
+
+==================== G2 RCE35 ====================
+-- F14 (SEEN) k_w08 2.24% k_w17 0.10% | kCL_w08 1.36% kCL_w17 -0.71% | mean promise length N/CL/CLF w08 1560.0/1581.2/1578.4 s, w17 1733.5/1721.2/1703.9 s | CLF equal time w08 true w17 false
+   levels (pooled over the panel) Y% / E%: naive 32.26/5.97  display 26.39/6.73  padW 27.51/7.66  padC 27.57/7.73  padCL 29.71/5.03  CL 27.79/2.16  CLF 33.60/2.90
+   levels w08 Y%: naive 38.88  display 27.03  padW 29.28  padC 29.45  padCL 32.59  CL 25.55  CLF 28.39 | w17 Y%: naive 25.91  display 25.78  padW 25.80  padC 25.78  padCL 26.95  CL 29.90  CLF 38.47
+   (a) Y display - naive                          mean -5.89 pp [-6.40, -5.38] SE 0.23 med -5.81 | 14-/0+/0= of 14, sign p 0.00012 | A 0.26 B 0.32
+   (b) Y pad(k_w) - naive                         mean -4.74 pp [-5.31, -4.17] SE 0.26 med -4.67 | 14-/0+/0= of 14, sign p 0.00012 | A 0.27 B 0.32
+   (c) Y display - pad(k_w) [PRIMARY open loop]   mean -1.15 pp [-1.87, -0.43] SE 0.33 med -0.64 | 13-/1+/0= of 14, sign p 0.0018 | A 0.26 B 0.27
+   (c2) Y display - pad(k_cell)                    mean -1.19 pp [-1.86, -0.53] SE 0.31 med -1.08 | 11-/3+/0= of 14, sign p 0.057 | A 0.26 B 0.28
+   (d) Y CL - naive                               mean -4.49 pp [-5.45, -3.53] SE 0.44 med -4.95 | 14-/0+/0= of 14, sign p 0.00012 | A 0.28 B 0.32
+   (e) Y CL - padCL [PRIMARY closed loop]         mean -1.94 pp [-3.05, -0.84] SE 0.51 med -2.13 | 12-/2+/0= of 14, sign p 0.013 | A 0.28 B 0.30
+   (f) Y CLF - CL                                 mean 5.88 pp [4.37, 7.40] SE 0.70 med 5.14 | 0-/14+/0= of 14, sign p 0.00012 | A 0.34 B 0.28
+   (a) E display - naive                          mean 0.78 pp [-0.08, 1.65] SE 0.40 med 0.10 | 0-/12+/2= of 14, sign p 0.00049 | A 0.07 B 0.06
+   (b) E pad(k_w) - naive                         mean 1.69 pp [0.96, 2.41] SE 0.34 med 1.83 | 0-/14+/0= of 14, sign p 0.00012 | A 0.08 B 0.06
+   (c) E display - pad(k_w) [PRIMARY open loop]   mean -0.90 pp [-1.75, -0.05] SE 0.39 med -0.60 | 13-/1+/0= of 14, sign p 0.0018 | A 0.07 B 0.08
+   (c2) E display - pad(k_cell)                    mean -0.99 pp [-1.71, -0.27] SE 0.34 med -1.16 | 12-/1+/1= of 14, sign p 0.0034 | A 0.07 B 0.08
+   (d) E CL - naive                               mean -3.86 pp [-4.87, -2.85] SE 0.47 med -3.93 | 14-/0+/0= of 14, sign p 0.00012 | A 0.02 B 0.06
+   (e) E CL - padCL [PRIMARY closed loop]         mean -2.90 pp [-3.96, -1.85] SE 0.49 med -3.07 | 13-/1+/0= of 14, sign p 0.0018 | A 0.02 B 0.05
+   (f) E CLF - CL                                 mean 0.74 pp [-0.32, 1.80] SE 0.49 med 0.95 | 5-/9+/0= of 14, sign p 0.42 | A 0.03 B 0.02
+   (c) Y w08: mean -2.31 pp [-3.75, -0.87] SE 0.67 med -1.44 | 13-/1+/0= of 14, sign p 0.0018 | A 0.27 B 0.29
+   (c) Y w17: mean -0.02 pp [-0.13, 0.09] SE 0.05 med 0.09 | 5-/8+/1= of 14, sign p 0.58 | A 0.26 B 0.26
+   (e) Y w08: mean -7.08 pp [-8.49, -5.67] SE 0.65 med -5.98 | 14-/0+/0= of 14, sign p 0.00012 | A 0.26 B 0.33
+   (e) Y w17: mean 3.01 pp [1.46, 4.57] SE 0.72 med 2.15 | 1-/13+/0= of 14, sign p 0.0018 | A 0.30 B 0.27
+   (d) CL-N served     per day mean 2.00 [-0.60, 4.60] SE 1.20 med 1.67 | 3-/11+/0= of 14, sign p 0.057 | rel -0.3% | A 693.43 B 691.43
+   (d) CL-N visRev60   per day mean -8.40 [-13.83, -2.98] SE 2.51 med -6.17 | 12-/2+/0= of 14, sign p 0.013 | rel 43.0% | A 11.12 B 19.52
+   (d) CL-N late60Last per day mean 0.00 [0.00, 0.00] SE 0.00 med 0.00 | 0-/0+/14= of 14, sign p 1.0 | A 0.00 B 0.00
+   (d) CL-N TV5/served s mean -18.65 [-24.41, -12.90] SE 2.66 med -19.15 | 14-/0+/0= of 14, sign p 0.00012 | A 101.03 B 119.68
+   (f) CLF-CL served     per day mean 1.33 [-1.53, 4.20] SE 1.33 med 0.33 | 6-/8+/0= of 14, sign p 0.79 | rel -0.2% | A 694.76 B 693.43
+   (f) CLF-CL visRev60   per day mean -0.95 [-5.97, 4.06] SE 2.32 med 0.17 | 6-/7+/1= of 14, sign p 1.0 | rel 8.6% | A 10.17 B 11.12
+   (f) CLF-CL late60Last per day mean 0.00 [0.00, 0.00] SE 0.00 med 0.00 | 0-/0+/14= of 14, sign p 1.0 | A 0.00 B 0.00
+   (f) CLF-CL TV5/served s mean 15.51 [10.27, 20.74] SE 2.42 med 13.63 | 0-/14+/0= of 14, sign p 0.00012 | A 116.54 B 101.03
+-- F16 (FRESH, never simulated before) k_w08 2.36% k_w17 0.09% | kCL_w08 1.77% kCL_w17 -0.76% | mean promise length N/CL/CLF w08 1556.8/1584.3/1579.4 s, w17 1679.3/1666.5/1648.0 s | CLF equal time w08 true w17 false
+   levels (pooled over the panel) Y% / E%: naive 32.18/6.06  display 25.84/6.77  padW 27.57/7.70  padC 27.54/7.75  padCL 29.45/5.21  CL 27.81/2.43  CLF 33.55/3.22
+   levels w08 Y%: naive 38.41  display 25.63  padW 29.05  padC 28.98  padCL 30.93  CL 24.67  CLF 27.19 | w17 Y%: naive 26.35  display 26.03  padW 26.19  padC 26.19  padCL 28.07  CL 30.68  CLF 39.35
+   (a) Y display - naive                          mean -6.38 pp [-7.07, -5.70] SE 0.32 med -6.24 | 16-/0+/0= of 16, sign p 3.1e-5 | A 0.26 B 0.32
+   (b) Y pad(k_w) - naive                         mean -4.62 pp [-5.02, -4.23] SE 0.19 med -4.58 | 16-/0+/0= of 16, sign p 3.1e-5 | A 0.28 B 0.32
+   (c) Y display - pad(k_w) [PRIMARY open loop]   mean -1.76 pp [-2.48, -1.03] SE 0.34 med -1.71 | 15-/1+/0= of 16, sign p 0.00052 | A 0.26 B 0.28
+   (c2) Y display - pad(k_cell)                    mean -1.72 pp [-2.26, -1.18] SE 0.25 med -1.99 | 15-/1+/0= of 16, sign p 0.00052 | A 0.26 B 0.28
+   (d) Y CL - naive                               mean -4.43 pp [-5.35, -3.51] SE 0.43 med -4.73 | 16-/0+/0= of 16, sign p 3.1e-5 | A 0.28 B 0.32
+   (e) Y CL - padCL [PRIMARY closed loop]         mean -1.70 pp [-2.55, -0.85] SE 0.40 med -1.21 | 15-/1+/0= of 16, sign p 0.00052 | A 0.28 B 0.29
+   (f) Y CLF - CL                                 mean 5.84 pp [4.43, 7.26] SE 0.66 med 5.21 | 0-/16+/0= of 16, sign p 3.1e-5 | A 0.34 B 0.28
+   (a) E display - naive                          mean 0.72 pp [0.30, 1.13] SE 0.19 med 0.29 | 0-/16+/0= of 16, sign p 3.1e-5 | A 0.07 B 0.06
+   (b) E pad(k_w) - naive                         mean 1.62 pp [0.89, 2.36] SE 0.35 med 1.45 | 0-/16+/0= of 16, sign p 3.1e-5 | A 0.08 B 0.06
+   (c) E display - pad(k_w) [PRIMARY open loop]   mean -0.91 pp [-1.65, -0.16] SE 0.35 med -0.53 | 13-/3+/0= of 16, sign p 0.021 | A 0.07 B 0.08
+   (c2) E display - pad(k_cell)                    mean -0.97 pp [-1.75, -0.19] SE 0.37 med -0.51 | 14-/2+/0= of 16, sign p 0.0042 | A 0.07 B 0.08
+   (d) E CL - naive                               mean -3.64 pp [-4.31, -2.98] SE 0.31 med -3.64 | 16-/0+/0= of 16, sign p 3.1e-5 | A 0.02 B 0.06
+   (e) E CL - padCL [PRIMARY closed loop]         mean -2.79 pp [-3.49, -2.08] SE 0.33 med -2.95 | 16-/0+/0= of 16, sign p 3.1e-5 | A 0.02 B 0.05
+   (f) E CLF - CL                                 mean 0.77 pp [-0.09, 1.63] SE 0.40 med 0.73 | 5-/11+/0= of 16, sign p 0.21 | A 0.03 B 0.02
+   (c) Y w08: mean -3.55 pp [-5.09, -2.00] SE 0.72 med -3.03 | 15-/1+/0= of 16, sign p 0.00052 | A 0.26 B 0.29
+   (c) Y w17: mean -0.16 pp [-0.40, 0.08] SE 0.11 med 0.04 | 6-/8+/2= of 16, sign p 0.79 | A 0.26 B 0.26
+   (e) Y w08: mean -6.39 pp [-8.09, -4.69] SE 0.80 med -6.30 | 16-/0+/0= of 16, sign p 3.1e-5 | A 0.25 B 0.31
+   (e) Y w17: mean 2.55 pp [1.42, 3.69] SE 0.53 med 2.62 | 3-/13+/0= of 16, sign p 0.021 | A 0.31 B 0.28
+   (d) CL-N served     per day mean -1.96 [-5.15, 1.23] SE 1.50 med -2.83 | 10-/6+/0= of 16, sign p 0.45 | rel 0.3% | A 705.71 B 707.67
+   (d) CL-N visRev60   per day mean -7.13 [-10.47, -3.78] SE 1.57 med -6.50 | 13-/3+/0= of 16, sign p 0.021 | rel 35.4% | A 12.98 B 20.10
+   (d) CL-N late60Last per day mean 0.00 [0.00, 0.00] SE 0.00 med 0.00 | 0-/0+/16= of 16, sign p 1.0 | A 0.00 B 0.00
+   (d) CL-N TV5/served s mean -17.85 [-21.67, -14.02] SE 1.79 med -19.05 | 16-/0+/0= of 16, sign p 3.1e-5 | A 101.41 B 119.25
+   (f) CLF-CL served     per day mean 0.75 [-2.46, 3.96] SE 1.51 med 0.17 | 7-/8+/1= of 16, sign p 1.0 | rel -0.1% | A 706.46 B 705.71
+   (f) CLF-CL visRev60   per day mean -0.62 [-5.14, 3.89] SE 2.12 med -1.67 | 9-/7+/0= of 16, sign p 0.80 | rel 4.8% | A 12.35 B 12.98
+   (f) CLF-CL late60Last per day mean 0.00 [0.00, 0.00] SE 0.00 med 0.00 | 0-/0+/16= of 16, sign p 1.0 | A 0.00 B 0.00
+   (f) CLF-CL TV5/served s mean 15.71 [11.99, 19.42] SE 1.74 med 14.61 | 1-/15+/0= of 16, sign p 0.00052 | A 117.11 B 101.41
+
+==================== C6 decision labels ====================
+descr.  INS U: C6 open loop (c) HOLDS
+descr.  INS EOHZ35: C6 open loop (c) HOLDS | C6 closed loop (e) INCONCLUSIVE (panels disagree) [F14 HOLDS; F16 WEAKENED (closed-loop forecast beats an equal-length pad)]
+PRIMARY INS RCE35: C6 open loop (c) HOLDS | C6 closed loop (e) INCONCLUSIVE (panels disagree) [F14 WEAKENED (closed-loop forecast beats an equal-length pad); F16 INCONCLUSIVE]
+descr.  G2 U: C6 open loop (c) WEAKENED
+descr.  G2 EOHZ35: C6 open loop (c) HOLDS | C6 closed loop (e) INCONCLUSIVE (panels disagree) [F14 HOLDS; F16 INCONCLUSIVE]
+descr.  G2 RCE35: C6 open loop (c) HOLDS | C6 closed loop (e) INCONCLUSIVE [F14 INCONCLUSIVE; F16 INCONCLUSIVE]
+
+==================== R3-X: N rows, RCE35 vs comparators (F16 = FRESH replication; F14 = seen) ====================
+-- F16 labels: {"C1":"HOLDS","C2":"HOLDS","C3":"HOLDS","C4_INS":"HOLDS","C4_G2":"HOLDS","thresholds":{"inFavour":11,"unfavourable":8,"nDays":16}}
+   INS|RCE35-EOHZ35|served                                        mean 2.25 [0.15, 4.35] SE 0.99 med 1.67 | 5-/10+/1= of 16, sign p 0.30 | rel -0.3% | A 703.85 B 701.60
+   INS|RCE35-EOHZ35|visRev60                                      mean -1.48 [-2.36, -0.60] SE 0.41 med -1.67 | 12-/3+/1= of 16, sign p 0.035 | rel 8.4% | A 16.08 B 17.56
+   INS|RCE35-EOHZ35|late60First                                   mean -0.25 [-2.47, 1.97] SE 1.04 med 0.50 | 7-/9+/0= of 16, sign p 0.80 | rel 0.1% | A 227.96 B 228.21
+   INS|RCE35-EOHZ35|breachDeadline60                              mean 4.54 [3.70, 5.38] SE 0.39 med 4.33 | 0-/16+/0= of 16, sign p 3.1e-5 | rel -50.3% | A 13.56 B 9.02
+   INS|RCE35-EOHZ35|breachLedger                                  mean -6.56 [-8.39, -4.74] SE 0.86 med -5.83 | 16-/0+/0= of 16, sign p 3.1e-5 | rel 100.0% | A 0.00 B 6.56
+   INS|RCE35-EOHZ35|pDisp                                         mean 2.63 [-0.18, 5.43] SE 1.32 med 3.17 | 5-/11+/0= of 16, sign p 0.21 | rel -1.2% | A 213.94 B 211.31
+   INS|RCE35-EOHZ35|pDispAny1                                     mean 2.54 [-0.29, 5.38] SE 1.33 med 3.33 | 5-/11+/0= of 16, sign p 0.21 | rel -1.2% | A 217.31 B 214.77
+   INS|RCE35-EOHZ35|TV5/served (s)                                mean 0.72 [-0.42, 1.87] SE 0.54 med 0.53 | 6-/10+/0= of 16, sign p 0.45 | A 116.81 B 116.08
+   INS|RCE35-EOHZ35|Pchg=pDisp/served (pp)                        mean 0.27 [-0.05, 0.60] SE 0.15 med 0.36 | 5-/11+/0= of 16, sign p 0.21 | A 0.30 B 0.30
+   INS|RCE35-EOHZ35|pDispAny1/served (pp)                         mean 0.26 [-0.06, 0.58] SE 0.15 med 0.32 | 6-/10+/0= of 16, sign p 0.45 | A 0.31 B 0.30
+   INS|RCE35-EOHZ35|late60First/served (pp)                       mean -0.14 [-0.40, 0.12] SE 0.12 med -0.16 | 10-/6+/0= of 16, sign p 0.45 | A 0.32 B 0.32
+   INS|RCE35-EOHZ35|breachDeadline60/served (pp)                  mean 0.64 [0.52, 0.77] SE 0.06 med 0.58 | 0-/16+/0= of 16, sign p 3.1e-5 | A 0.02 B 0.01
+   INS|RCE35-EOHZ35|breachLedger/served (pp) [BY-CONSTRUCTION for RC] mean -0.92 [-1.17, -0.68] SE 0.12 med -0.85 | 16-/0+/0= of 16, sign p 3.1e-5 | A 0.00 B 0.01
+   INS|RCE35-EO35|served                                          mean 3.73 [1.59, 5.87] SE 1.00 med 3.00 | 2-/14+/0= of 16, sign p 0.0042 | rel -0.5% | A 703.85 B 700.12
+   INS|RCE35-EO35|visRev60                                        mean -1.50 [-2.57, -0.43] SE 0.50 med -1.17 | 13-/1+/2= of 16, sign p 0.0018 | rel 8.5% | A 16.08 B 17.58
+   INS|RCE35-EO35|late60First                                     mean 0.23 [-1.63, 2.08] SE 0.87 med -0.33 | 8-/8+/0= of 16, sign p 1.0 | rel -0.1% | A 227.96 B 227.73
+   INS|RCE35-EO35|breachDeadline60                                mean 4.60 [3.67, 5.54] SE 0.44 med 4.50 | 0-/16+/0= of 16, sign p 3.1e-5 | rel -51.4% | A 13.56 B 8.96
+   INS|RCE35-EO35|breachLedger                                    mean -6.44 [-8.24, -4.63] SE 0.85 med -6.00 | 16-/0+/0= of 16, sign p 3.1e-5 | rel 100.0% | A 0.00 B 6.44
+   INS|RCE35-EO35|pDisp                                           mean 2.88 [-0.06, 5.81] SE 1.38 med 2.67 | 6-/9+/1= of 16, sign p 0.61 | rel -1.4% | A 213.94 B 211.06
+   INS|RCE35-EO35|pDispAny1                                       mean 2.94 [-0.08, 5.95] SE 1.41 med 2.83 | 6-/10+/0= of 16, sign p 0.45 | rel -1.4% | A 217.31 B 214.38
+   INS|RCE35-EO35|TV5/served (s)                                  mean 0.84 [-0.26, 1.93] SE 0.51 med 0.51 | 7-/9+/0= of 16, sign p 0.80 | A 116.81 B 115.97
+   INS|RCE35-EO35|Pchg=pDisp/served (pp)                          mean 0.25 [-0.09, 0.59] SE 0.16 med 0.19 | 7-/9+/0= of 16, sign p 0.80 | A 0.30 B 0.30
+   INS|RCE35-EO35|pDispAny1/served (pp)                           mean 0.26 [-0.09, 0.60] SE 0.16 med 0.23 | 6-/10+/0= of 16, sign p 0.45 | A 0.31 B 0.30
+   INS|RCE35-EO35|late60First/served (pp)                         mean -0.14 [-0.34, 0.07] SE 0.10 med -0.21 | 9-/7+/0= of 16, sign p 0.80 | A 0.32 B 0.32
+   INS|RCE35-EO35|breachDeadline60/served (pp)                    mean 0.65 [0.52, 0.78] SE 0.06 med 0.63 | 0-/16+/0= of 16, sign p 3.1e-5 | A 0.02 B 0.01
+   INS|RCE35-EO35|breachLedger/served (pp) [BY-CONSTRUCTION for RC] mean -0.91 [-1.15, -0.67] SE 0.11 med -0.88 | 16-/0+/0= of 16, sign p 3.1e-5 | A 0.00 B 0.01
+   INS|RCE35-U|served                                             mean -66.00 [-70.71, -61.29] SE 2.21 med -66.67 | 16-/0+/0= of 16, sign p 3.1e-5 | rel 8.6% | A 703.85 B 769.85
+   INS|RCE35-U|visRev60                                           mean -19.56 [-23.70, -15.42] SE 1.94 med -19.67 | 16-/0+/0= of 16, sign p 3.1e-5 | rel 54.9% | A 16.08 B 35.65
+   INS|RCE35-U|late60First                                        mean -130.21 [-136.40, -124.02] SE 2.90 med -129.83 | 16-/0+/0= of 16, sign p 3.1e-5 | rel 36.4% | A 227.96 B 358.17
+   INS|RCE35-U|breachDeadline60                                   mean 13.56 [11.10, 16.03] SE 1.16 med 13.17 | 0-/16+/0= of 16, sign p 3.1e-5 | A 13.56 B 0.00
+   INS|RCE35-U|breachLedger                                       mean 0.00 [0.00, 0.00] SE 0.00 med 0.00 | 0-/0+/16= of 16, sign p 1.0 | A 0.00 B 0.00
+   INS|RCE35-U|pDisp                                              mean -128.21 [-132.61, -123.81] SE 2.06 med -126.67 | 16-/0+/0= of 16, sign p 3.1e-5 | rel 37.5% | A 213.94 B 342.15
+   INS|RCE35-U|pDispAny1                                          mean -127.27 [-131.55, -122.99] SE 2.01 med -126.17 | 16-/0+/0= of 16, sign p 3.1e-5 | rel 36.9% | A 217.31 B 344.58
+   INS|RCE35-U|TV5/served (s)                                     mean -176.97 [-183.43, -170.50] SE 3.03 med -179.21 | 16-/0+/0= of 16, sign p 3.1e-5 | A 116.81 B 293.77
+   INS|RCE35-U|Pchg=pDisp/served (pp)                             mean -14.09 [-14.56, -13.62] SE 0.22 med -14.25 | 16-/0+/0= of 16, sign p 3.1e-5 | A 0.30 B 0.44
+   INS|RCE35-U|pDispAny1/served (pp)                              mean -13.93 [-14.40, -13.46] SE 0.22 med -14.04 | 16-/0+/0= of 16, sign p 3.1e-5 | A 0.31 B 0.45
+   INS|RCE35-U|late60First/served (pp)                            mean -14.12 [-14.72, -13.52] SE 0.28 med -14.29 | 16-/0+/0= of 16, sign p 3.1e-5 | A 0.32 B 0.46
+   INS|RCE35-U|breachDeadline60/served (pp)                       mean 1.93 [1.57, 2.30] SE 0.17 med 1.90 | 0-/16+/0= of 16, sign p 3.1e-5 | A 0.02 B 0.00
+   INS|RCE35-U|breachLedger/served (pp) [BY-CONSTRUCTION for RC]  mean 0.00 [0.00, 0.00] SE 0.00 med 0.00 | 0-/0+/16= of 16, sign p 1.0 | A 0.00 B 0.00
+   G2|RCE35-EOHZ35|served                                         mean -2.63 [-5.43, 0.18] SE 1.32 med -3.33 | 11-/5+/0= of 16, sign p 0.21 | rel 0.4% | A 707.67 B 710.29
+   G2|RCE35-EOHZ35|visRev60                                       mean -12.58 [-14.77, -10.40] SE 1.03 med -12.33 | 16-/0+/0= of 16, sign p 3.1e-5 | rel 38.5% | A 20.10 B 32.69
+   G2|RCE35-EOHZ35|late60First                                    mean 0.60 [-1.74, 2.95] SE 1.10 med 0.67 | 8-/8+/0= of 16, sign p 1.0 | rel -0.3% | A 227.73 B 227.12
+   G2|RCE35-EOHZ35|breachDeadline60                               mean 5.17 [3.85, 6.48] SE 0.62 med 5.00 | 1-/15+/0= of 16, sign p 0.00052 | rel -61.8% | A 13.52 B 8.35
+   G2|RCE35-EOHZ35|breachLedger                                   mean -24.19 [-28.67, -19.71] SE 2.10 med -24.17 | 16-/0+/0= of 16, sign p 3.1e-5 | rel 100.0% | A 0.00 B 24.19
+   G2|RCE35-EOHZ35|pDisp                                          mean -4.79 [-7.41, -2.18] SE 1.23 med -3.50 | 14-/2+/0= of 16, sign p 0.0042 | rel 2.2% | A 215.17 B 219.96
+   G2|RCE35-EOHZ35|pDispAny1                                      mean -8.63 [-11.53, -5.72] SE 1.36 med -8.00 | 15-/1+/0= of 16, sign p 0.00052 | rel 3.7% | A 226.77 B 235.40
+   G2|RCE35-EOHZ35|relocations                                    mean -11.50 [-14.15, -8.85] SE 1.24 med -12.00 | 16-/0+/0= of 16, sign p 3.1e-5 | rel 43.9% | A 14.69 B 26.19
+   G2|RCE35-EOHZ35|switchedRiders                                 mean -11.31 [-13.95, -8.68] SE 1.24 med -11.83 | 16-/0+/0= of 16, sign p 3.1e-5 | rel 43.9% | A 14.48 B 25.79
+   G2|RCE35-EOHZ35|TV5/served (s)                                 mean -13.48 [-16.14, -10.83] SE 1.25 med -12.41 | 16-/0+/0= of 16, sign p 3.1e-5 | A 119.25 B 132.74
+   G2|RCE35-EOHZ35|Pchg=pDisp/served (pp)                         mean -0.56 [-0.88, -0.23] SE 0.15 med -0.47 | 13-/3+/0= of 16, sign p 0.021 | A 0.30 B 0.31
+   G2|RCE35-EOHZ35|pDispAny1/served (pp)                          mean -1.08 [-1.43, -0.73] SE 0.16 med -1.04 | 16-/0+/0= of 16, sign p 3.1e-5 | A 0.32 B 0.33
+   G2|RCE35-EOHZ35|late60First/served (pp)                        mean 0.19 [-0.14, 0.52] SE 0.15 med 0.05 | 7-/9+/0= of 16, sign p 0.80 | A 0.32 B 0.32
+   G2|RCE35-EOHZ35|breachDeadline60/served (pp)                   mean 0.73 [0.55, 0.92] SE 0.09 med 0.68 | 1-/15+/0= of 16, sign p 0.00052 | A 0.02 B 0.01
+   G2|RCE35-EOHZ35|breachLedger/served (pp) [BY-CONSTRUCTION for RC] mean -3.36 [-3.88, -2.84] SE 0.25 med -3.45 | 16-/0+/0= of 16, sign p 3.1e-5 | A 0.00 B 0.03
+   G2|RCE35-NCE35|served                                          mean -4.17 [-6.95, -1.39] SE 1.30 med -3.17 | 12-/3+/1= of 16, sign p 0.035 | rel 0.6% | A 707.67 B 711.83
+   G2|RCE35-NCE35|visRev60                                        mean -11.90 [-14.47, -9.32] SE 1.21 med -10.50 | 16-/0+/0= of 16, sign p 3.1e-5 | rel 37.2% | A 20.10 B 32.00
+   G2|RCE35-NCE35|late60First                                     mean -0.17 [-3.84, 3.51] SE 1.73 med -0.50 | 8-/8+/0= of 16, sign p 1.0 | rel 0.1% | A 227.73 B 227.90
+   G2|RCE35-NCE35|breachDeadline60                                mean 0.00 [-1.07, 1.07] SE 0.50 med 0.33 | 6-/8+/2= of 16, sign p 0.79 | rel 0.0% | A 13.52 B 13.52
+   G2|RCE35-NCE35|breachLedger                                    mean -18.10 [-21.35, -14.86] SE 1.52 med -16.83 | 16-/0+/0= of 16, sign p 3.1e-5 | rel 100.0% | A 0.00 B 18.10
+   G2|RCE35-NCE35|pDisp                                           mean -7.54 [-10.36, -4.73] SE 1.32 med -7.33 | 14-/2+/0= of 16, sign p 0.0042 | rel 3.4% | A 215.17 B 222.71
+   G2|RCE35-NCE35|pDispAny1                                       mean -10.90 [-13.40, -8.39] SE 1.18 med -11.00 | 16-/0+/0= of 16, sign p 3.1e-5 | rel 4.6% | A 226.77 B 237.67
+   G2|RCE35-NCE35|relocations                                     mean -11.94 [-15.21, -8.67] SE 1.53 med -11.00 | 16-/0+/0= of 16, sign p 3.1e-5 | rel 44.8% | A 14.69 B 26.63
+   G2|RCE35-NCE35|switchedRiders                                  mean -11.60 [-14.66, -8.55] SE 1.44 med -10.83 | 16-/0+/0= of 16, sign p 3.1e-5 | rel 44.5% | A 14.48 B 26.08
+   G2|RCE35-NCE35|TV5/served (s)                                  mean -15.62 [-18.05, -13.19] SE 1.14 med -14.77 | 16-/0+/0= of 16, sign p 3.1e-5 | A 119.25 B 134.87
+   G2|RCE35-NCE35|Pchg=pDisp/served (pp)                          mean -0.89 [-1.24, -0.54] SE 0.17 med -0.87 | 13-/3+/0= of 16, sign p 0.021 | A 0.30 B 0.31
+   G2|RCE35-NCE35|pDispAny1/served (pp)                           mean -1.34 [-1.61, -1.06] SE 0.13 med -1.48 | 16-/0+/0= of 16, sign p 3.1e-5 | A 0.32 B 0.33
+   G2|RCE35-NCE35|late60First/served (pp)                         mean 0.15 [-0.32, 0.62] SE 0.22 med -0.03 | 8-/8+/0= of 16, sign p 1.0 | A 0.32 B 0.32
+   G2|RCE35-NCE35|breachDeadline60/served (pp)                    mean 0.01 [-0.15, 0.17] SE 0.07 med 0.05 | 6-/10+/0= of 16, sign p 0.45 | A 0.02 B 0.02
+   G2|RCE35-NCE35|breachLedger/served (pp) [BY-CONSTRUCTION for RC] mean -2.51 [-2.87, -2.15] SE 0.17 med -2.44 | 16-/0+/0= of 16, sign p 3.1e-5 | A 0.00 B 0.03
+   G2|RCE35-EO35|served                                           mean 0.56 [-2.78, 3.90] SE 1.57 med 0.17 | 8-/8+/0= of 16, sign p 1.0 | rel -0.1% | A 707.67 B 707.10
+   G2|RCE35-EO35|visRev60                                         mean -12.21 [-14.59, -9.82] SE 1.12 med -12.17 | 16-/0+/0= of 16, sign p 3.1e-5 | rel 37.8% | A 20.10 B 32.31
+   G2|RCE35-EO35|late60First                                      mean 2.48 [-0.09, 5.05] SE 1.21 med 2.83 | 6-/10+/0= of 16, sign p 0.45 | rel -1.1% | A 227.73 B 225.25
+   G2|RCE35-EO35|breachDeadline60                                 mean 5.13 [3.94, 6.31] SE 0.55 med 4.67 | 0-/16+/0= of 16, sign p 3.1e-5 | rel -61.0% | A 13.52 B 8.40
+   G2|RCE35-EO35|breachLedger                                     mean -24.31 [-28.73, -19.90] SE 2.07 med -24.17 | 16-/0+/0= of 16, sign p 3.1e-5 | rel 100.0% | A 0.00 B 24.31
+   G2|RCE35-EO35|pDisp                                            mean -3.08 [-6.13, -0.04] SE 1.43 med -2.17 | 11-/4+/1= of 16, sign p 0.12 | rel 1.4% | A 215.17 B 218.25
+   G2|RCE35-EO35|pDispAny1                                        mean -7.40 [-10.87, -3.92] SE 1.63 med -7.00 | 15-/1+/0= of 16, sign p 0.00052 | rel 3.2% | A 226.77 B 234.17
+   G2|RCE35-EO35|relocations                                      mean -12.50 [-15.40, -9.60] SE 1.36 med -12.67 | 16-/0+/0= of 16, sign p 3.1e-5 | rel 46.0% | A 14.69 B 27.19
+   G2|RCE35-EO35|switchedRiders                                   mean -12.19 [-15.04, -9.34] SE 1.34 med -12.50 | 16-/0+/0= of 16, sign p 3.1e-5 | rel 45.7% | A 14.48 B 26.67
+   G2|RCE35-EO35|TV5/served (s)                                   mean -13.80 [-16.70, -10.90] SE 1.36 med -12.48 | 16-/0+/0= of 16, sign p 3.1e-5 | A 119.25 B 133.05
+   G2|RCE35-EO35|Pchg=pDisp/served (pp)                           mean -0.45 [-0.79, -0.11] SE 0.16 med -0.36 | 12-/4+/0= of 16, sign p 0.077 | A 0.30 B 0.31
+   G2|RCE35-EO35|pDispAny1/served (pp)                            mean -1.05 [-1.43, -0.66] SE 0.18 med -0.95 | 16-/0+/0= of 16, sign p 3.1e-5 | A 0.32 B 0.33
+   G2|RCE35-EO35|late60First/served (pp)                          mean 0.32 [-0.03, 0.66] SE 0.16 med 0.22 | 5-/11+/0= of 16, sign p 0.21 | A 0.32 B 0.32
+   G2|RCE35-EO35|breachDeadline60/served (pp)                     mean 0.72 [0.56, 0.89] SE 0.08 med 0.68 | 0-/16+/0= of 16, sign p 3.1e-5 | A 0.02 B 0.01
+   G2|RCE35-EO35|breachLedger/served (pp) [BY-CONSTRUCTION for RC] mean -3.39 [-3.91, -2.88] SE 0.24 med -3.47 | 16-/0+/0= of 16, sign p 3.1e-5 | A 0.00 B 0.03
+   G2|RCE35-U|served                                              mean -70.19 [-75.72, -64.66] SE 2.59 med -70.00 | 16-/0+/0= of 16, sign p 3.1e-5 | rel 9.0% | A 707.67 B 777.85
+   G2|RCE35-U|visRev60                                            mean -56.35 [-62.74, -49.97] SE 3.00 med -55.67 | 16-/0+/0= of 16, sign p 3.1e-5 | rel 73.7% | A 20.10 B 76.46
+   G2|RCE35-U|late60First                                         mean -127.10 [-135.49, -118.71] SE 3.94 med -127.67 | 16-/0+/0= of 16, sign p 3.1e-5 | rel 35.8% | A 227.73 B 354.83
+   G2|RCE35-U|breachDeadline60                                    mean 13.52 [11.33, 15.72] SE 1.03 med 13.67 | 0-/16+/0= of 16, sign p 3.1e-5 | A 13.52 B 0.00
+   G2|RCE35-U|breachLedger                                        mean 0.00 [0.00, 0.00] SE 0.00 med 0.00 | 0-/0+/16= of 16, sign p 1.0 | A 0.00 B 0.00
+   G2|RCE35-U|pDisp                                               mean -138.40 [-145.29, -131.50] SE 3.24 med -141.83 | 16-/0+/0= of 16, sign p 3.1e-5 | rel 39.1% | A 215.17 B 353.56
+   G2|RCE35-U|pDispAny1                                           mean -145.83 [-153.62, -138.04] SE 3.66 med -144.33 | 16-/0+/0= of 16, sign p 3.1e-5 | rel 39.1% | A 226.77 B 372.60
+   G2|RCE35-U|relocations                                         mean -28.90 [-33.84, -23.95] SE 2.32 med -25.83 | 16-/0+/0= of 16, sign p 3.1e-5 | rel 66.3% | A 14.69 B 43.58
+   G2|RCE35-U|switchedRiders                                      mean -28.17 [-32.87, -23.46] SE 2.21 med -25.67 | 16-/0+/0= of 16, sign p 3.1e-5 | rel 66.0% | A 14.48 B 42.65
+   G2|RCE35-U|TV5/served (s)                                      mean -217.84 [-225.63, -210.04] SE 3.66 med -221.62 | 16-/0+/0= of 16, sign p 3.1e-5 | A 119.25 B 337.09
+   G2|RCE35-U|Pchg=pDisp/served (pp)                              mean -15.06 [-15.55, -14.56] SE 0.23 med -15.17 | 16-/0+/0= of 16, sign p 3.1e-5 | A 0.30 B 0.45
+   G2|RCE35-U|pDispAny1/served (pp)                               mean -15.85 [-16.36, -15.34] SE 0.24 med -16.07 | 16-/0+/0= of 16, sign p 3.1e-5 | A 0.32 B 0.48
+   G2|RCE35-U|late60First/served (pp)                             mean -13.39 [-14.04, -12.74] SE 0.30 med -13.64 | 16-/0+/0= of 16, sign p 3.1e-5 | A 0.32 B 0.46
+   G2|RCE35-U|breachDeadline60/served (pp)                        mean 1.91 [1.59, 2.23] SE 0.15 med 1.95 | 0-/16+/0= of 16, sign p 3.1e-5 | A 0.02 B 0.00
+   G2|RCE35-U|breachLedger/served (pp) [BY-CONSTRUCTION for RC]   mean 0.00 [0.00, 0.00] SE 0.00 med 0.00 | 0-/0+/16= of 16, sign p 1.0 | A 0.00 B 0.00
+   exchange rates (2.4): {"INS|RCE35 vs EOHZ35":{"dVisRev60_day":-1.4791666666666665,"dServed_day":2.250000000000007,"dDeadline60_day":4.541666666666667,"dLate60First_day":-0.25000000000000533,"ARR_per1000":2.108263800219734,"ER_served":"no service price","ER_deadline":0.32568807339449535,"ER_late":"no lateness price"},"G2|RCE35 vs EOHZ35":{"dVisRev60_day":-12.583333333333336,"dServed_day":-2.625000000000007,"dDeadline60_day":5.166666666666667,"dLate60First_day":0.6041666666666714,"ARR_per1000":17.715727107408934,"ER_served":4.793650793650782,"ER_deadline":2.4354838709677424,"ER_late":20.82758620689639},"G2|RCE35 vs NCE35":{"dVisRev60_day":-11.895833333333336,"dServed_day":-4.166666666666686,"dDeadline60_day":1.1102230246251565e-16,"dLate60First_day":-0.16666666666665542,"ARR_per1000":16.71154296417701,"ER_served":2.8549999999999875,"ER_deadline":107148141134523070,"ER_late":"no lateness price"}}
+-- F14 labels: {"C1":"HOLDS","C2":"HOLDS","C3":"HOLDS","C4_INS":"HOLDS","C4_G2":"HOLDS","thresholds":{"inFavour":10,"unfavourable":7,"nDays":14}}
+   INS|RCE35-EOHZ35|served                                        mean -0.50 [-2.43, 1.43] SE 0.89 med -1.33 | 9-/5+/0= of 14, sign p 0.42 | rel 0.1% | A 690.71 B 691.21
+   INS|RCE35-EOHZ35|visRev60                                      mean -1.79 [-3.01, -0.56] SE 0.57 med -1.50 | 11-/2+/1= of 14, sign p 0.022 | rel 9.5% | A 17.00 B 18.79
+   INS|RCE35-EOHZ35|late60First                                   mean -0.81 [-2.21, 0.59] SE 0.65 med -1.33 | 10-/4+/0= of 14, sign p 0.18 | rel 0.4% | A 223.12 B 223.93
+   INS|RCE35-EOHZ35|breachDeadline60                              mean 4.90 [3.52, 6.29] SE 0.64 med 5.50 | 0-/14+/0= of 14, sign p 0.00012 | rel -55.5% | A 13.74 B 8.83
+   INS|RCE35-EOHZ35|breachLedger                                  mean -7.33 [-8.88, -5.79] SE 0.71 med -6.83 | 14-/0+/0= of 14, sign p 0.00012 | rel 100.0% | A 0.00 B 7.33
+   INS|RCE35-EOHZ35|pDisp                                         mean 1.26 [-0.24, 2.76] SE 0.70 med 1.83 | 4-/9+/1= of 14, sign p 0.27 | rel -0.6% | A 210.19 B 208.93
+   INS|RCE35-EOHZ35|pDispAny1                                     mean 1.33 [-0.26, 2.93] SE 0.74 med 1.83 | 4-/9+/1= of 14, sign p 0.27 | rel -0.6% | A 213.71 B 212.38
+   INS|RCE35-EOHZ35|TV5/served (s)                                mean 0.19 [-0.93, 1.32] SE 0.52 med 0.28 | 6-/8+/0= of 14, sign p 0.79 | A 117.34 B 117.14
+   INS|RCE35-EOHZ35|Pchg=pDisp/served (pp)                        mean 0.20 [0.02, 0.39] SE 0.09 med 0.30 | 2-/12+/0= of 14, sign p 0.013 | A 0.30 B 0.30
+   INS|RCE35-EOHZ35|pDispAny1/served (pp)                         mean 0.21 [0.02, 0.41] SE 0.09 med 0.33 | 2-/12+/0= of 14, sign p 0.013 | A 0.31 B 0.31
+   INS|RCE35-EOHZ35|late60First/served (pp)                       mean -0.10 [-0.32, 0.12] SE 0.10 med -0.25 | 9-/5+/0= of 14, sign p 0.42 | A 0.32 B 0.32
+   INS|RCE35-EOHZ35|breachDeadline60/served (pp)                  mean 0.71 [0.51, 0.91] SE 0.09 med 0.73 | 0-/14+/0= of 14, sign p 0.00012 | A 0.02 B 0.01
+   INS|RCE35-EOHZ35|breachLedger/served (pp) [BY-CONSTRUCTION for RC] mean -1.05 [-1.27, -0.84] SE 0.10 med -0.96 | 14-/0+/0= of 14, sign p 0.00012 | A 0.00 B 0.01
+   INS|RCE35-EO35|served                                          mean 2.55 [-0.18, 5.27] SE 1.26 med 3.00 | 5-/9+/0= of 14, sign p 0.42 | rel -0.4% | A 690.71 B 688.17
+   INS|RCE35-EO35|visRev60                                        mean -2.00 [-3.39, -0.61] SE 0.64 med -1.50 | 11-/2+/1= of 14, sign p 0.022 | rel 10.5% | A 17.00 B 19.00
+   INS|RCE35-EO35|late60First                                     mean 0.10 [-1.48, 1.67] SE 0.73 med 0.33 | 4-/8+/2= of 14, sign p 0.39 | rel -0.0% | A 223.12 B 223.02
+   INS|RCE35-EO35|breachDeadline60                                mean 4.95 [3.61, 6.30] SE 0.62 med 5.33 | 0-/14+/0= of 14, sign p 0.00012 | rel -56.4% | A 13.74 B 8.79
+   INS|RCE35-EO35|breachLedger                                    mean -7.31 [-8.94, -5.68] SE 0.75 med -7.17 | 14-/0+/0= of 14, sign p 0.00012 | rel 100.0% | A 0.00 B 7.31
+   INS|RCE35-EO35|pDisp                                           mean 3.12 [0.81, 5.43] SE 1.07 med 2.83 | 4-/10+/0= of 14, sign p 0.18 | rel -1.5% | A 210.19 B 207.07
+   INS|RCE35-EO35|pDispAny1                                       mean 3.21 [0.91, 5.52] SE 1.07 med 3.67 | 4-/10+/0= of 14, sign p 0.18 | rel -1.5% | A 213.71 B 210.50
+   INS|RCE35-EO35|TV5/served (s)                                  mean 0.38 [-0.90, 1.65] SE 0.59 med 0.31 | 5-/9+/0= of 14, sign p 0.42 | A 117.34 B 116.96
+   INS|RCE35-EO35|Pchg=pDisp/served (pp)                          mean 0.34 [0.09, 0.59] SE 0.12 med 0.32 | 3-/11+/0= of 14, sign p 0.057 | A 0.30 B 0.30
+   INS|RCE35-EO35|pDispAny1/served (pp)                           mean 0.35 [0.10, 0.60] SE 0.12 med 0.35 | 2-/12+/0= of 14, sign p 0.013 | A 0.31 B 0.31
+   INS|RCE35-EO35|late60First/served (pp)                         mean -0.11 [-0.32, 0.10] SE 0.10 med -0.18 | 9-/5+/0= of 14, sign p 0.42 | A 0.32 B 0.32
+   INS|RCE35-EO35|breachDeadline60/served (pp)                    mean 0.71 [0.52, 0.91] SE 0.09 med 0.70 | 0-/14+/0= of 14, sign p 0.00012 | A 0.02 B 0.01
+   INS|RCE35-EO35|breachLedger/served (pp) [BY-CONSTRUCTION for RC] mean -1.05 [-1.28, -0.83] SE 0.10 med -1.01 | 14-/0+/0= of 14, sign p 0.00012 | A 0.00 B 0.01
+   INS|RCE35-U|served                                             mean -68.10 [-73.21, -62.99] SE 2.37 med -68.00 | 14-/0+/0= of 14, sign p 0.00012 | rel 9.0% | A 690.71 B 758.81
+   INS|RCE35-U|visRev60                                           mean -20.88 [-26.03, -15.73] SE 2.38 med -21.50 | 14-/0+/0= of 14, sign p 0.00012 | rel 55.1% | A 17.00 B 37.88
+   INS|RCE35-U|late60First                                        mean -130.21 [-138.56, -121.87] SE 3.86 med -128.33 | 14-/0+/0= of 14, sign p 0.00012 | rel 36.9% | A 223.12 B 353.33
+   INS|RCE35-U|breachDeadline60                                   mean 13.74 [11.44, 16.03] SE 1.06 med 13.00 | 0-/14+/0= of 14, sign p 0.00012 | A 13.74 B 0.00
+   INS|RCE35-U|breachLedger                                       mean 0.00 [0.00, 0.00] SE 0.00 med 0.00 | 0-/0+/14= of 14, sign p 1.0 | A 0.00 B 0.00
+   INS|RCE35-U|pDisp                                              mean -127.62 [-135.24, -120.00] SE 3.53 med -125.83 | 14-/0+/0= of 14, sign p 0.00012 | rel 37.8% | A 210.19 B 337.81
+   INS|RCE35-U|pDispAny1                                          mean -126.74 [-134.05, -119.42] SE 3.39 med -125.83 | 14-/0+/0= of 14, sign p 0.00012 | rel 37.2% | A 213.71 B 340.45
+   INS|RCE35-U|TV5/served (s)                                     mean -180.40 [-187.63, -173.16] SE 3.35 med -176.19 | 14-/0+/0= of 14, sign p 0.00012 | A 117.34 B 297.73
+   INS|RCE35-U|Pchg=pDisp/served (pp)                             mean -14.07 [-14.66, -13.48] SE 0.27 med -14.15 | 14-/0+/0= of 14, sign p 0.00012 | A 0.30 B 0.44
+   INS|RCE35-U|pDispAny1/served (pp)                              mean -13.92 [-14.48, -13.36] SE 0.26 med -14.03 | 14-/0+/0= of 14, sign p 0.00012 | A 0.31 B 0.45
+   INS|RCE35-U|late60First/served (pp)                            mean -14.23 [-14.81, -13.66] SE 0.27 med -14.40 | 14-/0+/0= of 14, sign p 0.00012 | A 0.32 B 0.46
+   INS|RCE35-U|breachDeadline60/served (pp)                       mean 2.00 [1.64, 2.35] SE 0.16 med 1.78 | 0-/14+/0= of 14, sign p 0.00012 | A 0.02 B 0.00
+   INS|RCE35-U|breachLedger/served (pp) [BY-CONSTRUCTION for RC]  mean 0.00 [0.00, 0.00] SE 0.00 med 0.00 | 0-/0+/14= of 14, sign p 1.0 | A 0.00 B 0.00
+   G2|RCE35-EOHZ35|served                                         mean -2.86 [-6.51, 0.79] SE 1.69 med -2.33 | 9-/5+/0= of 14, sign p 0.42 | rel 0.4% | A 691.43 B 694.29
+   G2|RCE35-EOHZ35|visRev60                                       mean -13.50 [-16.57, -10.43] SE 1.42 med -13.00 | 14-/0+/0= of 14, sign p 0.00012 | rel 40.9% | A 19.52 B 33.02
+   G2|RCE35-EOHZ35|late60First                                    mean 0.10 [-2.61, 2.80] SE 1.25 med 1.67 | 4-/9+/1= of 14, sign p 0.27 | rel -0.0% | A 223.02 B 222.93
+   G2|RCE35-EOHZ35|breachDeadline60                               mean 5.76 [4.74, 6.79] SE 0.47 med 5.33 | 0-/14+/0= of 14, sign p 0.00012 | rel -69.9% | A 14.00 B 8.24
+   G2|RCE35-EOHZ35|breachLedger                                   mean -24.36 [-28.18, -20.54] SE 1.77 med -23.00 | 14-/0+/0= of 14, sign p 0.00012 | rel 100.0% | A 0.00 B 24.36
+   G2|RCE35-EOHZ35|pDisp                                          mean -3.12 [-7.01, 0.77] SE 1.80 med -2.33 | 10-/3+/1= of 14, sign p 0.092 | rel 1.4% | A 212.24 B 215.36
+   G2|RCE35-EOHZ35|pDispAny1                                      mean -6.55 [-11.26, -1.83] SE 2.18 med -4.50 | 12-/2+/0= of 14, sign p 0.013 | rel 2.9% | A 223.12 B 229.67
+   G2|RCE35-EOHZ35|relocations                                    mean -12.12 [-14.97, -9.27] SE 1.32 med -11.33 | 14-/0+/0= of 14, sign p 0.00012 | rel 48.8% | A 12.74 B 24.86
+   G2|RCE35-EOHZ35|switchedRiders                                 mean -11.81 [-14.64, -8.98] SE 1.31 med -10.50 | 14-/0+/0= of 14, sign p 0.00012 | rel 48.6% | A 12.48 B 24.29
+   G2|RCE35-EOHZ35|TV5/served (s)                                 mean -12.95 [-16.11, -9.79] SE 1.46 med -12.48 | 14-/0+/0= of 14, sign p 0.00012 | A 119.68 B 132.63
+   G2|RCE35-EOHZ35|Pchg=pDisp/served (pp)                         mean -0.31 [-0.78, 0.16] SE 0.22 med -0.27 | 11-/3+/0= of 14, sign p 0.057 | A 0.31 B 0.31
+   G2|RCE35-EOHZ35|pDispAny1/served (pp)                          mean -0.79 [-1.34, -0.24] SE 0.26 med -0.67 | 10-/4+/0= of 14, sign p 0.18 | A 0.32 B 0.33
+   G2|RCE35-EOHZ35|late60First/served (pp)                        mean 0.14 [-0.23, 0.52] SE 0.17 med 0.30 | 5-/9+/0= of 14, sign p 0.42 | A 0.32 B 0.32
+   G2|RCE35-EOHZ35|breachDeadline60/served (pp)                   mean 0.84 [0.69, 1.00] SE 0.07 med 0.78 | 0-/14+/0= of 14, sign p 0.00012 | A 0.02 B 0.01
+   G2|RCE35-EOHZ35|breachLedger/served (pp) [BY-CONSTRUCTION for RC] mean -3.47 [-3.91, -3.03] SE 0.20 med -3.55 | 14-/0+/0= of 14, sign p 0.00012 | A 0.00 B 0.03
+   G2|RCE35-NCE35|served                                          mean -5.74 [-7.98, -3.50] SE 1.04 med -5.83 | 13-/1+/0= of 14, sign p 0.0018 | rel 0.8% | A 691.43 B 697.17
+   G2|RCE35-NCE35|visRev60                                        mean -12.93 [-15.70, -10.15] SE 1.28 med -11.00 | 14-/0+/0= of 14, sign p 0.00012 | rel 39.8% | A 19.52 B 32.45
+   G2|RCE35-NCE35|late60First                                     mean 0.88 [-0.87, 2.64] SE 0.81 med 1.00 | 6-/7+/1= of 14, sign p 1.0 | rel -0.4% | A 223.02 B 222.14
+   G2|RCE35-NCE35|breachDeadline60                                mean 0.26 [-0.87, 1.39] SE 0.52 med 0.17 | 6-/7+/1= of 14, sign p 1.0 | rel -1.9% | A 14.00 B 13.74
+   G2|RCE35-NCE35|breachLedger                                    mean -18.07 [-21.48, -14.66] SE 1.58 med -15.83 | 14-/0+/0= of 14, sign p 0.00012 | rel 100.0% | A 0.00 B 18.07
+   G2|RCE35-NCE35|pDisp                                           mean -7.02 [-10.01, -4.03] SE 1.38 med -6.50 | 14-/0+/0= of 14, sign p 0.00012 | rel 3.2% | A 212.24 B 219.26
+   G2|RCE35-NCE35|pDispAny1                                       mean -11.67 [-15.76, -7.57] SE 1.89 med -9.50 | 14-/0+/0= of 14, sign p 0.00012 | rel 5.0% | A 223.12 B 234.79
+   G2|RCE35-NCE35|relocations                                     mean -13.38 [-16.66, -10.10] SE 1.52 med -10.50 | 14-/0+/0= of 14, sign p 0.00012 | rel 51.2% | A 12.74 B 26.12
+   G2|RCE35-NCE35|switchedRiders                                  mean -13.07 [-16.32, -9.82] SE 1.50 med -10.33 | 14-/0+/0= of 14, sign p 0.00012 | rel 51.2% | A 12.48 B 25.55
+   G2|RCE35-NCE35|TV5/served (s)                                  mean -14.22 [-17.23, -11.21] SE 1.39 med -12.97 | 14-/0+/0= of 14, sign p 0.00012 | A 119.68 B 133.91
+   G2|RCE35-NCE35|Pchg=pDisp/served (pp)                          mean -0.74 [-1.13, -0.36] SE 0.18 med -0.79 | 11-/3+/0= of 14, sign p 0.057 | A 0.31 B 0.31
+   G2|RCE35-NCE35|pDispAny1/served (pp)                           mean -1.38 [-1.88, -0.89] SE 0.23 med -1.19 | 14-/0+/0= of 14, sign p 0.00012 | A 0.32 B 0.34
+   G2|RCE35-NCE35|late60First/served (pp)                         mean 0.38 [0.14, 0.63] SE 0.11 med 0.45 | 3-/11+/0= of 14, sign p 0.057 | A 0.32 B 0.32
+   G2|RCE35-NCE35|breachDeadline60/served (pp)                    mean 0.06 [-0.10, 0.22] SE 0.07 med 0.05 | 6-/8+/0= of 14, sign p 0.79 | A 0.02 B 0.02
+   G2|RCE35-NCE35|breachLedger/served (pp) [BY-CONSTRUCTION for RC] mean -2.56 [-2.95, -2.17] SE 0.18 med -2.39 | 14-/0+/0= of 14, sign p 0.00012 | A 0.00 B 0.03
+   G2|RCE35-EO35|served                                           mean -1.98 [-5.80, 1.85] SE 1.77 med -1.33 | 8-/6+/0= of 14, sign p 0.79 | rel 0.3% | A 691.43 B 693.40
+   G2|RCE35-EO35|visRev60                                         mean -13.36 [-16.67, -10.04] SE 1.53 med -12.67 | 14-/0+/0= of 14, sign p 0.00012 | rel 40.6% | A 19.52 B 32.88
+   G2|RCE35-EO35|late60First                                      mean -0.55 [-3.72, 2.62] SE 1.47 med 1.33 | 5-/9+/0= of 14, sign p 0.42 | rel 0.2% | A 223.02 B 223.57
+   G2|RCE35-EO35|breachDeadline60                                 mean 5.62 [4.57, 6.67] SE 0.49 med 5.17 | 0-/14+/0= of 14, sign p 0.00012 | rel -67.0% | A 14.00 B 8.38
+   G2|RCE35-EO35|breachLedger                                     mean -24.69 [-28.82, -20.56] SE 1.91 med -22.83 | 14-/0+/0= of 14, sign p 0.00012 | rel 100.0% | A 0.00 B 24.69
+   G2|RCE35-EO35|pDisp                                            mean -3.50 [-7.55, 0.55] SE 1.88 med -3.00 | 9-/4+/1= of 14, sign p 0.27 | rel 1.6% | A 212.24 B 215.74
+   G2|RCE35-EO35|pDispAny1                                        mean -7.43 [-12.53, -2.32] SE 2.36 med -6.50 | 12-/1+/1= of 14, sign p 0.0034 | rel 3.2% | A 223.12 B 230.55
+   G2|RCE35-EO35|relocations                                      mean -12.71 [-15.93, -9.50] SE 1.49 med -11.33 | 14-/0+/0= of 14, sign p 0.00012 | rel 50.0% | A 12.74 B 25.45
+   G2|RCE35-EO35|switchedRiders                                   mean -12.40 [-15.53, -9.28] SE 1.45 med -10.50 | 14-/0+/0= of 14, sign p 0.00012 | rel 49.9% | A 12.48 B 24.88
+   G2|RCE35-EO35|TV5/served (s)                                   mean -13.53 [-16.91, -10.16] SE 1.56 med -13.58 | 14-/0+/0= of 14, sign p 0.00012 | A 119.68 B 133.22
+   G2|RCE35-EO35|Pchg=pDisp/served (pp)                           mean -0.40 [-0.88, 0.08] SE 0.22 med -0.49 | 9-/5+/0= of 14, sign p 0.42 | A 0.31 B 0.31
+   G2|RCE35-EO35|pDispAny1/served (pp)                            mean -0.96 [-1.57, -0.35] SE 0.28 med -0.95 | 11-/3+/0= of 14, sign p 0.057 | A 0.32 B 0.33
+   G2|RCE35-EO35|late60First/served (pp)                          mean 0.00 [-0.45, 0.46] SE 0.21 med 0.15 | 7-/7+/0= of 14, sign p 1.0 | A 0.32 B 0.32
+   G2|RCE35-EO35|breachDeadline60/served (pp)                     mean 0.82 [0.66, 0.98] SE 0.07 med 0.74 | 0-/14+/0= of 14, sign p 0.00012 | A 0.02 B 0.01
+   G2|RCE35-EO35|breachLedger/served (pp) [BY-CONSTRUCTION for RC] mean -3.52 [-4.00, -3.04] SE 0.22 med -3.47 | 14-/0+/0= of 14, sign p 0.00012 | A 0.00 B 0.04
+   G2|RCE35-U|served                                              mean -76.24 [-82.97, -69.51] SE 3.11 med -79.17 | 14-/0+/0= of 14, sign p 0.00012 | rel 9.9% | A 691.43 B 767.67
+   G2|RCE35-U|visRev60                                            mean -58.29 [-64.77, -51.80] SE 3.00 med -60.50 | 14-/0+/0= of 14, sign p 0.00012 | rel 74.9% | A 19.52 B 77.81
+   G2|RCE35-U|late60First                                         mean -128.45 [-135.96, -120.95] SE 3.47 med -128.67 | 14-/0+/0= of 14, sign p 0.00012 | rel 36.5% | A 223.02 B 351.48
+   G2|RCE35-U|breachDeadline60                                    mean 14.00 [11.82, 16.18] SE 1.01 med 13.83 | 0-/14+/0= of 14, sign p 0.00012 | A 14.00 B 0.00
+   G2|RCE35-U|breachLedger                                        mean 0.00 [0.00, 0.00] SE 0.00 med 0.00 | 0-/0+/14= of 14, sign p 1.0 | A 0.00 B 0.00
+   G2|RCE35-U|pDisp                                               mean -137.33 [-146.59, -128.08] SE 4.28 med -136.17 | 14-/0+/0= of 14, sign p 0.00012 | rel 39.3% | A 212.24 B 349.57
+   G2|RCE35-U|pDispAny1                                           mean -144.69 [-155.39, -134.00] SE 4.95 med -145.00 | 14-/0+/0= of 14, sign p 0.00012 | rel 39.3% | A 223.12 B 367.81
+   G2|RCE35-U|relocations                                         mean -28.62 [-33.43, -23.81] SE 2.23 med -28.67 | 14-/0+/0= of 14, sign p 0.00012 | rel 69.2% | A 12.74 B 41.36
+   G2|RCE35-U|switchedRiders                                      mean -28.07 [-32.82, -23.33] SE 2.20 med -28.33 | 14-/0+/0= of 14, sign p 0.00012 | rel 69.2% | A 12.48 B 40.55
+   G2|RCE35-U|TV5/served (s)                                      mean -217.08 [-226.50, -207.67] SE 4.36 med -213.97 | 14-/0+/0= of 14, sign p 0.00012 | A 119.68 B 336.77
+   G2|RCE35-U|Pchg=pDisp/served (pp)                              mean -14.82 [-15.52, -14.11] SE 0.33 med -14.99 | 14-/0+/0= of 14, sign p 0.00012 | A 0.31 B 0.45
+   G2|RCE35-U|pDispAny1/served (pp)                               mean -15.60 [-16.40, -14.81] SE 0.37 med -15.99 | 14-/0+/0= of 14, sign p 0.00012 | A 0.32 B 0.48
+   G2|RCE35-U|late60First/served (pp)                             mean -13.52 [-14.05, -12.99] SE 0.25 med -13.34 | 14-/0+/0= of 14, sign p 0.00012 | A 0.32 B 0.46
+   G2|RCE35-U|breachDeadline60/served (pp)                        mean 2.04 [1.70, 2.38] SE 0.16 med 1.97 | 0-/14+/0= of 14, sign p 0.00012 | A 0.02 B 0.00
+   G2|RCE35-U|breachLedger/served (pp) [BY-CONSTRUCTION for RC]   mean 0.00 [0.00, 0.00] SE 0.00 med 0.00 | 0-/0+/14= of 14, sign p 1.0 | A 0.00 B 0.00
+   exchange rates (2.4): {"INS|RCE35 vs EOHZ35":{"dVisRev60_day":-1.7857142857142851,"dServed_day":-0.5000000000000243,"dDeadline60_day":4.904761904761905,"dLate60First_day":-0.8095238095238163,"ARR_per1000":2.583445282628913,"ER_served":3.5714285714283966,"ER_deadline":0.36407766990291246,"ER_late":"no lateness price"},"G2|RCE35 vs EOHZ35":{"dVisRev60_day":-13.499999999999998,"dServed_day":-2.857142857142849,"dDeadline60_day":5.761904761904762,"dLate60First_day":0.09523809523809794,"ARR_per1000":19.444444444444443,"ER_served":4.725000000000012,"ER_deadline":2.34297520661157,"ER_late":141.74999999999596},"G2|RCE35 vs NCE35":{"dVisRev60_day":-12.928571428571429,"dServed_day":-5.738095238095233,"dDeadline60_day":0.2619047619047617,"dLate60First_day":0.8809523809523877,"ARR_per1000":18.54444861855811,"ER_served":2.253112033195023,"ER_deadline":49.3636363636364,"ER_late":14.675675675675564}}
+
+==================== Sensitivity: without forecast.js EXCL target days ====================
+-- F14 dropped: 2019-10-09
+   INS EOHZ35 (c) mean -1.62 pp [-2.41, -0.83] SE 0.36 med -1.33 | 12-/1+/0= of 13, sign p 0.0034 | A 0.26 B 0.27
+   INS EOHZ35 (e) mean -1.56 pp [-2.91, -0.22] SE 0.62 med -2.14 | 9-/4+/0= of 13, sign p 0.27 | A 0.28 B 0.29
+   INS RCE35 (c) mean -1.32 pp [-2.01, -0.63] SE 0.32 med -1.24 | 12-/1+/0= of 13, sign p 0.0034 | A 0.26 B 0.27
+   INS RCE35 (e) mean -2.95 pp [-3.98, -1.92] SE 0.47 med -3.21 | 13-/0+/0= of 13, sign p 0.00024 | A 0.27 B 0.30
+   G2 EOHZ35 (c) mean -1.56 pp [-2.27, -0.85] SE 0.32 med -1.23 | 13-/0+/0= of 13, sign p 0.00024 | A 0.25 B 0.27
+   G2 EOHZ35 (e) mean -0.95 pp [-2.25, 0.34] SE 0.59 med -1.10 | 9-/4+/0= of 13, sign p 0.27 | A 0.27 B 0.28
+   G2 RCE35 (c) mean -1.30 pp [-2.00, -0.60] SE 0.32 med -0.76 | 13-/0+/0= of 13, sign p 0.00024 | A 0.26 B 0.27
+   G2 RCE35 (e) mean -2.08 pp [-3.24, -0.92] SE 0.53 med -2.48 | 11-/2+/0= of 13, sign p 0.022 | A 0.28 B 0.30
+   G2|RCE35-EOHZ35|visRev60                 mean -12.85 [-15.82, -9.87] SE 1.36 med -13.00 | 13-/0+/0= of 13, sign p 0.00024 | rel 39.2% | A 19.95 B 32.79
+   G2|RCE35-EOHZ35|served                   mean -2.00 [-5.43, 1.43] SE 1.57 med -1.00 | 8-/5+/0= of 13, sign p 0.58 | rel 0.3% | A 683.85 B 685.85
+   INS|RCE35-EOHZ35|served                  mean -0.51 [-2.61, 1.59] SE 0.96 med -1.67 | 8-/5+/0= of 13, sign p 0.58 | rel 0.1% | A 683.23 B 683.74
+   INS|RCE35-EOHZ35|breachDeadline60        mean 4.87 [3.36, 6.38] SE 0.69 med 5.67 | 0-/13+/0= of 13, sign p 0.00024 | rel -54.8% | A 13.77 B 8.90
+   G2|RCE35-EOHZ35|breachDeadline60         mean 5.79 [4.68, 6.91] SE 0.51 med 5.33 | 0-/13+/0= of 13, sign p 0.00024 | rel -71.3% | A 13.92 B 8.13
+   R3-X labels without EXCL days: {"C1":"HOLDS","C2":"HOLDS","C3":"HOLDS","C4_INS":"HOLDS","C4_G2":"HOLDS","thresholds":{"inFavour":9,"unfavourable":7,"nDays":13}}
+-- F16 dropped: 2019-09-30
+   INS EOHZ35 (c) mean -2.04 pp [-2.80, -1.27] SE 0.36 med -1.92 | 14-/1+/0= of 15, sign p 0.00098 | A 0.26 B 0.28
+   INS EOHZ35 (e) mean -2.12 pp [-3.13, -1.11] SE 0.47 med -2.07 | 14-/1+/0= of 15, sign p 0.00098 | A 0.28 B 0.30
+   INS RCE35 (c) mean -1.84 pp [-2.60, -1.09] SE 0.35 med -1.64 | 14-/1+/0= of 15, sign p 0.00098 | A 0.26 B 0.28
+   INS RCE35 (e) mean -2.04 pp [-2.92, -1.15] SE 0.41 med -1.74 | 14-/1+/0= of 15, sign p 0.00098 | A 0.28 B 0.30
+   G2 EOHZ35 (c) mean -1.83 pp [-2.67, -1.00] SE 0.39 med -1.89 | 14-/1+/0= of 15, sign p 0.00098 | A 0.25 B 0.27
+   G2 EOHZ35 (e) mean -1.69 pp [-2.72, -0.66] SE 0.48 med -1.51 | 12-/3+/0= of 15, sign p 0.035 | A 0.27 B 0.29
+   G2 RCE35 (c) mean -1.84 pp [-2.60, -1.08] SE 0.35 med -1.73 | 14-/1+/0= of 15, sign p 0.00098 | A 0.26 B 0.27
+   G2 RCE35 (e) mean -1.80 pp [-2.68, -0.92] SE 0.41 med -1.51 | 14-/1+/0= of 15, sign p 0.00098 | A 0.28 B 0.29
+   G2|RCE35-EOHZ35|visRev60                 mean -12.13 [-14.25, -10.02] SE 0.99 med -11.67 | 15-/0+/0= of 15, sign p 6.1e-5 | rel 37.5% | A 20.22 B 32.36
+   G2|RCE35-EOHZ35|served                   mean -3.04 [-5.91, -0.18] SE 1.33 med -3.33 | 11-/4+/0= of 15, sign p 0.12 | rel 0.4% | A 700.76 B 703.80
+   INS|RCE35-EOHZ35|served                  mean 1.98 [-0.20, 4.15] SE 1.01 med 1.67 | 5-/9+/1= of 15, sign p 0.42 | rel -0.3% | A 696.38 B 694.40
+   INS|RCE35-EOHZ35|breachDeadline60        mean 4.44 [3.57, 5.32] SE 0.41 med 4.33 | 0-/15+/0= of 15, sign p 6.1e-5 | rel -50.5% | A 13.24 B 8.80
+   G2|RCE35-EOHZ35|breachDeadline60         mean 5.02 [3.64, 6.40] SE 0.64 med 5.00 | 1-/14+/0= of 15, sign p 0.00098 | rel -60.9% | A 13.27 B 8.24
+   R3-X labels without EXCL days: {"C1":"HOLDS","C2":"HOLDS","C3":"HOLDS","C4_INS":"HOLDS","C4_G2":"HOLDS","thresholds":{"inFavour":11,"unfavourable":8,"nDays":15}}
+
+==================== Log ====================
+rows 3060, dumps 2520

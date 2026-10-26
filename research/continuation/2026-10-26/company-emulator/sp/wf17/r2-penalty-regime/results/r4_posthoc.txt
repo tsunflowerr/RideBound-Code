@@ -1,0 +1,155 @@
+wf17 R4 POST-HOC (descriptive; decided after reading R4): cross-config paired contrasts, D60, unit = day
+--- EOHZ35@T8P60 - EOHZ35@T8P0
+   served               mean -0.37 [-2.11, 1.38] SE 0.87 med 0.00 | 27-/26+/7= of 60, sign p 1.0 | rel 0.1% | A 732.87 B 733.23
+   visRev60             mean -3.02 [-4.12, -1.91] SE 0.55 med -2.50 | 42-/9+/9= of 60, sign p 3.4e-6 | rel 7.6% | A 36.63 B 39.65
+   visRev60_per1000     mean -4.081 [-5.529, -2.632] SE 0.724 med -3.177 | 47-/9+/4= of 60, sign p 2.6e-7 | A 50.141 B 54.222
+   TV5_s_per_served     mean -2.105 [-3.066, -1.143] SE 0.480 med -2.042 | 45-/15+/0= of 60, sign p 0.00013 | A 131.742 B 133.847
+   Pchg_pp              mean -0.089 [-0.289, 0.111] SE 0.100 med -0.132 | 33-/24+/3= of 60, sign p 0.29 | A 32.520 B 32.610
+   late60First_pp       mean 0.149 [-0.052, 0.351] SE 0.101 med 0.109 | 26-/31+/3= of 60, sign p 0.60 | A 32.483 B 32.334
+   breachDeadline60_pp  mean 0.045 [-0.009, 0.098] SE 0.027 med 0.000 | 22-/31+/7= of 60, sign p 0.27 | A 1.047 B 1.002
+   breachDeadline60     mean 0.32 [-0.07, 0.70] SE 0.19 med 0.00 | 10-/18+/32= of 60, sign p 0.18 | rel -4.4% | A 7.55 B 7.23
+   late60First          mean 1.05 [-0.59, 2.69] SE 0.82 med 1.00 | 22-/31+/7= of 60, sign p 0.27 | rel -0.4% | A 237.93 B 236.88
+   relocations          mean -4.93 [-6.01, -3.86] SE 0.54 med -4.50 | 55-/3+/2= of 60, sign p 2.3e-13 | rel 16.4% | A 25.15 B 30.08
+--- EOHZ35@T8P300 - EOHZ35@T8P0
+   served               mean -0.68 [-3.46, 2.10] SE 1.39 med -2.00 | 33-/22+/5= of 60, sign p 0.18 | rel 0.1% | A 732.55 B 733.23
+   visRev60             mean -9.30 [-10.77, -7.83] SE 0.74 med -10.00 | 54-/5+/1= of 60, sign p 1.9e-11 | rel 23.5% | A 30.35 B 39.65
+   visRev60_per1000     mean -12.541 [-14.444, -10.639] SE 0.951 med -12.758 | 55-/5+/0= of 60, sign p 1.0e-11 | A 41.681 B 54.222
+   TV5_s_per_served     mean -7.893 [-9.712, -6.074] SE 0.909 med -7.152 | 53-/7+/0= of 60, sign p 7.7e-10 | A 125.954 B 133.847
+   Pchg_pp              mean -0.328 [-0.624, -0.033] SE 0.148 med -0.184 | 37-/23+/0= of 60, sign p 0.092 | A 32.281 B 32.610
+   late60First_pp       mean 0.388 [0.100, 0.676] SE 0.144 med 0.578 | 17-/43+/0= of 60, sign p 0.0011 | A 32.722 B 32.334
+   breachDeadline60_pp  mean 0.127 [0.052, 0.202] SE 0.037 med 0.069 | 20-/38+/2= of 60, sign p 0.025 | A 1.129 B 1.002
+   breachDeadline60     mean 0.92 [0.38, 1.46] SE 0.27 med 0.50 | 14-/30+/16= of 60, sign p 0.023 | rel -12.7% | A 8.15 B 7.23
+   late60First          mean 2.57 [0.19, 4.95] SE 1.19 med 4.00 | 19-/40+/1= of 60, sign p 0.0086 | rel -1.1% | A 239.45 B 236.88
+   relocations          mean -15.95 [-17.72, -14.18] SE 0.89 med -15.00 | 60-/0+/0= of 60, sign p 1.7e-18 | rel 53.0% | A 14.13 B 30.08
+--- RCE35@T8P0 - EOHZ35@T8P0
+   served               mean -4.92 [-7.51, -2.32] SE 1.30 med -5.50 | 41-/18+/1= of 60, sign p 0.0038 | rel 0.7% | A 728.32 B 733.23
+   visRev60             mean -16.57 [-18.37, -14.76] SE 0.90 med -16.50 | 60-/0+/0= of 60, sign p 1.7e-18 | rel 41.8% | A 23.08 B 39.65
+   visRev60_per1000     mean -22.264 [-24.584, -19.944] SE 1.159 med -22.248 | 60-/0+/0= of 60, sign p 1.7e-18 | A 31.958 B 54.222
+   TV5_s_per_served     mean -15.505 [-17.345, -13.665] SE 0.920 med -14.792 | 60-/0+/0= of 60, sign p 1.7e-18 | A 118.342 B 133.847
+   Pchg_pp              mean -0.534 [-0.838, -0.231] SE 0.152 med -0.670 | 39-/21+/0= of 60, sign p 0.027 | A 32.075 B 32.610
+   late60First_pp       mean 0.264 [-0.040, 0.568] SE 0.152 med 0.377 | 21-/39+/0= of 60, sign p 0.027 | A 32.598 B 32.334
+   breachDeadline60_pp  mean 0.798 [0.682, 0.913] SE 0.058 med 0.854 | 2-/58+/0= of 60, sign p 3.2e-15 | A 1.800 B 1.002
+   breachDeadline60     mean 5.77 [4.91, 6.62] SE 0.43 med 6.00 | 1-/56+/3= of 60, sign p 8.0e-16 | rel -79.7% | A 13.00 B 7.23
+   late60First          mean 0.35 [-1.98, 2.68] SE 1.16 med -0.50 | 30-/26+/4= of 60, sign p 0.69 | rel -0.1% | A 237.23 B 236.88
+   relocations          mean -15.78 [-17.40, -14.17] SE 0.81 med -15.50 | 59-/0+/1= of 60, sign p 3.5e-18 | rel 52.5% | A 14.30 B 30.08
+--- RCE35@T8P300 - EOHZ35@T8P0
+   served               mean -6.10 [-9.22, -2.98] SE 1.56 med -6.50 | 43-/16+/1= of 60, sign p 0.00058 | rel 0.8% | A 727.13 B 733.23
+   visRev60             mean -17.97 [-19.81, -16.13] SE 0.92 med -18.00 | 60-/0+/0= of 60, sign p 1.7e-18 | rel 45.3% | A 21.68 B 39.65
+   visRev60_per1000     mean -24.135 [-26.460, -21.810] SE 1.162 med -23.673 | 60-/0+/0= of 60, sign p 1.7e-18 | A 30.087 B 54.222
+   TV5_s_per_served     mean -16.320 [-18.181, -14.458] SE 0.930 med -16.819 | 60-/0+/0= of 60, sign p 1.7e-18 | A 117.527 B 133.847
+   Pchg_pp              mean -0.599 [-0.906, -0.292] SE 0.153 med -0.620 | 42-/18+/0= of 60, sign p 0.0027 | A 32.011 B 32.610
+   late60First_pp       mean 0.285 [-0.033, 0.602] SE 0.159 med 0.335 | 23-/37+/0= of 60, sign p 0.092 | A 32.618 B 32.334
+   breachDeadline60_pp  mean 0.843 [0.709, 0.977] SE 0.067 med 0.801 | 3-/57+/0= of 60, sign p 6.3e-14 | A 1.845 B 1.002
+   breachDeadline60     mean 6.08 [5.10, 7.06] SE 0.49 med 6.00 | 3-/56+/1= of 60, sign p 1.2e-13 | rel -84.1% | A 13.32 B 7.23
+   late60First          mean 0.15 [-2.27, 2.57] SE 1.21 med 0.00 | 26-/26+/8= of 60, sign p 1.0 | rel -0.1% | A 237.03 B 236.88
+   relocations          mean -23.65 [-25.55, -21.75] SE 0.95 med -22.50 | 60-/0+/0= of 60, sign p 1.7e-18 | rel 78.6% | A 6.43 B 30.08
+--- RCE35@T8P300 - EOHZ35@T8P300
+   served               mean -5.42 [-7.85, -2.99] SE 1.21 med -4.50 | 40-/19+/1= of 60, sign p 0.0086 | rel 0.7% | A 727.13 B 732.55
+   visRev60             mean -8.67 [-9.98, -7.36] SE 0.66 med -8.50 | 58-/2+/0= of 60, sign p 3.2e-15 | rel 28.6% | A 21.68 B 30.35
+   visRev60_per1000     mean -11.594 [-13.343, -9.845] SE 0.874 med -10.519 | 58-/2+/0= of 60, sign p 3.2e-15 | A 30.087 B 41.681
+   TV5_s_per_served     mean -8.427 [-10.080, -6.774] SE 0.826 med -9.339 | 56-/4+/0= of 60, sign p 9.1e-13 | A 117.527 B 125.954
+   Pchg_pp              mean -0.271 [-0.571, 0.030] SE 0.150 med -0.329 | 33-/27+/0= of 60, sign p 0.52 | A 32.011 B 32.281
+   late60First_pp       mean -0.103 [-0.434, 0.227] SE 0.165 med -0.007 | 30-/30+/0= of 60, sign p 1.0 | A 32.618 B 32.722
+   breachDeadline60_pp  mean 0.716 [0.604, 0.828] SE 0.056 med 0.708 | 5-/55+/0= of 60, sign p 1.0e-11 | A 1.845 B 1.129
+   breachDeadline60     mean 5.17 [4.35, 5.99] SE 0.41 med 5.00 | 1-/54+/5= of 60, sign p 3.1e-15 | rel -63.4% | A 13.32 B 8.15
+   late60First          mean -2.42 [-4.94, 0.11] SE 1.26 med -2.00 | 32-/25+/3= of 60, sign p 0.43 | rel 1.0% | A 237.03 B 239.45
+   relocations          mean -7.70 [-8.67, -6.73] SE 0.49 med -7.00 | 58-/0+/2= of 60, sign p 6.9e-18 | rel 54.5% | A 6.43 B 14.13
+--- RCE35@T8P300 - RCE35@T8P0
+   served               mean -1.18 [-3.65, 1.29] SE 1.23 med -1.50 | 33-/25+/2= of 60, sign p 0.36 | rel 0.2% | A 727.13 B 728.32
+   visRev60             mean -1.40 [-2.10, -0.70] SE 0.35 med -1.00 | 37-/15+/8= of 60, sign p 0.0032 | rel 6.1% | A 21.68 B 23.08
+   visRev60_per1000     mean -1.871 [-2.822, -0.920] SE 0.475 med -1.736 | 41-/19+/0= of 60, sign p 0.0062 | A 30.087 B 31.958
+   TV5_s_per_served     mean -0.815 [-1.539, -0.090] SE 0.362 med -0.841 | 38-/22+/0= of 60, sign p 0.052 | A 117.527 B 118.342
+   Pchg_pp              mean -0.065 [-0.299, 0.170] SE 0.117 med -0.149 | 34-/26+/0= of 60, sign p 0.37 | A 32.011 B 32.075
+   late60First_pp       mean 0.021 [-0.212, 0.254] SE 0.116 med 0.014 | 30-/30+/0= of 60, sign p 1.0 | A 32.618 B 32.598
+   breachDeadline60_pp  mean 0.045 [-0.022, 0.113] SE 0.034 med -0.008 | 33-/26+/1= of 60, sign p 0.43 | A 1.845 B 1.800
+   breachDeadline60     mean 0.32 [-0.19, 0.82] SE 0.25 med 0.00 | 21-/19+/20= of 60, sign p 0.87 | rel -2.4% | A 13.32 B 13.00
+   late60First          mean -0.20 [-2.10, 1.70] SE 0.95 med 0.00 | 29-/28+/3= of 60, sign p 1.0 | rel 0.1% | A 237.03 B 237.23
+   relocations          mean -7.87 [-8.89, -6.84] SE 0.51 med -7.00 | 60-/0+/0= of 60, sign p 1.7e-18 | rel 55.0% | A 6.43 B 14.30
+--- U@T8P300 - U@T8P0
+   served               mean -2.33 [-5.29, 0.63] SE 1.48 med -2.50 | 33-/25+/2= of 60, sign p 0.36 | rel 0.3% | A 801.75 B 804.08
+   visRev60             mean -20.77 [-24.14, -17.39] SE 1.69 med -18.00 | 57-/2+/1= of 60, sign p 6.1e-15 | rel 23.3% | A 68.53 B 89.30
+   visRev60_per1000     mean -25.188 [-29.139, -21.237] SE 1.974 med -22.581 | 58-/2+/0= of 60, sign p 3.2e-15 | A 85.757 B 110.945
+   TV5_s_per_served     mean -21.912 [-26.100, -17.723] SE 2.093 med -23.520 | 54-/6+/0= of 60, sign p 9.7e-11 | A 321.626 B 343.537
+   Pchg_pp              mean -0.872 [-1.212, -0.533] SE 0.169 med -0.848 | 48-/12+/0= of 60, sign p 3.2e-6 | A 46.446 B 47.319
+   late60First_pp       mean 0.058 [-0.304, 0.421] SE 0.181 med -0.122 | 35-/25+/0= of 60, sign p 0.25 | A 46.741 B 46.683
+   breachDeadline60_pp  mean 0.000 [0.000, 0.000] SE 0.000 med 0.000 | 0-/0+/60= of 60, sign p 1.0 | A 0.000 B 0.000
+   breachDeadline60     mean 0.00 [0.00, 0.00] SE 0.00 med 0.00 | 0-/0+/60= of 60, sign p 1.0 | A 0.00 B 0.00
+   late60First          mean -0.60 [-4.05, 2.85] SE 1.72 med -1.00 | 31-/26+/3= of 60, sign p 0.60 | rel 0.2% | A 374.77 B 375.37
+   relocations          mean -23.70 [-26.33, -21.07] SE 1.31 med -23.00 | 60-/0+/0= of 60, sign p 1.7e-18 | rel 48.0% | A 25.70 B 49.40
+--- EOHZ35@T16P60 - EOHZ35@T16P0
+   served               mean -0.17 [-2.06, 1.73] SE 0.95 med 0.00 | 28-/25+/7= of 60, sign p 0.78 | rel 0.0% | A 733.80 B 733.97
+   visRev60             mean -2.55 [-3.61, -1.49] SE 0.53 med -2.00 | 42-/10+/8= of 60, sign p 9.1e-6 | rel 6.4% | A 37.05 B 39.60
+   visRev60_per1000     mean -3.498 [-4.910, -2.085] SE 0.706 med -2.625 | 45-/12+/3= of 60, sign p 1.3e-5 | A 50.620 B 54.117
+   TV5_s_per_served     mean -2.120 [-3.136, -1.104] SE 0.508 med -1.866 | 44-/16+/0= of 60, sign p 0.00039 | A 132.054 B 134.174
+   Pchg_pp              mean -0.059 [-0.256, 0.139] SE 0.099 med -0.063 | 32-/26+/2= of 60, sign p 0.51 | A 32.608 B 32.666
+   late60First_pp       mean 0.111 [-0.078, 0.301] SE 0.095 med 0.146 | 23-/35+/2= of 60, sign p 0.15 | A 32.509 B 32.397
+   breachDeadline60_pp  mean 0.038 [-0.008, 0.084] SE 0.023 med 0.001 | 22-/32+/6= of 60, sign p 0.22 | A 1.045 B 1.007
+   breachDeadline60     mean 0.27 [-0.06, 0.60] SE 0.16 med 0.00 | 10-/18+/32= of 60, sign p 0.18 | rel -3.7% | A 7.55 B 7.28
+   late60First          mean 0.82 [-0.81, 2.44] SE 0.81 med 1.00 | 23-/32+/5= of 60, sign p 0.28 | rel -0.3% | A 238.43 B 237.62
+   relocations          mean -5.12 [-6.22, -4.01] SE 0.55 med -4.50 | 54-/4+/2= of 60, sign p 3.2e-12 | rel 16.5% | A 25.88 B 31.00
+--- EOHZ35@T16P300 - EOHZ35@T16P0
+   served               mean -1.58 [-4.34, 1.17] SE 1.38 med -3.00 | 36-/19+/5= of 60, sign p 0.030 | rel 0.2% | A 732.38 B 733.97
+   visRev60             mean -9.27 [-10.66, -7.87] SE 0.70 med -10.00 | 54-/5+/1= of 60, sign p 1.9e-11 | rel 23.4% | A 30.33 B 39.60
+   visRev60_per1000     mean -12.447 [-14.241, -10.654] SE 0.896 med -13.581 | 55-/5+/0= of 60, sign p 1.0e-11 | A 41.670 B 54.117
+   TV5_s_per_served     mean -8.005 [-9.855, -6.154] SE 0.925 med -6.637 | 54-/6+/0= of 60, sign p 9.7e-11 | A 126.170 B 134.174
+   Pchg_pp              mean -0.319 [-0.636, -0.003] SE 0.158 med -0.115 | 34-/25+/1= of 60, sign p 0.30 | A 32.347 B 32.666
+   late60First_pp       mean 0.380 [0.076, 0.683] SE 0.152 med 0.686 | 17-/42+/1= of 60, sign p 0.0015 | A 32.777 B 32.397
+   breachDeadline60_pp  mean 0.109 [0.034, 0.185] SE 0.038 med 0.071 | 21-/38+/1= of 60, sign p 0.036 | A 1.117 B 1.007
+   breachDeadline60     mean 0.78 [0.24, 1.33] SE 0.27 med 0.50 | 15-/30+/15= of 60, sign p 0.036 | rel -10.8% | A 8.07 B 7.28
+   late60First          mean 2.17 [-0.30, 4.63] SE 1.23 med 3.00 | 17-/40+/3= of 60, sign p 0.0032 | rel -0.9% | A 239.78 B 237.62
+   relocations          mean -16.43 [-18.31, -14.55] SE 0.94 med -15.50 | 60-/0+/0= of 60, sign p 1.7e-18 | rel 53.0% | A 14.57 B 31.00
+--- RCE35@T16P0 - EOHZ35@T16P0
+   served               mean -5.75 [-8.46, -3.04] SE 1.36 med -8.00 | 41-/17+/2= of 60, sign p 0.0022 | rel 0.8% | A 728.22 B 733.97
+   visRev60             mean -16.27 [-18.06, -14.47] SE 0.90 med -16.00 | 60-/0+/0= of 60, sign p 1.7e-18 | rel 41.1% | A 23.33 B 39.60
+   visRev60_per1000     mean -21.819 [-24.131, -19.508] SE 1.155 med -21.772 | 60-/0+/0= of 60, sign p 1.7e-18 | A 32.298 B 54.117
+   TV5_s_per_served     mean -15.667 [-17.615, -13.718] SE 0.974 med -15.770 | 60-/0+/0= of 60, sign p 1.7e-18 | A 118.508 B 134.174
+   Pchg_pp              mean -0.575 [-0.890, -0.260] SE 0.157 med -0.793 | 39-/21+/0= of 60, sign p 0.027 | A 32.091 B 32.666
+   late60First_pp       mean 0.264 [-0.054, 0.582] SE 0.159 med 0.474 | 22-/37+/1= of 60, sign p 0.067 | A 32.661 B 32.397
+   breachDeadline60_pp  mean 0.787 [0.671, 0.903] SE 0.058 med 0.832 | 2-/58+/0= of 60, sign p 3.2e-15 | A 1.794 B 1.007
+   breachDeadline60     mean 5.68 [4.82, 6.54] SE 0.43 med 6.00 | 1-/56+/3= of 60, sign p 8.0e-16 | rel -78.0% | A 12.97 B 7.28
+   late60First          mean 0.10 [-2.35, 2.55] SE 1.22 med 0.50 | 25-/30+/5= of 60, sign p 0.59 | rel -0.0% | A 237.72 B 237.62
+   relocations          mean -15.90 [-17.72, -14.08] SE 0.91 med -15.50 | 59-/0+/1= of 60, sign p 3.5e-18 | rel 51.3% | A 15.10 B 31.00
+--- RCE35@T16P300 - EOHZ35@T16P0
+   served               mean -6.37 [-9.56, -3.17] SE 1.60 med -7.00 | 41-/15+/4= of 60, sign p 0.00069 | rel 0.9% | A 727.60 B 733.97
+   visRev60             mean -17.78 [-19.70, -15.86] SE 0.96 med -18.00 | 60-/0+/0= of 60, sign p 1.7e-18 | rel 44.9% | A 21.82 B 39.60
+   visRev60_per1000     mean -23.864 [-26.311, -21.416] SE 1.223 med -23.425 | 60-/0+/0= of 60, sign p 1.7e-18 | A 30.253 B 54.117
+   TV5_s_per_served     mean -16.748 [-18.728, -14.768] SE 0.989 med -17.605 | 60-/0+/0= of 60, sign p 1.7e-18 | A 117.426 B 134.174
+   Pchg_pp              mean -0.671 [-0.983, -0.359] SE 0.156 med -0.576 | 41-/19+/0= of 60, sign p 0.0062 | A 31.995 B 32.666
+   late60First_pp       mean 0.222 [-0.086, 0.530] SE 0.154 med 0.136 | 27-/33+/0= of 60, sign p 0.52 | A 32.619 B 32.397
+   breachDeadline60_pp  mean 0.823 [0.699, 0.948] SE 0.062 med 0.797 | 3-/57+/0= of 60, sign p 6.3e-14 | A 1.831 B 1.007
+   breachDeadline60     mean 5.93 [5.03, 6.84] SE 0.45 med 6.00 | 3-/56+/1= of 60, sign p 1.2e-13 | rel -81.5% | A 13.22 B 7.28
+   late60First          mean -0.42 [-2.80, 1.97] SE 1.19 med -1.00 | 31-/25+/4= of 60, sign p 0.50 | rel 0.2% | A 237.20 B 237.62
+   relocations          mean -24.20 [-26.19, -22.21] SE 1.00 med -22.50 | 60-/0+/0= of 60, sign p 1.7e-18 | rel 78.1% | A 6.80 B 31.00
+--- RCE35@T16P300 - EOHZ35@T16P300
+   served               mean -4.78 [-7.34, -2.22] SE 1.28 med -5.00 | 38-/20+/2= of 60, sign p 0.025 | rel 0.7% | A 727.60 B 732.38
+   visRev60             mean -8.52 [-9.92, -7.12] SE 0.70 med -8.50 | 56-/4+/0= of 60, sign p 9.1e-13 | rel 28.1% | A 21.82 B 30.33
+   visRev60_per1000     mean -11.417 [-13.260, -9.573] SE 0.921 med -10.963 | 56-/4+/0= of 60, sign p 9.1e-13 | A 30.253 B 41.670
+   TV5_s_per_served     mean -8.743 [-10.426, -7.061] SE 0.841 med -9.797 | 55-/5+/0= of 60, sign p 1.0e-11 | A 117.426 B 126.170
+   Pchg_pp              mean -0.352 [-0.680, -0.025] SE 0.164 med -0.412 | 39-/21+/0= of 60, sign p 0.027 | A 31.995 B 32.347
+   late60First_pp       mean -0.158 [-0.493, 0.178] SE 0.168 med -0.241 | 33-/26+/1= of 60, sign p 0.43 | A 32.619 B 32.777
+   breachDeadline60_pp  mean 0.714 [0.608, 0.820] SE 0.053 med 0.713 | 3-/57+/0= of 60, sign p 6.3e-14 | A 1.831 B 1.117
+   breachDeadline60     mean 5.15 [4.38, 5.92] SE 0.39 med 5.00 | 0-/56+/4= of 60, sign p 2.8e-17 | rel -63.8% | A 13.22 B 8.07
+   late60First          mean -2.58 [-5.29, 0.12] SE 1.35 med -2.00 | 36-/22+/2= of 60, sign p 0.087 | rel 1.1% | A 237.20 B 239.78
+   relocations          mean -7.77 [-8.73, -6.80] SE 0.48 med -7.00 | 59-/0+/1= of 60, sign p 3.5e-18 | rel 53.3% | A 6.80 B 14.57
+--- RCE35@T16P300 - RCE35@T16P0
+   served               mean -0.62 [-2.92, 1.68] SE 1.15 med 1.00 | 28-/30+/2= of 60, sign p 0.90 | rel 0.1% | A 727.60 B 728.22
+   visRev60             mean -1.52 [-2.23, -0.81] SE 0.36 med -1.50 | 39-/13+/8= of 60, sign p 0.00041 | rel 6.5% | A 21.82 B 23.33
+   visRev60_per1000     mean -2.044 [-3.007, -1.082] SE 0.481 med -2.067 | 43-/17+/0= of 60, sign p 0.0011 | A 30.253 B 32.298
+   TV5_s_per_served     mean -1.081 [-1.828, -0.334] SE 0.373 med -0.726 | 40-/20+/0= of 60, sign p 0.013 | A 117.426 B 118.508
+   Pchg_pp              mean -0.096 [-0.340, 0.148] SE 0.122 med -0.143 | 33-/27+/0= of 60, sign p 0.52 | A 31.995 B 32.091
+   late60First_pp       mean -0.042 [-0.300, 0.216] SE 0.129 med 0.031 | 29-/31+/0= of 60, sign p 0.90 | A 32.619 B 32.661
+   breachDeadline60_pp  mean 0.036 [-0.026, 0.098] SE 0.031 med -0.009 | 33-/26+/1= of 60, sign p 0.43 | A 1.831 B 1.794
+   breachDeadline60     mean 0.25 [-0.20, 0.70] SE 0.23 med 0.00 | 19-/19+/22= of 60, sign p 1.0 | rel -1.9% | A 13.22 B 12.97
+   late60First          mean -0.52 [-2.63, 1.60] SE 1.06 med -0.50 | 30-/28+/2= of 60, sign p 0.90 | rel 0.2% | A 237.20 B 237.72
+   relocations          mean -8.30 [-9.38, -7.22] SE 0.54 med -7.50 | 60-/0+/0= of 60, sign p 1.7e-18 | rel 55.0% | A 6.80 B 15.10
+--- U@T16P300 - U@T16P0
+   served               mean -2.37 [-5.26, 0.52] SE 1.44 med -2.00 | 34-/25+/1= of 60, sign p 0.30 | rel 0.3% | A 802.23 B 804.60
+   visRev60             mean -21.95 [-25.29, -18.61] SE 1.67 med -20.50 | 58-/2+/0= of 60, sign p 3.2e-15 | rel 24.1% | A 69.07 B 91.02
+   visRev60_per1000     mean -26.641 [-30.546, -22.737] SE 1.951 med -24.643 | 58-/2+/0= of 60, sign p 3.2e-15 | A 86.370 B 113.012
+   TV5_s_per_served     mean -23.903 [-28.454, -19.353] SE 2.274 med -24.304 | 54-/6+/0= of 60, sign p 9.7e-11 | A 322.095 B 345.998
+   Pchg_pp              mean -0.905 [-1.248, -0.562] SE 0.171 med -0.913 | 44-/16+/0= of 60, sign p 0.00039 | A 46.477 B 47.383
+   late60First_pp       mean 0.118 [-0.263, 0.499] SE 0.190 med -0.141 | 35-/25+/0= of 60, sign p 0.25 | A 46.796 B 46.678
+   breachDeadline60_pp  mean 0.000 [0.000, 0.000] SE 0.000 med 0.000 | 0-/0+/60= of 60, sign p 1.0 | A 0.000 B 0.000
+   breachDeadline60     mean 0.00 [0.00, 0.00] SE 0.00 med 0.00 | 0-/0+/60= of 60, sign p 1.0 | A 0.00 B 0.00
+   late60First          mean -0.15 [-3.54, 3.24] SE 1.70 med -0.50 | 30-/26+/4= of 60, sign p 0.69 | rel 0.0% | A 375.42 B 375.57
+   relocations          mean -24.93 [-27.55, -22.32] SE 1.31 med -26.00 | 60-/0+/0= of 60, sign p 1.7e-18 | rel 48.9% | A 26.02 B 50.95

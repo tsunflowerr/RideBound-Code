@@ -1,0 +1,6 @@
+G1 N/CL rows == wf20 rows on every wf20 field (except label, ms, msScore): 1440/1440 equal, missing 0, field-set mismatches 0 -> PASS 
+G2 PAD(r=1) == N (sigR3 + every wf20 field except label, ms, msScore, mode, sig, sigX, fc): 0/0 -> n/a 
+G3 CLc path with OLD-rule index == CL (every field except label, ms, msScore, mode, fcIndex, variant): 0/0 -> n/a 
+G4 SHRC ledger breaches = 0: 720/720 -> PASS
+G5 x* = 72 % INS / 71 % G2: 1440/1440 -> PASS
+G8 plN = promised, plServedN = served: 1440/1440 -> PASS

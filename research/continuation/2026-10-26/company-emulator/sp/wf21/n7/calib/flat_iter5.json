@@ -1,0 +1,15 @@
+{
+ "label": "wf21-n7-exploratory-post-audit; calibration reads promise length only",
+ "refMode": "CL",
+ "variant": "calPAD",
+ "flat": {
+  "INS|w08|SHRC": 1.03253,
+  "INS|w08|SHHZ": 1.030446,
+  "INS|w17|SHRC": 0.979812,
+  "INS|w17|SHHZ": 0.981987,
+  "G2|w08|SHRC": 1.031449,
+  "G2|w08|SHHZ": 1.034545,
+  "G2|w17|SHRC": 0.980307,
+  "G2|w17|SHHZ": 0.980806
+ }
+}

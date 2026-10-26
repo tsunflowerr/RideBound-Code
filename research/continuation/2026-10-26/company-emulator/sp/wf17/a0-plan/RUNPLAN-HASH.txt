@@ -1,0 +1,3 @@
+2026-10-23T14:28:52+07:00
+ef953c3b87ec8231f78878606afcfc56a47e5931b090138191b6c19dc9da2f12 *RUNPLAN.md
+label: wf17 EXPLORATORY POST-AUDIT run plan; written before any wf17 simulation, cell generation or export

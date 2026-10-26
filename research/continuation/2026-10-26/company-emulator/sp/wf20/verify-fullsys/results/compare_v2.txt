@@ -1,0 +1,3 @@
+compared numeric values 33372, integer counts 16092; max abs diff 1.29e-12; max rel diff of p 6.61e-10; integer mismatches 0; keys missing at producer 0; values beyond 1e-9: 0
+
+labels: producer lines 94, mine 94 (+P8r extra), label agreements 282, differences 0

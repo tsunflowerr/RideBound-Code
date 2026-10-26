@@ -1,0 +1,548 @@
+wf17 R5 regime grid (EXPLORATORY, POST-AUDIT; label wf17-exploratory-post-audit). Unit = day (w08 + w17, r0), panel D30.
+rows 2520 (expected 2520). Exact two-sided sign test, ties dropped; 95 % t-interval over days. Shares in % of served, deltas in pp.
+Prediction for every variant (RUNPLAN R5): G2 served vs EOHZ35 between 0 and -5/day; INS |dServed| <= 4/day, dVisRev60 -0.2 to -2.5/day (0 to -25 %), dBreachDeadline60 > 0.
+
+==================== B0 ====================
+prediction (RUNPLAN R5): G2 rel about 40-44 % (wf14 / a5 V0)
+level G2  U      served 811.3 | visRev60 94.30 (116.13/1000) | TV5 344.07 s | Pchg 47.76% | any1 50.26% | late60F 46.83% | breachDL60 0.00% | breachLedger 0.00% (by construction for RC arms) | reloc 51.6 | switched 50.3 | days 30
+level G2  EOHZ35 served 742.0 | visRev60 42.07 (56.81/1000) | TV5 133.20 s | Pchg 32.87% | any1 35.16% | late60F 32.34% | breachDL60 0.95% | breachLedger 4.26% (by construction for RC arms) | reloc 30.4 | switched 29.7 | days 30
+level G2  RCE35  served 737.3 | visRev60 24.63 (33.59/1000) | TV5 115.99 s | Pchg 32.24% | any1 33.82% | late60F 32.40% | breachDL60 1.77% | breachLedger 0.00% (by construction for RC arms) | reloc 13.9 | switched 13.8 | days 30
+level G2  NCE35  served 744.0 | visRev60 42.20 (56.93/1000) | TV5 134.26 s | Pchg 33.27% | any1 35.58% | late60F 32.08% | breachDL60 1.70% | breachLedger 3.02% (by construction for RC arms) | reloc 31.0 | switched 30.5 | days 30
+level INS EOHZ35 served 731.4 | visRev60 23.50 (32.26/1000) | TV5 114.51 s | Pchg 31.95% | any1 32.50% | late60F 32.83% | breachDL60 1.09% | breachLedger 1.23% (by construction for RC arms) | reloc 0.0 | switched 0.0 | days 30
+level INS RCE35  served 733.2 | visRev60 21.50 (29.43/1000) | TV5 113.93 s | Pchg 31.88% | any1 32.43% | late60F 32.23% | breachDL60 1.78% | breachLedger 0.00% (by construction for RC arms) | reloc 0.0 | switched 0.0 | days 30
+--- G2 RCE35-EOHZ35
+   served                           mean -4.77 [-8.56, -0.97] SE 1.86 med -7.00 | 20-/9+/1= of 30, sign p 0.061 | rel 0.6% | A 737.27 B 742.03 | favour(non-tied) 31%
+   visRev60                         mean -17.43 [-20.27, -14.59] SE 1.39 med -17.00 | 30-/0+/0= of 30, sign p 1.9e-9 | rel 41.4% | A 24.63 B 42.07 | favour(non-tied) 100%
+   visRev60_per1000                 mean -23.224 [-26.812, -19.636] SE 1.754 med -22.663 | 30-/0+/0= of 30, sign p 1.9e-9 | A 33.590 B 56.814 | favour(non-tied) 100%
+   TV5_s_per_served                 mean -17.211 [-20.033, -14.389] SE 1.380 med -15.880 | 30-/0+/0= of 30, sign p 1.9e-9 | A 115.989 B 133.200 | favour(non-tied) 100%
+   Pchg_pp                          mean -0.636 [-1.077, -0.196] SE 0.216 med -0.597 | 21-/9+/0= of 30, sign p 0.043 | A 32.236 B 32.872 | favour(non-tied) 70%
+   pDispAny1_pp                     mean -1.335 [-1.802, -0.868] SE 0.229 med -1.264 | 24-/6+/0= of 30, sign p 0.0014 | A 33.824 B 35.159 | favour(non-tied) 80%
+   late60First_pp                   mean 0.065 [-0.345, 0.475] SE 0.200 med 0.280 | 11-/19+/0= of 30, sign p 0.20 | A 32.401 B 32.335 | favour(non-tied) 37%
+   breachDeadline60_pp              mean 0.822 [0.659, 0.984] SE 0.079 med 0.891 | 0-/30+/0= of 30, sign p 1.9e-9 | A 1.770 B 0.949 | favour(non-tied) 0%
+   breachLedger_pp_BY_CONSTRUCTION  mean -4.264 [-4.656, -3.872] SE 0.192 med -4.393 | 30-/0+/0= of 30, sign p 1.9e-9 | A 0.000 B 4.264 | favour(non-tied) NA
+   late60First                      mean -1.10 [-4.26, 2.06] SE 1.55 med -0.50 | 15-/11+/4= of 30, sign p 0.56 | rel 0.5% | A 238.73 B 239.83 | favour(non-tied) 58%
+   breachDeadline60                 mean 6.07 [4.82, 7.31] SE 0.61 med 6.50 | 0-/28+/2= of 30, sign p 7.5e-9 | rel -87.1% | A 13.03 B 6.97 | favour(non-tied) 0%
+   relocations                      mean -16.50 [-18.82, -14.18] SE 1.13 med -16.50 | 30-/0+/0= of 30, sign p 1.9e-9 | rel 54.3% | A 13.87 B 30.37 | favour(non-tied) NA
+   switchedRiders                   mean -15.97 [-18.31, -13.62] SE 1.15 med -15.50 | 30-/0+/0= of 30, sign p 1.9e-9 | rel 53.7% | A 13.77 B 29.73 | favour(non-tied) NA
+   exchange rates (2.4): {"ARR_per1000":23.49400296482638,"dVisRev60_day":-17.433333333333334,"dServed_day":-4.766666666666667,"dBreachDeadline60_day":6.066666666666666,"dLate60First_day":-1.1,"ER_served":3.6573426573426575,"ER_deadline":2.8736263736263736,"ER_late":"no lateness price (mean dLate <= 0)"}
+--- G2 RCE35-NCE35
+   served                           mean -6.77 [-11.20, -2.34] SE 2.17 med -4.00 | 20-/8+/2= of 30, sign p 0.036 | rel 0.9% | A 737.27 B 744.03 | favour(non-tied) 29%
+   visRev60                         mean -17.57 [-20.81, -14.32] SE 1.59 med -16.00 | 30-/0+/0= of 30, sign p 1.9e-9 | rel 41.6% | A 24.63 B 42.20 | favour(non-tied) 100%
+   visRev60_per1000                 mean -23.335 [-27.519, -19.152] SE 2.046 med -21.893 | 30-/0+/0= of 30, sign p 1.9e-9 | A 33.590 B 56.925 | favour(non-tied) 100%
+   TV5_s_per_served                 mean -18.273 [-21.014, -15.531] SE 1.341 med -17.001 | 30-/0+/0= of 30, sign p 1.9e-9 | A 115.989 B 134.261 | favour(non-tied) 100%
+   Pchg_pp                          mean -1.034 [-1.393, -0.676] SE 0.175 med -1.109 | 26-/4+/0= of 30, sign p 5.9e-5 | A 32.236 B 33.270 | favour(non-tied) 87%
+   pDispAny1_pp                     mean -1.760 [-2.161, -1.358] SE 0.196 med -1.630 | 28-/2+/0= of 30, sign p 8.7e-7 | A 33.824 B 35.583 | favour(non-tied) 93%
+   late60First_pp                   mean 0.320 [-0.100, 0.740] SE 0.205 med 0.199 | 10-/20+/0= of 30, sign p 0.099 | A 32.401 B 32.080 | favour(non-tied) 33%
+   breachDeadline60_pp              mean 0.067 [-0.102, 0.237] SE 0.083 med 0.134 | 13-/17+/0= of 30, sign p 0.58 | A 1.770 B 1.703 | favour(non-tied) 43%
+   breachLedger_pp_BY_CONSTRUCTION  mean -3.023 [-3.352, -2.693] SE 0.161 med -2.782 | 30-/0+/0= of 30, sign p 1.9e-9 | A 0.000 B 3.023 | favour(non-tied) NA
+   late60First                      mean 0.20 [-3.36, 3.76] SE 1.74 med -0.50 | 15-/14+/1= of 30, sign p 1.0 | rel -0.1% | A 238.73 B 238.53 | favour(non-tied) 52%
+   breachDeadline60                 mean 0.43 [-0.83, 1.69] SE 0.62 med 1.00 | 11-/16+/3= of 30, sign p 0.44 | rel -3.4% | A 13.03 B 12.60 | favour(non-tied) 41%
+   relocations                      mean -17.17 [-19.88, -14.46] SE 1.33 med -16.50 | 30-/0+/0= of 30, sign p 1.9e-9 | rel 55.3% | A 13.87 B 31.03 | favour(non-tied) NA
+   switchedRiders                   mean -16.73 [-19.47, -13.99] SE 1.34 med -15.50 | 30-/0+/0= of 30, sign p 1.9e-9 | rel 54.9% | A 13.77 B 30.50 | favour(non-tied) NA
+   exchange rates (2.4): {"ARR_per1000":23.61005331302361,"dVisRev60_day":-17.566666666666666,"dServed_day":-6.766666666666667,"dBreachDeadline60_day":0.43333333333333335,"dLate60First_day":0.2,"ER_served":2.5960591133004924,"ER_deadline":40.53846153846153,"ER_late":87.83333333333333}
+--- G2 NCE35-EOHZ35
+   served                           mean 2.00 [-1.46, 5.46] SE 1.69 med 3.00 | 10-/18+/2= of 30, sign p 0.18 | rel -0.3% | A 744.03 B 742.03 | favour(non-tied) 64%
+   visRev60                         mean 0.13 [-1.55, 1.82] SE 0.82 med -1.00 | 16-/9+/5= of 30, sign p 0.23 | rel -0.3% | A 42.20 B 42.07 | favour(non-tied) 64%
+   visRev60_per1000                 mean 0.111 [-2.024, 2.247] SE 1.044 med -1.021 | 17-/11+/2= of 30, sign p 0.34 | A 56.925 B 56.814 | favour(non-tied) 61%
+   TV5_s_per_served                 mean 1.061 [-0.611, 2.734] SE 0.818 med 0.203 | 15-/15+/0= of 30, sign p 1.0 | A 134.261 B 133.200 | favour(non-tied) 50%
+   Pchg_pp                          mean 0.398 [0.116, 0.680] SE 0.138 med 0.610 | 8-/22+/0= of 30, sign p 0.016 | A 33.270 B 32.872 | favour(non-tied) 27%
+   pDispAny1_pp                     mean 0.425 [0.145, 0.705] SE 0.137 med 0.482 | 9-/21+/0= of 30, sign p 0.043 | A 35.583 B 35.159 | favour(non-tied) 30%
+   late60First_pp                   mean -0.255 [-0.625, 0.115] SE 0.181 med -0.331 | 18-/12+/0= of 30, sign p 0.36 | A 32.080 B 32.335 | favour(non-tied) 60%
+   breachDeadline60_pp              mean 0.755 [0.584, 0.925] SE 0.083 med 0.733 | 1-/29+/0= of 30, sign p 5.8e-8 | A 1.703 B 0.949 | favour(non-tied) 3%
+   breachLedger_pp_BY_CONSTRUCTION  mean -1.242 [-1.572, -0.912] SE 0.161 med -1.292 | 27-/3+/0= of 30, sign p 8.4e-6 | A 3.023 B 4.264 | favour(non-tied) NA
+   late60First                      mean -1.30 [-4.56, 1.96] SE 1.59 med -1.00 | 16-/13+/1= of 30, sign p 0.71 | rel 0.5% | A 238.53 B 239.83 | favour(non-tied) 55%
+   breachDeadline60                 mean 5.63 [4.35, 6.91] SE 0.63 med 5.50 | 0-/29+/1= of 30, sign p 3.7e-9 | rel -80.9% | A 12.60 B 6.97 | favour(non-tied) 0%
+   relocations                      mean 0.67 [-1.08, 2.42] SE 0.86 med 1.00 | 13-/16+/1= of 30, sign p 0.71 | rel -2.2% | A 31.03 B 30.37 | favour(non-tied) NA
+   switchedRiders                   mean 0.77 [-0.92, 2.45] SE 0.82 med 1.00 | 13-/16+/1= of 30, sign p 0.71 | rel -2.6% | A 30.50 B 29.73 | favour(non-tied) NA
+--- INS RCE35-EOHZ35
+   served                           mean 1.80 [-1.54, 5.14] SE 1.63 med 1.50 | 12-/17+/1= of 30, sign p 0.46 | rel -0.2% | A 733.23 B 731.43 | favour(non-tied) 59%
+   visRev60                         mean -2.00 [-3.01, -0.99] SE 0.50 med -1.50 | 21-/3+/6= of 30, sign p 0.00028 | rel 8.5% | A 21.50 B 23.50 | favour(non-tied) 88%
+   visRev60_per1000                 mean -2.830 [-4.230, -1.430] SE 0.684 med -2.530 | 24-/6+/0= of 30, sign p 0.0014 | A 29.428 B 32.258 | favour(non-tied) 80%
+   TV5_s_per_served                 mean -0.585 [-2.329, 1.160] SE 0.853 med -0.884 | 18-/12+/0= of 30, sign p 0.36 | A 113.930 B 114.515 | favour(non-tied) 60%
+   Pchg_pp                          mean -0.070 [-0.480, 0.339] SE 0.200 med -0.297 | 19-/10+/1= of 30, sign p 0.14 | A 31.877 B 31.947 | favour(non-tied) 66%
+   pDispAny1_pp                     mean -0.072 [-0.479, 0.334] SE 0.199 med -0.332 | 19-/10+/1= of 30, sign p 0.14 | A 32.429 B 32.501 | favour(non-tied) 66%
+   late60First_pp                   mean -0.597 [-0.983, -0.211] SE 0.189 med -0.725 | 22-/8+/0= of 30, sign p 0.016 | A 32.234 B 32.831 | favour(non-tied) 73%
+   breachDeadline60_pp              mean 0.690 [0.525, 0.855] SE 0.081 med 0.653 | 2-/28+/0= of 30, sign p 8.7e-7 | A 1.776 B 1.086 | favour(non-tied) 7%
+   breachLedger_pp_BY_CONSTRUCTION  mean -1.234 [-1.475, -0.992] SE 0.118 med -1.244 | 28-/0+/2= of 30, sign p 7.5e-9 | A 0.000 B 1.234 | favour(non-tied) NA
+   late60First                      mean -3.67 [-7.00, -0.33] SE 1.63 med -6.00 | 20-/8+/2= of 30, sign p 0.036 | rel 1.5% | A 236.33 B 240.00 | favour(non-tied) 71%
+   breachDeadline60                 mean 5.10 [3.89, 6.31] SE 0.59 med 5.00 | 1-/28+/1= of 30, sign p 1.1e-7 | rel -64.6% | A 13.00 B 7.90 | favour(non-tied) 3%
+   exchange rates (2.4): {"ARR_per1000":2.7343571981953243,"dVisRev60_day":-2,"dServed_day":1.8,"dBreachDeadline60_day":5.1,"dLate60First_day":-3.6666666666666665,"ER_served":"no service price (mean dServed >= 0)","ER_deadline":0.3921568627450981,"ER_late":"no lateness price (mean dLate <= 0)"}
+C1 (G2 visRev60 RCE35 vs EOHZ35): HOLDS | rel 41.4% | favour(non-tied) 100% | days dVis>=0 0/30
+C2 (G2 served): HOLDS | mean -4.77/day [-8.56, -0.97] (-0.64% of EOHZ35) | days negative 20/30
+C3 (INS served): HOLDS | mean 1.80/day [-1.54, 5.14] | days on mean side 17/30 | INS dVisRev60 -2.00/day (rel 8.5%)
+C4 (INS breachDeadline60): HOLDS | mean 5.10/day [3.89, 6.31] (0.690 pp) | days <= 0 2/30
+
+==================== V-P256 ====================
+prediction (RUNPLAN R5): G2 rel 25-40 %, absolute -3 to -6/day
+level G2  U      served 411.1 | visRev60 27.67 (67.46/1000) | TV5 240.31 s | Pchg 34.66% | any1 36.50% | late60F 36.18% | breachDL60 0.00% | breachLedger 0.00% (by construction for RC arms) | reloc 13.3 | switched 13.2 | days 30
+level G2  EOHZ35 served 385.5 | visRev60 11.57 (29.89/1000) | TV5 94.77 s | Pchg 22.22% | any1 23.82% | late60F 24.24% | breachDL60 0.57% | breachLedger 1.73% (by construction for RC arms) | reloc 8.9 | switched 8.9 | days 30
+level G2  RCE35  served 384.8 | visRev60 8.33 (21.65/1000) | TV5 87.63 s | Pchg 21.86% | any1 23.06% | late60F 24.15% | breachDL60 1.07% | breachLedger 0.00% (by construction for RC arms) | reloc 4.9 | switched 4.8 | days 30
+level G2  NCE35  served 385.5 | visRev60 11.27 (29.07/1000) | TV5 95.31 s | Pchg 22.27% | any1 23.98% | late60F 23.85% | breachDL60 1.05% | breachLedger 1.43% (by construction for RC arms) | reloc 8.9 | switched 8.8 | days 30
+level INS EOHZ35 served 382.8 | visRev60 7.43 (19.45/1000) | TV5 84.61 s | Pchg 21.27% | any1 21.69% | late60F 24.26% | breachDL60 0.65% | breachLedger 0.39% (by construction for RC arms) | reloc 0.0 | switched 0.0 | days 30
+level INS RCE35  served 383.9 | visRev60 7.30 (19.06/1000) | TV5 85.86 s | Pchg 21.61% | any1 22.01% | late60F 24.19% | breachDL60 1.14% | breachLedger 0.00% (by construction for RC arms) | reloc 0.0 | switched 0.0 | days 30
+--- G2 RCE35-EOHZ35
+   served                           mean -0.67 [-2.69, 1.35] SE 0.99 med -1.00 | 17-/10+/3= of 30, sign p 0.25 | rel 0.2% | A 384.80 B 385.47 | favour(non-tied) 37%
+   visRev60                         mean -3.23 [-4.46, -2.00] SE 0.60 med -3.00 | 25-/4+/1= of 30, sign p 0.00010 | rel 28.0% | A 8.33 B 11.57 | favour(non-tied) 86%
+   visRev60_per1000                 mean -8.246 [-11.342, -5.150] SE 1.514 med -8.848 | 26-/4+/0= of 30, sign p 5.9e-5 | A 21.647 B 29.893 | favour(non-tied) 87%
+   TV5_s_per_served                 mean -7.145 [-9.426, -4.864] SE 1.115 med -7.692 | 25-/5+/0= of 30, sign p 0.00032 | A 87.628 B 94.774 | favour(non-tied) 83%
+   Pchg_pp                          mean -0.360 [-0.821, 0.102] SE 0.226 med -0.607 | 20-/9+/1= of 30, sign p 0.061 | A 21.857 B 22.216 | favour(non-tied) 69%
+   pDispAny1_pp                     mean -0.761 [-1.208, -0.314] SE 0.219 med -0.770 | 23-/7+/0= of 30, sign p 0.0052 | A 23.064 B 23.825 | favour(non-tied) 77%
+   late60First_pp                   mean -0.084 [-0.546, 0.378] SE 0.226 med -0.085 | 16-/14+/0= of 30, sign p 0.86 | A 24.152 B 24.236 | favour(non-tied) 53%
+   breachDeadline60_pp              mean 0.493 [0.345, 0.642] SE 0.073 med 0.508 | 2-/27+/1= of 30, sign p 1.6e-6 | A 1.067 B 0.574 | favour(non-tied) 7%
+   breachLedger_pp_BY_CONSTRUCTION  mean -1.731 [-2.055, -1.408] SE 0.158 med -1.531 | 30-/0+/0= of 30, sign p 1.9e-9 | A 0.000 B 1.731 | favour(non-tied) NA
+   late60First                      mean -0.50 [-2.38, 1.38] SE 0.92 med -0.50 | 15-/13+/2= of 30, sign p 0.85 | rel 0.5% | A 92.90 B 93.40 | favour(non-tied) 54%
+   breachDeadline60                 mean 1.90 [1.32, 2.48] SE 0.29 med 2.00 | 2-/26+/2= of 30, sign p 3.0e-6 | rel -86.4% | A 4.10 B 2.20 | favour(non-tied) 7%
+   relocations                      mean -4.07 [-5.26, -2.87] SE 0.58 med -4.00 | 27-/2+/1= of 30, sign p 1.6e-6 | rel 45.5% | A 4.87 B 8.93 | favour(non-tied) NA
+   switchedRiders                   mean -4.13 [-5.32, -2.95] SE 0.58 med -4.00 | 27-/1+/2= of 30, sign p 2.2e-7 | rel 46.4% | A 4.77 B 8.90 | favour(non-tied) NA
+   exchange rates (2.4): {"ARR_per1000":8.38810100311311,"dVisRev60_day":-3.2333333333333334,"dServed_day":-0.6666666666666666,"dBreachDeadline60_day":1.9,"dLate60First_day":-0.5,"ER_served":4.8500000000000005,"ER_deadline":1.7017543859649125,"ER_late":"no lateness price (mean dLate <= 0)"}
+--- G2 RCE35-NCE35
+   served                           mean -0.73 [-2.61, 1.15] SE 0.92 med -0.50 | 15-/12+/3= of 30, sign p 0.70 | rel 0.2% | A 384.80 B 385.53 | favour(non-tied) 44%
+   visRev60                         mean -2.93 [-3.99, -1.87] SE 0.52 med -2.00 | 24-/2+/4= of 30, sign p 1.0e-5 | rel 26.0% | A 8.33 B 11.27 | favour(non-tied) 92%
+   visRev60_per1000                 mean -7.423 [-10.078, -4.768] SE 1.298 med -5.686 | 27-/3+/0= of 30, sign p 8.4e-6 | A 21.647 B 29.070 | favour(non-tied) 90%
+   TV5_s_per_served                 mean -7.685 [-9.884, -5.486] SE 1.075 med -7.616 | 28-/2+/0= of 30, sign p 8.7e-7 | A 87.628 B 95.313 | favour(non-tied) 93%
+   Pchg_pp                          mean -0.416 [-0.841, 0.010] SE 0.208 med -0.368 | 21-/8+/1= of 30, sign p 0.024 | A 21.857 B 22.272 | favour(non-tied) 72%
+   pDispAny1_pp                     mean -0.917 [-1.413, -0.421] SE 0.242 med -0.789 | 24-/6+/0= of 30, sign p 0.0014 | A 23.064 B 23.981 | favour(non-tied) 80%
+   late60First_pp                   mean 0.303 [-0.056, 0.661] SE 0.175 med 0.298 | 12-/18+/0= of 30, sign p 0.36 | A 24.152 B 23.849 | favour(non-tied) 40%
+   breachDeadline60_pp              mean 0.019 [-0.098, 0.136] SE 0.057 med -0.000 | 15-/14+/1= of 30, sign p 1.0 | A 1.067 B 1.049 | favour(non-tied) 52%
+   breachLedger_pp_BY_CONSTRUCTION  mean -1.433 [-1.787, -1.079] SE 0.173 med -1.267 | 30-/0+/0= of 30, sign p 1.9e-9 | A 0.000 B 1.433 | favour(non-tied) NA
+   late60First                      mean 0.97 [-0.42, 2.35] SE 0.68 med 1.00 | 10-/17+/3= of 30, sign p 0.25 | rel -1.1% | A 92.90 B 91.93 | favour(non-tied) 37%
+   breachDeadline60                 mean 0.07 [-0.39, 0.53] SE 0.22 med 0.00 | 8-/8+/14= of 30, sign p 1.0 | rel -1.7% | A 4.10 B 4.03 | favour(non-tied) 50%
+   relocations                      mean -4.00 [-5.18, -2.82] SE 0.58 med -4.00 | 27-/1+/2= of 30, sign p 2.2e-7 | rel 45.1% | A 4.87 B 8.87 | favour(non-tied) NA
+   switchedRiders                   mean -4.07 [-5.24, -2.89] SE 0.58 med -4.00 | 27-/1+/2= of 30, sign p 2.2e-7 | rel 46.0% | A 4.77 B 8.83 | favour(non-tied) NA
+   exchange rates (2.4): {"ARR_per1000":7.608507694968009,"dVisRev60_day":-2.933333333333333,"dServed_day":-0.7333333333333333,"dBreachDeadline60_day":0.06666666666666667,"dLate60First_day":0.9666666666666667,"ER_served":4,"ER_deadline":44,"ER_late":3.0344827586206895}
+--- G2 NCE35-EOHZ35
+   served                           mean 0.07 [-1.04, 1.18] SE 0.54 med 0.00 | 13-/13+/4= of 30, sign p 1.0 | rel -0.0% | A 385.53 B 385.47 | favour(non-tied) 50%
+   visRev60                         mean -0.30 [-1.13, 0.53] SE 0.40 med 0.00 | 12-/8+/10= of 30, sign p 0.50 | rel 2.6% | A 11.27 B 11.57 | favour(non-tied) 60%
+   visRev60_per1000                 mean -0.823 [-2.949, 1.302] SE 1.039 med -0.095 | 16-/13+/1= of 30, sign p 0.71 | A 29.070 B 29.893 | favour(non-tied) 55%
+   TV5_s_per_served                 mean 0.540 [-0.718, 1.797] SE 0.615 med 0.330 | 13-/17+/0= of 30, sign p 0.58 | A 95.313 B 94.774 | favour(non-tied) 43%
+   Pchg_pp                          mean 0.056 [-0.311, 0.422] SE 0.179 med -0.226 | 18-/11+/1= of 30, sign p 0.26 | A 22.272 B 22.216 | favour(non-tied) 62%
+   pDispAny1_pp                     mean 0.156 [-0.201, 0.513] SE 0.175 med -0.110 | 18-/12+/0= of 30, sign p 0.36 | A 23.981 B 23.825 | favour(non-tied) 60%
+   late60First_pp                   mean -0.387 [-0.715, -0.058] SE 0.160 med -0.354 | 21-/9+/0= of 30, sign p 0.043 | A 23.849 B 24.236 | favour(non-tied) 70%
+   breachDeadline60_pp              mean 0.475 [0.345, 0.604] SE 0.063 med 0.401 | 0-/29+/1= of 30, sign p 3.7e-9 | A 1.049 B 0.574 | favour(non-tied) 0%
+   breachLedger_pp_BY_CONSTRUCTION  mean -0.298 [-0.499, -0.098] SE 0.098 med -0.272 | 24-/6+/0= of 30, sign p 0.0014 | A 1.433 B 1.731 | favour(non-tied) NA
+   late60First                      mean -1.47 [-2.68, -0.25] SE 0.59 med -1.50 | 21-/9+/0= of 30, sign p 0.043 | rel 1.6% | A 91.93 B 93.40 | favour(non-tied) 70%
+   breachDeadline60                 mean 1.83 [1.33, 2.33] SE 0.24 med 1.50 | 0-/26+/4= of 30, sign p 3.0e-8 | rel -83.3% | A 4.03 B 2.20 | favour(non-tied) 0%
+   relocations                      mean -0.07 [-0.73, 0.60] SE 0.32 med 0.00 | 11-/9+/10= of 30, sign p 0.82 | rel 0.7% | A 8.87 B 8.93 | favour(non-tied) NA
+   switchedRiders                   mean -0.07 [-0.69, 0.55] SE 0.30 med 0.00 | 11-/9+/10= of 30, sign p 0.82 | rel 0.7% | A 8.83 B 8.90 | favour(non-tied) NA
+--- INS RCE35-EOHZ35
+   served                           mean 1.13 [-0.06, 2.33] SE 0.58 med 1.00 | 9-/16+/5= of 30, sign p 0.23 | rel -0.3% | A 383.90 B 382.77 | favour(non-tied) 64%
+   visRev60                         mean -0.13 [-0.50, 0.23] SE 0.18 med 0.00 | 6-/3+/21= of 30, sign p 0.51 | rel 1.8% | A 7.30 B 7.43 | favour(non-tied) 67%
+   visRev60_per1000                 mean -0.394 [-1.384, 0.596] SE 0.484 med -0.020 | 16-/10+/4= of 30, sign p 0.33 | A 19.060 B 19.454 | favour(non-tied) 62%
+   TV5_s_per_served                 mean 1.247 [0.186, 2.307] SE 0.519 med 0.976 | 9-/20+/1= of 30, sign p 0.061 | A 85.860 B 84.613 | favour(non-tied) 31%
+   Pchg_pp                          mean 0.335 [0.046, 0.624] SE 0.141 med 0.263 | 10-/18+/2= of 30, sign p 0.18 | A 21.609 B 21.275 | favour(non-tied) 36%
+   pDispAny1_pp                     mean 0.315 [0.055, 0.575] SE 0.127 med 0.237 | 10-/17+/3= of 30, sign p 0.25 | A 22.009 B 21.694 | favour(non-tied) 37%
+   late60First_pp                   mean -0.066 [-0.318, 0.185] SE 0.123 med -0.029 | 15-/14+/1= of 30, sign p 1.0 | A 24.193 B 24.260 | favour(non-tied) 52%
+   breachDeadline60_pp              mean 0.492 [0.362, 0.622] SE 0.063 med 0.500 | 2-/27+/1= of 30, sign p 1.6e-6 | A 1.145 B 0.653 | favour(non-tied) 7%
+   breachLedger_pp_BY_CONSTRUCTION  mean -0.394 [-0.531, -0.257] SE 0.067 med -0.262 | 23-/0+/7= of 30, sign p 2.4e-7 | A 0.000 B 0.394 | favour(non-tied) NA
+   late60First                      mean 0.00 [-1.01, 1.01] SE 0.49 med 0.00 | 13-/13+/4= of 30, sign p 1.0 | rel 0.0% | A 92.83 B 92.83 | favour(non-tied) 50%
+   breachDeadline60                 mean 1.90 [1.40, 2.40] SE 0.25 med 2.00 | 0-/26+/4= of 30, sign p 3.0e-8 | rel -76.0% | A 4.40 B 2.50 | favour(non-tied) 0%
+   exchange rates (2.4): {"ARR_per1000":0.34834102586432114,"dVisRev60_day":-0.13333333333333333,"dServed_day":1.1333333333333333,"dBreachDeadline60_day":1.9,"dLate60First_day":0,"ER_served":"no service price (mean dServed >= 0)","ER_deadline":0.07017543859649122,"ER_late":"no lateness price (mean dLate <= 0)"}
+C1 (G2 visRev60 RCE35 vs EOHZ35): HOLDS | rel 28.0% | favour(non-tied) 86% | days dVis>=0 5/30
+C2 (G2 served): HOLDS | mean -0.67/day [-2.69, 1.35] (-0.17% of EOHZ35) | days negative 17/30
+C3 (INS served): HOLDS | mean 1.13/day [-0.06, 2.33] | days on mean side 16/30 | INS dVisRev60 -0.13/day (rel 1.8%)
+C4 (INS breachDeadline60): HOLDS | mean 1.90/day [1.40, 2.40] (0.492 pp) | days <= 0 4/30
+
+==================== V-F56 ====================
+prediction (RUNPLAN R5): G2 rel about 36-42 %
+level G2  U      served 765.2 | visRev60 86.17 (112.53/1000) | TV5 348.73 s | Pchg 48.59% | any1 50.90% | late60F 47.43% | breachDL60 0.00% | breachLedger 0.00% (by construction for RC arms) | reloc 44.4 | switched 43.5 | days 30
+level G2  EOHZ35 served 689.7 | visRev60 38.53 (55.94/1000) | TV5 133.82 s | Pchg 33.44% | any1 35.49% | late60F 32.60% | breachDL60 1.08% | breachLedger 3.97% (by construction for RC arms) | reloc 25.6 | switched 25.0 | days 30
+level G2  RCE35  served 686.3 | visRev60 23.37 (34.24/1000) | TV5 118.06 s | Pchg 32.84% | any1 34.41% | late60F 32.97% | breachDL60 1.85% | breachLedger 0.00% (by construction for RC arms) | reloc 12.2 | switched 12.1 | days 30
+level G2  NCE35  served 691.5 | visRev60 37.33 (54.14/1000) | TV5 133.47 s | Pchg 33.50% | any1 35.62% | late60F 32.35% | breachDL60 1.81% | breachLedger 2.75% (by construction for RC arms) | reloc 25.2 | switched 24.6 | days 30
+level INS EOHZ35 served 684.6 | visRev60 23.00 (33.73/1000) | TV5 115.70 s | Pchg 32.30% | any1 32.91% | late60F 32.90% | breachDL60 1.06% | breachLedger 1.20% (by construction for RC arms) | reloc 0.0 | switched 0.0 | days 30
+level INS RCE35  served 686.4 | visRev60 21.43 (31.33/1000) | TV5 116.52 s | Pchg 32.68% | any1 33.27% | late60F 32.92% | breachDL60 1.83% | breachLedger 0.00% (by construction for RC arms) | reloc 0.0 | switched 0.0 | days 30
+--- G2 RCE35-EOHZ35
+   served                           mean -3.37 [-6.77, 0.04] SE 1.67 med -2.00 | 18-/11+/1= of 30, sign p 0.26 | rel 0.5% | A 686.30 B 689.67 | favour(non-tied) 38%
+   visRev60                         mean -15.17 [-18.08, -12.25] SE 1.43 med -14.00 | 30-/0+/0= of 30, sign p 1.9e-9 | rel 39.4% | A 23.37 B 38.53 | favour(non-tied) 100%
+   visRev60_per1000                 mean -21.705 [-25.829, -17.581] SE 2.016 med -20.132 | 30-/0+/0= of 30, sign p 1.9e-9 | A 34.239 B 55.944 | favour(non-tied) 100%
+   TV5_s_per_served                 mean -15.751 [-18.722, -12.779] SE 1.453 med -15.112 | 30-/0+/0= of 30, sign p 1.9e-9 | A 118.065 B 133.816 | favour(non-tied) 100%
+   Pchg_pp                          mean -0.602 [-1.040, -0.164] SE 0.214 med -0.627 | 20-/10+/0= of 30, sign p 0.099 | A 32.839 B 33.441 | favour(non-tied) 67%
+   pDispAny1_pp                     mean -1.081 [-1.584, -0.577] SE 0.246 med -0.973 | 23-/7+/0= of 30, sign p 0.0052 | A 34.405 B 35.486 | favour(non-tied) 77%
+   late60First_pp                   mean 0.365 [-0.080, 0.810] SE 0.218 med 0.088 | 12-/18+/0= of 30, sign p 0.36 | A 32.969 B 32.604 | favour(non-tied) 40%
+   breachDeadline60_pp              mean 0.771 [0.547, 0.995] SE 0.109 med 0.718 | 1-/29+/0= of 30, sign p 5.8e-8 | A 1.848 B 1.077 | favour(non-tied) 3%
+   breachLedger_pp_BY_CONSTRUCTION  mean -3.970 [-4.434, -3.506] SE 0.227 med -3.869 | 30-/0+/0= of 30, sign p 1.9e-9 | A 0.000 B 3.970 | favour(non-tied) NA
+   late60First                      mean 1.47 [-1.89, 4.83] SE 1.64 med 1.50 | 11-/17+/2= of 30, sign p 0.34 | rel -0.7% | A 226.27 B 224.80 | favour(non-tied) 39%
+   breachDeadline60                 mean 5.37 [3.76, 6.97] SE 0.78 med 5.00 | 1-/29+/0= of 30, sign p 5.8e-8 | rel -72.9% | A 12.73 B 7.37 | favour(non-tied) 3%
+   relocations                      mean -13.33 [-15.85, -10.82] SE 1.23 med -13.00 | 30-/0+/0= of 30, sign p 1.9e-9 | rel 52.2% | A 12.23 B 25.57 | favour(non-tied) NA
+   switchedRiders                   mean -12.87 [-15.32, -10.41] SE 1.20 med -12.50 | 30-/0+/0= of 30, sign p 1.9e-9 | rel 51.5% | A 12.13 B 25.00 | favour(non-tied) NA
+   exchange rates (2.4): {"ARR_per1000":21.991300144997584,"dVisRev60_day":-15.166666666666666,"dServed_day":-3.3666666666666667,"dBreachDeadline60_day":5.366666666666666,"dLate60First_day":1.4666666666666666,"ER_served":4.5049504950495045,"ER_deadline":2.8260869565217392,"ER_late":10.340909090909092}
+--- G2 RCE35-NCE35
+   served                           mean -5.17 [-8.27, -2.06] SE 1.52 med -5.50 | 23-/6+/1= of 30, sign p 0.0023 | rel 0.7% | A 686.30 B 691.47 | favour(non-tied) 21%
+   visRev60                         mean -13.97 [-16.56, -11.38] SE 1.27 med -13.00 | 30-/0+/0= of 30, sign p 1.9e-9 | rel 37.4% | A 23.37 B 37.33 | favour(non-tied) 100%
+   visRev60_per1000                 mean -19.898 [-23.612, -16.184] SE 1.816 med -19.057 | 30-/0+/0= of 30, sign p 1.9e-9 | A 34.239 B 54.137 | favour(non-tied) 100%
+   TV5_s_per_served                 mean -15.402 [-18.325, -12.479] SE 1.429 med -14.262 | 30-/0+/0= of 30, sign p 1.9e-9 | A 118.065 B 133.467 | favour(non-tied) 100%
+   Pchg_pp                          mean -0.664 [-1.121, -0.206] SE 0.224 med -0.593 | 20-/10+/0= of 30, sign p 0.099 | A 32.839 B 33.503 | favour(non-tied) 67%
+   pDispAny1_pp                     mean -1.210 [-1.761, -0.659] SE 0.269 med -0.893 | 24-/6+/0= of 30, sign p 0.0014 | A 34.405 B 35.615 | favour(non-tied) 80%
+   late60First_pp                   mean 0.620 [0.254, 0.985] SE 0.179 med 0.618 | 8-/22+/0= of 30, sign p 0.016 | A 32.969 B 32.349 | favour(non-tied) 27%
+   breachDeadline60_pp              mean 0.036 [-0.104, 0.177] SE 0.069 med 0.043 | 12-/18+/0= of 30, sign p 0.36 | A 1.848 B 1.811 | favour(non-tied) 40%
+   breachLedger_pp_BY_CONSTRUCTION  mean -2.748 [-3.100, -2.395] SE 0.172 med -2.618 | 30-/0+/0= of 30, sign p 1.9e-9 | A 0.000 B 2.748 | favour(non-tied) NA
+   late60First                      mean 2.63 [-0.39, 5.66] SE 1.48 med 1.00 | 11-/16+/3= of 30, sign p 0.44 | rel -1.2% | A 226.27 B 223.63 | favour(non-tied) 41%
+   breachDeadline60                 mean 0.20 [-0.76, 1.16] SE 0.47 med 0.00 | 12-/13+/5= of 30, sign p 1.0 | rel -1.6% | A 12.73 B 12.53 | favour(non-tied) 48%
+   relocations                      mean -13.00 [-15.38, -10.62] SE 1.16 med -12.00 | 30-/0+/0= of 30, sign p 1.9e-9 | rel 51.5% | A 12.23 B 25.23 | favour(non-tied) NA
+   switchedRiders                   mean -12.43 [-14.78, -10.09] SE 1.15 med -11.50 | 30-/0+/0= of 30, sign p 1.9e-9 | rel 50.6% | A 12.13 B 24.57 | favour(non-tied) NA
+   exchange rates (2.4): {"ARR_per1000":20.198611646741224,"dVisRev60_day":-13.966666666666667,"dServed_day":-5.166666666666667,"dBreachDeadline60_day":0.2,"dLate60First_day":2.6333333333333333,"ER_served":2.703225806451613,"ER_deadline":69.83333333333333,"ER_late":5.30379746835443}
+--- G2 NCE35-EOHZ35
+   served                           mean 1.80 [-1.28, 4.88] SE 1.51 med 1.50 | 12-/16+/2= of 30, sign p 0.57 | rel -0.3% | A 691.47 B 689.67 | favour(non-tied) 57%
+   visRev60                         mean -1.20 [-2.41, 0.01] SE 0.59 med -2.00 | 19-/9+/2= of 30, sign p 0.087 | rel 3.1% | A 37.33 B 38.53 | favour(non-tied) 68%
+   visRev60_per1000                 mean -1.807 [-3.446, -0.168] SE 0.802 med -1.973 | 21-/9+/0= of 30, sign p 0.043 | A 54.137 B 55.944 | favour(non-tied) 70%
+   TV5_s_per_served                 mean -0.348 [-2.065, 1.368] SE 0.839 med -0.474 | 17-/13+/0= of 30, sign p 0.58 | A 133.467 B 133.816 | favour(non-tied) 57%
+   Pchg_pp                          mean 0.062 [-0.361, 0.485] SE 0.207 med -0.184 | 17-/13+/0= of 30, sign p 0.58 | A 33.503 B 33.441 | favour(non-tied) 57%
+   pDispAny1_pp                     mean 0.129 [-0.293, 0.552] SE 0.207 med -0.008 | 15-/14+/1= of 30, sign p 1.0 | A 35.615 B 35.486 | favour(non-tied) 52%
+   late60First_pp                   mean -0.255 [-0.624, 0.114] SE 0.181 med -0.462 | 19-/11+/0= of 30, sign p 0.20 | A 32.349 B 32.604 | favour(non-tied) 63%
+   breachDeadline60_pp              mean 0.734 [0.558, 0.910] SE 0.086 med 0.657 | 2-/28+/0= of 30, sign p 8.7e-7 | A 1.811 B 1.077 | favour(non-tied) 7%
+   breachLedger_pp_BY_CONSTRUCTION  mean -1.222 [-1.544, -0.900] SE 0.157 med -0.991 | 28-/2+/0= of 30, sign p 8.7e-7 | A 2.748 B 3.970 | favour(non-tied) NA
+   late60First                      mean -1.17 [-3.76, 1.43] SE 1.27 med -2.50 | 18-/11+/1= of 30, sign p 0.26 | rel 0.5% | A 223.63 B 224.80 | favour(non-tied) 62%
+   breachDeadline60                 mean 5.17 [3.90, 6.44] SE 0.62 med 4.00 | 2-/28+/0= of 30, sign p 8.7e-7 | rel -70.1% | A 12.53 B 7.37 | favour(non-tied) 7%
+   relocations                      mean -0.33 [-1.71, 1.04] SE 0.67 med -1.00 | 16-/10+/4= of 30, sign p 0.33 | rel 1.3% | A 25.23 B 25.57 | favour(non-tied) NA
+   switchedRiders                   mean -0.43 [-1.77, 0.90] SE 0.65 med -1.00 | 16-/10+/4= of 30, sign p 0.33 | rel 1.7% | A 24.57 B 25.00 | favour(non-tied) NA
+--- INS RCE35-EOHZ35
+   served                           mean 1.73 [-0.81, 4.28] SE 1.25 med 2.00 | 13-/17+/0= of 30, sign p 0.58 | rel -0.3% | A 686.37 B 684.63 | favour(non-tied) 57%
+   visRev60                         mean -1.57 [-2.66, -0.47] SE 0.54 med -2.50 | 22-/7+/1= of 30, sign p 0.0081 | rel 6.8% | A 21.43 B 23.00 | favour(non-tied) 76%
+   visRev60_per1000                 mean -2.405 [-3.938, -0.872] SE 0.750 med -3.424 | 22-/8+/0= of 30, sign p 0.016 | A 31.326 B 33.731 | favour(non-tied) 73%
+   TV5_s_per_served                 mean 0.825 [-0.451, 2.101] SE 0.624 med 0.654 | 13-/17+/0= of 30, sign p 0.58 | A 116.522 B 115.697 | favour(non-tied) 43%
+   Pchg_pp                          mean 0.381 [0.064, 0.699] SE 0.155 med 0.213 | 12-/18+/0= of 30, sign p 0.36 | A 32.684 B 32.302 | favour(non-tied) 40%
+   pDispAny1_pp                     mean 0.360 [0.054, 0.666] SE 0.150 med 0.292 | 13-/17+/0= of 30, sign p 0.58 | A 33.270 B 32.910 | favour(non-tied) 43%
+   late60First_pp                   mean 0.020 [-0.335, 0.374] SE 0.173 med -0.204 | 16-/14+/0= of 30, sign p 0.86 | A 32.917 B 32.897 | favour(non-tied) 53%
+   breachDeadline60_pp              mean 0.765 [0.605, 0.925] SE 0.078 med 0.826 | 1-/29+/0= of 30, sign p 5.8e-8 | A 1.825 B 1.061 | favour(non-tied) 3%
+   breachLedger_pp_BY_CONSTRUCTION  mean -1.201 [-1.389, -1.014] SE 0.092 med -1.119 | 30-/0+/0= of 30, sign p 1.9e-9 | A 0.000 B 1.201 | favour(non-tied) NA
+   late60First                      mean 0.77 [-1.87, 3.41] SE 1.29 med 0.00 | 14-/14+/2= of 30, sign p 1.0 | rel -0.3% | A 225.90 B 225.13 | favour(non-tied) 50%
+   breachDeadline60                 mean 5.30 [4.19, 6.41] SE 0.54 med 6.00 | 1-/29+/0= of 30, sign p 5.8e-8 | rel -73.6% | A 12.50 B 7.20 | favour(non-tied) 3%
+   exchange rates (2.4): {"ARR_per1000":2.288329519450801,"dVisRev60_day":-1.5666666666666667,"dServed_day":1.7333333333333334,"dBreachDeadline60_day":5.3,"dLate60First_day":0.7666666666666667,"ER_served":"no service price (mean dServed >= 0)","ER_deadline":0.29559748427672955,"ER_late":2.043478260869565}
+C1 (G2 visRev60 RCE35 vs EOHZ35): HOLDS | rel 39.4% | favour(non-tied) 100% | days dVis>=0 0/30
+C2 (G2 served): HOLDS | mean -3.37/day [-6.77, 0.04] (-0.49% of EOHZ35) | days negative 18/30
+C3 (INS served): HOLDS | mean 1.73/day [-0.81, 4.28] | days on mean side 17/30 | INS dVisRev60 -1.57/day (rel 6.8%)
+C4 (INS breachDeadline60): HOLDS | mean 5.30/day [4.19, 6.41] (0.765 pp) | days <= 0 1/30
+
+==================== V-F68 ====================
+prediction (RUNPLAN R5): G2 rel about 42-47 %
+level G2  U      served 852.0 | visRev60 100.17 (117.79/1000) | TV5 337.87 s | Pchg 46.51% | any1 49.30% | late60F 45.42% | breachDL60 0.00% | breachLedger 0.00% (by construction for RC arms) | reloc 56.2 | switched 54.6 | days 30
+level G2  EOHZ35 served 782.0 | visRev60 44.13 (56.42/1000) | TV5 131.85 s | Pchg 32.36% | any1 34.71% | late60F 31.62% | breachDL60 0.88% | breachLedger 4.29% (by construction for RC arms) | reloc 33.5 | switched 32.9 | days 30
+level G2  RCE35  served 777.2 | visRev60 25.97 (33.57/1000) | TV5 115.84 s | Pchg 32.06% | any1 33.78% | late60F 31.92% | breachDL60 1.73% | breachLedger 0.00% (by construction for RC arms) | reloc 16.4 | switched 16.3 | days 30
+level G2  NCE35  served 781.3 | visRev60 43.10 (55.11/1000) | TV5 132.91 s | Pchg 32.63% | any1 35.00% | late60F 31.49% | breachDL60 1.62% | breachLedger 3.13% (by construction for RC arms) | reloc 34.1 | switched 33.5 | days 30
+level INS EOHZ35 served 775.9 | visRev60 24.07 (31.17/1000) | TV5 114.10 s | Pchg 31.50% | any1 32.01% | late60F 32.28% | breachDL60 1.00% | breachLedger 1.20% (by construction for RC arms) | reloc 0.0 | switched 0.0 | days 30
+level INS RCE35  served 777.0 | visRev60 21.63 (28.01/1000) | TV5 112.71 s | Pchg 31.62% | any1 32.17% | late60F 31.90% | breachDL60 1.65% | breachLedger 0.00% (by construction for RC arms) | reloc 0.0 | switched 0.0 | days 30
+--- G2 RCE35-EOHZ35
+   served                           mean -4.83 [-8.50, -1.17] SE 1.79 med -5.00 | 20-/8+/2= of 30, sign p 0.036 | rel 0.6% | A 777.17 B 782.00 | favour(non-tied) 29%
+   visRev60                         mean -18.17 [-21.14, -15.20] SE 1.45 med -18.00 | 29-/0+/1= of 30, sign p 3.7e-9 | rel 41.2% | A 25.97 B 44.13 | favour(non-tied) 100%
+   visRev60_per1000                 mean -22.851 [-26.478, -19.224] SE 1.773 med -22.017 | 29-/1+/0= of 30, sign p 5.8e-8 | A 33.573 B 56.424 | favour(non-tied) 97%
+   TV5_s_per_served                 mean -16.006 [-18.216, -13.796] SE 1.081 med -16.886 | 30-/0+/0= of 30, sign p 1.9e-9 | A 115.844 B 131.850 | favour(non-tied) 100%
+   Pchg_pp                          mean -0.301 [-0.715, 0.114] SE 0.203 med -0.448 | 18-/12+/0= of 30, sign p 0.36 | A 32.059 B 32.360 | favour(non-tied) 60%
+   pDispAny1_pp                     mean -0.930 [-1.393, -0.468] SE 0.226 med -0.887 | 21-/8+/1= of 30, sign p 0.024 | A 33.781 B 34.711 | favour(non-tied) 72%
+   late60First_pp                   mean 0.299 [-0.092, 0.690] SE 0.191 med 0.232 | 9-/21+/0= of 30, sign p 0.043 | A 31.918 B 31.619 | favour(non-tied) 30%
+   breachDeadline60_pp              mean 0.850 [0.670, 1.029] SE 0.088 med 0.871 | 0-/30+/0= of 30, sign p 1.9e-9 | A 1.731 B 0.881 | favour(non-tied) 0%
+   breachLedger_pp_BY_CONSTRUCTION  mean -4.289 [-4.598, -3.979] SE 0.151 med -4.184 | 30-/0+/0= of 30, sign p 1.9e-9 | A 0.000 B 4.289 | favour(non-tied) NA
+   late60First                      mean 0.73 [-2.67, 4.13] SE 1.66 med 1.50 | 14-/16+/0= of 30, sign p 0.86 | rel -0.3% | A 247.93 B 247.20 | favour(non-tied) 47%
+   breachDeadline60                 mean 6.57 [5.14, 7.99] SE 0.70 med 7.00 | 0-/29+/1= of 30, sign p 3.7e-9 | rel -96.1% | A 13.40 B 6.83 | favour(non-tied) 0%
+   relocations                      mean -17.10 [-19.44, -14.76] SE 1.15 med -16.50 | 30-/0+/0= of 30, sign p 1.9e-9 | rel 51.0% | A 16.40 B 33.50 | favour(non-tied) NA
+   switchedRiders                   mean -16.60 [-18.81, -14.39] SE 1.08 med -16.00 | 30-/0+/0= of 30, sign p 1.9e-9 | rel 50.5% | A 16.27 B 32.87 | favour(non-tied) NA
+   exchange rates (2.4): {"ARR_per1000":23.231031543052005,"dVisRev60_day":-18.166666666666668,"dServed_day":-4.833333333333333,"dBreachDeadline60_day":6.566666666666666,"dLate60First_day":0.7333333333333333,"ER_served":3.758620689655173,"ER_deadline":2.7664974619289344,"ER_late":24.772727272727277}
+--- G2 RCE35-NCE35
+   served                           mean -4.17 [-7.54, -0.79] SE 1.65 med -3.00 | 20-/9+/1= of 30, sign p 0.061 | rel 0.5% | A 777.17 B 781.33 | favour(non-tied) 31%
+   visRev60                         mean -17.13 [-20.24, -14.03] SE 1.52 med -18.00 | 30-/0+/0= of 30, sign p 1.9e-9 | rel 39.8% | A 25.97 B 43.10 | favour(non-tied) 100%
+   visRev60_per1000                 mean -21.542 [-25.378, -17.706] SE 1.875 med -23.491 | 30-/0+/0= of 30, sign p 1.9e-9 | A 33.573 B 55.115 | favour(non-tied) 100%
+   TV5_s_per_served                 mean -17.064 [-19.441, -14.687] SE 1.162 med -17.341 | 30-/0+/0= of 30, sign p 1.9e-9 | A 115.844 B 132.908 | favour(non-tied) 100%
+   Pchg_pp                          mean -0.575 [-1.047, -0.103] SE 0.231 med -0.633 | 22-/8+/0= of 30, sign p 0.016 | A 32.059 B 32.635 | favour(non-tied) 73%
+   pDispAny1_pp                     mean -1.216 [-1.749, -0.683] SE 0.261 med -1.209 | 24-/6+/0= of 30, sign p 0.0014 | A 33.781 B 34.997 | favour(non-tied) 80%
+   late60First_pp                   mean 0.428 [0.038, 0.817] SE 0.190 med 0.384 | 7-/23+/0= of 30, sign p 0.0052 | A 31.918 B 31.491 | favour(non-tied) 23%
+   breachDeadline60_pp              mean 0.108 [-0.066, 0.282] SE 0.085 med 0.256 | 12-/18+/0= of 30, sign p 0.36 | A 1.731 B 1.623 | favour(non-tied) 40%
+   breachLedger_pp_BY_CONSTRUCTION  mean -3.135 [-3.432, -2.838] SE 0.145 med -2.966 | 30-/0+/0= of 30, sign p 1.9e-9 | A 0.000 B 3.135 | favour(non-tied) NA
+   late60First                      mean 1.97 [-1.26, 5.19] SE 1.58 med 2.00 | 11-/17+/2= of 30, sign p 0.34 | rel -0.8% | A 247.93 B 245.97 | favour(non-tied) 39%
+   breachDeadline60                 mean 0.73 [-0.62, 2.08] SE 0.66 med 2.00 | 10-/17+/3= of 30, sign p 0.25 | rel -5.8% | A 13.40 B 12.67 | favour(non-tied) 37%
+   relocations                      mean -17.73 [-20.49, -14.98] SE 1.35 med -17.50 | 30-/0+/0= of 30, sign p 1.9e-9 | rel 52.0% | A 16.40 B 34.13 | favour(non-tied) NA
+   switchedRiders                   mean -17.20 [-19.80, -14.60] SE 1.27 med -17.00 | 30-/0+/0= of 30, sign p 1.9e-9 | rel 51.4% | A 16.27 B 33.47 | favour(non-tied) NA
+   exchange rates (2.4): {"ARR_per1000":21.928327645051194,"dVisRev60_day":-17.133333333333333,"dServed_day":-4.166666666666667,"dBreachDeadline60_day":0.7333333333333333,"dLate60First_day":1.9666666666666666,"ER_served":4.111999999999999,"ER_deadline":23.363636363636363,"ER_late":8.711864406779661}
+--- G2 NCE35-EOHZ35
+   served                           mean -0.67 [-3.32, 1.99] SE 1.30 med 0.00 | 13-/11+/6= of 30, sign p 0.84 | rel 0.1% | A 781.33 B 782.00 | favour(non-tied) 46%
+   visRev60                         mean -1.03 [-3.12, 1.05] SE 1.02 med -1.00 | 17-/11+/2= of 30, sign p 0.34 | rel 2.3% | A 43.10 B 44.13 | favour(non-tied) 61%
+   visRev60_per1000                 mean -1.309 [-3.814, 1.195] SE 1.225 med -1.374 | 18-/11+/1= of 30, sign p 0.26 | A 55.115 B 56.424 | favour(non-tied) 62%
+   TV5_s_per_served                 mean 1.058 [-0.801, 2.917] SE 0.909 med 2.041 | 10-/20+/0= of 30, sign p 0.099 | A 132.908 B 131.850 | favour(non-tied) 33%
+   Pchg_pp                          mean 0.274 [-0.053, 0.602] SE 0.160 med 0.617 | 13-/17+/0= of 30, sign p 0.58 | A 32.635 B 32.360 | favour(non-tied) 43%
+   pDispAny1_pp                     mean 0.285 [-0.075, 0.645] SE 0.176 med 0.265 | 12-/18+/0= of 30, sign p 0.36 | A 34.997 B 34.711 | favour(non-tied) 40%
+   late60First_pp                   mean -0.128 [-0.472, 0.215] SE 0.168 med -0.082 | 16-/14+/0= of 30, sign p 0.86 | A 31.491 B 31.619 | favour(non-tied) 53%
+   breachDeadline60_pp              mean 0.742 [0.592, 0.892] SE 0.073 med 0.663 | 1-/29+/0= of 30, sign p 5.8e-8 | A 1.623 B 0.881 | favour(non-tied) 3%
+   breachLedger_pp_BY_CONSTRUCTION  mean -1.154 [-1.416, -0.891] SE 0.128 med -1.138 | 29-/1+/0= of 30, sign p 5.8e-8 | A 3.135 B 4.289 | favour(non-tied) NA
+   late60First                      mean -1.23 [-4.14, 1.68] SE 1.42 med 0.00 | 14-/13+/3= of 30, sign p 1.0 | rel 0.5% | A 245.97 B 247.20 | favour(non-tied) 52%
+   breachDeadline60                 mean 5.83 [4.64, 7.03] SE 0.58 med 5.00 | 0-/29+/1= of 30, sign p 3.7e-9 | rel -85.4% | A 12.67 B 6.83 | favour(non-tied) 0%
+   relocations                      mean 0.63 [-1.45, 2.71] SE 1.02 med 0.00 | 12-/13+/5= of 30, sign p 1.0 | rel -1.9% | A 34.13 B 33.50 | favour(non-tied) NA
+   switchedRiders                   mean 0.60 [-1.49, 2.69] SE 1.02 med 0.00 | 11-/14+/5= of 30, sign p 0.69 | rel -1.8% | A 33.47 B 32.87 | favour(non-tied) NA
+--- INS RCE35-EOHZ35
+   served                           mean 1.10 [-1.35, 3.55] SE 1.20 med 2.50 | 9-/19+/2= of 30, sign p 0.087 | rel -0.1% | A 777.00 B 775.90 | favour(non-tied) 68%
+   visRev60                         mean -2.43 [-3.67, -1.20] SE 0.60 med -2.50 | 23-/6+/1= of 30, sign p 0.0023 | rel 10.1% | A 21.63 B 24.07 | favour(non-tied) 79%
+   visRev60_per1000                 mean -3.167 [-4.737, -1.596] SE 0.768 med -3.094 | 24-/6+/0= of 30, sign p 0.0014 | A 28.007 B 31.173 | favour(non-tied) 80%
+   TV5_s_per_served                 mean -1.383 [-2.612, -0.154] SE 0.601 med -0.645 | 19-/11+/0= of 30, sign p 0.20 | A 112.714 B 114.097 | favour(non-tied) 63%
+   Pchg_pp                          mean 0.116 [-0.254, 0.486] SE 0.181 med 0.240 | 12-/18+/0= of 30, sign p 0.36 | A 31.619 B 31.503 | favour(non-tied) 40%
+   pDispAny1_pp                     mean 0.159 [-0.244, 0.562] SE 0.197 med 0.263 | 11-/19+/0= of 30, sign p 0.20 | A 32.173 B 32.014 | favour(non-tied) 37%
+   late60First_pp                   mean -0.389 [-0.753, -0.025] SE 0.178 med -0.424 | 19-/11+/0= of 30, sign p 0.20 | A 31.895 B 32.284 | favour(non-tied) 63%
+   breachDeadline60_pp              mean 0.651 [0.519, 0.783] SE 0.065 med 0.624 | 0-/30+/0= of 30, sign p 1.9e-9 | A 1.653 B 1.002 | favour(non-tied) 0%
+   breachLedger_pp_BY_CONSTRUCTION  mean -1.197 [-1.428, -0.965] SE 0.113 med -1.171 | 30-/0+/0= of 30, sign p 1.9e-9 | A 0.000 B 1.197 | favour(non-tied) NA
+   late60First                      mean -2.83 [-6.01, 0.35] SE 1.55 med -1.50 | 17-/11+/2= of 30, sign p 0.34 | rel 1.1% | A 247.67 B 250.50 | favour(non-tied) 61%
+   breachDeadline60                 mean 5.07 [4.06, 6.07] SE 0.49 med 5.00 | 0-/30+/0= of 30, sign p 1.9e-9 | rel -65.5% | A 12.80 B 7.73 | favour(non-tied) 0%
+   exchange rates (2.4): {"ARR_per1000":3.1361429737509123,"dVisRev60_day":-2.433333333333333,"dServed_day":1.1,"dBreachDeadline60_day":5.066666666666666,"dLate60First_day":-2.8333333333333335,"ER_served":"no service price (mean dServed >= 0)","ER_deadline":0.48026315789473684,"ER_late":"no lateness price (mean dLate <= 0)"}
+C1 (G2 visRev60 RCE35 vs EOHZ35): HOLDS | rel 41.2% | favour(non-tied) 100% | days dVis>=0 1/30
+C2 (G2 served): HOLDS | mean -4.83/day [-8.50, -1.17] (-0.62% of EOHZ35) | days negative 20/30
+C3 (INS served): HOLDS | mean 1.10/day [-1.35, 3.55] | days on mean side 19/30 | INS dVisRev60 -2.43/day (rel 10.1%)
+C4 (INS breachDeadline60): HOLDS | mean 5.07/day [4.06, 6.07] (0.651 pp) | days <= 0 0/30
+
+==================== V-R15 ====================
+prediction (RUNPLAN R5): G2 rel about 40 % (about -7/day)
+level G2  U      served 743.4 | visRev60 45.60 (61.50/1000) | TV5 161.92 s | Pchg 33.43% | any1 36.04% | late60F 33.61% | breachDL60 0.00% | breachLedger 0.00% (by construction for RC arms) | reloc 34.1 | switched 33.1 | days 30
+level G2  EOHZ35 served 679.5 | visRev60 17.23 (25.35/1000) | TV5 64.98 s | Pchg 17.82% | any1 20.15% | late60F 18.88% | breachDL60 1.10% | breachLedger 2.70% (by construction for RC arms) | reloc 21.0 | switched 20.7 | days 30
+level G2  RCE35  served 677.8 | visRev60 10.13 (15.11/1000) | TV5 58.64 s | Pchg 17.21% | any1 19.08% | late60F 18.68% | breachDL60 1.56% | breachLedger 0.00% (by construction for RC arms) | reloc 12.4 | switched 12.3 | days 30
+level G2  NCE35  served 681.0 | visRev60 16.13 (23.72/1000) | TV5 64.57 s | Pchg 17.91% | any1 20.27% | late60F 18.50% | breachDL60 1.52% | breachLedger 1.86% (by construction for RC arms) | reloc 21.8 | switched 21.6 | days 30
+level INS EOHZ35 served 676.3 | visRev60 10.33 (15.37/1000) | TV5 57.56 s | Pchg 16.92% | any1 17.43% | late60F 19.00% | breachDL60 1.19% | breachLedger 0.83% (by construction for RC arms) | reloc 0.0 | switched 0.0 | days 30
+level INS RCE35  served 675.6 | visRev60 9.07 (13.58/1000) | TV5 57.32 s | Pchg 17.10% | any1 17.63% | late60F 18.80% | breachDL60 1.59% | breachLedger 0.00% (by construction for RC arms) | reloc 0.0 | switched 0.0 | days 30
+--- G2 RCE35-EOHZ35
+   served                           mean -1.67 [-4.29, 0.96] SE 1.29 med -2.50 | 18-/11+/1= of 30, sign p 0.26 | rel 0.2% | A 677.83 B 679.50 | favour(non-tied) 38%
+   visRev60                         mean -7.10 [-8.84, -5.36] SE 0.85 med -6.00 | 28-/1+/1= of 30, sign p 1.1e-7 | rel 41.2% | A 10.13 B 17.23 | favour(non-tied) 97%
+   visRev60_per1000                 mean -10.243 [-12.710, -7.777] SE 1.206 med -8.953 | 29-/1+/0= of 30, sign p 5.8e-8 | A 15.109 B 25.352 | favour(non-tied) 97%
+   TV5_s_per_served                 mean -6.342 [-7.837, -4.847] SE 0.731 med -5.850 | 30-/0+/0= of 30, sign p 1.9e-9 | A 58.642 B 64.984 | favour(non-tied) 100%
+   Pchg_pp                          mean -0.602 [-0.955, -0.249] SE 0.173 med -0.324 | 24-/6+/0= of 30, sign p 0.0014 | A 17.213 B 17.815 | favour(non-tied) 80%
+   pDispAny1_pp                     mean -1.066 [-1.432, -0.701] SE 0.179 med -0.749 | 27-/3+/0= of 30, sign p 8.4e-6 | A 19.083 B 20.149 | favour(non-tied) 90%
+   late60First_pp                   mean -0.200 [-0.458, 0.058] SE 0.126 med -0.119 | 18-/12+/0= of 30, sign p 0.36 | A 18.677 B 18.877 | favour(non-tied) 60%
+   breachDeadline60_pp              mean 0.459 [0.345, 0.572] SE 0.056 med 0.460 | 2-/28+/0= of 30, sign p 8.7e-7 | A 1.557 B 1.098 | favour(non-tied) 7%
+   breachLedger_pp_BY_CONSTRUCTION  mean -2.701 [-3.049, -2.353] SE 0.170 med -2.720 | 30-/0+/0= of 30, sign p 1.9e-9 | A 0.000 B 2.701 | favour(non-tied) NA
+   late60First                      mean -1.60 [-3.41, 0.21] SE 0.89 med -1.00 | 18-/10+/2= of 30, sign p 0.18 | rel 1.2% | A 126.43 B 128.03 | favour(non-tied) 64%
+   breachDeadline60                 mean 3.10 [2.33, 3.87] SE 0.38 med 3.00 | 1-/28+/1= of 30, sign p 1.1e-7 | rel -41.9% | A 10.50 B 7.40 | favour(non-tied) 3%
+   relocations                      mean -8.63 [-10.31, -6.96] SE 0.82 med -9.00 | 28-/2+/0= of 30, sign p 8.7e-7 | rel 41.0% | A 12.40 B 21.03 | favour(non-tied) NA
+   switchedRiders                   mean -8.40 [-10.00, -6.80] SE 0.78 med -9.00 | 28-/1+/1= of 30, sign p 1.1e-7 | rel 40.6% | A 12.30 B 20.70 | favour(non-tied) NA
+   exchange rates (2.4): {"ARR_per1000":10.448859455481971,"dVisRev60_day":-7.1,"dServed_day":-1.6666666666666667,"dBreachDeadline60_day":3.1,"dLate60First_day":-1.6,"ER_served":4.26,"ER_deadline":2.290322580645161,"ER_late":"no lateness price (mean dLate <= 0)"}
+--- G2 RCE35-NCE35
+   served                           mean -3.17 [-5.16, -1.17] SE 0.98 med -3.50 | 19-/10+/1= of 30, sign p 0.14 | rel 0.5% | A 677.83 B 681.00 | favour(non-tied) 34%
+   visRev60                         mean -6.00 [-7.61, -4.39] SE 0.79 med -5.50 | 28-/0+/2= of 30, sign p 7.5e-9 | rel 37.2% | A 10.13 B 16.13 | favour(non-tied) 100%
+   visRev60_per1000                 mean -8.610 [-10.882, -6.337] SE 1.111 med -7.738 | 29-/1+/0= of 30, sign p 5.8e-8 | A 15.109 B 23.718 | favour(non-tied) 97%
+   TV5_s_per_served                 mean -5.931 [-7.211, -4.651] SE 0.626 med -5.879 | 30-/0+/0= of 30, sign p 1.9e-9 | A 58.642 B 64.573 | favour(non-tied) 100%
+   Pchg_pp                          mean -0.701 [-0.985, -0.418] SE 0.138 med -0.692 | 25-/5+/0= of 30, sign p 0.00032 | A 17.213 B 17.914 | favour(non-tied) 83%
+   pDispAny1_pp                     mean -1.191 [-1.513, -0.869] SE 0.158 med -1.189 | 29-/1+/0= of 30, sign p 5.8e-8 | A 19.083 B 20.274 | favour(non-tied) 97%
+   late60First_pp                   mean 0.174 [-0.091, 0.439] SE 0.130 med 0.151 | 12-/18+/0= of 30, sign p 0.36 | A 18.677 B 18.504 | favour(non-tied) 40%
+   breachDeadline60_pp              mean 0.034 [-0.088, 0.155] SE 0.059 med 0.002 | 14-/15+/1= of 30, sign p 1.0 | A 1.557 B 1.523 | favour(non-tied) 48%
+   breachLedger_pp_BY_CONSTRUCTION  mean -1.857 [-2.191, -1.522] SE 0.164 med -1.792 | 30-/0+/0= of 30, sign p 1.9e-9 | A 0.000 B 1.857 | favour(non-tied) NA
+   late60First                      mean 0.67 [-1.17, 2.50] SE 0.90 med 1.00 | 11-/17+/2= of 30, sign p 0.34 | rel -0.5% | A 126.43 B 125.77 | favour(non-tied) 39%
+   breachDeadline60                 mean 0.20 [-0.61, 1.01] SE 0.39 med 0.00 | 9-/10+/11= of 30, sign p 1.0 | rel -1.9% | A 10.50 B 10.30 | favour(non-tied) 47%
+   relocations                      mean -9.43 [-11.40, -7.47] SE 0.96 med -9.00 | 29-/0+/1= of 30, sign p 3.7e-9 | rel 43.2% | A 12.40 B 21.83 | favour(non-tied) NA
+   switchedRiders                   mean -9.30 [-11.21, -7.39] SE 0.94 med -9.00 | 29-/0+/1= of 30, sign p 3.7e-9 | rel 43.1% | A 12.30 B 21.60 | favour(non-tied) NA
+   exchange rates (2.4): {"ARR_per1000":8.81057268722467,"dVisRev60_day":-6,"dServed_day":-3.1666666666666665,"dBreachDeadline60_day":0.2,"dLate60First_day":0.6666666666666666,"ER_served":1.8947368421052633,"ER_deadline":30,"ER_late":9}
+--- G2 NCE35-EOHZ35
+   served                           mean 1.50 [-0.55, 3.55] SE 1.00 med 2.00 | 9-/20+/1= of 30, sign p 0.061 | rel -0.2% | A 681.00 B 679.50 | favour(non-tied) 69%
+   visRev60                         mean -1.10 [-2.07, -0.13] SE 0.48 med -0.50 | 15-/9+/6= of 30, sign p 0.31 | rel 6.4% | A 16.13 B 17.23 | favour(non-tied) 63%
+   visRev60_per1000                 mean -1.633 [-3.023, -0.243] SE 0.680 med -0.509 | 21-/9+/0= of 30, sign p 0.043 | A 23.718 B 25.352 | favour(non-tied) 70%
+   TV5_s_per_served                 mean -0.411 [-1.431, 0.609] SE 0.499 med -0.128 | 18-/12+/0= of 30, sign p 0.36 | A 64.573 B 64.984 | favour(non-tied) 60%
+   Pchg_pp                          mean 0.099 [-0.170, 0.368] SE 0.131 med -0.164 | 18-/12+/0= of 30, sign p 0.36 | A 17.914 B 17.815 | favour(non-tied) 60%
+   pDispAny1_pp                     mean 0.125 [-0.151, 0.400] SE 0.135 med 0.113 | 12-/18+/0= of 30, sign p 0.36 | A 20.274 B 20.149 | favour(non-tied) 40%
+   late60First_pp                   mean -0.373 [-0.536, -0.210] SE 0.080 med -0.336 | 23-/7+/0= of 30, sign p 0.0052 | A 18.504 B 18.877 | favour(non-tied) 77%
+   breachDeadline60_pp              mean 0.425 [0.331, 0.520] SE 0.046 med 0.441 | 3-/27+/0= of 30, sign p 8.4e-6 | A 1.523 B 1.098 | favour(non-tied) 10%
+   breachLedger_pp_BY_CONSTRUCTION  mean -0.844 [-1.082, -0.607] SE 0.116 med -0.893 | 28-/2+/0= of 30, sign p 8.7e-7 | A 1.857 B 2.701 | favour(non-tied) NA
+   late60First                      mean -2.27 [-3.60, -0.93] SE 0.65 med -1.50 | 22-/8+/0= of 30, sign p 0.016 | rel 1.8% | A 125.77 B 128.03 | favour(non-tied) 73%
+   breachDeadline60                 mean 2.90 [2.28, 3.52] SE 0.30 med 3.00 | 0-/27+/3= of 30, sign p 1.5e-8 | rel -39.2% | A 10.30 B 7.40 | favour(non-tied) 0%
+   relocations                      mean 0.80 [-0.56, 2.16] SE 0.67 med 1.00 | 7-/20+/3= of 30, sign p 0.019 | rel -3.8% | A 21.83 B 21.03 | favour(non-tied) NA
+   switchedRiders                   mean 0.90 [-0.42, 2.22] SE 0.64 med 1.50 | 7-/20+/3= of 30, sign p 0.019 | rel -4.3% | A 21.60 B 20.70 | favour(non-tied) NA
+--- INS RCE35-EOHZ35
+   served                           mean -0.70 [-2.66, 1.26] SE 0.96 med -1.50 | 18-/10+/2= of 30, sign p 0.18 | rel 0.1% | A 675.60 B 676.30 | favour(non-tied) 36%
+   visRev60                         mean -1.27 [-2.05, -0.48] SE 0.38 med -1.00 | 19-/5+/6= of 30, sign p 0.0066 | rel 12.3% | A 9.07 B 10.33 | favour(non-tied) 79%
+   visRev60_per1000                 mean -1.786 [-2.926, -0.646] SE 0.557 med -1.503 | 21-/9+/0= of 30, sign p 0.043 | A 13.583 B 15.369 | favour(non-tied) 70%
+   TV5_s_per_served                 mean -0.236 [-0.782, 0.310] SE 0.267 med -0.515 | 20-/10+/0= of 30, sign p 0.099 | A 57.324 B 57.560 | favour(non-tied) 67%
+   Pchg_pp                          mean 0.179 [-0.104, 0.462] SE 0.138 med 0.026 | 14-/15+/1= of 30, sign p 1.0 | A 17.104 B 16.925 | favour(non-tied) 48%
+   pDispAny1_pp                     mean 0.203 [-0.069, 0.475] SE 0.133 med 0.118 | 10-/19+/1= of 30, sign p 0.14 | A 17.634 B 17.431 | favour(non-tied) 34%
+   late60First_pp                   mean -0.201 [-0.429, 0.026] SE 0.111 med -0.225 | 21-/9+/0= of 30, sign p 0.043 | A 18.802 B 19.003 | favour(non-tied) 70%
+   breachDeadline60_pp              mean 0.394 [0.289, 0.499] SE 0.051 med 0.324 | 1-/29+/0= of 30, sign p 5.8e-8 | A 1.588 B 1.194 | favour(non-tied) 3%
+   breachLedger_pp_BY_CONSTRUCTION  mean -0.827 [-1.001, -0.654] SE 0.085 med -0.744 | 29-/0+/1= of 30, sign p 3.7e-9 | A 0.000 B 0.827 | favour(non-tied) NA
+   late60First                      mean -1.53 [-3.12, 0.05] SE 0.78 med -2.00 | 21-/7+/2= of 30, sign p 0.013 | rel 1.2% | A 126.77 B 128.30 | favour(non-tied) 75%
+   breachDeadline60                 mean 2.63 [1.96, 3.30] SE 0.33 med 2.00 | 1-/28+/1= of 30, sign p 1.1e-7 | rel -32.8% | A 10.67 B 8.03 | favour(non-tied) 3%
+   exchange rates (2.4): {"ARR_per1000":1.872936073734536,"dVisRev60_day":-1.2666666666666666,"dServed_day":-0.7,"dBreachDeadline60_day":2.6333333333333333,"dLate60First_day":-1.5333333333333334,"ER_served":1.8095238095238095,"ER_deadline":0.4810126582278481,"ER_late":"no lateness price (mean dLate <= 0)"}
+C1 (G2 visRev60 RCE35 vs EOHZ35): HOLDS | rel 41.2% | favour(non-tied) 97% | days dVis>=0 2/30
+C2 (G2 served): HOLDS | mean -1.67/day [-4.29, 0.96] (-0.25% of EOHZ35) | days negative 18/30
+C3 (INS served): HOLDS | mean -0.70/day [-2.66, 1.26] | days on mean side 18/30 | INS dVisRev60 -1.27/day (rel 12.3%)
+C4 (INS breachDeadline60): HOLDS | mean 2.63/day [1.96, 3.30] (0.394 pp) | days <= 0 2/30
+
+==================== V-R25 ====================
+prediction (RUNPLAN R5): G2 rel about 39 % (about -26/day)
+level G2  U      served 846.4 | visRev60 125.53 (148.43/1000) | TV5 481.80 s | Pchg 53.32% | any1 55.80% | late60F 51.73% | breachDL60 0.00% | breachLedger 0.00% (by construction for RC arms) | reloc 61.0 | switched 59.0 | days 30
+level G2  EOHZ35 served 781.9 | visRev60 67.27 (86.14/1000) | TV5 207.58 s | Pchg 42.01% | any1 44.14% | late60F 40.80% | breachDL60 0.83% | breachLedger 5.23% (by construction for RC arms) | reloc 38.5 | switched 37.5 | days 30
+level G2  RCE35  served 777.2 | visRev60 40.37 (52.13/1000) | TV5 184.16 s | Pchg 41.55% | any1 43.20% | late60F 40.83% | breachDL60 1.71% | breachLedger 0.00% (by construction for RC arms) | reloc 18.8 | switched 18.4 | days 30
+level G2  NCE35  served 783.4 | visRev60 64.13 (81.99/1000) | TV5 209.08 s | Pchg 42.18% | any1 44.33% | late60F 40.62% | breachDL60 1.77% | breachLedger 3.77% (by construction for RC arms) | reloc 38.0 | switched 37.0 | days 30
+level INS EOHZ35 served 774.8 | visRev60 35.20 (45.64/1000) | TV5 177.45 s | Pchg 40.60% | any1 41.03% | late60F 41.00% | breachDL60 0.91% | breachLedger 1.38% (by construction for RC arms) | reloc 0.0 | switched 0.0 | days 30
+level INS RCE35  served 776.1 | visRev60 33.37 (43.28/1000) | TV5 177.95 s | Pchg 40.85% | any1 41.33% | late60F 40.76% | breachDL60 1.84% | breachLedger 0.00% (by construction for RC arms) | reloc 0.0 | switched 0.0 | days 30
+--- G2 RCE35-EOHZ35
+   served                           mean -4.67 [-9.81, 0.48] SE 2.51 med -4.50 | 19-/11+/0= of 30, sign p 0.20 | rel 0.6% | A 777.20 B 781.87 | favour(non-tied) 37%
+   visRev60                         mean -26.90 [-29.53, -24.27] SE 1.28 med -26.50 | 30-/0+/0= of 30, sign p 1.9e-9 | rel 40.0% | A 40.37 B 67.27 | favour(non-tied) 100%
+   visRev60_per1000                 mean -34.006 [-37.214, -30.798] SE 1.568 med -34.196 | 30-/0+/0= of 30, sign p 1.9e-9 | A 52.131 B 86.137 | favour(non-tied) 100%
+   TV5_s_per_served                 mean -23.424 [-26.462, -20.386] SE 1.486 med -22.726 | 30-/0+/0= of 30, sign p 1.9e-9 | A 184.161 B 207.585 | favour(non-tied) 100%
+   Pchg_pp                          mean -0.464 [-0.946, 0.018] SE 0.236 med -0.434 | 19-/11+/0= of 30, sign p 0.20 | A 41.550 B 42.014 | favour(non-tied) 63%
+   pDispAny1_pp                     mean -0.938 [-1.417, -0.458] SE 0.234 med -0.982 | 21-/9+/0= of 30, sign p 0.043 | A 43.203 B 44.141 | favour(non-tied) 70%
+   late60First_pp                   mean 0.022 [-0.542, 0.587] SE 0.276 med 0.017 | 15-/15+/0= of 30, sign p 1.0 | A 40.826 B 40.804 | favour(non-tied) 50%
+   breachDeadline60_pp              mean 0.881 [0.710, 1.051] SE 0.083 med 0.876 | 0-/30+/0= of 30, sign p 1.9e-9 | A 1.709 B 0.828 | favour(non-tied) 0%
+   breachLedger_pp_BY_CONSTRUCTION  mean -5.227 [-5.681, -4.773] SE 0.222 med -5.053 | 30-/0+/0= of 30, sign p 1.9e-9 | A 0.000 B 5.227 | favour(non-tied) NA
+   late60First                      mean -1.93 [-7.20, 3.33] SE 2.58 med 0.00 | 15-/15+/0= of 30, sign p 1.0 | rel 0.6% | A 317.20 B 319.13 | favour(non-tied) 50%
+   breachDeadline60                 mean 6.83 [5.49, 8.17] SE 0.66 med 7.00 | 0-/30+/0= of 30, sign p 1.9e-9 | rel -106.8% | A 13.23 B 6.40 | favour(non-tied) 0%
+   relocations                      mean -19.63 [-22.37, -16.90] SE 1.34 med -18.50 | 30-/0+/0= of 30, sign p 1.9e-9 | rel 51.0% | A 18.83 B 38.47 | favour(non-tied) NA
+   switchedRiders                   mean -19.07 [-21.78, -16.36] SE 1.33 med -18.50 | 30-/0+/0= of 30, sign p 1.9e-9 | rel 50.9% | A 18.40 B 37.47 | favour(non-tied) NA
+   exchange rates (2.4): {"ARR_per1000":34.40484311050477,"dVisRev60_day":-26.9,"dServed_day":-4.666666666666667,"dBreachDeadline60_day":6.833333333333333,"dLate60First_day":-1.9333333333333333,"ER_served":5.764285714285713,"ER_deadline":3.9365853658536585,"ER_late":"no lateness price (mean dLate <= 0)"}
+--- G2 RCE35-NCE35
+   served                           mean -6.20 [-10.59, -1.81] SE 2.15 med -6.50 | 20-/8+/2= of 30, sign p 0.036 | rel 0.8% | A 777.20 B 783.40 | favour(non-tied) 29%
+   visRev60                         mean -23.77 [-26.91, -20.63] SE 1.54 med -24.50 | 30-/0+/0= of 30, sign p 1.9e-9 | rel 37.1% | A 40.37 B 64.13 | favour(non-tied) 100%
+   visRev60_per1000                 mean -29.864 [-33.686, -26.041] SE 1.869 med -31.405 | 30-/0+/0= of 30, sign p 1.9e-9 | A 52.131 B 81.994 | favour(non-tied) 100%
+   TV5_s_per_served                 mean -24.915 [-28.110, -21.721] SE 1.562 med -25.203 | 30-/0+/0= of 30, sign p 1.9e-9 | A 184.161 B 209.076 | favour(non-tied) 100%
+   Pchg_pp                          mean -0.632 [-1.111, -0.152] SE 0.234 med -0.726 | 23-/7+/0= of 30, sign p 0.0052 | A 41.550 B 42.182 | favour(non-tied) 77%
+   pDispAny1_pp                     mean -1.127 [-1.601, -0.654] SE 0.232 med -1.138 | 26-/3+/1= of 30, sign p 1.5e-5 | A 43.203 B 44.330 | favour(non-tied) 90%
+   late60First_pp                   mean 0.202 [-0.310, 0.714] SE 0.250 med 0.292 | 13-/17+/0= of 30, sign p 0.58 | A 40.826 B 40.624 | favour(non-tied) 43%
+   breachDeadline60_pp              mean -0.062 [-0.207, 0.083] SE 0.071 med -0.127 | 18-/12+/0= of 30, sign p 0.36 | A 1.709 B 1.771 | favour(non-tied) 60%
+   breachLedger_pp_BY_CONSTRUCTION  mean -3.771 [-4.124, -3.419] SE 0.172 med -3.599 | 30-/0+/0= of 30, sign p 1.9e-9 | A 0.000 B 3.771 | favour(non-tied) NA
+   late60First                      mean -0.97 [-5.45, 3.52] SE 2.19 med -3.00 | 16-/14+/0= of 30, sign p 0.86 | rel 0.3% | A 317.20 B 318.17 | favour(non-tied) 53%
+   breachDeadline60                 mean -0.57 [-1.66, 0.53] SE 0.54 med -1.00 | 17-/12+/1= of 30, sign p 0.46 | rel 4.1% | A 13.23 B 13.80 | favour(non-tied) 59%
+   relocations                      mean -19.17 [-21.99, -16.35] SE 1.38 med -17.50 | 30-/0+/0= of 30, sign p 1.9e-9 | rel 50.4% | A 18.83 B 38.00 | favour(non-tied) NA
+   switchedRiders                   mean -18.63 [-21.29, -15.97] SE 1.30 med -17.00 | 30-/0+/0= of 30, sign p 1.9e-9 | rel 50.3% | A 18.40 B 37.03 | favour(non-tied) NA
+   exchange rates (2.4): {"ARR_per1000":30.337843587779762,"dVisRev60_day":-23.766666666666666,"dServed_day":-6.2,"dBreachDeadline60_day":-0.5666666666666667,"dLate60First_day":-0.9666666666666667,"ER_served":3.833333333333333,"ER_deadline":"no deadline price (mean dBreach <= 0)","ER_late":"no lateness price (mean dLate <= 0)"}
+--- G2 NCE35-EOHZ35
+   served                           mean 1.53 [-1.99, 5.06] SE 1.72 med 1.50 | 14-/16+/0= of 30, sign p 0.86 | rel -0.2% | A 783.40 B 781.87 | favour(non-tied) 53%
+   visRev60                         mean -3.13 [-5.71, -0.55] SE 1.26 med -2.00 | 18-/10+/2= of 30, sign p 0.18 | rel 4.7% | A 64.13 B 67.27 | favour(non-tied) 64%
+   visRev60_per1000                 mean -4.143 [-7.536, -0.749] SE 1.659 med -2.853 | 20-/10+/0= of 30, sign p 0.099 | A 81.994 B 86.137 | favour(non-tied) 67%
+   TV5_s_per_served                 mean 1.491 [-1.252, 4.235] SE 1.341 med 1.910 | 12-/18+/0= of 30, sign p 0.36 | A 209.076 B 207.585 | favour(non-tied) 40%
+   Pchg_pp                          mean 0.168 [-0.231, 0.566] SE 0.195 med 0.446 | 10-/20+/0= of 30, sign p 0.099 | A 42.182 B 42.014 | favour(non-tied) 33%
+   pDispAny1_pp                     mean 0.190 [-0.212, 0.591] SE 0.196 med 0.370 | 7-/23+/0= of 30, sign p 0.0052 | A 44.330 B 44.141 | favour(non-tied) 23%
+   late60First_pp                   mean -0.179 [-0.651, 0.292] SE 0.231 med -0.238 | 16-/14+/0= of 30, sign p 0.86 | A 40.624 B 40.804 | favour(non-tied) 53%
+   breachDeadline60_pp              mean 0.943 [0.799, 1.087] SE 0.070 med 0.949 | 0-/30+/0= of 30, sign p 1.9e-9 | A 1.771 B 0.828 | favour(non-tied) 0%
+   breachLedger_pp_BY_CONSTRUCTION  mean -1.456 [-1.855, -1.057] SE 0.195 med -1.428 | 28-/2+/0= of 30, sign p 8.7e-7 | A 3.771 B 5.227 | favour(non-tied) NA
+   late60First                      mean -0.97 [-5.13, 3.20] SE 2.04 med -1.50 | 16-/13+/1= of 30, sign p 0.71 | rel 0.3% | A 318.17 B 319.13 | favour(non-tied) 55%
+   breachDeadline60                 mean 7.40 [6.26, 8.54] SE 0.56 med 7.00 | 0-/30+/0= of 30, sign p 1.9e-9 | rel -115.6% | A 13.80 B 6.40 | favour(non-tied) 0%
+   relocations                      mean -0.47 [-2.91, 1.97] SE 1.19 med 0.00 | 14-/13+/3= of 30, sign p 1.0 | rel 1.2% | A 38.00 B 38.47 | favour(non-tied) NA
+   switchedRiders                   mean -0.43 [-2.87, 2.00] SE 1.19 med 0.00 | 14-/13+/3= of 30, sign p 1.0 | rel 1.2% | A 37.03 B 37.47 | favour(non-tied) NA
+--- INS RCE35-EOHZ35
+   served                           mean 1.27 [-1.60, 4.13] SE 1.40 med 0.50 | 14-/15+/1= of 30, sign p 1.0 | rel -0.2% | A 776.07 B 774.80 | favour(non-tied) 52%
+   visRev60                         mean -1.83 [-3.10, -0.57] SE 0.62 med -2.00 | 20-/7+/3= of 30, sign p 0.019 | rel 5.2% | A 33.37 B 35.20 | favour(non-tied) 74%
+   visRev60_per1000                 mean -2.366 [-3.997, -0.734] SE 0.798 med -2.695 | 23-/7+/0= of 30, sign p 0.0052 | A 43.278 B 45.644 | favour(non-tied) 77%
+   TV5_s_per_served                 mean 0.498 [-1.026, 2.023] SE 0.745 med 0.517 | 12-/18+/0= of 30, sign p 0.36 | A 177.952 B 177.454 | favour(non-tied) 40%
+   Pchg_pp                          mean 0.252 [-0.126, 0.630] SE 0.185 med 0.236 | 11-/19+/0= of 30, sign p 0.20 | A 40.847 B 40.595 | favour(non-tied) 37%
+   pDispAny1_pp                     mean 0.299 [-0.078, 0.677] SE 0.185 med 0.250 | 12-/18+/0= of 30, sign p 0.36 | A 41.334 B 41.035 | favour(non-tied) 40%
+   late60First_pp                   mean -0.234 [-0.583, 0.114] SE 0.170 med -0.297 | 18-/12+/0= of 30, sign p 0.36 | A 40.762 B 40.996 | favour(non-tied) 60%
+   breachDeadline60_pp              mean 0.926 [0.768, 1.083] SE 0.077 med 0.807 | 0-/30+/0= of 30, sign p 1.9e-9 | A 1.839 B 0.913 | favour(non-tied) 0%
+   breachLedger_pp_BY_CONSTRUCTION  mean -1.378 [-1.624, -1.133] SE 0.120 med -1.275 | 30-/0+/0= of 30, sign p 1.9e-9 | A 0.000 B 1.378 | favour(non-tied) NA
+   late60First                      mean -1.33 [-4.37, 1.70] SE 1.49 med -1.00 | 15-/12+/3= of 30, sign p 0.70 | rel 0.4% | A 316.43 B 317.77 | favour(non-tied) 56%
+   breachDeadline60                 mean 7.20 [5.98, 8.42] SE 0.60 med 6.00 | 0-/30+/0= of 30, sign p 1.9e-9 | rel -102.4% | A 14.23 B 7.03 | favour(non-tied) 0%
+   exchange rates (2.4): {"ARR_per1000":2.366202030631561,"dVisRev60_day":-1.8333333333333333,"dServed_day":1.2666666666666666,"dBreachDeadline60_day":7.2,"dLate60First_day":-1.3333333333333333,"ER_served":"no service price (mean dServed >= 0)","ER_deadline":0.2546296296296296,"ER_late":"no lateness price (mean dLate <= 0)"}
+C1 (G2 visRev60 RCE35 vs EOHZ35): HOLDS | rel 40.0% | favour(non-tied) 100% | days dVis>=0 0/30
+C2 (G2 served): HOLDS | mean -4.67/day [-9.81, 0.48] (-0.60% of EOHZ35) | days negative 19/30
+C3 (INS served): HOLDS | mean 1.27/day [-1.60, 4.13] | days on mean side 15/30 | INS dVisRev60 -1.83/day (rel 5.2%)
+C4 (INS breachDeadline60): HOLDS | mean 7.20/day [5.98, 8.42] (0.926 pp) | days <= 0 0/30
+
+==================== V-D24 ====================
+prediction (RUNPLAN R5): G2 rel 30-45 % (no prior data)
+level G2  U      served 786.5 | visRev60 91.07 (115.76/1000) | TV5 355.45 s | Pchg 50.46% | any1 52.51% | late60F 48.19% | breachDL60 0.00% | breachLedger 0.00% (by construction for RC arms) | reloc 49.0 | switched 47.6 | days 30
+level G2  EOHZ35 served 707.9 | visRev60 39.17 (55.36/1000) | TV5 136.47 s | Pchg 35.96% | any1 37.49% | late60F 33.12% | breachDL60 1.01% | breachLedger 4.24% (by construction for RC arms) | reloc 28.6 | switched 28.0 | days 30
+level G2  RCE35  served 705.4 | visRev60 23.60 (33.67/1000) | TV5 120.31 s | Pchg 35.39% | any1 36.48% | late60F 33.12% | breachDL60 1.84% | breachLedger 0.00% (by construction for RC arms) | reloc 14.5 | switched 14.3 | days 30
+level G2  NCE35  served 709.4 | visRev60 37.27 (52.66/1000) | TV5 135.98 s | Pchg 36.10% | any1 37.56% | late60F 32.92% | breachDL60 1.83% | breachLedger 2.85% (by construction for RC arms) | reloc 28.2 | switched 27.5 | days 30
+level INS EOHZ35 served 702.6 | visRev60 21.33 (30.42/1000) | TV5 117.36 s | Pchg 34.86% | any1 34.86% | late60F 33.32% | breachDL60 1.14% | breachLedger 1.29% (by construction for RC arms) | reloc 0.0 | switched 0.0 | days 30
+level INS RCE35  served 703.5 | visRev60 19.73 (28.13/1000) | TV5 118.47 s | Pchg 35.33% | any1 35.33% | late60F 33.43% | breachDL60 1.93% | breachLedger 0.00% (by construction for RC arms) | reloc 0.0 | switched 0.0 | days 30
+--- G2 RCE35-EOHZ35
+   served                           mean -2.43 [-6.76, 1.89] SE 2.11 med -5.50 | 21-/9+/0= of 30, sign p 0.043 | rel 0.3% | A 705.43 B 707.87 | favour(non-tied) 30%
+   visRev60                         mean -15.57 [-17.80, -13.33] SE 1.09 med -15.00 | 30-/0+/0= of 30, sign p 1.9e-9 | rel 39.7% | A 23.60 B 39.17 | favour(non-tied) 100%
+   visRev60_per1000                 mean -21.693 [-24.668, -18.718] SE 1.455 med -20.974 | 30-/0+/0= of 30, sign p 1.9e-9 | A 33.668 B 55.361 | favour(non-tied) 100%
+   TV5_s_per_served                 mean -16.159 [-18.591, -13.727] SE 1.189 med -16.437 | 30-/0+/0= of 30, sign p 1.9e-9 | A 120.307 B 136.466 | favour(non-tied) 100%
+   Pchg_pp                          mean -0.570 [-0.909, -0.231] SE 0.166 med -0.816 | 21-/9+/0= of 30, sign p 0.043 | A 35.391 B 35.961 | favour(non-tied) 70%
+   pDispAny1_pp                     mean -1.012 [-1.380, -0.644] SE 0.180 med -1.275 | 23-/7+/0= of 30, sign p 0.0052 | A 36.475 B 37.487 | favour(non-tied) 77%
+   late60First_pp                   mean 0.005 [-0.388, 0.399] SE 0.192 med 0.140 | 14-/16+/0= of 30, sign p 0.86 | A 33.121 B 33.116 | favour(non-tied) 47%
+   breachDeadline60_pp              mean 0.830 [0.698, 0.961] SE 0.064 med 0.788 | 0-/30+/0= of 30, sign p 1.9e-9 | A 1.836 B 1.006 | favour(non-tied) 0%
+   breachLedger_pp_BY_CONSTRUCTION  mean -4.236 [-4.629, -3.844] SE 0.192 med -4.203 | 30-/0+/0= of 30, sign p 1.9e-9 | A 0.000 B 4.236 | favour(non-tied) NA
+   late60First                      mean -0.67 [-3.88, 2.55] SE 1.57 med 0.00 | 14-/13+/3= of 30, sign p 1.0 | rel 0.3% | A 233.60 B 234.27 | favour(non-tied) 52%
+   breachDeadline60                 mean 5.87 [4.89, 6.85] SE 0.48 med 5.50 | 0-/30+/0= of 30, sign p 1.9e-9 | rel -83.0% | A 12.93 B 7.07 | favour(non-tied) 0%
+   relocations                      mean -14.07 [-15.92, -12.21] SE 0.91 med -13.50 | 30-/0+/0= of 30, sign p 1.9e-9 | rel 49.2% | A 14.50 B 28.57 | favour(non-tied) NA
+   switchedRiders                   mean -13.63 [-15.53, -11.74] SE 0.93 med -13.00 | 30-/0+/0= of 30, sign p 1.9e-9 | rel 48.7% | A 14.33 B 27.97 | favour(non-tied) NA
+   exchange rates (2.4): {"ARR_per1000":21.990958749293654,"dVisRev60_day":-15.566666666666666,"dServed_day":-2.433333333333333,"dBreachDeadline60_day":5.866666666666666,"dLate60First_day":-0.6666666666666666,"ER_served":6.397260273972603,"ER_deadline":2.6534090909090913,"ER_late":"no lateness price (mean dLate <= 0)"}
+--- G2 RCE35-NCE35
+   served                           mean -4.00 [-7.66, -0.34] SE 1.79 med -5.50 | 22-/7+/1= of 30, sign p 0.0081 | rel 0.6% | A 705.43 B 709.43 | favour(non-tied) 24%
+   visRev60                         mean -13.67 [-15.78, -11.56] SE 1.03 med -14.00 | 30-/0+/0= of 30, sign p 1.9e-9 | rel 36.7% | A 23.60 B 37.27 | favour(non-tied) 100%
+   visRev60_per1000                 mean -18.996 [-21.900, -16.091] SE 1.420 med -18.614 | 30-/0+/0= of 30, sign p 1.9e-9 | A 33.668 B 52.663 | favour(non-tied) 100%
+   TV5_s_per_served                 mean -15.673 [-18.629, -12.717] SE 1.445 med -14.574 | 30-/0+/0= of 30, sign p 1.9e-9 | A 120.307 B 135.980 | favour(non-tied) 100%
+   Pchg_pp                          mean -0.708 [-1.105, -0.311] SE 0.194 med -0.516 | 24-/6+/0= of 30, sign p 0.0014 | A 35.391 B 36.100 | favour(non-tied) 80%
+   pDispAny1_pp                     mean -1.080 [-1.519, -0.641] SE 0.215 med -0.936 | 25-/5+/0= of 30, sign p 0.00032 | A 36.475 B 37.556 | favour(non-tied) 83%
+   late60First_pp                   mean 0.199 [-0.133, 0.531] SE 0.162 med 0.396 | 12-/18+/0= of 30, sign p 0.36 | A 33.121 B 32.923 | favour(non-tied) 40%
+   breachDeadline60_pp              mean 0.003 [-0.125, 0.130] SE 0.062 med -0.016 | 16-/14+/0= of 30, sign p 0.86 | A 1.836 B 1.833 | favour(non-tied) 53%
+   breachLedger_pp_BY_CONSTRUCTION  mean -2.851 [-3.169, -2.533] SE 0.156 med -2.803 | 30-/0+/0= of 30, sign p 1.9e-9 | A 0.000 B 2.851 | favour(non-tied) NA
+   late60First                      mean 0.20 [-2.64, 3.04] SE 1.39 med -0.50 | 15-/14+/1= of 30, sign p 1.0 | rel -0.1% | A 233.60 B 233.40 | favour(non-tied) 52%
+   breachDeadline60                 mean -0.03 [-0.95, 0.88] SE 0.45 med 0.00 | 12-/10+/8= of 30, sign p 0.83 | rel 0.3% | A 12.93 B 12.97 | favour(non-tied) 55%
+   relocations                      mean -13.73 [-15.72, -11.74] SE 0.97 med -14.50 | 30-/0+/0= of 30, sign p 1.9e-9 | rel 48.6% | A 14.50 B 28.23 | favour(non-tied) NA
+   switchedRiders                   mean -13.20 [-15.16, -11.24] SE 0.96 med -14.00 | 30-/0+/0= of 30, sign p 1.9e-9 | rel 47.9% | A 14.33 B 27.53 | favour(non-tied) NA
+   exchange rates (2.4): {"ARR_per1000":19.264201475355918,"dVisRev60_day":-13.666666666666666,"dServed_day":-4,"dBreachDeadline60_day":-0.03333333333333333,"dLate60First_day":0.2,"ER_served":3.4166666666666665,"ER_deadline":"no deadline price (mean dBreach <= 0)","ER_late":68.33333333333333}
+--- G2 NCE35-EOHZ35
+   served                           mean 1.57 [-1.60, 4.73] SE 1.55 med 2.00 | 11-/17+/2= of 30, sign p 0.34 | rel -0.2% | A 709.43 B 707.87 | favour(non-tied) 61%
+   visRev60                         mean -1.90 [-3.43, -0.37] SE 0.75 med -2.00 | 21-/8+/1= of 30, sign p 0.024 | rel 4.9% | A 37.27 B 39.17 | favour(non-tied) 72%
+   visRev60_per1000                 mean -2.697 [-4.796, -0.599] SE 1.026 med -2.804 | 21-/9+/0= of 30, sign p 0.043 | A 52.663 B 55.361 | favour(non-tied) 70%
+   TV5_s_per_served                 mean -0.486 [-2.401, 1.428] SE 0.936 med -0.692 | 16-/14+/0= of 30, sign p 0.86 | A 135.980 B 136.466 | favour(non-tied) 53%
+   Pchg_pp                          mean 0.139 [-0.107, 0.384] SE 0.120 med 0.066 | 12-/18+/0= of 30, sign p 0.36 | A 36.100 B 35.961 | favour(non-tied) 40%
+   pDispAny1_pp                     mean 0.068 [-0.217, 0.354] SE 0.140 med -0.028 | 17-/13+/0= of 30, sign p 0.58 | A 37.556 B 37.487 | favour(non-tied) 57%
+   late60First_pp                   mean -0.193 [-0.514, 0.127] SE 0.157 med -0.266 | 18-/12+/0= of 30, sign p 0.36 | A 32.923 B 33.116 | favour(non-tied) 60%
+   breachDeadline60_pp              mean 0.827 [0.705, 0.949] SE 0.060 med 0.799 | 0-/30+/0= of 30, sign p 1.9e-9 | A 1.833 B 1.006 | favour(non-tied) 0%
+   breachLedger_pp_BY_CONSTRUCTION  mean -1.385 [-1.690, -1.080] SE 0.149 med -1.357 | 28-/2+/0= of 30, sign p 8.7e-7 | A 2.851 B 4.236 | favour(non-tied) NA
+   late60First                      mean -0.87 [-3.30, 1.57] SE 1.19 med 0.00 | 14-/13+/3= of 30, sign p 1.0 | rel 0.4% | A 233.40 B 234.27 | favour(non-tied) 52%
+   breachDeadline60                 mean 5.90 [5.03, 6.77] SE 0.43 med 6.00 | 0-/30+/0= of 30, sign p 1.9e-9 | rel -83.5% | A 12.97 B 7.07 | favour(non-tied) 0%
+   relocations                      mean -0.33 [-1.94, 1.28] SE 0.79 med 0.00 | 14-/14+/2= of 30, sign p 1.0 | rel 1.2% | A 28.23 B 28.57 | favour(non-tied) NA
+   switchedRiders                   mean -0.43 [-2.04, 1.17] SE 0.78 med 0.00 | 14-/14+/2= of 30, sign p 1.0 | rel 1.5% | A 27.53 B 27.97 | favour(non-tied) NA
+--- INS RCE35-EOHZ35
+   served                           mean 0.90 [-1.11, 2.91] SE 0.98 med 1.00 | 10-/20+/0= of 30, sign p 0.099 | rel -0.1% | A 703.53 B 702.63 | favour(non-tied) 67%
+   visRev60                         mean -1.60 [-2.63, -0.57] SE 0.50 med -1.00 | 21-/5+/4= of 30, sign p 0.0025 | rel 7.5% | A 19.73 B 21.33 | favour(non-tied) 81%
+   visRev60_per1000                 mean -2.297 [-3.747, -0.846] SE 0.709 med -1.608 | 24-/6+/0= of 30, sign p 0.0014 | A 28.126 B 30.423 | favour(non-tied) 80%
+   TV5_s_per_served                 mean 1.108 [0.201, 2.014] SE 0.443 med 0.777 | 9-/21+/0= of 30, sign p 0.043 | A 118.470 B 117.362 | favour(non-tied) 30%
+   Pchg_pp                          mean 0.468 [0.131, 0.806] SE 0.165 med 0.279 | 9-/21+/0= of 30, sign p 0.043 | A 35.327 B 34.859 | favour(non-tied) 30%
+   pDispAny1_pp                     mean 0.468 [0.131, 0.806] SE 0.165 med 0.279 | 9-/21+/0= of 30, sign p 0.043 | A 35.327 B 34.859 | favour(non-tied) 30%
+   late60First_pp                   mean 0.101 [-0.218, 0.419] SE 0.156 med 0.028 | 15-/15+/0= of 30, sign p 1.0 | A 33.426 B 33.325 | favour(non-tied) 50%
+   breachDeadline60_pp              mean 0.790 [0.676, 0.904] SE 0.056 med 0.885 | 0-/30+/0= of 30, sign p 1.9e-9 | A 1.934 B 1.144 | favour(non-tied) 0%
+   breachLedger_pp_BY_CONSTRUCTION  mean -1.287 [-1.526, -1.049] SE 0.116 med -1.337 | 29-/0+/1= of 30, sign p 3.7e-9 | A 0.000 B 1.287 | favour(non-tied) NA
+   late60First                      mean 1.03 [-1.36, 3.43] SE 1.17 med 1.00 | 13-/16+/1= of 30, sign p 0.71 | rel -0.4% | A 235.10 B 234.07 | favour(non-tied) 45%
+   breachDeadline60                 mean 5.57 [4.75, 6.38] SE 0.40 med 6.00 | 0-/30+/0= of 30, sign p 1.9e-9 | rel -69.6% | A 13.57 B 8.00 | favour(non-tied) 0%
+   exchange rates (2.4): {"ARR_per1000":2.277147872289957,"dVisRev60_day":-1.6,"dServed_day":0.9,"dBreachDeadline60_day":5.566666666666666,"dLate60First_day":1.0333333333333334,"ER_served":"no service price (mean dServed >= 0)","ER_deadline":0.28742514970059885,"ER_late":1.5483870967741935}
+C1 (G2 visRev60 RCE35 vs EOHZ35): HOLDS | rel 39.7% | favour(non-tied) 100% | days dVis>=0 0/30
+C2 (G2 served): HOLDS | mean -2.43/day [-6.76, 1.89] (-0.34% of EOHZ35) | days negative 21/30
+C3 (INS served): HOLDS | mean 0.90/day [-1.11, 2.91] | days on mean side 20/30 | INS dVisRev60 -1.60/day (rel 7.5%)
+C4 (INS breachDeadline60): HOLDS | mean 5.57/day [4.75, 6.38] (0.790 pp) | days <= 0 0/30
+
+==================== DD vs B0 (descriptive): DD_d = Delta_d(variant) - Delta_d(B0), Delta = RCE35 - EOHZ35 ====================
+V-P256  G2  visRev60          DD mean 14.20 [11.09, 17.31] SE 1.52 med 13.50 | 0-/30+/0= of 30, sign p 1.9e-9 | A -3.23 B -17.43
+V-P256  G2  visRev60_per1000  DD mean 14.98 [10.03, 19.92] SE 2.42 med 13.95 | 2-/28+/0= of 30, sign p 8.7e-7 | A -8.25 B -23.22
+V-P256  G2  served            DD mean 4.10 [-0.66, 8.86] SE 2.33 med 5.50 | 11-/19+/0= of 30, sign p 0.20 | A -0.67 B -4.77
+V-P256  INS served            DD mean -0.67 [-4.02, 2.68] SE 1.64 med 0.00 | 14-/13+/3= of 30, sign p 1.0 | A 1.13 B 1.80
+V-P256  INS visRev60          DD mean 1.87 [0.85, 2.88] SE 0.50 med 1.00 | 3-/21+/6= of 30, sign p 0.00028 | A -0.13 B -2.00
+V-P256  INS breachDeadline60  DD mean -3.20 [-4.30, -2.10] SE 0.54 med -4.00 | 24-/3+/3= of 30, sign p 4.9e-5 | A 1.90 B 5.10
+V-F56   G2  visRev60          DD mean 2.27 [-0.27, 4.80] SE 1.24 med 4.00 | 10-/18+/2= of 30, sign p 0.18 | A -15.17 B -17.43
+V-F56   G2  visRev60_per1000  DD mean 1.52 [-1.91, 4.95] SE 1.68 med 4.44 | 11-/19+/0= of 30, sign p 0.20 | A -21.70 B -23.22
+V-F56   G2  served            DD mean 1.40 [-3.17, 5.97] SE 2.24 med 4.50 | 11-/17+/2= of 30, sign p 0.34 | A -3.37 B -4.77
+V-F56   INS served            DD mean -0.07 [-3.92, 3.78] SE 1.88 med -1.00 | 16-/14+/0= of 30, sign p 0.86 | A 1.73 B 1.80
+V-F56   INS visRev60          DD mean 0.43 [-0.98, 1.85] SE 0.69 med 0.00 | 12-/14+/4= of 30, sign p 0.85 | A -1.57 B -2.00
+V-F56   INS breachDeadline60  DD mean 0.20 [-0.57, 0.97] SE 0.38 med 0.00 | 10-/11+/9= of 30, sign p 1.0 | A 5.30 B 5.10
+V-F68   G2  visRev60          DD mean -0.73 [-3.79, 2.32] SE 1.49 med -1.00 | 16-/13+/1= of 30, sign p 0.71 | A -18.17 B -17.43
+V-F68   G2  visRev60_per1000  DD mean 0.37 [-3.62, 4.37] SE 1.95 med 0.25 | 15-/15+/0= of 30, sign p 1.0 | A -22.85 B -23.22
+V-F68   G2  served            DD mean -0.07 [-4.53, 4.39] SE 2.18 med -1.00 | 15-/14+/1= of 30, sign p 1.0 | A -4.83 B -4.77
+V-F68   INS served            DD mean -0.70 [-4.33, 2.93] SE 1.78 med 2.00 | 12-/16+/2= of 30, sign p 0.57 | A 1.10 B 1.80
+V-F68   INS visRev60          DD mean -0.43 [-1.93, 1.07] SE 0.73 med 0.00 | 13-/14+/3= of 30, sign p 1.0 | A -2.43 B -2.00
+V-F68   INS breachDeadline60  DD mean -0.03 [-0.98, 0.91] SE 0.46 med 0.00 | 9-/11+/10= of 30, sign p 0.82 | A 5.07 B 5.10
+V-R15   G2  visRev60          DD mean 10.33 [7.60, 13.07] SE 1.34 med 9.50 | 2-/26+/2= of 30, sign p 3.0e-6 | A -7.10 B -17.43
+V-R15   G2  visRev60_per1000  DD mean 12.98 [9.33, 16.63] SE 1.79 med 12.11 | 2-/28+/0= of 30, sign p 8.7e-7 | A -10.24 B -23.22
+V-R15   G2  served            DD mean 3.10 [-1.83, 8.03] SE 2.41 med 0.00 | 15-/15+/0= of 30, sign p 1.0 | A -1.67 B -4.77
+V-R15   INS served            DD mean -2.50 [-6.20, 1.20] SE 1.81 med -1.00 | 16-/14+/0= of 30, sign p 0.86 | A -0.70 B 1.80
+V-R15   INS visRev60          DD mean 0.73 [-0.51, 1.98] SE 0.61 med 0.00 | 13-/13+/4= of 30, sign p 1.0 | A -1.27 B -2.00
+V-R15   INS breachDeadline60  DD mean -2.47 [-3.84, -1.09] SE 0.67 med -2.50 | 21-/5+/4= of 30, sign p 0.0025 | A 2.63 B 5.10
+V-R25   G2  visRev60          DD mean -9.47 [-13.21, -5.72] SE 1.83 med -8.00 | 24-/5+/1= of 30, sign p 0.00055 | A -26.90 B -17.43
+V-R25   G2  visRev60_per1000  DD mean -10.78 [-15.64, -5.92] SE 2.38 med -8.02 | 25-/5+/0= of 30, sign p 0.00032 | A -34.01 B -23.22
+V-R25   G2  served            DD mean 0.10 [-6.61, 6.81] SE 3.28 med 2.50 | 14-/16+/0= of 30, sign p 0.86 | A -4.67 B -4.77
+V-R25   INS served            DD mean -0.53 [-4.28, 3.21] SE 1.83 med 1.00 | 11-/15+/4= of 30, sign p 0.56 | A 1.27 B 1.80
+V-R25   INS visRev60          DD mean 0.17 [-1.28, 1.62] SE 0.71 med 0.00 | 11-/12+/7= of 30, sign p 1.0 | A -1.83 B -2.00
+V-R25   INS breachDeadline60  DD mean 2.10 [0.87, 3.33] SE 0.60 med 2.50 | 7-/21+/2= of 30, sign p 0.013 | A 7.20 B 5.10
+V-D24   G2  visRev60          DD mean 1.87 [-1.34, 5.07] SE 1.57 med 5.00 | 10-/20+/0= of 30, sign p 0.099 | A -15.57 B -17.43
+V-D24   G2  visRev60_per1000  DD mean 1.53 [-2.76, 5.82] SE 2.10 med 5.29 | 10-/20+/0= of 30, sign p 0.099 | A -21.69 B -23.22
+V-D24   G2  served            DD mean 2.33 [-3.24, 7.90] SE 2.72 med 2.50 | 13-/17+/0= of 30, sign p 0.58 | A -2.43 B -4.77
+V-D24   INS served            DD mean -0.90 [-5.16, 3.36] SE 2.08 med 1.00 | 14-/16+/0= of 30, sign p 0.86 | A 0.90 B 1.80
+V-D24   INS visRev60          DD mean 0.40 [-1.36, 2.16] SE 0.86 med 1.00 | 10-/16+/4= of 30, sign p 0.33 | A -1.60 B -2.00
+V-D24   INS breachDeadline60  DD mean 0.47 [-0.97, 1.90] SE 0.70 med 1.00 | 12-/17+/1= of 30, sign p 0.46 | A 5.57 B 5.10
+
+==================== Summary (one line per variant) ====================
+variant | G2 rel visRev60 | dVis/day [CI] | /1000 served | favour | C1 | G2 dServed [CI] | days neg | C2 | G2 rel vs NCE35 | dServed vs NCE35 | INS dServed [CI] | C3 | INS dVis (rel) | INS dBreachDL60/day | days<=0 | C4 | G2 ER_served | G2 ER_deadline | INS ER_deadline
+B0      | 41.4% | -17.43 [-20.27, -14.59] | -23.22 | 100% | HOLDS | -4.77 [-8.56, -0.97] | 20/30 | HOLDS | 41.6% | -6.77 | 1.80 [-1.54, 5.14] | HOLDS | -2.00 (8.5%) | 5.10 | 2/30 | HOLDS | 3.66 | 2.87 | 0.39
+V-P256  | 28.0% | -3.23 [-4.46, -2.00] | -8.25 | 86% | HOLDS | -0.67 [-2.69, 1.35] | 17/30 | HOLDS | 26.0% | -0.73 | 1.13 [-0.06, 2.33] | HOLDS | -0.13 (1.8%) | 1.90 | 4/30 | HOLDS | 4.85 | 1.70 | 0.07
+V-F56   | 39.4% | -15.17 [-18.08, -12.25] | -21.70 | 100% | HOLDS | -3.37 [-6.77, 0.04] | 18/30 | HOLDS | 37.4% | -5.17 | 1.73 [-0.81, 4.28] | HOLDS | -1.57 (6.8%) | 5.30 | 1/30 | HOLDS | 4.50 | 2.83 | 0.30
+V-F68   | 41.2% | -18.17 [-21.14, -15.20] | -22.85 | 100% | HOLDS | -4.83 [-8.50, -1.17] | 20/30 | HOLDS | 39.8% | -4.17 | 1.10 [-1.35, 3.55] | HOLDS | -2.43 (10.1%) | 5.07 | 0/30 | HOLDS | 3.76 | 2.77 | 0.48
+V-R15   | 41.2% | -7.10 [-8.84, -5.36] | -10.24 | 97% | HOLDS | -1.67 [-4.29, 0.96] | 18/30 | HOLDS | 37.2% | -3.17 | -0.70 [-2.66, 1.26] | HOLDS | -1.27 (12.3%) | 2.63 | 2/30 | HOLDS | 4.26 | 2.29 | 0.48
+V-R25   | 40.0% | -26.90 [-29.53, -24.27] | -34.01 | 100% | HOLDS | -4.67 [-9.81, 0.48] | 19/30 | HOLDS | 37.1% | -6.20 | 1.27 [-1.60, 4.13] | HOLDS | -1.83 (5.2%) | 7.20 | 0/30 | HOLDS | 5.76 | 3.94 | 0.25
+V-D24   | 39.7% | -15.57 [-17.80, -13.33] | -21.69 | 100% | HOLDS | -2.43 [-6.76, 1.89] | 21/30 | HOLDS | 36.7% | -4.00 | 0.90 [-1.11, 2.91] | HOLDS | -1.60 (7.5%) | 5.57 | 0/30 | HOLDS | 6.40 | 2.65 | 0.29
+C8 overall: {"label":"HOLDS","reversedIn":[],"weakenedIn":[],"aboveRangeIn":[]}
+C1 across variants: {"labels":{"B0":"HOLDS","V-P256":"HOLDS","V-F56":"HOLDS","V-F68":"HOLDS","V-R15":"HOLDS","V-R25":"HOLDS","V-D24":"HOLDS"},"nHolds":7,"nReversed":0,"robust":true}
+C2 across variants: {"labels":{"B0":"HOLDS","V-P256":"HOLDS","V-F56":"HOLDS","V-F68":"HOLDS","V-R15":"HOLDS","V-R25":"HOLDS","V-D24":"HOLDS"},"nHolds":7,"nReversed":0,"robust":true}
+C3 across variants: {"labels":{"B0":"HOLDS","V-P256":"HOLDS","V-F56":"HOLDS","V-F68":"HOLDS","V-R15":"HOLDS","V-R25":"HOLDS","V-D24":"HOLDS"},"nHolds":7,"nReversed":0,"robust":true,"label":"HOLDS"}
+C4 across variants: {"labels":{"B0":"HOLDS","V-P256":"HOLDS","V-F56":"HOLDS","V-F68":"HOLDS","V-R15":"HOLDS","V-R25":"HOLDS","V-D24":"HOLDS"},"nHolds":7,"nReversed":0,"robust":true}
+
+log:

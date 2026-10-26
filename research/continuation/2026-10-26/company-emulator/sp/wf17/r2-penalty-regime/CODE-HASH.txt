@@ -1,0 +1,15 @@
+wf17 r2-penalty-regime CODE-HASH (wf17-exploratory-post-audit). Written 2026-10-23T15:49:24+07:00. sha256 of every copied or new file; source and status.
+engine17.js is the shared wf17 build (first built and recorded by wf17/r1-identity-fence-pad; = wf15/runner/engine.js + P1 + P2 + P3; diff checked here).
+81d7b47e65c582f92ca30f9fd256c7d55ad0b507f33812e12a02f19c197f12e6 *code/runner/engine17.js  <- copy of wf17/r1-identity-fence-pad/code/runner/engine17.js (shared hash 81d7b47e...)
+be261baa8cfad3da2c1c357daa04c7f845062fa7bdff63023bb1be1f18468e48 *code/runner/identity.js  <- wf15/runner/identity.js copy (identical)
+d27d0bee61cb05aceacab98ec0e94630ab1746f2bf3a1fe34e3042d8bdeb2670 *code/runner/scenario.js  <- wf15/runner/scenario.js copy (identical)
+dd47d9e345773705f070dea3dec4906883f0eb4a48e7ee76ed5601190be1db6d *code/runner/normalizer_emul.js  <- wf15/runner/normalizer_emul.js copy (identical)
+c761de69599ba6b4794398079ec6a741228a77195b10855f6338fd1d1909bce4 *code/runner/lib.js  <- wf15/runner/lib.js copy (identical)
+f1ee54cc4b9bdf9394b113b323a035115f948268994e280fb7ad0ece4bd294ed *code/scripts/metrics_sh.js  <- wf15/scripts/metrics_sh.js copy (identical)
+a73519337f01d4a288a54968b54d98c740a0922673e49936505112fdd9a6fb6f *code/scripts/gen17.js  <- copy of wf17/r1-identity-fence-pad/code/scripts/gen17.js (= wf14 gen_cells_rs.js + --seedtag/--nodetag; default tags used here)
+334da4980fc25d65410d6723414e1e40704d27baf623820cef51f062bd2efb39 *code/scripts/cmp_rows.js  <- copy of wf17/r1-identity-fence-pad/code/scripts/cmp_rows.js (unused; gate17.js is used)
+27fc660142d09695ac921673e5c222e2096097172b19a14b911815b6ad222dd0 *code/scripts/gate17.js  <- new (this key; cmp_rows.js + wider ignore list: mode, alpha, check)
+fa8ac72d1883504a9291e29af192b3699a8d552a3b69d1c1072a82ff856b1c25 *code/scripts/drive17.js  <- new (this key; R4/R5 worker-pool driver)
+74d07b8c4997afef38b22a23d8777eea81c7b299085448f9757c02d895962f5a *code/scripts/panels17.js  <- new (this key; D60/D30 panels)
+60b3ec0d4bb56b367bd59ecb707aa17cb6a48dd418d6c79ec298723176f7dacd *code/RUNBOOK.sh  <- new (this key; commands as run)
+cca41b84c5d2c0b494d015bbede178d5b4287a6a054eac37e949845f74714605 *code/scripts/postgates.js  <- new (this key; post-run gates; added 2026-10-23T15:53:43+07:00, while R4 was running, before reading R4 results)

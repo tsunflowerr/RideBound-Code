@@ -1,0 +1,28 @@
+{
+ "label": "wf21-n7-exploratory-post-audit; written before any production run; each item applies to INS and G2 x SHRC and SHHZ (pooled 30 days, also labelled per panel)",
+ "rules": "type neg: REVERSED if (flipAbove given: mean > flipAbove with sign p < 0.05; else: mean >= 0 or < 50 % of non-tied days negative); HOLDS if lo <= mean <= hi and share of non-tied days negative >= q; STRONGER if mean < lo with the share met; WEAKENED if mean < 0 (or inside the band) otherwise; else INCONCLUSIVE. type pos: mirror image (flipBelow). type two: HOLDS inside [lo, hi]; STRONGER if strongerBelow and mean < lo with p < 0.05; REVERSED if outside with sign p < 0.05; else INCONCLUSIVE.",
+ "items": [
+  {"id": "P1",  "contrast": ["CL", "PAD"],  "metric": "late60First/1000", "scope": "w08", "type": "neg", "lo": -20, "hi": 0, "q": 0.6, "flipAbove": 3},
+  {"id": "P2",  "contrast": ["CL", "PAD"],  "metric": "late60First/1000", "scope": "w17", "type": "neg", "lo": -25, "hi": 0, "q": 0.6, "flipAbove": 5},
+  {"id": "P3",  "contrast": ["CL", "PAD"],  "metric": "late60First/1000", "scope": "day", "type": "neg", "lo": -20, "hi": 0, "q": 0.6, "flipAbove": 3},
+  {"id": "P4a", "contrast": ["PAD", "N"],   "metric": "late60First/1000", "scope": "w08", "type": "neg", "lo": -105, "hi": -70, "q": 0.9},
+  {"id": "P4b", "contrast": ["PAD", "N"],   "metric": "late60First/1000", "scope": "w17", "type": "pos", "lo": 15, "hi": 45, "q": 0.8},
+  {"id": "P4c", "contrast": ["PAD", "N"],   "metric": "late60First/1000", "scope": "day", "type": "neg", "lo": -45, "hi": -20, "q": 0.8},
+  {"id": "P5",  "contrast": ["CL", "PAD"],  "metric": "TV5 s", "scope": "day", "type": "neg", "lo": -18, "hi": -5, "q": 0.75},
+  {"id": "P6",  "contrast": ["CL", "PAD"],  "metric": "visRev60", "scope": "day", "type": "two", "lo": -4, "hi": 2},
+  {"id": "P7",  "contrast": ["CL", "PAD"],  "metric": "breachDeadline60/1000", "scope": "day", "type": "neg", "lo": -8, "hi": 0, "q": 0.6, "flipAbove": 1},
+  {"id": "P8a", "contrast": ["CL", "PAD"],  "metric": "served", "scope": "day", "type": "two", "lo": -3, "hi": 3},
+  {"id": "P8b", "contrast": ["CL", "PAD"],  "metric": "Pchg/1000", "scope": "day", "type": "two", "lo": -6, "hi": 6},
+  {"id": "P9",  "contrast": ["CL", "PAD"],  "metric": "early60First/1000", "scope": "day", "type": "neg", "lo": -25, "hi": 0, "q": 0.6, "flipAbove": 3},
+  {"id": "P10", "contrast": ["CL", "PAD"],  "metric": "G_late60First", "scope": "day", "type": "neg", "lo": -4, "hi": 0, "q": 0.55, "flipAbove": 0.5},
+  {"id": "P11a", "contrast": ["CLc", "CL"], "metric": "late60First/1000", "scope": "day", "type": "two", "lo": -4, "hi": 4},
+  {"id": "P11b", "contrast": ["CLc", "CL"], "metric": "late60First/1000", "scope": "w08", "type": "two", "lo": -6, "hi": 6},
+  {"id": "P11c", "contrast": ["CLc", "CL"], "metric": "late60First/1000", "scope": "w17", "type": "two", "lo": -6, "hi": 6},
+  {"id": "P11d", "contrast": ["CLc", "CL"], "metric": "served", "scope": "day", "type": "two", "lo": -2, "hi": 2},
+  {"id": "P11e", "contrast": ["CLc", "CL"], "metric": "visRev60", "scope": "day", "type": "two", "lo": -1.5, "hi": 1.5},
+  {"id": "P11f", "contrast": ["CLc", "CL"], "metric": "TV5 s", "scope": "day", "type": "two", "lo": -2, "hi": 2},
+  {"id": "P12a", "contrast": ["CLc", "PAD"], "useRefPad": true, "metric": "late60First/1000", "scope": "w08", "type": "neg", "lo": -20, "hi": 0, "q": 0.6, "flipAbove": 3},
+  {"id": "P12b", "contrast": ["CLc", "PAD"], "useRefPad": true, "metric": "late60First/1000", "scope": "w17", "type": "neg", "lo": -25, "hi": 0, "q": 0.6, "flipAbove": 5},
+  {"id": "P12c", "contrast": ["CLc", "PAD"], "useRefPad": true, "metric": "late60First/1000", "scope": "day", "type": "neg", "lo": -20, "hi": 0, "q": 0.6, "flipAbove": 3}
+ ]
+}

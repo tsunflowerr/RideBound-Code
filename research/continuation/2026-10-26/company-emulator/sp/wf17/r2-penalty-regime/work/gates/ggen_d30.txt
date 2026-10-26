@@ -1,0 +1,3 @@
+G-GEN-D30 P512: 180/180 identical; bad:
+2026-10-23T15:46:07+07:00
+{"p256cells":60,"nestedOK":60,"fleetSizes":["56/96"]}

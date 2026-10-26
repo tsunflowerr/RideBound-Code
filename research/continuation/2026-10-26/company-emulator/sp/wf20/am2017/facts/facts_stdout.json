@@ -1,0 +1,297 @@
+{
+ "label": "thăm dò sau kiểm toán (wf20/am2017 Step 1, facts only)",
+ "cells": {
+  "n": 120,
+  "serviceFields": {
+   "pickupWindowS": [
+    "600"
+   ],
+   "decisionTimerS": [
+    "600"
+   ],
+   "capacity": [
+    "4"
+   ],
+   "fileMaxRidePermille": [
+    "1500"
+   ],
+   "fleetWritten": [
+    "96"
+   ]
+  }
+ },
+ "panels": {
+  "D60": {
+   "nCells": 120,
+   "w08": {
+    "n": 60,
+    "eligibleMed": 4538.5,
+    "eligibleMean": 4538.983333333334,
+    "eligibleMin": 2974,
+    "eligibleMax": 5652,
+    "fracMedPct": 11.281375480804428,
+    "fracMinPct": 9.058740268931352,
+    "fracMaxPct": 17.215870880968392,
+    "directMedOfCellMedS": 907.4405,
+    "directMeanS": 1017.2860457031246,
+    "loadP512_62": 1.1667796939964152,
+    "loadP256_42_approx": 0.8611945360449734,
+    "fleetFullViaAt62": 549.583984375
+   },
+   "w17": {
+    "n": 60,
+    "eligibleMed": 4645.5,
+    "eligibleMean": 4741.5,
+    "eligibleMin": 2538,
+    "eligibleMax": 6495,
+    "fracMedPct": 11.021419726210514,
+    "fracMinPct": 7.882986913010008,
+    "fracMaxPct": 20.17336485421592,
+    "directMedOfCellMedS": 1035.1655,
+    "directMeanS": 1174.2335815755214,
+    "loadP512_62": 1.3467912046744326,
+    "loadP256_42_approx": 0.9940601748787483,
+    "fleetFullViaAt62": 562.541015625
+   },
+   "both": {
+    "n": 120,
+    "eligibleMed": 4601.5,
+    "eligibleMean": 4640.241666666667,
+    "eligibleMin": 2538,
+    "eligibleMax": 6495,
+    "fracMedPct": 11.12680765852138,
+    "fracMinPct": 7.882986913010008,
+    "fracMaxPct": 20.17336485421592,
+    "directMedOfCellMedS": 946.185,
+    "directMeanS": 1095.759813639323,
+    "loadP512_62": 1.2567854493354238,
+    "loadP256_42_approx": 0.9276273554618603,
+    "fleetFullViaAt62": 557.212890625
+   }
+  },
+  "D30": {
+   "nCells": 60,
+   "w08": {
+    "n": 30,
+    "eligibleMed": 4522,
+    "eligibleMean": 4524.7,
+    "eligibleMin": 3487,
+    "eligibleMax": 5488,
+    "fracMedPct": 11.322955841643997,
+    "fracMinPct": 9.329446064139942,
+    "fracMaxPct": 14.683108689417837,
+    "directMedOfCellMedS": 898.42175,
+    "directMeanS": 1001.7012125,
+    "loadP512_62": 1.1489046164874557,
+    "loadP256_42_approx": 0.8480010264550264,
+    "fleetFullViaAt62": 547.5859375
+   },
+   "w17": {
+    "n": 30,
+    "eligibleMed": 4701.5,
+    "eligibleMean": 4718.8,
+    "eligibleMin": 2610,
+    "eligibleMax": 6249,
+    "fracMedPct": 10.890328787160824,
+    "fracMinPct": 8.19331092974876,
+    "fracMaxPct": 19.616858237547895,
+    "directMedOfCellMedS": 1027.6734999999999,
+    "directMeanS": 1157.0913281250002,
+    "loadP512_62": 1.3271298387096775,
+    "loadP256_42_approx": 0.9795482142857144,
+    "fleetFullViaAt62": 569.322265625
+   },
+   "both": {
+    "n": 60,
+    "eligibleMed": 4631,
+    "eligibleMean": 4621.75,
+    "eligibleMin": 2610,
+    "eligibleMax": 6249,
+    "fracMedPct": 11.055935693804178,
+    "fracMinPct": 8.19331092974876,
+    "fracMaxPct": 19.616858237547895,
+    "directMedOfCellMedS": 942.252,
+    "directMeanS": 1079.3962703125,
+    "loadP512_62": 1.238017227598566,
+    "loadP256_42_approx": 0.9137746203703703,
+    "fleetFullViaAt62": 560.78515625
+   }
+  }
+ },
+ "dayWindowCounts": {
+  "daysInFile": 332,
+  "D60found": 60,
+  "D60_w08_med": 4542,
+  "D60_w17_med": 4648.5,
+  "D60_day_med": 27019
+ },
+ "network": {
+  "nodes": 4411,
+  "hullKm2": 65.65924463305664,
+  "grid250Km2": 52.75,
+  "grid500Km2": 62.25
+ },
+ "profile2019": {
+  "yellow": {
+   "perDay": 188969.9304347826,
+   "w08": {
+    "per2h": 20467.02608695652,
+    "shareOfDayPct": 10.830837498784025,
+    "peakFactor": 1.2997004998540829,
+    "medDurS": 721,
+    "meanDurS": 823.8947441734158,
+    "medMi": 1.42
+   },
+   "w13": {
+    "per2h": 20000.265217391305,
+    "shareOfDayPct": 10.5838347780383,
+    "peakFactor": 1.270060173364596,
+    "medDurS": 733,
+    "meanDurS": 843.0881751639595,
+    "medMi": 1.4
+   },
+   "w17": {
+    "per2h": 24599.604347826087,
+    "shareOfDayPct": 13.017734774642316,
+    "peakFactor": 1.5621281729570777,
+    "medDurS": 701,
+    "meanDurS": 810.6144273991392,
+    "medMi": 1.45
+   },
+   "peak2h": {
+    "startHour": 18,
+    "per2h": 25668.108695652176,
+    "peakFactor": 1.6299805140380743
+   }
+  },
+  "via": {
+   "perDay": 26806.28384279476,
+   "w08": {
+    "per2h": 4364.10480349345,
+    "shareOfDayPct": 16.280155910780877,
+    "peakFactor": 1.9536187092937052,
+    "medDurS": 1166,
+    "meanDurS": 1282.3967436819055,
+    "medMi": 2.07
+   },
+   "w13": {
+    "per2h": 2028.580786026201,
+    "shareOfDayPct": 7.567556912859674,
+    "peakFactor": 0.908106829543161,
+    "medDurS": 1094,
+    "meanDurS": 1219.7591194480715,
+    "medMi": 2
+   },
+   "w17": {
+    "per2h": 4602.480349344978,
+    "shareOfDayPct": 17.169408398180767,
+    "peakFactor": 2.0603290077816925,
+    "medDurS": 1119,
+    "meanDurS": 1249.4693521903096,
+    "medMi": 2.1
+   }
+  },
+  "kappaMeanDur": 1.549625965495267,
+  "kappaMedDur": 1.608087004064757,
+  "kappaMedMiles": 1.451847924493504
+ },
+ "ratios": {
+  "AM17": {
+   "1000": {
+    "avg": 35.714285714285715,
+    "sun": 31.89825,
+    "fri": 38.391666666666666,
+    "peakProxy_ourWindows": 51.104083443056446,
+    "peakProxy_w17": 55.79029189132421
+   },
+   "2000": {
+    "avg": 17.857142857142858,
+    "sun": 15.949125,
+    "fri": 19.195833333333333,
+    "peakProxy_ourWindows": 25.552041721528223,
+    "peakProxy_w17": 27.895145945662104
+   },
+   "3000": {
+    "avg": 11.904761904761905,
+    "sun": 10.63275,
+    "fri": 12.79722222222222,
+    "peakProxy_ourWindows": 17.034694481018814,
+    "peakProxy_w17": 18.596763963774738
+   }
+  },
+  "AM17_dayAvg": 428571.4285714286,
+  "AM17_per2hAvg": 35714.28571428572,
+  "AM17_per2h_ourWindowsProxy": 51104.08344305644,
+  "AM17_implied_13to15_proxy": 45359.29190587843,
+  "FA20": 9.805,
+  "FA20_requests": 19610,
+  "ours": {
+   "P512_62": 8.258064516129032,
+   "P256_42": 6.095238095238095,
+   "P128_32_round5": 4
+  }
+ },
+ "fleetPoints": {
+  "F_AMpk": 20,
+  "F_AM": 29,
+  "F_AM_sun_fri": [
+   32,
+   27
+  ],
+  "F_AM3k": 43,
+  "F_AM1k": 14,
+  "F_FA": 52,
+  "kappa": 1.549625965495267,
+  "F_AM3k_t": 67,
+  "F_AM_t": 44,
+  "F_FA_t": 81,
+  "kappaSensitivity": {
+   "1.4": {
+    "AM3k": 60,
+    "AM2k": 40,
+    "FA": 73
+   },
+   "1.5": {
+    "AM3k": 65,
+    "AM2k": 43,
+    "FA": 78
+   },
+   "1.6": {
+    "AM3k": 69,
+    "AM2k": 46,
+    "FA": 84
+   }
+  },
+  "oursInTaxiEquivalents": {
+   "P512_62": 12.796911198928656,
+   "P256_42": 9.445339218256866
+  }
+ },
+ "density": {
+  "areaKm2_used": 52.75,
+  "areaNote": "grid250 coverage of FleetPy nodes; same Manhattan for AM17/FA20/ours",
+  "AM17_2000": {
+   "vehPerKm2": 37.91469194312796,
+   "reqPerKm2PerH_avg": 338.5240352064997,
+   "reqPerKm2PerH_peakProxy": 484.3988951948478
+  },
+  "AM17_3000": {
+   "vehPerKm2": 56.872037914691944
+  },
+  "FA20": {
+   "vehPerKm2": 37.91469194312796,
+   "reqPerKm2PerH": 185.87677725118485
+  },
+  "ours_P512": {
+   "vehPerKm2": 1.1753554502369667,
+   "reqPerKm2PerH": 4.8530805687203795
+  },
+  "ours_P256": {
+   "vehPerKm2": 0.7962085308056872,
+   "reqPerKm2PerH": 2.4265402843601898
+  },
+  "ratio_AM17avg_to_P512_requests": 69.75446428571429,
+  "ratio_FA20_to_P512_requests": 38.30078125,
+  "ratio_AM17_2000_to_62_vehicles": 32.25806451612903
+ }
+}

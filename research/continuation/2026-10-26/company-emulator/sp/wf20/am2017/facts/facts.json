@@ -1,0 +1,2579 @@
+{
+ "label": "thăm dò sau kiểm toán (wf20/am2017 Step 1, facts only)",
+ "cells": {
+  "n": 120,
+  "serviceFields": {
+   "pickupWindowS": [
+    "600"
+   ],
+   "decisionTimerS": [
+    "600"
+   ],
+   "capacity": [
+    "4"
+   ],
+   "fileMaxRidePermille": [
+    "1500"
+   ],
+   "fleetWritten": [
+    "96"
+   ]
+  },
+  "rows": [
+   {
+    "cell": "2019-02-05-w08-r0",
+    "day": "2019-02-05",
+    "win": "w08",
+    "eligible": 5436,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 842,
+    "directMedS": 963.698,
+    "directMeanS": 1051.4171660156253,
+    "directSumH": 149.53488583333336,
+    "factorMinMax": [
+     1,
+     1.131585
+    ]
+   },
+   {
+    "cell": "2019-02-05-w17-r0",
+    "day": "2019-02-05",
+    "win": "w17",
+    "eligible": 5883,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 833,
+    "directMedS": 980.3235,
+    "directMeanS": 1087.6317714843756,
+    "directSumH": 154.68540750000008,
+    "factorMinMax": [
+     0.745506,
+     1.025798
+    ]
+   },
+   {
+    "cell": "2019-02-07-w08-r0",
+    "day": "2019-02-07",
+    "win": "w08",
+    "eligible": 5530,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 815,
+    "directMedS": 949.088,
+    "directMeanS": 1040.1493808593746,
+    "directSumH": 147.93235638888882,
+    "factorMinMax": [
+     1,
+     1.163848
+    ]
+   },
+   {
+    "cell": "2019-02-07-w17-r0",
+    "day": "2019-02-07",
+    "win": "w17",
+    "eligible": 6335,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 848,
+    "directMedS": 986.995,
+    "directMeanS": 1103.7776015624995,
+    "directSumH": 156.98170333333326,
+    "factorMinMax": [
+     0.818524,
+     1.025325
+    ]
+   },
+   {
+    "cell": "2019-02-11-w08-r0",
+    "day": "2019-02-11",
+    "win": "w08",
+    "eligible": 5486,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 831,
+    "directMedS": 907.835,
+    "directMeanS": 983.1556347656257,
+    "directSumH": 139.82657916666676,
+    "factorMinMax": [
+     1,
+     1.165424
+    ]
+   },
+   {
+    "cell": "2019-02-11-w17-r0",
+    "day": "2019-02-11",
+    "win": "w17",
+    "eligible": 6249,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 836,
+    "directMedS": 882.48,
+    "directMeanS": 967.5527890625008,
+    "directSumH": 137.6075077777779,
+    "factorMinMax": [
+     0.777566,
+     1.013978
+    ]
+   },
+   {
+    "cell": "2019-02-13-w08-r0",
+    "day": "2019-02-13",
+    "win": "w08",
+    "eligible": 5621,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 824,
+    "directMedS": 924.5,
+    "directMeanS": 1042.0425878906249,
+    "directSumH": 148.20161249999998,
+    "factorMinMax": [
+     1,
+     1.211951
+    ]
+   },
+   {
+    "cell": "2019-02-13-w17-r0",
+    "day": "2019-02-13",
+    "win": "w17",
+    "eligible": 6495,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 830,
+    "directMedS": 934.146,
+    "directMeanS": 1046.1468417968767,
+    "directSumH": 148.78532861111137,
+    "factorMinMax": [
+     0.811618,
+     1.034873
+    ]
+   },
+   {
+    "cell": "2019-02-15-w08-r0",
+    "day": "2019-02-15",
+    "win": "w08",
+    "eligible": 4851,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 819,
+    "directMedS": 881.2429999999999,
+    "directMeanS": 970.4941484375004,
+    "directSumH": 138.02583444444448,
+    "factorMinMax": [
+     1,
+     1.216492
+    ]
+   },
+   {
+    "cell": "2019-02-15-w17-r0",
+    "day": "2019-02-15",
+    "win": "w17",
+    "eligible": 4261,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 844,
+    "directMedS": 1037.05,
+    "directMeanS": 1170.450818359375,
+    "directSumH": 166.4641163888889,
+    "factorMinMax": [
+     0.819826,
+     1.00494
+    ]
+   },
+   {
+    "cell": "2019-02-25-w08-r0",
+    "day": "2019-02-25",
+    "win": "w08",
+    "eligible": 5079,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 853,
+    "directMedS": 979.328,
+    "directMeanS": 1099.7466894531256,
+    "directSumH": 156.40841805555564,
+    "factorMinMax": [
+     1,
+     1.081113
+    ]
+   },
+   {
+    "cell": "2019-02-25-w17-r0",
+    "day": "2019-02-25",
+    "win": "w17",
+    "eligible": 5956,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 844,
+    "directMedS": 845.7149999999999,
+    "directMeanS": 952.6675781250002,
+    "directSumH": 135.49050000000003,
+    "factorMinMax": [
+     0.789498,
+     1.005079
+    ]
+   },
+   {
+    "cell": "2019-03-01-w08-r0",
+    "day": "2019-03-01",
+    "win": "w08",
+    "eligible": 4856,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 837,
+    "directMedS": 850.235,
+    "directMeanS": 964.2661035156259,
+    "directSumH": 137.14006805555567,
+    "factorMinMax": [
+     1,
+     1.203227
+    ]
+   },
+   {
+    "cell": "2019-03-01-w17-r0",
+    "day": "2019-03-01",
+    "win": "w17",
+    "eligible": 5598,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 843,
+    "directMedS": 899.5709999999999,
+    "directMeanS": 1046.025013671874,
+    "directSumH": 148.76800194444428,
+    "factorMinMax": [
+     0.845545,
+     1.035651
+    ]
+   },
+   {
+    "cell": "2019-03-05-w08-r0",
+    "day": "2019-03-05",
+    "win": "w08",
+    "eligible": 5652,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 829,
+    "directMedS": 939.5595000000001,
+    "directMeanS": 1089.683042968749,
+    "directSumH": 154.97714388888875,
+    "factorMinMax": [
+     1,
+     1.142231
+    ]
+   },
+   {
+    "cell": "2019-03-05-w17-r0",
+    "day": "2019-03-05",
+    "win": "w17",
+    "eligible": 6385,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 843,
+    "directMedS": 943.713,
+    "directMeanS": 1068.1579824218766,
+    "directSumH": 151.91580194444467,
+    "factorMinMax": [
+     0.754243,
+     1.027194
+    ]
+   },
+   {
+    "cell": "2019-03-11-w08-r0",
+    "day": "2019-03-11",
+    "win": "w08",
+    "eligible": 4915,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 831,
+    "directMedS": 892.6255000000001,
+    "directMeanS": 1029.6445097656253,
+    "directSumH": 146.43833027777782,
+    "factorMinMax": [
+     1,
+     1.167957
+    ]
+   },
+   {
+    "cell": "2019-03-11-w17-r0",
+    "day": "2019-03-11",
+    "win": "w17",
+    "eligible": 5655,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 837,
+    "directMedS": 915.5015000000001,
+    "directMeanS": 1022.964935546874,
+    "directSumH": 145.48834638888874,
+    "factorMinMax": [
+     0.752457,
+     1.029414
+    ]
+   },
+   {
+    "cell": "2019-03-12-w08-r0",
+    "day": "2019-03-12",
+    "win": "w08",
+    "eligible": 5509,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 842,
+    "directMedS": 911.864,
+    "directMeanS": 1024.3108535156252,
+    "directSumH": 145.67976583333336,
+    "factorMinMax": [
+     1,
+     1.223383
+    ]
+   },
+   {
+    "cell": "2019-03-12-w17-r0",
+    "day": "2019-03-12",
+    "win": "w17",
+    "eligible": 5883,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 834,
+    "directMedS": 947.953,
+    "directMeanS": 1064.6678769531252,
+    "directSumH": 151.4194313888889,
+    "factorMinMax": [
+     0.766255,
+     1.002562
+    ]
+   },
+   {
+    "cell": "2019-03-13-w08-r0",
+    "day": "2019-03-13",
+    "win": "w08",
+    "eligible": 5488,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 836,
+    "directMedS": 907.046,
+    "directMeanS": 1020.3321992187492,
+    "directSumH": 145.11391277777767,
+    "factorMinMax": [
+     1,
+     1.186358
+    ]
+   },
+   {
+    "cell": "2019-03-13-w17-r0",
+    "day": "2019-03-13",
+    "win": "w17",
+    "eligible": 6131,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 854,
+    "directMedS": 920.822,
+    "directMeanS": 1049.162951171875,
+    "directSumH": 149.2142863888889,
+    "factorMinMax": [
+     0.778742,
+     1.026807
+    ]
+   },
+   {
+    "cell": "2019-03-21-w08-r0",
+    "day": "2019-03-21",
+    "win": "w08",
+    "eligible": 5376,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 846,
+    "directMedS": 899.9984999999999,
+    "directMeanS": 1004.0638476562506,
+    "directSumH": 142.80019166666673,
+    "factorMinMax": [
+     1,
+     1.292002
+    ]
+   },
+   {
+    "cell": "2019-03-21-w17-r0",
+    "day": "2019-03-21",
+    "win": "w17",
+    "eligible": 5365,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 844,
+    "directMedS": 1071.176,
+    "directMeanS": 1223.4576054687468,
+    "directSumH": 174.002859444444,
+    "factorMinMax": [
+     0.743762,
+     1.001328
+    ]
+   },
+   {
+    "cell": "2019-04-03-w08-r0",
+    "day": "2019-04-03",
+    "win": "w08",
+    "eligible": 5264,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 836,
+    "directMedS": 949.0735,
+    "directMeanS": 1057.6746601562506,
+    "directSumH": 150.42484055555565,
+    "factorMinMax": [
+     1,
+     1.16291
+    ]
+   },
+   {
+    "cell": "2019-04-03-w17-r0",
+    "day": "2019-04-03",
+    "win": "w17",
+    "eligible": 5634,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 848,
+    "directMedS": 1069.657,
+    "directMeanS": 1160.3274238281258,
+    "directSumH": 165.02434472222234,
+    "factorMinMax": [
+     0.759622,
+     1.011911
+    ]
+   },
+   {
+    "cell": "2019-04-05-w08-r0",
+    "day": "2019-04-05",
+    "win": "w08",
+    "eligible": 4831,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 847,
+    "directMedS": 953.048,
+    "directMeanS": 1091.4835624999992,
+    "directSumH": 155.23321777777767,
+    "factorMinMax": [
+     1,
+     1.296697
+    ]
+   },
+   {
+    "cell": "2019-04-05-w17-r0",
+    "day": "2019-04-05",
+    "win": "w17",
+    "eligible": 4784,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 847,
+    "directMedS": 1082.2069999999999,
+    "directMeanS": 1183.1187656249995,
+    "directSumH": 168.26577999999992,
+    "factorMinMax": [
+     0.785928,
+     1.00887
+    ]
+   },
+   {
+    "cell": "2019-04-08-w08-r0",
+    "day": "2019-04-08",
+    "win": "w08",
+    "eligible": 4871,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 849,
+    "directMedS": 808.513,
+    "directMeanS": 958.8035234375005,
+    "directSumH": 136.36316777777785,
+    "factorMinMax": [
+     1,
+     1.141517
+    ]
+   },
+   {
+    "cell": "2019-04-08-w17-r0",
+    "day": "2019-04-08",
+    "win": "w17",
+    "eligible": 5253,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 840,
+    "directMedS": 847.168,
+    "directMeanS": 985.4264765624987,
+    "directSumH": 140.14954333333316,
+    "factorMinMax": [
+     0.812225,
+     1.025181
+    ]
+   },
+   {
+    "cell": "2019-04-11-w08-r0",
+    "day": "2019-04-11",
+    "win": "w08",
+    "eligible": 5172,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 837,
+    "directMedS": 960.324,
+    "directMeanS": 1102.3965585937503,
+    "directSumH": 156.78528833333337,
+    "factorMinMax": [
+     1,
+     1.171915
+    ]
+   },
+   {
+    "cell": "2019-04-11-w17-r0",
+    "day": "2019-04-11",
+    "win": "w17",
+    "eligible": 5708,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 841,
+    "directMedS": 968.368,
+    "directMeanS": 1085.5996757812497,
+    "directSumH": 154.3963983333333,
+    "factorMinMax": [
+     0.811249,
+     1.015307
+    ]
+   },
+   {
+    "cell": "2019-04-23-w08-r0",
+    "day": "2019-04-23",
+    "win": "w08",
+    "eligible": 4766,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 841,
+    "directMedS": 867.8395,
+    "directMeanS": 997.3911816406251,
+    "directSumH": 141.8511902777778,
+    "factorMinMax": [
+     1,
+     1.182667
+    ]
+   },
+   {
+    "cell": "2019-04-23-w17-r0",
+    "day": "2019-04-23",
+    "win": "w17",
+    "eligible": 4899,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 859,
+    "directMedS": 967.736,
+    "directMeanS": 1086.0176191406247,
+    "directSumH": 154.4558391666666,
+    "factorMinMax": [
+     0.755934,
+     1.00905
+    ]
+   },
+   {
+    "cell": "2019-04-24-w08-r0",
+    "day": "2019-04-24",
+    "win": "w08",
+    "eligible": 4524,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 837,
+    "directMedS": 912.407,
+    "directMeanS": 1011.4852656250002,
+    "directSumH": 143.85568222222224,
+    "factorMinMax": [
+     1,
+     1.22849
+    ]
+   },
+   {
+    "cell": "2019-04-24-w17-r0",
+    "day": "2019-04-24",
+    "win": "w17",
+    "eligible": 4809,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 875,
+    "directMedS": 1012.3795,
+    "directMeanS": 1147.165482421875,
+    "directSumH": 163.15242416666666,
+    "factorMinMax": [
+     0.748107,
+     1.008201
+    ]
+   },
+   {
+    "cell": "2019-05-01-w08-r0",
+    "day": "2019-05-01",
+    "win": "w08",
+    "eligible": 5113,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 851,
+    "directMedS": 973.2265,
+    "directMeanS": 1067.0940859375005,
+    "directSumH": 151.7644922222223,
+    "factorMinMax": [
+     1,
+     1.238328
+    ]
+   },
+   {
+    "cell": "2019-05-01-w17-r0",
+    "day": "2019-05-01",
+    "win": "w17",
+    "eligible": 5419,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 834,
+    "directMedS": 1065.0715,
+    "directMeanS": 1216.366839843751,
+    "directSumH": 172.99439500000014,
+    "factorMinMax": [
+     0.750257,
+     1.002885
+    ]
+   },
+   {
+    "cell": "2019-05-02-w08-r0",
+    "day": "2019-05-02",
+    "win": "w08",
+    "eligible": 5002,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 832,
+    "directMedS": 920.838,
+    "directMeanS": 1042.4734589843747,
+    "directSumH": 148.2628919444444,
+    "factorMinMax": [
+     1,
+     1.227123
+    ]
+   },
+   {
+    "cell": "2019-05-02-w17-r0",
+    "day": "2019-05-02",
+    "win": "w17",
+    "eligible": 5380,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 848,
+    "directMedS": 1132.774,
+    "directMeanS": 1297.5415664062507,
+    "directSumH": 184.5392450000001,
+    "factorMinMax": [
+     0.799322,
+     1
+    ]
+   },
+   {
+    "cell": "2019-05-09-w08-r0",
+    "day": "2019-05-09",
+    "win": "w08",
+    "eligible": 5035,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 824,
+    "directMedS": 985.307,
+    "directMeanS": 1145.99655859375,
+    "directSumH": 162.98617722222224,
+    "factorMinMax": [
+     1,
+     1.229293
+    ]
+   },
+   {
+    "cell": "2019-05-09-w17-r0",
+    "day": "2019-05-09",
+    "win": "w17",
+    "eligible": 5822,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 846,
+    "directMedS": 1039.186,
+    "directMeanS": 1251.34949609375,
+    "directSumH": 177.96970611111112,
+    "factorMinMax": [
+     0.720144,
+     1.00495
+    ]
+   },
+   {
+    "cell": "2019-05-10-w08-r0",
+    "day": "2019-05-10",
+    "win": "w08",
+    "eligible": 4713,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 826,
+    "directMedS": 930.0805,
+    "directMeanS": 1087.046384765625,
+    "directSumH": 154.6021525,
+    "factorMinMax": [
+     1,
+     1.214923
+    ]
+   },
+   {
+    "cell": "2019-05-10-w17-r0",
+    "day": "2019-05-10",
+    "win": "w17",
+    "eligible": 4856,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 854,
+    "directMedS": 1073.2995,
+    "directMeanS": 1254.5074218750005,
+    "directSumH": 178.41883333333342,
+    "factorMinMax": [
+     0.725568,
+     1
+    ]
+   },
+   {
+    "cell": "2019-05-13-w08-r0",
+    "day": "2019-05-13",
+    "win": "w08",
+    "eligible": 4635,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 825,
+    "directMedS": 914.4625,
+    "directMeanS": 1038.7026875000008,
+    "directSumH": 147.72660444444455,
+    "factorMinMax": [
+     1,
+     1.233508
+    ]
+   },
+   {
+    "cell": "2019-05-13-w17-r0",
+    "day": "2019-05-13",
+    "win": "w17",
+    "eligible": 5225,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 839,
+    "directMedS": 1123.157,
+    "directMeanS": 1249.5879296875007,
+    "directSumH": 177.7191722222223,
+    "factorMinMax": [
+     0.619043,
+     1.011304
+    ]
+   },
+   {
+    "cell": "2019-05-21-w08-r0",
+    "day": "2019-05-21",
+    "win": "w08",
+    "eligible": 4630,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 832,
+    "directMedS": 898.881,
+    "directMeanS": 1038.8966386718755,
+    "directSumH": 147.75418861111118,
+    "factorMinMax": [
+     1,
+     1.283524
+    ]
+   },
+   {
+    "cell": "2019-05-21-w17-r0",
+    "day": "2019-05-21",
+    "win": "w17",
+    "eligible": 5044,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 844,
+    "directMedS": 1122.664,
+    "directMeanS": 1271.0406855468748,
+    "directSumH": 180.7702308333333,
+    "factorMinMax": [
+     0.658287,
+     1.01522
+    ]
+   },
+   {
+    "cell": "2019-06-04-w08-r0",
+    "day": "2019-06-04",
+    "win": "w08",
+    "eligible": 4372,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 848,
+    "directMedS": 801.5509999999999,
+    "directMeanS": 903.9134179687497,
+    "directSumH": 128.55657499999995,
+    "factorMinMax": [
+     1,
+     1.228279
+    ]
+   },
+   {
+    "cell": "2019-06-04-w17-r0",
+    "day": "2019-06-04",
+    "win": "w17",
+    "eligible": 4808,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 859,
+    "directMedS": 813.75,
+    "directMeanS": 953.6582421875002,
+    "directSumH": 135.63139444444445,
+    "factorMinMax": [
+     0.775329,
+     1
+    ]
+   },
+   {
+    "cell": "2019-06-07-w08-r0",
+    "day": "2019-06-07",
+    "win": "w08",
+    "eligible": 4127,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 833,
+    "directMedS": 922.636,
+    "directMeanS": 1037.1549570312504,
+    "directSumH": 147.50648277777785,
+    "factorMinMax": [
+     1,
+     1.302033
+    ]
+   },
+   {
+    "cell": "2019-06-07-w17-r0",
+    "day": "2019-06-07",
+    "win": "w17",
+    "eligible": 3927,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 871,
+    "directMedS": 1084.7975000000001,
+    "directMeanS": 1211.618394531249,
+    "directSumH": 172.3190605555554,
+    "factorMinMax": [
+     0.796165,
+     1.002796
+    ]
+   },
+   {
+    "cell": "2019-06-17-w08-r0",
+    "day": "2019-06-17",
+    "win": "w08",
+    "eligible": 4600,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 839,
+    "directMedS": 819.988,
+    "directMeanS": 926.5397832031241,
+    "directSumH": 131.77454694444432,
+    "factorMinMax": [
+     1,
+     1.195878
+    ]
+   },
+   {
+    "cell": "2019-06-17-w17-r0",
+    "day": "2019-06-17",
+    "win": "w17",
+    "eligible": 4848,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 870,
+    "directMedS": 986.7535,
+    "directMeanS": 1097.8854374999992,
+    "directSumH": 156.14370666666656,
+    "factorMinMax": [
+     0.760501,
+     1.033241
+    ]
+   },
+   {
+    "cell": "2019-06-20-w08-r0",
+    "day": "2019-06-20",
+    "win": "w08",
+    "eligible": 4783,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 834,
+    "directMedS": 847.9665,
+    "directMeanS": 975.2989609374998,
+    "directSumH": 138.70918555555554,
+    "factorMinMax": [
+     1,
+     1.249205
+    ]
+   },
+   {
+    "cell": "2019-06-20-w17-r0",
+    "day": "2019-06-20",
+    "win": "w17",
+    "eligible": 4363,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 854,
+    "directMedS": 1317.1115,
+    "directMeanS": 1458.3762968749995,
+    "directSumH": 207.4135177777777,
+    "factorMinMax": [
+     0.697347,
+     1
+    ]
+   },
+   {
+    "cell": "2019-06-21-w08-r0",
+    "day": "2019-06-21",
+    "win": "w08",
+    "eligible": 4553,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 831,
+    "directMedS": 850.0374999999999,
+    "directMeanS": 970.7386640624998,
+    "directSumH": 138.06060999999997,
+    "factorMinMax": [
+     1,
+     1.288259
+    ]
+   },
+   {
+    "cell": "2019-06-21-w17-r0",
+    "day": "2019-06-21",
+    "win": "w17",
+    "eligible": 3749,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 874,
+    "directMedS": 1093.213,
+    "directMeanS": 1201.0176445312497,
+    "directSumH": 170.8113983333333,
+    "factorMinMax": [
+     0.793435,
+     1.000486
+    ]
+   },
+   {
+    "cell": "2019-06-26-w08-r0",
+    "day": "2019-06-26",
+    "win": "w08",
+    "eligible": 4603,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 829,
+    "directMedS": 869.6034999999999,
+    "directMeanS": 1012.44609765625,
+    "directSumH": 143.99233388888888,
+    "factorMinMax": [
+     1,
+     1.326958
+    ]
+   },
+   {
+    "cell": "2019-06-26-w17-r0",
+    "day": "2019-06-26",
+    "win": "w17",
+    "eligible": 4313,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 855,
+    "directMedS": 1204.0585,
+    "directMeanS": 1321.1277011718746,
+    "directSumH": 187.89371749999995,
+    "factorMinMax": [
+     0.724583,
+     1.012518
+    ]
+   },
+   {
+    "cell": "2019-07-03-w08-r0",
+    "day": "2019-07-03",
+    "win": "w08",
+    "eligible": 3942,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 820,
+    "directMedS": 795.3430000000001,
+    "directMeanS": 908.9749707031245,
+    "directSumH": 129.2764402777777,
+    "factorMinMax": [
+     1,
+     1.219656
+    ]
+   },
+   {
+    "cell": "2019-07-03-w17-r0",
+    "day": "2019-07-03",
+    "win": "w17",
+    "eligible": 2610,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 846,
+    "directMedS": 1183.2815,
+    "directMeanS": 1310.5049335937501,
+    "directSumH": 186.3829238888889,
+    "factorMinMax": [
+     0.706512,
+     1.00237
+    ]
+   },
+   {
+    "cell": "2019-07-08-w08-r0",
+    "day": "2019-07-08",
+    "win": "w08",
+    "eligible": 4468,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 827,
+    "directMedS": 897.4295,
+    "directMeanS": 1025.458371093749,
+    "directSumH": 145.8429683333332,
+    "factorMinMax": [
+     1,
+     1.136686
+    ]
+   },
+   {
+    "cell": "2019-07-08-w17-r0",
+    "day": "2019-07-08",
+    "win": "w17",
+    "eligible": 4244,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 840,
+    "directMedS": 969.777,
+    "directMeanS": 1070.7275273437506,
+    "directSumH": 152.28124833333342,
+    "factorMinMax": [
+     0.762764,
+     1
+    ]
+   },
+   {
+    "cell": "2019-07-12-w08-r0",
+    "day": "2019-07-12",
+    "win": "w08",
+    "eligible": 4152,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 831,
+    "directMedS": 876.609,
+    "directMeanS": 989.6038281249997,
+    "directSumH": 140.7436555555555,
+    "factorMinMax": [
+     1,
+     1.220715
+    ]
+   },
+   {
+    "cell": "2019-07-12-w17-r0",
+    "day": "2019-07-12",
+    "win": "w17",
+    "eligible": 3284,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 855,
+    "directMedS": 1100.408,
+    "directMeanS": 1257.0551171874997,
+    "directSumH": 178.78117222222218,
+    "factorMinMax": [
+     0.787854,
+     1
+    ]
+   },
+   {
+    "cell": "2019-07-18-w08-r0",
+    "day": "2019-07-18",
+    "win": "w08",
+    "eligible": 4870,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 828,
+    "directMedS": 926.603,
+    "directMeanS": 1064.9155839843745,
+    "directSumH": 151.45466083333326,
+    "factorMinMax": [
+     1,
+     1.358868
+    ]
+   },
+   {
+    "cell": "2019-07-18-w17-r0",
+    "day": "2019-07-18",
+    "win": "w17",
+    "eligible": 4430,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 859,
+    "directMedS": 1152.926,
+    "directMeanS": 1270.602992187499,
+    "directSumH": 180.70798111111097,
+    "factorMinMax": [
+     0.799413,
+     1.024315
+    ]
+   },
+   {
+    "cell": "2019-07-22-w08-r0",
+    "day": "2019-07-22",
+    "win": "w08",
+    "eligible": 4372,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 833,
+    "directMedS": 857.0065,
+    "directMeanS": 964.7830195312504,
+    "directSumH": 137.21358500000005,
+    "factorMinMax": [
+     1,
+     1.194127
+    ]
+   },
+   {
+    "cell": "2019-07-22-w17-r0",
+    "day": "2019-07-22",
+    "win": "w17",
+    "eligible": 4923,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 838,
+    "directMedS": 1033.281,
+    "directMeanS": 1151.4464667968753,
+    "directSumH": 163.76127527777783,
+    "factorMinMax": [
+     0.73795,
+     1.053239
+    ]
+   },
+   {
+    "cell": "2019-07-30-w08-r0",
+    "day": "2019-07-30",
+    "win": "w08",
+    "eligible": 4705,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 825,
+    "directMedS": 901.972,
+    "directMeanS": 1009.3062285156238,
+    "directSumH": 143.54577472222206,
+    "factorMinMax": [
+     1,
+     1.254804
+    ]
+   },
+   {
+    "cell": "2019-07-30-w17-r0",
+    "day": "2019-07-30",
+    "win": "w17",
+    "eligible": 4431,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 847,
+    "directMedS": 1101.473,
+    "directMeanS": 1268.6132871093737,
+    "directSumH": 180.42500083333314,
+    "factorMinMax": [
+     0.693993,
+     1.011705
+    ]
+   },
+   {
+    "cell": "2019-08-14-w08-r0",
+    "day": "2019-08-14",
+    "win": "w08",
+    "eligible": 4491,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 846,
+    "directMedS": 814.691,
+    "directMeanS": 904.0372070312501,
+    "directSumH": 128.57418055555556,
+    "factorMinMax": [
+     1,
+     1.222995
+    ]
+   },
+   {
+    "cell": "2019-08-14-w17-r0",
+    "day": "2019-08-14",
+    "win": "w17",
+    "eligible": 4303,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 828,
+    "directMedS": 1022.066,
+    "directMeanS": 1170.4958066406248,
+    "directSumH": 166.4705147222222,
+    "factorMinMax": [
+     0.71217,
+     1
+    ]
+   },
+   {
+    "cell": "2019-08-20-w08-r0",
+    "day": "2019-08-20",
+    "win": "w08",
+    "eligible": 4321,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 829,
+    "directMedS": 847.419,
+    "directMeanS": 938.9382988281254,
+    "directSumH": 133.53789138888894,
+    "factorMinMax": [
+     1,
+     1.209796
+    ]
+   },
+   {
+    "cell": "2019-08-20-w17-r0",
+    "day": "2019-08-20",
+    "win": "w17",
+    "eligible": 4282,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 840,
+    "directMedS": 928.57,
+    "directMeanS": 1057.076759765626,
+    "directSumH": 150.3398058333335,
+    "factorMinMax": [
+     0.774852,
+     1.015598
+    ]
+   },
+   {
+    "cell": "2019-08-26-w08-r0",
+    "day": "2019-08-26",
+    "win": "w08",
+    "eligible": 3792,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 831,
+    "directMedS": 847.1375,
+    "directMeanS": 936.0253359375002,
+    "directSumH": 133.12360333333336,
+    "factorMinMax": [
+     1,
+     1.185223
+    ]
+   },
+   {
+    "cell": "2019-08-26-w17-r0",
+    "day": "2019-08-26",
+    "win": "w17",
+    "eligible": 3760,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 853,
+    "directMedS": 876.874,
+    "directMeanS": 989.8706660156245,
+    "directSumH": 140.78160583333326,
+    "factorMinMax": [
+     0.816957,
+     1.011281
+    ]
+   },
+   {
+    "cell": "2019-08-27-w08-r0",
+    "day": "2019-08-27",
+    "win": "w08",
+    "eligible": 3970,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 815,
+    "directMedS": 812.797,
+    "directMeanS": 910.4353300781252,
+    "directSumH": 129.48413583333337,
+    "factorMinMax": [
+     1,
+     1.261316
+    ]
+   },
+   {
+    "cell": "2019-08-27-w17-r0",
+    "day": "2019-08-27",
+    "win": "w17",
+    "eligible": 3922,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 839,
+    "directMedS": 934.678,
+    "directMeanS": 1042.991974609375,
+    "directSumH": 148.33663638888888,
+    "factorMinMax": [
+     0.776752,
+     1.009531
+    ]
+   },
+   {
+    "cell": "2019-08-29-w08-r0",
+    "day": "2019-08-29",
+    "win": "w08",
+    "eligible": 3860,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 851,
+    "directMedS": 798.5485,
+    "directMeanS": 907.6452988281247,
+    "directSumH": 129.08733138888886,
+    "factorMinMax": [
+     1,
+     1.267571
+    ]
+   },
+   {
+    "cell": "2019-08-29-w17-r0",
+    "day": "2019-08-29",
+    "win": "w17",
+    "eligible": 3645,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 846,
+    "directMedS": 953.739,
+    "directMeanS": 1092.4679355468743,
+    "directSumH": 155.3732174999999,
+    "factorMinMax": [
+     0.779912,
+     1
+    ]
+   },
+   {
+    "cell": "2019-08-30-w08-r0",
+    "day": "2019-08-30",
+    "win": "w08",
+    "eligible": 2974,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 857,
+    "directMedS": 753.629,
+    "directMeanS": 859.1843066406257,
+    "directSumH": 122.19510138888899,
+    "factorMinMax": [
+     1,
+     1.217514
+    ]
+   },
+   {
+    "cell": "2019-08-30-w17-r0",
+    "day": "2019-08-30",
+    "win": "w17",
+    "eligible": 2538,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 860,
+    "directMedS": 842.0195,
+    "directMeanS": 966.7248437499989,
+    "directSumH": 137.4897555555554,
+    "factorMinMax": [
+     0.900914,
+     1
+    ]
+   },
+   {
+    "cell": "2019-09-04-w08-r0",
+    "day": "2019-09-04",
+    "win": "w08",
+    "eligible": 4721,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 825,
+    "directMedS": 924.636,
+    "directMeanS": 1036.1710117187497,
+    "directSumH": 147.36654388888886,
+    "factorMinMax": [
+     1,
+     1.286037
+    ]
+   },
+   {
+    "cell": "2019-09-04-w17-r0",
+    "day": "2019-09-04",
+    "win": "w17",
+    "eligible": 4627,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 865,
+    "directMedS": 1015.6675,
+    "directMeanS": 1168.3667460937502,
+    "directSumH": 166.16771500000002,
+    "factorMinMax": [
+     0.73596,
+     1.037922
+    ]
+   },
+   {
+    "cell": "2019-09-09-w08-r0",
+    "day": "2019-09-09",
+    "win": "w08",
+    "eligible": 4024,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 848,
+    "directMedS": 913.367,
+    "directMeanS": 1064.7596582031244,
+    "directSumH": 151.43248472222214,
+    "factorMinMax": [
+     1,
+     1.208932
+    ]
+   },
+   {
+    "cell": "2019-09-09-w17-r0",
+    "day": "2019-09-09",
+    "win": "w17",
+    "eligible": 4340,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 840,
+    "directMedS": 945.5564999999999,
+    "directMeanS": 1081.532187499999,
+    "directSumH": 153.817911111111,
+    "factorMinMax": [
+     0.772301,
+     1.045667
+    ]
+   },
+   {
+    "cell": "2019-09-13-w08-r0",
+    "day": "2019-09-13",
+    "win": "w08",
+    "eligible": 3968,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 841,
+    "directMedS": 918.749,
+    "directMeanS": 1063.1460390625004,
+    "directSumH": 151.2029922222223,
+    "factorMinMax": [
+     1,
+     1.23109
+    ]
+   },
+   {
+    "cell": "2019-09-13-w17-r0",
+    "day": "2019-09-13",
+    "win": "w17",
+    "eligible": 4087,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 855,
+    "directMedS": 1119.459,
+    "directMeanS": 1240.2408359375008,
+    "directSumH": 176.3898077777779,
+    "factorMinMax": [
+     0.804982,
+     1
+    ]
+   },
+   {
+    "cell": "2019-09-18-w08-r0",
+    "day": "2019-09-18",
+    "win": "w08",
+    "eligible": 4407,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 844,
+    "directMedS": 956.619,
+    "directMeanS": 1077.1789609375007,
+    "directSumH": 153.19878555555567,
+    "factorMinMax": [
+     1,
+     1.217202
+    ]
+   },
+   {
+    "cell": "2019-09-18-w17-r0",
+    "day": "2019-09-18",
+    "win": "w17",
+    "eligible": 4773,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 822,
+    "directMedS": 1172.728,
+    "directMeanS": 1296.0170039062498,
+    "directSumH": 184.3224183333333,
+    "factorMinMax": [
+     0.726772,
+     1
+    ]
+   },
+   {
+    "cell": "2019-09-19-w08-r0",
+    "day": "2019-09-19",
+    "win": "w08",
+    "eligible": 4349,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 850,
+    "directMedS": 971.463,
+    "directMeanS": 1071.4002773437496,
+    "directSumH": 152.37692833333327,
+    "factorMinMax": [
+     1,
+     1.257483
+    ]
+   },
+   {
+    "cell": "2019-09-19-w17-r0",
+    "day": "2019-09-19",
+    "win": "w17",
+    "eligible": 4550,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 841,
+    "directMedS": 1129.864,
+    "directMeanS": 1243.597880859376,
+    "directSumH": 176.86725416666678,
+    "factorMinMax": [
+     0.747984,
+     1.009833
+    ]
+   },
+   {
+    "cell": "2019-09-24-w08-r0",
+    "day": "2019-09-24",
+    "win": "w08",
+    "eligible": 3453,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 855,
+    "directMedS": 1075.9285,
+    "directMeanS": 1219.3113066406231,
+    "directSumH": 173.41316361111083,
+    "factorMinMax": [
+     1,
+     1.151155
+    ]
+   },
+   {
+    "cell": "2019-09-24-w17-r0",
+    "day": "2019-09-24",
+    "win": "w17",
+    "eligible": 3867,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 842,
+    "directMedS": 1153.498,
+    "directMeanS": 1261.1175078125004,
+    "directSumH": 179.35893444444451,
+    "factorMinMax": [
+     0.762127,
+     1.007572
+    ]
+   },
+   {
+    "cell": "2019-10-03-w08-r0",
+    "day": "2019-10-03",
+    "win": "w08",
+    "eligible": 4421,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 855,
+    "directMedS": 920.966,
+    "directMeanS": 1081.1146914062492,
+    "directSumH": 153.7585338888888,
+    "factorMinMax": [
+     1,
+     1.276487
+    ]
+   },
+   {
+    "cell": "2019-10-03-w17-r0",
+    "day": "2019-10-03",
+    "win": "w17",
+    "eligible": 4721,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 843,
+    "directMedS": 1196.062,
+    "directMeanS": 1310.7924042968757,
+    "directSumH": 186.4238086111112,
+    "factorMinMax": [
+     0.709619,
+     1.005094
+    ]
+   },
+   {
+    "cell": "2019-10-07-w08-r0",
+    "day": "2019-10-07",
+    "win": "w08",
+    "eligible": 4047,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 849,
+    "directMedS": 855.5375,
+    "directMeanS": 990.7760585937497,
+    "directSumH": 140.91037277777772,
+    "factorMinMax": [
+     1,
+     1.168998
+    ]
+   },
+   {
+    "cell": "2019-10-07-w17-r0",
+    "day": "2019-10-07",
+    "win": "w17",
+    "eligible": 4644,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 823,
+    "directMedS": 955.7815,
+    "directMeanS": 1041.054394531251,
+    "directSumH": 148.0610694444446,
+    "factorMinMax": [
+     0.835677,
+     1.022013
+    ]
+   },
+   {
+    "cell": "2019-10-09-w08-r0",
+    "day": "2019-10-09",
+    "win": "w08",
+    "eligible": 3487,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 834,
+    "directMedS": 770.373,
+    "directMeanS": 877.7585410156236,
+    "directSumH": 124.83677027777757,
+    "factorMinMax": [
+     1,
+     1.380933
+    ]
+   },
+   {
+    "cell": "2019-10-09-w17-r0",
+    "day": "2019-10-09",
+    "win": "w17",
+    "eligible": 3901,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 854,
+    "directMedS": 981.2875,
+    "directMeanS": 1040.9320781249992,
+    "directSumH": 148.0436733333332,
+    "factorMinMax": [
+     0.830894,
+     1.00485
+    ]
+   },
+   {
+    "cell": "2019-10-15-w08-r0",
+    "day": "2019-10-15",
+    "win": "w08",
+    "eligible": 4056,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 845,
+    "directMedS": 905.696,
+    "directMeanS": 1045.739521484375,
+    "directSumH": 148.7273986111111,
+    "factorMinMax": [
+     1,
+     1.210698
+    ]
+   },
+   {
+    "cell": "2019-10-15-w17-r0",
+    "day": "2019-10-15",
+    "win": "w17",
+    "eligible": 4299,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 850,
+    "directMedS": 991.961,
+    "directMeanS": 1113.3545039062512,
+    "directSumH": 158.34375166666683,
+    "factorMinMax": [
+     0.784254,
+     1.014751
+    ]
+   },
+   {
+    "cell": "2019-10-18-w08-r0",
+    "day": "2019-10-18",
+    "win": "w08",
+    "eligible": 3906,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 838,
+    "directMedS": 904.218,
+    "directMeanS": 1009.4168691406253,
+    "directSumH": 143.5615102777778,
+    "factorMinMax": [
+     1,
+     1.269605
+    ]
+   },
+   {
+    "cell": "2019-10-18-w17-r0",
+    "day": "2019-10-18",
+    "win": "w17",
+    "eligible": 4055,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 855,
+    "directMedS": 1091.907,
+    "directMeanS": 1256.2143984374995,
+    "directSumH": 178.66160333333326,
+    "factorMinMax": [
+     0.771587,
+     1.003086
+    ]
+   },
+   {
+    "cell": "2019-10-24-w08-r0",
+    "day": "2019-10-24",
+    "win": "w08",
+    "eligible": 4154,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 826,
+    "directMedS": 960.425,
+    "directMeanS": 1081.8468007812507,
+    "directSumH": 153.86265611111122,
+    "factorMinMax": [
+     1,
+     1.220918
+    ]
+   },
+   {
+    "cell": "2019-10-24-w17-r0",
+    "day": "2019-10-24",
+    "win": "w17",
+    "eligible": 4495,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 836,
+    "directMedS": 1194.9409999999998,
+    "directMeanS": 1354.6632890625008,
+    "directSumH": 192.66322333333343,
+    "factorMinMax": [
+     0.72872,
+     1.004017
+    ]
+   },
+   {
+    "cell": "2019-12-05-w08-r0",
+    "day": "2019-12-05",
+    "win": "w08",
+    "eligible": 4343,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 837,
+    "directMedS": 940.548,
+    "directMeanS": 1057.4861503906238,
+    "directSumH": 150.39803027777762,
+    "factorMinMax": [
+     1,
+     1.251891
+    ]
+   },
+   {
+    "cell": "2019-12-05-w17-r0",
+    "day": "2019-12-05",
+    "win": "w17",
+    "eligible": 4647,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 849,
+    "directMedS": 1242.648,
+    "directMeanS": 1363.751083984379,
+    "directSumH": 193.9557097222228,
+    "factorMinMax": [
+     0.808238,
+     1.015925
+    ]
+   },
+   {
+    "cell": "2019-12-09-w08-r0",
+    "day": "2019-12-09",
+    "win": "w08",
+    "eligible": 4258,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 824,
+    "directMedS": 897.1725,
+    "directMeanS": 1006.2437929687507,
+    "directSumH": 143.11022833333342,
+    "factorMinMax": [
+     1,
+     1.197228
+    ]
+   },
+   {
+    "cell": "2019-12-09-w17-r0",
+    "day": "2019-12-09",
+    "win": "w17",
+    "eligible": 4583,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 831,
+    "directMedS": 1201.5720000000001,
+    "directMeanS": 1334.4060859374986,
+    "directSumH": 189.78219888888867,
+    "factorMinMax": [
+     0.659216,
+     1.012735
+    ]
+   },
+   {
+    "cell": "2019-12-10-w08-r0",
+    "day": "2019-12-10",
+    "win": "w08",
+    "eligible": 3991,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 839,
+    "directMedS": 943.956,
+    "directMeanS": 1085.4732753906246,
+    "directSumH": 154.37842138888882,
+    "factorMinMax": [
+     1,
+     1.2527
+    ]
+   },
+   {
+    "cell": "2019-12-10-w17-r0",
+    "day": "2019-12-10",
+    "win": "w17",
+    "eligible": 4682,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 835,
+    "directMedS": 1292.8185,
+    "directMeanS": 1424.2020351562503,
+    "directSumH": 202.55317833333336,
+    "factorMinMax": [
+     0.704494,
+     1.006327
+    ]
+   },
+   {
+    "cell": "2019-12-13-w08-r0",
+    "day": "2019-12-13",
+    "win": "w08",
+    "eligible": 3688,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 834,
+    "directMedS": 946.8135,
+    "directMeanS": 1020.3078710937497,
+    "directSumH": 145.11045277777774,
+    "factorMinMax": [
+     1,
+     1.380353
+    ]
+   },
+   {
+    "cell": "2019-12-13-w17-r0",
+    "day": "2019-12-13",
+    "win": "w17",
+    "eligible": 4273,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 858,
+    "directMedS": 1388.34,
+    "directMeanS": 1497.1552832031255,
+    "directSumH": 212.92875138888894,
+    "factorMinMax": [
+     0.833988,
+     1
+    ]
+   },
+   {
+    "cell": "2019-12-16-w08-r0",
+    "day": "2019-12-16",
+    "win": "w08",
+    "eligible": 3705,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 827,
+    "directMedS": 969.2750000000001,
+    "directMeanS": 1071.83553515625,
+    "directSumH": 152.43883166666666,
+    "factorMinMax": [
+     1,
+     1.265771
+    ]
+   },
+   {
+    "cell": "2019-12-16-w17-r0",
+    "day": "2019-12-16",
+    "win": "w17",
+    "eligible": 4335,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 838,
+    "directMedS": 1020.7365,
+    "directMeanS": 1147.3760664062504,
+    "directSumH": 163.18237388888895,
+    "factorMinMax": [
+     0.773749,
+     1.019007
+    ]
+   },
+   {
+    "cell": "2019-12-18-w08-r0",
+    "day": "2019-12-18",
+    "win": "w08",
+    "eligible": 4051,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 832,
+    "directMedS": 859.495,
+    "directMeanS": 973.0459902343754,
+    "directSumH": 138.38876305555561,
+    "factorMinMax": [
+     1,
+     1.320566
+    ]
+   },
+   {
+    "cell": "2019-12-18-w17-r0",
+    "day": "2019-12-18",
+    "win": "w17",
+    "eligible": 4202,
+    "fleetWritten": 96,
+    "pickupWindowS": 600,
+    "decisionTimerS": 600,
+    "capacity": 4,
+    "fileMaxRidePermille": 1500,
+    "nodes": 852,
+    "directMedS": 1248.3495,
+    "directMeanS": 1396.2659335937499,
+    "directSumH": 198.58004388888887,
+    "factorMinMax": [
+     0.672373,
+     1
+    ]
+   }
+  ]
+ },
+ "panels": {
+  "D60": {
+   "nCells": 120,
+   "w08": {
+    "n": 60,
+    "eligibleMed": 4538.5,
+    "eligibleMean": 4538.983333333334,
+    "eligibleMin": 2974,
+    "eligibleMax": 5652,
+    "fracMedPct": 11.281375480804428,
+    "fracMinPct": 9.058740268931352,
+    "fracMaxPct": 17.215870880968392,
+    "directMedOfCellMedS": 907.4405,
+    "directMeanS": 1017.2860457031246,
+    "loadP512_62": 1.1667796939964152,
+    "loadP256_42_approx": 0.8611945360449734,
+    "fleetFullViaAt62": 549.583984375
+   },
+   "w17": {
+    "n": 60,
+    "eligibleMed": 4645.5,
+    "eligibleMean": 4741.5,
+    "eligibleMin": 2538,
+    "eligibleMax": 6495,
+    "fracMedPct": 11.021419726210514,
+    "fracMinPct": 7.882986913010008,
+    "fracMaxPct": 20.17336485421592,
+    "directMedOfCellMedS": 1035.1655,
+    "directMeanS": 1174.2335815755214,
+    "loadP512_62": 1.3467912046744326,
+    "loadP256_42_approx": 0.9940601748787483,
+    "fleetFullViaAt62": 562.541015625
+   },
+   "both": {
+    "n": 120,
+    "eligibleMed": 4601.5,
+    "eligibleMean": 4640.241666666667,
+    "eligibleMin": 2538,
+    "eligibleMax": 6495,
+    "fracMedPct": 11.12680765852138,
+    "fracMinPct": 7.882986913010008,
+    "fracMaxPct": 20.17336485421592,
+    "directMedOfCellMedS": 946.185,
+    "directMeanS": 1095.759813639323,
+    "loadP512_62": 1.2567854493354238,
+    "loadP256_42_approx": 0.9276273554618603,
+    "fleetFullViaAt62": 557.212890625
+   }
+  },
+  "D30": {
+   "nCells": 60,
+   "w08": {
+    "n": 30,
+    "eligibleMed": 4522,
+    "eligibleMean": 4524.7,
+    "eligibleMin": 3487,
+    "eligibleMax": 5488,
+    "fracMedPct": 11.322955841643997,
+    "fracMinPct": 9.329446064139942,
+    "fracMaxPct": 14.683108689417837,
+    "directMedOfCellMedS": 898.42175,
+    "directMeanS": 1001.7012125,
+    "loadP512_62": 1.1489046164874557,
+    "loadP256_42_approx": 0.8480010264550264,
+    "fleetFullViaAt62": 547.5859375
+   },
+   "w17": {
+    "n": 30,
+    "eligibleMed": 4701.5,
+    "eligibleMean": 4718.8,
+    "eligibleMin": 2610,
+    "eligibleMax": 6249,
+    "fracMedPct": 10.890328787160824,
+    "fracMinPct": 8.19331092974876,
+    "fracMaxPct": 19.616858237547895,
+    "directMedOfCellMedS": 1027.6734999999999,
+    "directMeanS": 1157.0913281250002,
+    "loadP512_62": 1.3271298387096775,
+    "loadP256_42_approx": 0.9795482142857144,
+    "fleetFullViaAt62": 569.322265625
+   },
+   "both": {
+    "n": 60,
+    "eligibleMed": 4631,
+    "eligibleMean": 4621.75,
+    "eligibleMin": 2610,
+    "eligibleMax": 6249,
+    "fracMedPct": 11.055935693804178,
+    "fracMinPct": 8.19331092974876,
+    "fracMaxPct": 19.616858237547895,
+    "directMedOfCellMedS": 942.252,
+    "directMeanS": 1079.3962703125,
+    "loadP512_62": 1.238017227598566,
+    "loadP256_42_approx": 0.9137746203703703,
+    "fleetFullViaAt62": 560.78515625
+   }
+  }
+ },
+ "dayWindowCounts": {
+  "daysInFile": 332,
+  "D60found": 60,
+  "D60_w08_med": 4542,
+  "D60_w17_med": 4648.5,
+  "D60_day_med": 27019
+ },
+ "network": {
+  "nodes": 4411,
+  "hullKm2": 65.65924463305664,
+  "grid250Km2": 52.75,
+  "grid500Km2": 62.25
+ },
+ "profile2019": {
+  "yellow": {
+   "perDay": 188969.9304347826,
+   "w08": {
+    "per2h": 20467.02608695652,
+    "shareOfDayPct": 10.830837498784025,
+    "peakFactor": 1.2997004998540829,
+    "medDurS": 721,
+    "meanDurS": 823.8947441734158,
+    "medMi": 1.42
+   },
+   "w13": {
+    "per2h": 20000.265217391305,
+    "shareOfDayPct": 10.5838347780383,
+    "peakFactor": 1.270060173364596,
+    "medDurS": 733,
+    "meanDurS": 843.0881751639595,
+    "medMi": 1.4
+   },
+   "w17": {
+    "per2h": 24599.604347826087,
+    "shareOfDayPct": 13.017734774642316,
+    "peakFactor": 1.5621281729570777,
+    "medDurS": 701,
+    "meanDurS": 810.6144273991392,
+    "medMi": 1.45
+   },
+   "peak2h": {
+    "startHour": 18,
+    "per2h": 25668.108695652176,
+    "peakFactor": 1.6299805140380743
+   }
+  },
+  "via": {
+   "perDay": 26806.28384279476,
+   "w08": {
+    "per2h": 4364.10480349345,
+    "shareOfDayPct": 16.280155910780877,
+    "peakFactor": 1.9536187092937052,
+    "medDurS": 1166,
+    "meanDurS": 1282.3967436819055,
+    "medMi": 2.07
+   },
+   "w13": {
+    "per2h": 2028.580786026201,
+    "shareOfDayPct": 7.567556912859674,
+    "peakFactor": 0.908106829543161,
+    "medDurS": 1094,
+    "meanDurS": 1219.7591194480715,
+    "medMi": 2
+   },
+   "w17": {
+    "per2h": 4602.480349344978,
+    "shareOfDayPct": 17.169408398180767,
+    "peakFactor": 2.0603290077816925,
+    "medDurS": 1119,
+    "meanDurS": 1249.4693521903096,
+    "medMi": 2.1
+   }
+  },
+  "kappaMeanDur": 1.549625965495267,
+  "kappaMedDur": 1.608087004064757,
+  "kappaMedMiles": 1.451847924493504
+ },
+ "ratios": {
+  "AM17": {
+   "1000": {
+    "avg": 35.714285714285715,
+    "sun": 31.89825,
+    "fri": 38.391666666666666,
+    "peakProxy_ourWindows": 51.104083443056446,
+    "peakProxy_w17": 55.79029189132421
+   },
+   "2000": {
+    "avg": 17.857142857142858,
+    "sun": 15.949125,
+    "fri": 19.195833333333333,
+    "peakProxy_ourWindows": 25.552041721528223,
+    "peakProxy_w17": 27.895145945662104
+   },
+   "3000": {
+    "avg": 11.904761904761905,
+    "sun": 10.63275,
+    "fri": 12.79722222222222,
+    "peakProxy_ourWindows": 17.034694481018814,
+    "peakProxy_w17": 18.596763963774738
+   }
+  },
+  "AM17_dayAvg": 428571.4285714286,
+  "AM17_per2hAvg": 35714.28571428572,
+  "AM17_per2h_ourWindowsProxy": 51104.08344305644,
+  "AM17_implied_13to15_proxy": 45359.29190587843,
+  "FA20": 9.805,
+  "FA20_requests": 19610,
+  "ours": {
+   "P512_62": 8.258064516129032,
+   "P256_42": 6.095238095238095,
+   "P128_32_round5": 4
+  }
+ },
+ "fleetPoints": {
+  "F_AMpk": 20,
+  "F_AM": 29,
+  "F_AM_sun_fri": [
+   32,
+   27
+  ],
+  "F_AM3k": 43,
+  "F_AM1k": 14,
+  "F_FA": 52,
+  "kappa": 1.549625965495267,
+  "F_AM3k_t": 67,
+  "F_AM_t": 44,
+  "F_FA_t": 81,
+  "kappaSensitivity": {
+   "1.4": {
+    "AM3k": 60,
+    "AM2k": 40,
+    "FA": 73
+   },
+   "1.5": {
+    "AM3k": 65,
+    "AM2k": 43,
+    "FA": 78
+   },
+   "1.6": {
+    "AM3k": 69,
+    "AM2k": 46,
+    "FA": 84
+   }
+  },
+  "oursInTaxiEquivalents": {
+   "P512_62": 12.796911198928656,
+   "P256_42": 9.445339218256866
+  }
+ },
+ "density": {
+  "areaKm2_used": 52.75,
+  "areaNote": "grid250 coverage of FleetPy nodes; same Manhattan for AM17/FA20/ours",
+  "AM17_2000": {
+   "vehPerKm2": 37.91469194312796,
+   "reqPerKm2PerH_avg": 338.5240352064997,
+   "reqPerKm2PerH_peakProxy": 484.3988951948478
+  },
+  "AM17_3000": {
+   "vehPerKm2": 56.872037914691944
+  },
+  "FA20": {
+   "vehPerKm2": 37.91469194312796,
+   "reqPerKm2PerH": 185.87677725118485
+  },
+  "ours_P512": {
+   "vehPerKm2": 1.1753554502369667,
+   "reqPerKm2PerH": 4.8530805687203795
+  },
+  "ours_P256": {
+   "vehPerKm2": 0.7962085308056872,
+   "reqPerKm2PerH": 2.4265402843601898
+  },
+  "ratio_AM17avg_to_P512_requests": 69.75446428571429,
+  "ratio_FA20_to_P512_requests": 38.30078125,
+  "ratio_AM17_2000_to_62_vehicles": 32.25806451612903
+ }
+}

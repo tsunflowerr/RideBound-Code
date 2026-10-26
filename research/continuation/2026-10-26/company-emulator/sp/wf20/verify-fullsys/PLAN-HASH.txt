@@ -1,0 +1,1 @@
+83cf1e57969960a1579d645bfd6a23ee890c7cf072b28414d5824dd91e1b6d4d  PLAN.md  2026-10-26T04:44:39Z  (written before any recomputation; no simulation in this branch)

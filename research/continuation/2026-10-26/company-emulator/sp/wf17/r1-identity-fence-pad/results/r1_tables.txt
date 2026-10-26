@@ -1,0 +1,271 @@
+wf17 R1 (wf17-exploratory-post-audit) - identity mode. Generated 2026-10-23T08:33:17.476Z by analysis/r1_analyze.js (sha256 74348f4680adda256a9440f42546bad93bc6343c1bf056d11e628a4bcb220957)
+
+==================== INS ====================
+INS RCE35-EOHZ35 served
+   plain    mean -1.40 [-5.41, 2.61] SE 1.77 med -1.00 | 7-/3+/0= of 10, sign p 0.34 | rel 0.2% | A 723.70 B 725.10
+   adapter  mean 2.10 [-3.35, 7.55] SE 2.41 med 2.50 | 3-/7+/0= of 10, sign p 0.34 | rel -0.3% | A 727.00 B 724.90
+   DD(A-P)  mean 3.50 SE 1.28 [0.59, 6.41] med 2.50 | 2-/8+/0= sign p 0.11 | rel P 0.2% A -0.3% (diff -0.5 pp)
+INS RCE35-EOHZ35 visRev60
+   plain    mean -2.10 [-4.50, 0.30] SE 1.06 med -0.50 | 5-/1+/4= of 10, sign p 0.22 | rel 10.0% | A 18.90 B 21.00
+   adapter  mean -2.10 [-4.50, 0.30] SE 1.06 med -0.50 | 5-/1+/4= of 10, sign p 0.22 | rel 10.1% | A 18.60 B 20.70
+   DD(A-P)  mean 0.00 SE 0.26 [-0.58, 0.58] med 0.00 | 2-/1+/7= sign p 1.0 | rel P 10.0% A 10.1% (diff 0.1 pp)
+INS RCE35-EOHZ35 late60First
+   plain    mean -6.30 [-11.05, -1.55] SE 2.10 med -7.00 | 7-/2+/1= of 10, sign p 0.18 | rel 2.7% | A 228.70 B 235.00
+   adapter  mean -3.00 [-10.79, 4.79] SE 3.44 med -5.50 | 7-/3+/0= of 10, sign p 0.34 | rel 1.3% | A 233.30 B 236.30
+   DD(A-P)  mean 3.30 SE 1.56 [-0.22, 6.82] med 2.50 | 3-/7+/0= sign p 0.34 | rel P 2.7% A 1.3% (diff -1.4 pp)
+INS RCE35-EOHZ35 breachDeadline60
+   plain    mean 4.10 [1.90, 6.30] SE 0.97 med 5.00 | 2-/8+/0= of 10, sign p 0.11 | rel -46.1% | A 13.00 B 8.90
+   adapter  mean 4.00 [1.81, 6.19] SE 0.97 med 5.00 | 2-/8+/0= of 10, sign p 0.11 | rel -44.0% | A 13.10 B 9.10
+   DD(A-P)  mean -0.10 SE 0.10 [-0.33, 0.13] med 0.00 | 1-/0+/9= sign p 1.0 | rel P -46.1% A -44.0% (diff 2.1 pp)
+INS RCE35-EOHZ35 pDisp
+   plain    mean -2.40 [-7.27, 2.47] SE 2.15 med -2.50 | 7-/3+/0= of 10, sign p 0.34 | rel 1.0% | A 227.00 B 229.40
+   adapter  mean 1.30 [-6.90, 9.50] SE 3.62 med 2.50 | 4-/6+/0= of 10, sign p 0.75 | rel -0.6% | A 230.80 B 229.50
+   DD(A-P)  mean 3.70 SE 1.65 [-0.03, 7.43] med 3.00 | 2-/8+/0= sign p 0.11 | rel P 1.0% A -0.6% (diff -1.6 pp)
+INS RCE35-EOHZ35 pDispAny1
+   plain    mean -2.80 [-7.42, 1.82] SE 2.04 med -3.00 | 6-/3+/1= of 10, sign p 0.51 | rel 1.2% | A 230.10 B 232.90
+   adapter  mean 0.80 [-7.18, 8.78] SE 3.53 med 1.00 | 4-/6+/0= of 10, sign p 0.75 | rel -0.3% | A 233.80 B 233.00
+   DD(A-P)  mean 3.60 SE 1.69 [-0.23, 7.43] med 2.00 | 2-/8+/0= sign p 0.11 | rel P 1.2% A -0.3% (diff -1.5 pp)
+INS RCE35-EOHZ35 TV5/served (s)
+   plain    mean -2.56 [-5.55, 0.43] SE 1.32 med -1.83 | 8-/2+/0= of 10, sign p 0.11 | A 113.23 B 115.79
+   adapter  mean -1.87 [-5.39, 1.66] SE 1.56 med -1.19 | 6-/4+/0= of 10, sign p 0.75 | A 114.32 B 116.19
+   DD(A-P)  mean 0.69 SE 0.79 [-1.10, 2.48] med 0.16 | 5-/5+/0= sign p 1.0
+INS RCE35-EOHZ35 Pchg (pp)
+   plain    mean -0.27 [-0.90, 0.35] SE 0.27 med -0.46 | 7-/3+/0= of 10, sign p 0.34 | A 31.28 B 31.55
+   adapter  mean 0.08 [-0.88, 1.04] SE 0.42 med 0.12 | 4-/6+/0= of 10, sign p 0.75 | A 31.65 B 31.56
+   DD(A-P)  mean 0.36 SE 0.20 [-0.10, 0.82] med 0.32 | 4-/6+/0= sign p 0.75
+INS RCE35-EOHZ35 pDispAny1/served (pp)
+   plain    mean -0.32 [-0.91, 0.26] SE 0.26 med -0.53 | 6-/4+/0= of 10, sign p 0.75 | A 31.71 B 32.04
+   adapter  mean 0.02 [-0.92, 0.96] SE 0.42 med -0.08 | 5-/5+/0= of 10, sign p 1.0 | A 32.07 B 32.05
+   DD(A-P)  mean 0.35 SE 0.21 [-0.14, 0.83] med 0.22 | 4-/6+/0= sign p 0.75
+INS RCE35-EOHZ35 late60First/served (pp)
+   plain    mean -0.80 [-1.37, -0.24] SE 0.25 med -1.14 | 8-/2+/0= of 10, sign p 0.11 | A 31.62 B 32.42
+   adapter  mean -0.51 [-1.37, 0.35] SE 0.38 med -0.81 | 7-/3+/0= of 10, sign p 0.34 | A 32.11 B 32.62
+   DD(A-P)  mean 0.29 SE 0.17 [-0.10, 0.68] med 0.25 | 3-/7+/0= sign p 0.34
+INS RCE35-EOHZ35 breachDeadline60/served (pp)
+   plain    mean 0.56 [0.25, 0.87] SE 0.14 med 0.66 | 2-/8+/0= of 10, sign p 0.11 | A 1.80 B 1.23
+   adapter  mean 0.54 [0.24, 0.84] SE 0.13 med 0.66 | 2-/8+/0= of 10, sign p 0.11 | A 1.80 B 1.27
+   DD(A-P)  mean -0.02 SE 0.01 [-0.06, 0.01] med -0.01 | 8-/2+/0= sign p 0.11
+INS RCE35-EOHZ35 breachLedger/served (pp) [BY-CONSTRUCTION for RC]
+   plain    mean -1.20 [-1.71, -0.68] SE 0.23 med -1.19 | 10-/0+/0= of 10, sign p 0.0020 | A 0.00 B 1.20
+   adapter  mean -1.17 [-1.68, -0.65] SE 0.23 med -1.11 | 10-/0+/0= of 10, sign p 0.0020 | A 0.00 B 1.17
+   DD(A-P)  mean 0.03 SE 0.06 [-0.11, 0.17] med 0.00 | 3-/5+/2= sign p 0.73
+INS RCE35-NCE35 served
+   plain    mean 0.00 [0.00, 0.00] SE 0.00 med 0.00 | 0-/0+/10= of 10, sign p 1.0 | rel 0.0% | A 723.70 B 723.70
+   adapter  mean 0.00 [0.00, 0.00] SE 0.00 med 0.00 | 0-/0+/10= of 10, sign p 1.0 | rel 0.0% | A 727.00 B 727.00
+   DD(A-P)  mean 0.00 SE 0.00 [0.00, 0.00] med 0.00 | 0-/0+/10= sign p 1.0 | rel P 0.0% A 0.0% (diff 0.0 pp)
+INS RCE35-NCE35 visRev60
+   plain    mean 0.00 [0.00, 0.00] SE 0.00 med 0.00 | 0-/0+/10= of 10, sign p 1.0 | rel 0.0% | A 18.90 B 18.90
+   adapter  mean 0.00 [0.00, 0.00] SE 0.00 med 0.00 | 0-/0+/10= of 10, sign p 1.0 | rel 0.0% | A 18.60 B 18.60
+   DD(A-P)  mean 0.00 SE 0.00 [0.00, 0.00] med 0.00 | 0-/0+/10= sign p 1.0 | rel P 0.0% A 0.0% (diff 0.0 pp)
+INS RCE35-EO35 served
+   plain    mean 1.90 [-3.57, 7.37] SE 2.42 med 1.00 | 5-/5+/0= of 10, sign p 1.0 | rel -0.3% | A 723.70 B 721.80
+   adapter  mean 5.10 [-1.05, 11.25] SE 2.72 med 5.50 | 3-/7+/0= of 10, sign p 0.34 | rel -0.7% | A 727.00 B 721.90
+   DD(A-P)  mean 3.20 SE 1.44 [-0.05, 6.45] med 2.00 | 2-/7+/1= sign p 0.18 | rel P -0.3% A -0.7% (diff -0.4 pp)
+INS RCE35-EO35 visRev60
+   plain    mean -1.50 [-3.82, 0.82] SE 1.02 med -0.50 | 5-/2+/3= of 10, sign p 0.45 | rel 7.4% | A 18.90 B 20.40
+   adapter  mean -1.60 [-3.76, 0.56] SE 0.96 med 0.00 | 4-/2+/4= of 10, sign p 0.69 | rel 7.9% | A 18.60 B 20.20
+   DD(A-P)  mean -0.10 SE 0.31 [-0.81, 0.61] med 0.00 | 2-/1+/7= sign p 1.0 | rel P 7.4% A 7.9% (diff 0.6 pp)
+INS SHRC72-SHHZ72 served
+   plain    mean -6.40 [-11.29, -1.51] SE 2.16 med -5.00 | 8-/2+/0= of 10, sign p 0.11 | rel 0.9% | A 719.50 B 725.90
+   adapter  mean -6.40 [-11.54, -1.26] SE 2.27 med -4.50 | 8-/0+/2= of 10, sign p 0.0078 | rel 0.9% | A 719.60 B 726.00
+   DD(A-P)  mean 0.00 SE 1.05 [-2.38, 2.38] med 1.00 | 3-/6+/1= sign p 0.51 | rel P 0.9% A 0.9% (diff -0.0 pp)
+INS SHRC72-SHHZ72 visRev60
+   plain    mean -0.80 [-3.23, 1.63] SE 1.07 med -1.00 | 6-/4+/0= of 10, sign p 0.75 | rel 2.4% | A 32.20 B 33.00
+   adapter  mean -0.80 [-3.64, 2.04] SE 1.25 med -1.00 | 7-/3+/0= of 10, sign p 0.34 | rel 2.4% | A 32.40 B 33.20
+   DD(A-P)  mean 0.00 SE 0.47 [-1.07, 1.07] med 0.00 | 2-/2+/6= sign p 1.0 | rel P 2.4% A 2.4% (diff -0.0 pp)
+INS SHRC72-SHHZ72 late60First
+   plain    mean -0.10 [-3.41, 3.21] SE 1.46 med 0.00 | 4-/4+/2= of 10, sign p 1.0 | rel 0.1% | A 178.70 B 178.80
+   adapter  mean -0.30 [-4.32, 3.72] SE 1.78 med -0.50 | 5-/5+/0= of 10, sign p 1.0 | rel 0.2% | A 178.60 B 178.90
+   DD(A-P)  mean -0.20 SE 0.65 [-1.66, 1.26] med -0.50 | 5-/3+/2= sign p 0.73 | rel P 0.1% A 0.2% (diff 0.1 pp)
+INS SHRC72-SHF72 served
+   plain    mean 36.40 [29.83, 42.97] SE 2.90 med 35.50 | 0-/10+/0= of 10, sign p 0.0020 | rel -5.3% | A 719.50 B 683.10
+   adapter  mean 36.00 [30.24, 41.76] SE 2.55 med 36.50 | 0-/10+/0= of 10, sign p 0.0020 | rel -5.3% | A 719.60 B 683.60
+   DD(A-P)  mean -0.40 SE 0.88 [-2.40, 1.60] med 0.00 | 3-/2+/5= sign p 1.0 | rel P -5.3% A -5.3% (diff 0.1 pp)
+INS SHRC72-SHF72 visRev60
+   plain    mean 0.90 [-1.83, 3.63] SE 1.21 med 1.00 | 3-/7+/0= of 10, sign p 0.34 | rel -2.9% | A 32.20 B 31.30
+   adapter  mean 0.40 [-2.15, 2.95] SE 1.13 med 2.00 | 4-/6+/0= of 10, sign p 0.75 | rel -1.2% | A 32.40 B 32.00
+   DD(A-P)  mean -0.50 SE 0.43 [-1.47, 0.47] med -0.50 | 5-/3+/2= sign p 0.73 | rel P -2.9% A -1.2% (diff 1.6 pp)
+INS SHRC72-SHF72 late60First
+   plain    mean 8.20 [2.10, 14.30] SE 2.69 med 8.00 | 1-/9+/0= of 10, sign p 0.021 | rel -4.8% | A 178.70 B 170.50
+   adapter  mean 7.30 [2.23, 12.37] SE 2.24 med 7.00 | 1-/9+/0= of 10, sign p 0.021 | rel -4.3% | A 178.60 B 171.30
+   DD(A-P)  mean -0.90 SE 0.86 [-2.85, 1.05] med -0.50 | 5-/4+/1= sign p 1.0 | rel P -4.8% A -4.3% (diff 0.5 pp)
+INS SHF72-SHHZ72 served
+   plain    mean -42.80 [-49.84, -35.76] SE 3.11 med -40.00 | 10-/0+/0= of 10, sign p 0.0020 | rel 5.9% | A 683.10 B 725.90
+   adapter  mean -42.40 [-48.24, -36.56] SE 2.58 med -39.50 | 10-/0+/0= of 10, sign p 0.0020 | rel 5.8% | A 683.60 B 726.00
+   DD(A-P)  mean 0.40 SE 1.05 [-1.97, 2.77] med 1.00 | 2-/6+/2= sign p 0.29 | rel P 5.9% A 5.8% (diff -0.1 pp)
+INS SHF72-SHHZ72 visRev60
+   plain    mean -1.70 [-4.92, 1.52] SE 1.42 med -1.00 | 5-/4+/1= of 10, sign p 1.0 | rel 5.2% | A 31.30 B 33.00
+   adapter  mean -1.20 [-4.62, 2.22] SE 1.51 med -1.50 | 5-/4+/1= of 10, sign p 1.0 | rel 3.6% | A 32.00 B 33.20
+   DD(A-P)  mean 0.50 SE 0.40 [-0.41, 1.41] med 0.00 | 2-/4+/4= sign p 0.69 | rel P 5.2% A 3.6% (diff -1.5 pp)
+INS SHF72-SHHZ72 late60First
+   plain    mean -8.30 [-13.59, -3.01] SE 2.34 med -9.50 | 8-/1+/1= of 10, sign p 0.039 | rel 4.6% | A 170.50 B 178.80
+   adapter  mean -7.60 [-12.91, -2.29] SE 2.35 med -9.00 | 9-/1+/0= of 10, sign p 0.021 | rel 4.2% | A 171.30 B 178.90
+   DD(A-P)  mean 0.70 SE 1.16 [-1.93, 3.33] med 0.50 | 4-/5+/1= sign p 1.0 | rel P 4.6% A 4.2% (diff -0.4 pp)
+INS SHHZ72-EOHZ35 served
+   plain    mean 0.80 [-10.67, 12.27] SE 5.07 med 3.00 | 4-/6+/0= of 10, sign p 0.75 | rel -0.1% | A 725.90 B 725.10
+   adapter  mean 1.10 [-11.95, 14.15] SE 5.77 med 3.50 | 3-/6+/1= of 10, sign p 0.51 | rel -0.2% | A 726.00 B 724.90
+   DD(A-P)  mean 0.30 SE 1.78 [-3.72, 4.32] med -0.50 | 5-/4+/1= sign p 1.0 | rel P -0.1% A -0.2% (diff -0.0 pp)
+INS SHHZ72-EOHZ35 visRev60
+   plain    mean 12.00 [9.57, 14.43] SE 1.07 med 12.00 | 0-/10+/0= of 10, sign p 0.0020 | rel -57.1% | A 33.00 B 21.00
+   adapter  mean 12.50 [9.69, 15.31] SE 1.24 med 12.00 | 0-/10+/0= of 10, sign p 0.0020 | rel -60.4% | A 33.20 B 20.70
+   DD(A-P)  mean 0.50 SE 0.69 [-1.05, 2.05] med 0.00 | 3-/4+/3= sign p 1.0 | rel P -57.1% A -60.4% (diff -3.2 pp)
+INS SHHZ72-EOHZ35 late60First
+   plain    mean -56.20 [-67.23, -45.17] SE 4.88 med -55.00 | 10-/0+/0= of 10, sign p 0.0020 | rel 23.9% | A 178.80 B 235.00
+   adapter  mean -57.40 [-68.79, -46.01] SE 5.03 med -56.50 | 10-/0+/0= of 10, sign p 0.0020 | rel 24.3% | A 178.90 B 236.30
+   DD(A-P)  mean -1.20 SE 1.05 [-3.58, 1.18] med 0.00 | 4-/3+/3= sign p 1.0 | rel P 23.9% A 24.3% (diff 0.4 pp)
+INS SHF72 forcedVehDecisions/day plain 22251.8
+INS SHF72 forcedVehDecisions/day adapter 22184.9
+INS chaos per cell (|served_A - served_P|; rider-identical cells by sigX):
+   EO35     cells 20 mean |dServed| 1.25 median 1.0 max 4 | rider-identical 1/20 | identity tie-breaks/run P 3.1 A 2.8
+   EOHZ35   cells 20 mean |dServed| 1.50 median 1.0 max 5 | rider-identical 1/20 | identity tie-breaks/run P 3.1 A 2.9
+   NCE35    cells 20 mean |dServed| 1.95 median 1.0 max 8 | rider-identical 1/20 | identity tie-breaks/run P 2.9 A 2.7
+   RCE35    cells 20 mean |dServed| 1.95 median 1.0 max 8 | rider-identical 1/20 | identity tie-breaks/run P 2.9 A 2.7
+   SHF72    cells 20 mean |dServed| 1.05 median 0.0 max 6 | rider-identical 1/20 | identity tie-breaks/run P 2.1 A 2.5
+   SHHZ72   cells 20 mean |dServed| 1.05 median 0.0 max 7 | rider-identical 2/20 | identity tie-breaks/run P 3.1 A 3.1
+   SHRC72   cells 20 mean |dServed| 1.25 median 1.0 max 5 | rider-identical 2/20 | identity tie-breaks/run P 3.1 A 3.1
+   U        cells 20 mean |dServed| 2.90 median 2.0 max 12 | rider-identical 0/20 | identity tie-breaks/run P 2.8 A 2.7
+
+==================== G2 ====================
+G2 RCE35-EOHZ35 served
+   plain    mean -1.50 [-8.08, 5.08] SE 2.91 med -3.00 | 6-/4+/0= of 10, sign p 0.75 | rel 0.2% | A 731.00 B 732.50
+   adapter  mean 1.20 [-3.93, 6.33] SE 2.27 med 0.50 | 5-/5+/0= of 10, sign p 1.0 | rel -0.2% | A 732.60 B 731.40
+   DD(A-P)  mean 2.70 SE 1.16 [0.07, 5.33] med 2.00 | 2-/6+/2= sign p 0.29 | rel P 0.2% A -0.2% (diff -0.4 pp)
+G2 RCE35-EOHZ35 visRev60
+   plain    mean -16.20 [-20.50, -11.90] SE 1.90 med -17.00 | 10-/0+/0= of 10, sign p 0.0020 | rel 41.0% | A 23.30 B 39.50
+   adapter  mean -17.20 [-21.48, -12.92] SE 1.89 med -16.50 | 10-/0+/0= of 10, sign p 0.0020 | rel 43.4% | A 22.40 B 39.60
+   DD(A-P)  mean -1.00 SE 0.71 [-2.62, 0.62] med -0.50 | 5-/2+/3= sign p 0.45 | rel P 41.0% A 43.4% (diff 2.4 pp)
+G2 RCE35-EOHZ35 late60First
+   plain    mean 3.30 [-4.86, 11.46] SE 3.61 med 1.50 | 4-/6+/0= of 10, sign p 0.75 | rel -1.4% | A 238.00 B 234.70
+   adapter  mean 2.90 [-4.84, 10.64] SE 3.42 med 1.50 | 4-/6+/0= of 10, sign p 0.75 | rel -1.2% | A 236.80 B 233.90
+   DD(A-P)  mean -0.40 SE 1.60 [-4.02, 3.22] med -1.50 | 6-/4+/0= sign p 0.75 | rel P -1.4% A -1.2% (diff 0.2 pp)
+G2 RCE35-EOHZ35 breachDeadline60
+   plain    mean 5.30 [3.48, 7.12] SE 0.80 med 6.50 | 0-/10+/0= of 10, sign p 0.0020 | rel -79.1% | A 12.00 B 6.70
+   adapter  mean 5.70 [3.73, 7.67] SE 0.87 med 6.50 | 0-/10+/0= of 10, sign p 0.0020 | rel -86.4% | A 12.30 B 6.60
+   DD(A-P)  mean 0.40 SE 0.56 [-0.87, 1.67] med 0.00 | 1-/2+/7= sign p 1.0 | rel P -79.1% A -86.4% (diff -7.3 pp)
+G2 RCE35-EOHZ35 pDisp
+   plain    mean -2.70 [-11.32, 5.92] SE 3.81 med -2.50 | 5-/5+/0= of 10, sign p 1.0 | rel 1.1% | A 236.70 B 239.40
+   adapter  mean -2.90 [-12.26, 6.46] SE 4.14 med -1.50 | 6-/3+/1= of 10, sign p 0.51 | rel 1.2% | A 236.10 B 239.00
+   DD(A-P)  mean -0.20 SE 2.01 [-4.75, 4.35] med -2.50 | 6-/4+/0= sign p 0.75 | rel P 1.1% A 1.2% (diff 0.1 pp)
+G2 RCE35-EOHZ35 pDispAny1
+   plain    mean -4.50 [-13.76, 4.76] SE 4.09 med -4.00 | 5-/5+/0= of 10, sign p 1.0 | rel 1.8% | A 249.90 B 254.40
+   adapter  mean -5.00 [-14.66, 4.66] SE 4.27 med -4.00 | 7-/3+/0= of 10, sign p 0.34 | rel 2.0% | A 249.10 B 254.10
+   DD(A-P)  mean -0.50 SE 1.68 [-4.30, 3.30] med -1.50 | 5-/4+/1= sign p 1.0 | rel P 1.8% A 2.0% (diff 0.2 pp)
+G2 RCE35-EOHZ35 relocations
+   plain    mean -14.80 [-18.94, -10.66] SE 1.83 med -14.00 | 10-/0+/0= of 10, sign p 0.0020 | rel 49.2% | A 15.30 B 30.10
+   adapter  mean -13.70 [-17.75, -9.65] SE 1.79 med -13.00 | 10-/0+/0= of 10, sign p 0.0020 | rel 47.2% | A 15.30 B 29.00
+   DD(A-P)  mean 1.10 SE 0.67 [-0.42, 2.62] med 1.00 | 3-/6+/1= sign p 0.51 | rel P 49.2% A 47.2% (diff -1.9 pp)
+G2 RCE35-EOHZ35 switchedRiders
+   plain    mean -14.20 [-18.26, -10.14] SE 1.79 med -13.00 | 10-/0+/0= of 10, sign p 0.0020 | rel 48.6% | A 15.00 B 29.20
+   adapter  mean -13.20 [-17.04, -9.36] SE 1.70 med -12.50 | 10-/0+/0= of 10, sign p 0.0020 | rel 46.8% | A 15.00 B 28.20
+   DD(A-P)  mean 1.00 SE 0.63 [-0.43, 2.43] med 1.00 | 3-/6+/1= sign p 0.51 | rel P 48.6% A 46.8% (diff -1.8 pp)
+G2 RCE35-EOHZ35 TV5/served (s)
+   plain    mean -15.94 [-21.37, -10.52] SE 2.40 med -13.66 | 10-/0+/0= of 10, sign p 0.0020 | A 116.68 B 132.62
+   adapter  mean -16.17 [-22.35, -9.99] SE 2.73 med -14.41 | 10-/0+/0= of 10, sign p 0.0020 | A 117.00 B 133.17
+   DD(A-P)  mean -0.23 SE 0.95 [-2.37, 1.92] med -0.10 | 6-/4+/0= sign p 0.75
+G2 RCE35-EOHZ35 Pchg (pp)
+   plain    mean -0.23 [-1.20, 0.74] SE 0.43 med -0.26 | 6-/4+/0= of 10, sign p 0.75 | A 32.33 B 32.56
+   adapter  mean -0.39 [-1.52, 0.74] SE 0.50 med -0.15 | 8-/2+/0= of 10, sign p 0.11 | A 32.18 B 32.56
+   DD(A-P)  mean -0.16 SE 0.27 [-0.77, 0.46] med -0.33 | 6-/4+/0= sign p 0.75
+G2 RCE35-EOHZ35 pDispAny1/served (pp)
+   plain    mean -0.47 [-1.51, 0.57] SE 0.46 med -0.46 | 5-/5+/0= of 10, sign p 1.0 | A 34.14 B 34.61
+   adapter  mean -0.68 [-1.82, 0.46] SE 0.50 med -0.68 | 8-/2+/0= of 10, sign p 0.11 | A 33.96 B 34.63
+   DD(A-P)  mean -0.20 SE 0.22 [-0.71, 0.30] med -0.20 | 5-/5+/0= sign p 1.0
+G2 RCE35-EOHZ35 late60First/served (pp)
+   plain    mean 0.54 [-0.44, 1.52] SE 0.43 med 0.29 | 3-/7+/0= of 10, sign p 0.34 | A 32.59 B 32.05
+   adapter  mean 0.35 [-0.63, 1.33] SE 0.43 med 0.21 | 5-/5+/0= of 10, sign p 1.0 | A 32.35 B 32.00
+   DD(A-P)  mean -0.19 SE 0.22 [-0.68, 0.31] med -0.13 | 6-/4+/0= sign p 0.75
+G2 RCE35-EOHZ35 breachDeadline60/served (pp)
+   plain    mean 0.71 [0.47, 0.96] SE 0.11 med 0.84 | 0-/10+/0= of 10, sign p 0.0020 | A 1.64 B 0.92
+   adapter  mean 0.77 [0.50, 1.04] SE 0.12 med 0.87 | 0-/10+/0= of 10, sign p 0.0020 | A 1.68 B 0.91
+   DD(A-P)  mean 0.06 SE 0.08 [-0.13, 0.24] med -0.00 | 7-/3+/0= sign p 0.34
+G2 RCE35-EOHZ35 breachLedger/served (pp) [BY-CONSTRUCTION for RC]
+   plain    mean -4.15 [-5.13, -3.17] SE 0.43 med -3.65 | 10-/0+/0= of 10, sign p 0.0020 | A 0.00 B 4.15
+   adapter  mean -4.25 [-5.18, -3.32] SE 0.41 med -4.01 | 10-/0+/0= of 10, sign p 0.0020 | A 0.00 B 4.25
+   DD(A-P)  mean -0.10 SE 0.06 [-0.23, 0.03] med -0.01 | 5-/4+/1= sign p 1.0
+G2 RCE35-NCE35 served
+   plain    mean -5.20 [-11.75, 1.35] SE 2.89 med -6.00 | 7-/3+/0= of 10, sign p 0.34 | rel 0.7% | A 731.00 B 736.20
+   adapter  mean -1.60 [-7.30, 4.10] SE 2.52 med -2.00 | 6-/4+/0= of 10, sign p 0.75 | rel 0.2% | A 732.60 B 734.20
+   DD(A-P)  mean 3.60 SE 1.13 [1.05, 6.15] med 3.00 | 1-/8+/1= sign p 0.039 | rel P 0.7% A 0.2% (diff -0.5 pp)
+G2 RCE35-NCE35 visRev60
+   plain    mean -15.80 [-20.31, -11.29] SE 1.99 med -16.50 | 10-/0+/0= of 10, sign p 0.0020 | rel 40.4% | A 23.30 B 39.10
+   adapter  mean -14.70 [-18.60, -10.80] SE 1.73 med -15.00 | 10-/0+/0= of 10, sign p 0.0020 | rel 39.6% | A 22.40 B 37.10
+   DD(A-P)  mean 1.10 SE 0.77 [-0.63, 2.83] med 0.00 | 2-/4+/4= sign p 0.69 | rel P 40.4% A 39.6% (diff -0.8 pp)
+G2 RCE35-EO35 served
+   plain    mean -1.80 [-8.16, 4.56] SE 2.81 med -2.00 | 6-/4+/0= of 10, sign p 0.75 | rel 0.2% | A 731.00 B 732.80
+   adapter  mean 2.30 [-2.10, 6.70] SE 1.94 med 2.50 | 3-/6+/1= of 10, sign p 0.51 | rel -0.3% | A 732.60 B 730.30
+   DD(A-P)  mean 4.10 SE 1.79 [0.05, 8.15] med 4.00 | 3-/7+/0= sign p 0.34 | rel P 0.2% A -0.3% (diff -0.6 pp)
+G2 RCE35-EO35 visRev60
+   plain    mean -15.90 [-20.39, -11.41] SE 1.99 med -16.50 | 10-/0+/0= of 10, sign p 0.0020 | rel 40.6% | A 23.30 B 39.20
+   adapter  mean -17.20 [-22.00, -12.40] SE 2.12 med -17.00 | 10-/0+/0= of 10, sign p 0.0020 | rel 43.4% | A 22.40 B 39.60
+   DD(A-P)  mean -1.30 SE 0.76 [-3.02, 0.42] med 0.00 | 4-/2+/4= sign p 0.69 | rel P 40.6% A 43.4% (diff 2.9 pp)
+G2 SHRC71-SHHZ71 served
+   plain    mean -6.10 [-16.96, 4.76] SE 4.80 med -6.00 | 7-/2+/1= of 10, sign p 0.18 | rel 0.8% | A 725.00 B 731.10
+   adapter  mean -6.30 [-14.29, 1.69] SE 3.53 med -9.00 | 8-/2+/0= of 10, sign p 0.11 | rel 0.9% | A 725.90 B 732.20
+   DD(A-P)  mean -0.20 SE 2.83 [-6.60, 6.20] med 0.00 | 4-/4+/2= sign p 1.0 | rel P 0.8% A 0.9% (diff 0.0 pp)
+G2 SHRC71-SHHZ71 visRev60
+   plain    mean -16.20 [-23.06, -9.34] SE 3.03 med -16.00 | 10-/0+/0= of 10, sign p 0.0020 | rel 30.5% | A 37.00 B 53.20
+   adapter  mean -17.30 [-23.74, -10.86] SE 2.85 med -14.00 | 10-/0+/0= of 10, sign p 0.0020 | rel 32.0% | A 36.80 B 54.10
+   DD(A-P)  mean -1.10 SE 1.80 [-5.17, 2.97] med -1.00 | 5-/3+/2= sign p 0.73 | rel P 30.5% A 32.0% (diff 1.5 pp)
+G2 SHRC71-SHHZ71 late60First
+   plain    mean 6.60 [-0.89, 14.09] SE 3.31 med 9.50 | 1-/7+/2= of 10, sign p 0.070 | rel -3.7% | A 183.70 B 177.10
+   adapter  mean 6.20 [-0.24, 12.64] SE 2.85 med 7.00 | 1-/8+/1= of 10, sign p 0.039 | rel -3.5% | A 183.20 B 177.00
+   DD(A-P)  mean -0.40 SE 1.31 [-3.36, 2.56] med 0.00 | 4-/4+/2= sign p 1.0 | rel P -3.7% A -3.5% (diff 0.2 pp)
+G2 SHRC71-SHF71 served
+   plain    mean 30.60 [20.44, 40.76] SE 4.49 med 27.50 | 0-/10+/0= of 10, sign p 0.0020 | rel -4.4% | A 725.00 B 694.40
+   adapter  mean 31.50 [20.95, 42.05] SE 4.66 med 25.00 | 0-/10+/0= of 10, sign p 0.0020 | rel -4.5% | A 725.90 B 694.40
+   DD(A-P)  mean 0.90 SE 2.82 [-5.48, 7.28] med -1.00 | 6-/3+/1= sign p 0.51 | rel P -4.4% A -4.5% (diff -0.1 pp)
+G2 SHRC71-SHF71 visRev60
+   plain    mean -16.60 [-21.77, -11.43] SE 2.29 med -16.50 | 10-/0+/0= of 10, sign p 0.0020 | rel 31.0% | A 37.00 B 53.60
+   adapter  mean -16.90 [-22.18, -11.62] SE 2.34 med -18.00 | 10-/0+/0= of 10, sign p 0.0020 | rel 31.5% | A 36.80 B 53.70
+   DD(A-P)  mean -0.30 SE 1.93 [-4.66, 4.06] med 0.00 | 5-/5+/0= sign p 1.0 | rel P 31.0% A 31.5% (diff 0.5 pp)
+G2 SHRC71-SHF71 late60First
+   plain    mean 10.60 [3.48, 17.72] SE 3.15 med 13.00 | 2-/8+/0= of 10, sign p 0.11 | rel -6.1% | A 183.70 B 173.10
+   adapter  mean 8.50 [1.60, 15.40] SE 3.05 med 12.50 | 2-/7+/1= of 10, sign p 0.18 | rel -4.9% | A 183.20 B 174.70
+   DD(A-P)  mean -2.10 SE 1.59 [-5.69, 1.49] med -0.50 | 5-/3+/2= sign p 0.73 | rel P -6.1% A -4.9% (diff 1.3 pp)
+G2 SHF71-SHHZ71 served
+   plain    mean -36.70 [-44.18, -29.22] SE 3.31 med -34.50 | 10-/0+/0= of 10, sign p 0.0020 | rel 5.0% | A 694.40 B 731.10
+   adapter  mean -37.80 [-46.60, -29.00] SE 3.89 med -39.00 | 10-/0+/0= of 10, sign p 0.0020 | rel 5.2% | A 694.40 B 732.20
+   DD(A-P)  mean -1.10 SE 2.48 [-6.71, 4.51] med 0.00 | 5-/5+/0= sign p 1.0 | rel P 5.0% A 5.2% (diff 0.1 pp)
+G2 SHF71-SHHZ71 visRev60
+   plain    mean 0.40 [-4.36, 5.16] SE 2.10 med 0.00 | 4-/4+/2= of 10, sign p 1.0 | rel -0.8% | A 53.60 B 53.20
+   adapter  mean -0.40 [-6.09, 5.29] SE 2.52 med 0.50 | 5-/5+/0= of 10, sign p 1.0 | rel 0.7% | A 53.70 B 54.10
+   DD(A-P)  mean -0.80 SE 1.94 [-5.18, 3.58] med -0.50 | 5-/4+/1= sign p 1.0 | rel P -0.8% A 0.7% (diff 1.5 pp)
+G2 SHF71-SHHZ71 late60First
+   plain    mean -4.00 [-10.79, 2.79] SE 3.00 med -3.00 | 5-/5+/0= of 10, sign p 1.0 | rel 2.3% | A 173.10 B 177.10
+   adapter  mean -2.30 [-7.95, 3.35] SE 2.50 med -1.00 | 5-/5+/0= of 10, sign p 1.0 | rel 1.3% | A 174.70 B 177.00
+   DD(A-P)  mean 1.70 SE 1.54 [-1.79, 5.19] med 0.50 | 2-/5+/3= sign p 0.45 | rel P 2.3% A 1.3% (diff -1.0 pp)
+G2 SHHZ71-EOHZ35 served
+   plain    mean -1.40 [-8.18, 5.38] SE 3.00 med -4.50 | 7-/3+/0= of 10, sign p 0.34 | rel 0.2% | A 731.10 B 732.50
+   adapter  mean 0.80 [-7.43, 9.03] SE 3.64 med 1.50 | 5-/5+/0= of 10, sign p 1.0 | rel -0.1% | A 732.20 B 731.40
+   DD(A-P)  mean 2.20 SE 1.90 [-2.10, 6.50] med 1.50 | 4-/5+/1= sign p 1.0 | rel P 0.2% A -0.1% (diff -0.3 pp)
+G2 SHHZ71-EOHZ35 visRev60
+   plain    mean 13.70 [5.78, 21.62] SE 3.50 med 14.50 | 1-/9+/0= of 10, sign p 0.021 | rel -34.7% | A 53.20 B 39.50
+   adapter  mean 14.50 [6.32, 22.68] SE 3.62 med 13.50 | 1-/9+/0= of 10, sign p 0.021 | rel -36.6% | A 54.10 B 39.60
+   DD(A-P)  mean 0.80 SE 1.29 [-2.12, 3.72] med 0.50 | 4-/5+/1= sign p 1.0 | rel P -34.7% A -36.6% (diff -1.9 pp)
+G2 SHHZ71-EOHZ35 late60First
+   plain    mean -57.60 [-67.37, -47.83] SE 4.32 med -57.50 | 10-/0+/0= of 10, sign p 0.0020 | rel 24.5% | A 177.10 B 234.70
+   adapter  mean -56.90 [-64.98, -48.82] SE 3.57 med -58.00 | 10-/0+/0= of 10, sign p 0.0020 | rel 24.3% | A 177.00 B 233.90
+   DD(A-P)  mean 0.70 SE 1.67 [-3.07, 4.47] med -1.50 | 7-/3+/0= sign p 0.34 | rel P 24.5% A 24.3% (diff -0.2 pp)
+G2 SHF71 forcedVehDecisions/day plain 62614.3
+G2 SHF71 forcedVehDecisions/day adapter 62503.0
+G2 chaos per cell (|served_A - served_P|; rider-identical cells by sigX):
+   EO35     cells 20 mean |dServed| 2.25 median 1.0 max 11 | rider-identical 1/20 | identity tie-breaks/run P 24.3 A 15.3
+   EOHZ35   cells 20 mean |dServed| 1.85 median 1.0 max 7 | rider-identical 1/20 | identity tie-breaks/run P 26.0 A 16.1
+   NCE35    cells 20 mean |dServed| 1.50 median 0.0 max 8 | rider-identical 2/20 | identity tie-breaks/run P 19.5 A 19.9
+   RCE35    cells 20 mean |dServed| 2.10 median 1.0 max 8 | rider-identical 0/20 | identity tie-breaks/run P 18.1 A 20.0
+   SHF71    cells 20 mean |dServed| 2.00 median 1.0 max 11 | rider-identical 3/20 | identity tie-breaks/run P 12.1 A 14.8
+   SHHZ71   cells 20 mean |dServed| 1.55 median 1.0 max 6 | rider-identical 1/20 | identity tie-breaks/run P 25.8 A 22.0
+   SHRC71   cells 20 mean |dServed| 1.75 median 1.0 max 14 | rider-identical 2/20 | identity tie-breaks/run P 14.2 A 15.9
+   U        cells 20 mean |dServed| 2.45 median 1.0 max 9 | rider-identical 0/20 | identity tie-breaks/run P 20.4 A 11.9
+
+==================== Gates ====================
+P rows = wf15 main (U, EO35, EOHZ35, RCE35, SH*) / wf14 main (G2 NCE35): 300/300 equal
+INS NCE35 rider-identical to INS RCE35: {"plain":{"compared":20,"riderIdentical":20,"pass":true},"adapter":{"compared":20,"riderIdentical":20,"pass":true}}
+
+==================== Decision labels ====================
+C7 (identity mode does not change the effects): HOLDS
+predictions: {"relredWithin10pp":true,"relredP":0.410126582278481,"relredA":0.43434343434343436,"relDiffPp":2.4216852064953387,"ddServedWithin3":{"G2":true,"INS":false,"G2mean":2.7,"INSmean":3.5},"insReversalChangeLe25pct":[{"id":"plain","rel":0.09999999999999998,"ok":true},{"id":"adapter","rel":0.10144927536231885,"ok":true}]}
+C5 note (SHF - SHHZ served gap, per day, P vs A; finding if change > 50 %): {"INS":{"gapP":-42.8,"gapA":-42.4,"changePct":0.9345794392523332,"finding":false},"G2":{"gapP":-36.7,"gapA":-37.8,"changePct":-2.9972752043596573,"finding":false}}
+
+==================== Log ====================
+rows 640

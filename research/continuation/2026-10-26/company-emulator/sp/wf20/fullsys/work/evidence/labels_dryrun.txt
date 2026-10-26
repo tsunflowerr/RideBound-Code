@@ -1,0 +1,97 @@
+wf20-fullsys-exploratory-post-audit (thăm dò sau kiểm toán): PLAN §5 labels, applied mechanically by analysis/labels.js
+format: label pooled | F14 | F16 ; value = mean (or rel %) (±SE; days −/+; sign-test p)
+P1    G2 MAIN visRev60/day                       band [-16, -10]  pooled n/a n/a | F14 n/a n/a | F16 n/a n/a
+P1r   G2 MAIN visRev60 rel %                     band [-40, -25]  pooled n/a n/a | F14 n/a n/a | F16 n/a n/a
+P2    G2 MAIN served/day                         band [-14, -6]  pooled n/a n/a | F14 n/a n/a | F16 n/a n/a
+P3    G2 MAIN late60First/1000                   band [-3, 6]  pooled n/a n/a | F14 n/a n/a | F16 n/a n/a
+P4    G2 MAIN Pchg/1000                          band [-10, 3]  pooled n/a n/a | F14 n/a n/a | F16 n/a n/a
+P5    G2 MAIN TV5 s/served                       band [-22, -10]  pooled n/a n/a | F14 n/a n/a | F16 n/a n/a
+P6    G2 MAIN breachDeadline60/1000              band [-3, 2]  pooled n/a n/a | F14 n/a n/a | F16 n/a n/a
+P7    G2 MAIN G_late60First/day                  band [-2.5, 1]  pooled n/a n/a | F14 n/a n/a | F16 n/a n/a
+P8    INS MAIN visRev60/day                      band [-2.5, 0.5]  pooled n/a n/a | F14 n/a n/a | F16 n/a n/a
+P9    INS MAIN served/day                        band [-8, -2]  pooled n/a n/a | F14 n/a n/a | F16 n/a n/a
+P10a  INS MAIN late60First/1000                  band [-4, 4]  pooled n/a n/a | F14 n/a n/a | F16 n/a n/a
+P10b  INS MAIN Pchg/1000                         band [-4, 4]  pooled n/a n/a | F14 n/a n/a | F16 n/a n/a
+P10c  INS MAIN TV5 s/served                      band [-3, 3]  pooled n/a n/a | F14 n/a n/a | F16 n/a n/a
+P11   INS SHF CL-N late60First/1000 day          band [-50, -25]  pooled n/a n/a | F14 n/a n/a | F16 n/a n/a
+P12   INS SHF CL-N late60First/1000 w08          band [-140, -80]  pooled n/a n/a | F14 n/a n/a | F16 n/a n/a
+P13   INS SHF CL-N late60First/1000 w17          band [20, 45]  pooled n/a n/a | F14 n/a n/a | F16 n/a n/a
+P14   INS SHF CL-N visRev60 rel %                band [-45, -20]  pooled n/a n/a | F14 n/a n/a | F16 n/a n/a
+P15   INS SHF CL-N TV5 s/served                  band [-25, -10]  pooled n/a n/a | F14 n/a n/a | F16 n/a n/a
+P16   INS SHF CL-N breachDeadline60 rel %        band [-80, -30]  pooled n/a n/a | F14 n/a n/a | F16 n/a n/a
+P17a  INS SHF CL-N Pchg/1000                     band [-5, 5]  pooled n/a n/a | F14 n/a n/a | F16 n/a n/a
+P17b  INS SHF CL-N served/day                    band [-4, 4]  pooled n/a n/a | F14 n/a n/a | F16 n/a n/a
+P18   INS SHF CL-N guaranteedShare pp day        band [-3, 3]  pooled n/a n/a | F14 n/a n/a | F16 n/a n/a
+P18   INS SHF CL-N guaranteedShare pp w08        band [-3, 3]  pooled n/a n/a | F14 n/a n/a | F16 n/a n/a
+P18   INS SHF CL-N guaranteedShare pp w17        band [-3, 3]  pooled n/a n/a | F14 n/a n/a | F16 n/a n/a
+P11   INS SHHZ CL-N late60First/1000 day         band [-50, -25]  pooled n/a n/a | F14 n/a n/a | F16 n/a n/a
+P12   INS SHHZ CL-N late60First/1000 w08         band [-140, -80]  pooled n/a n/a | F14 n/a n/a | F16 n/a n/a
+P13   INS SHHZ CL-N late60First/1000 w17         band [20, 45]  pooled n/a n/a | F14 n/a n/a | F16 n/a n/a
+P14   INS SHHZ CL-N visRev60 rel %               band [-45, -20]  pooled n/a n/a | F14 n/a n/a | F16 n/a n/a
+P15   INS SHHZ CL-N TV5 s/served                 band [-25, -10]  pooled n/a n/a | F14 n/a n/a | F16 n/a n/a
+P16   INS SHHZ CL-N breachDeadline60 rel %       band [-80, -30]  pooled n/a n/a | F14 n/a n/a | F16 n/a n/a
+P17a  INS SHHZ CL-N Pchg/1000                    band [-5, 5]  pooled n/a n/a | F14 n/a n/a | F16 n/a n/a
+P17b  INS SHHZ CL-N served/day                   band [-4, 4]  pooled n/a n/a | F14 n/a n/a | F16 n/a n/a
+P18   INS SHHZ CL-N guaranteedShare pp day       band [-3, 3]  pooled n/a n/a | F14 n/a n/a | F16 n/a n/a
+P18   INS SHHZ CL-N guaranteedShare pp w08       band [-3, 3]  pooled n/a n/a | F14 n/a n/a | F16 n/a n/a
+P18   INS SHHZ CL-N guaranteedShare pp w17       band [-3, 3]  pooled n/a n/a | F14 n/a n/a | F16 n/a n/a
+P11   INS SHRC CL-N late60First/1000 day         band [-50, -25]  pooled n/a n/a | F14 n/a n/a | F16 n/a n/a
+P12   INS SHRC CL-N late60First/1000 w08         band [-140, -80]  pooled n/a n/a | F14 n/a n/a | F16 n/a n/a
+P13   INS SHRC CL-N late60First/1000 w17         band [20, 45]  pooled n/a n/a | F14 n/a n/a | F16 n/a n/a
+P14   INS SHRC CL-N visRev60 rel %               band [-45, -20]  pooled n/a n/a | F14 n/a n/a | F16 n/a n/a
+P15   INS SHRC CL-N TV5 s/served                 band [-25, -10]  pooled n/a n/a | F14 n/a n/a | F16 n/a n/a
+P16   INS SHRC CL-N breachDeadline60 rel %       band [-80, -30]  pooled n/a n/a | F14 n/a n/a | F16 n/a n/a
+P17a  INS SHRC CL-N Pchg/1000                    band [-5, 5]  pooled n/a n/a | F14 n/a n/a | F16 n/a n/a
+P17b  INS SHRC CL-N served/day                   band [-4, 4]  pooled n/a n/a | F14 n/a n/a | F16 n/a n/a
+P18   INS SHRC CL-N guaranteedShare pp day       band [-3, 3]  pooled n/a n/a | F14 n/a n/a | F16 n/a n/a
+P18   INS SHRC CL-N guaranteedShare pp w08       band [-3, 3]  pooled n/a n/a | F14 n/a n/a | F16 n/a n/a
+P18   INS SHRC CL-N guaranteedShare pp w17       band [-3, 3]  pooled n/a n/a | F14 n/a n/a | F16 n/a n/a
+P11   G2 SHF CL-N late60First/1000 day           band [-50, -25]  pooled n/a n/a | F14 n/a n/a | F16 n/a n/a
+P12   G2 SHF CL-N late60First/1000 w08           band [-140, -80]  pooled n/a n/a | F14 n/a n/a | F16 n/a n/a
+P13   G2 SHF CL-N late60First/1000 w17           band [20, 45]  pooled n/a n/a | F14 n/a n/a | F16 n/a n/a
+P14   G2 SHF CL-N visRev60 rel %                 band [-45, -20]  pooled n/a n/a | F14 n/a n/a | F16 n/a n/a
+P15   G2 SHF CL-N TV5 s/served                   band [-25, -10]  pooled n/a n/a | F14 n/a n/a | F16 n/a n/a
+P16   G2 SHF CL-N breachDeadline60 rel %         band [-80, -30]  pooled n/a n/a | F14 n/a n/a | F16 n/a n/a
+P17a  G2 SHF CL-N Pchg/1000                      band [-5, 5]  pooled n/a n/a | F14 n/a n/a | F16 n/a n/a
+P17b  G2 SHF CL-N served/day                     band [-4, 4]  pooled n/a n/a | F14 n/a n/a | F16 n/a n/a
+P18   G2 SHF CL-N guaranteedShare pp day         band [-3, 3]  pooled n/a n/a | F14 n/a n/a | F16 n/a n/a
+P18   G2 SHF CL-N guaranteedShare pp w08         band [-3, 3]  pooled n/a n/a | F14 n/a n/a | F16 n/a n/a
+P18   G2 SHF CL-N guaranteedShare pp w17         band [-3, 3]  pooled n/a n/a | F14 n/a n/a | F16 n/a n/a
+P11   G2 SHHZ CL-N late60First/1000 day          band [-50, -25]  pooled n/a n/a | F14 n/a n/a | F16 n/a n/a
+P12   G2 SHHZ CL-N late60First/1000 w08          band [-140, -80]  pooled n/a n/a | F14 n/a n/a | F16 n/a n/a
+P13   G2 SHHZ CL-N late60First/1000 w17          band [20, 45]  pooled n/a n/a | F14 n/a n/a | F16 n/a n/a
+P14   G2 SHHZ CL-N visRev60 rel %                band [-45, -20]  pooled n/a n/a | F14 n/a n/a | F16 n/a n/a
+P15   G2 SHHZ CL-N TV5 s/served                  band [-25, -10]  pooled n/a n/a | F14 n/a n/a | F16 n/a n/a
+P16   G2 SHHZ CL-N breachDeadline60 rel %        band [-80, -30]  pooled n/a n/a | F14 n/a n/a | F16 n/a n/a
+P17a  G2 SHHZ CL-N Pchg/1000                     band [-5, 5]  pooled n/a n/a | F14 n/a n/a | F16 n/a n/a
+P17b  G2 SHHZ CL-N served/day                    band [-4, 4]  pooled n/a n/a | F14 n/a n/a | F16 n/a n/a
+P18   G2 SHHZ CL-N guaranteedShare pp day        band [-3, 3]  pooled n/a n/a | F14 n/a n/a | F16 n/a n/a
+P18   G2 SHHZ CL-N guaranteedShare pp w08        band [-3, 3]  pooled n/a n/a | F14 n/a n/a | F16 n/a n/a
+P18   G2 SHHZ CL-N guaranteedShare pp w17        band [-3, 3]  pooled n/a n/a | F14 n/a n/a | F16 n/a n/a
+P11   G2 SHRC CL-N late60First/1000 day          band [-50, -25]  pooled n/a n/a | F14 n/a n/a | F16 n/a n/a
+P12   G2 SHRC CL-N late60First/1000 w08          band [-140, -80]  pooled n/a n/a | F14 n/a n/a | F16 n/a n/a
+P13   G2 SHRC CL-N late60First/1000 w17          band [20, 45]  pooled n/a n/a | F14 n/a n/a | F16 n/a n/a
+P14   G2 SHRC CL-N visRev60 rel %                band [-45, -20]  pooled n/a n/a | F14 n/a n/a | F16 n/a n/a
+P15   G2 SHRC CL-N TV5 s/served                  band [-25, -10]  pooled n/a n/a | F14 n/a n/a | F16 n/a n/a
+P16   G2 SHRC CL-N breachDeadline60 rel %        band [-80, -30]  pooled n/a n/a | F14 n/a n/a | F16 n/a n/a
+P17a  G2 SHRC CL-N Pchg/1000                     band [-5, 5]  pooled n/a n/a | F14 n/a n/a | F16 n/a n/a
+P17b  G2 SHRC CL-N served/day                    band [-4, 4]  pooled n/a n/a | F14 n/a n/a | F16 n/a n/a
+P18   G2 SHRC CL-N guaranteedShare pp day        band [-3, 3]  pooled n/a n/a | F14 n/a n/a | F16 n/a n/a
+P18   G2 SHRC CL-N guaranteedShare pp w08        band [-3, 3]  pooled n/a n/a | F14 n/a n/a | F16 n/a n/a
+P18   G2 SHRC CL-N guaranteedShare pp w17        band [-3, 3]  pooled n/a n/a | F14 n/a n/a | F16 n/a n/a
+P19   DiD G2 visRev60/day                        band [0, 3]  pooled n/a n/a | F14 n/a n/a | F16 n/a n/a
+P20   SYS b-a served/day                         band [-6, 6]  pooled n/a n/a | F14 n/a n/a | F16 n/a n/a
+P21   SYS b-a visRev60/day                       band [-10, -2]  pooled n/a n/a | F14 n/a n/a | F16 n/a n/a
+P22a  SYS b-a late60First/1000 day               band [-45, -15]  pooled n/a n/a | F14 n/a n/a | F16 n/a n/a
+P22b  SYS b-a late60First/1000 w17               band [15, 50]  pooled n/a n/a | F14 n/a n/a | F16 n/a n/a
+P23a  SYS b-a Pchg/1000                          band [-5, 12]  pooled n/a n/a | F14 n/a n/a | F16 n/a n/a
+P23b  SYS b-a TV5 s/served                       band [-20, -1]  pooled n/a n/a | F14 n/a n/a | F16 n/a n/a
+P25a  SYS b-d served/day                         band [-15, -4]  pooled n/a n/a | F14 n/a n/a | F16 n/a n/a
+P25b  SYS b-d visRev60/day                       band [6, 16]  pooled n/a n/a | F14 n/a n/a | F16 n/a n/a
+P25c  SYS b-d late60First/1000                   band [-80, -40]  pooled n/a n/a | F14 n/a n/a | F16 n/a n/a
+P25d  SYS b-d Pchg/1000                          band [-115, -80]  pooled n/a n/a | F14 n/a n/a | F16 n/a n/a
+P25e  SYS b-d TV5 s/served                       band [70, 110]  pooled n/a n/a | F14 n/a n/a | F16 n/a n/a
+P25f  SYS b-d breachDeadline60/1000              band [5, 30]  pooled n/a n/a | F14 n/a n/a | F16 n/a n/a
+P26   INS SHRC_CL - SHF_CL served/day            band [25, 40]  pooled n/a n/a | F14 n/a n/a | F16 n/a n/a
+P26   G2 SHRC_CL - SHF_CL served/day             band [25, 40]  pooled n/a n/a | F14 n/a n/a | F16 n/a n/a
+pooled label tally: {"n/a":94}

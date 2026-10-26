@@ -1,0 +1,26 @@
+wf20/am2017 PLAN-HASH (thăm dò sau kiểm toán). Written 2026-10-26T11:11:48+07:00 before any gate or production simulation run.
+PLAN.md:
+3645ffef3fb9608a2a6597883742034836d52af33bcd812a660cf3ebf7dec430 *PLAN.md
+Code and analysis frozen with the plan (runner, metrics_sh.js, gate17.js, agg17.js, lib17.js = byte copies of SP/wf17/r2-penalty-regime; drive20.js, am_analyze.js new):
+81d7b47e65c582f92ca30f9fd256c7d55ad0b507f33812e12a02f19c197f12e6 *code/runner/engine17.js
+be261baa8cfad3da2c1c357daa04c7f845062fa7bdff63023bb1be1f18468e48 *code/runner/identity.js
+c761de69599ba6b4794398079ec6a741228a77195b10855f6338fd1d1909bce4 *code/runner/lib.js
+dd47d9e345773705f070dea3dec4906883f0eb4a48e7ee76ed5601190be1db6d *code/runner/normalizer_emul.js
+d27d0bee61cb05aceacab98ec0e94630ab1746f2bf3a1fe34e3042d8bdeb2670 *code/runner/scenario.js
+fa8ac72d1883504a9291e29af192b3699a8d552a3b69d1c1072a82ff856b1c25 *code/scripts/drive17.js
+5d4f5140b9886dc865bd6e962387a759a5a91336f602db62cdb7a8351bffb6aa *code/scripts/drive20.js
+27fc660142d09695ac921673e5c222e2096097172b19a14b911815b6ad222dd0 *code/scripts/gate17.js
+f1ee54cc4b9bdf9394b113b323a035115f948268994e280fb7ad0ece4bd294ed *code/scripts/metrics_sh.js
+b22b3755e6164d309582b50718593dc898323301dfa875fc67233e35f2259ed9 *analysis/agg17.js
+1d6ee6d28a4a7be36a57ffbdf332238f11d067dd65af254dfb17b80809b390bd *analysis/am_analyze.js
+9d909ee43c8b0a7816b70321cc54297e630af7d54430b8a0561a84a301215037 *analysis/lib17.js
+7ff230538f9a70aa07840fb4dd9d902538c41d1d36c65c91de9d213ba44ba3aa *analysis/r5_analyze.js
+9c911f55279e453b0b87add2ac2b390ed96d0f42c032137079e851c34f4a6371 *work/panels.json
+1ae2023ce71686fb04f23eedd328fae0420c0a584921d31c410a839c0a4c2cab *scripts/facts.js
+2fb1b88c5e651a33b64dd5398173ce9bbac38a64ce4857fb2526777fc9c29829 *scripts/profile.sql
+Facts outputs (Step 1):
+0bc5deccf3986cf70725fbdb2edf8e7fa9b2d618582cc02e8dffbb980943bd7d *facts/daycount_weekday_2019.csv
+49c8875b62ac18d5767e0a6d6f41a259b75461d0c49f967294c5295b9eba3232 *facts/facts.json
+300b77840629522c1c8399588c988322b1f2b520cda15fdc698c62967315fdf0 *facts/facts_stdout.json
+02ee5de7a97781efec740751d4e69592846f690dbbb83fdc05df24df00eea450 *facts/hourly_weekday_2019.csv
+e8b0c713fe66221d63430912fb4145a2cb308f0824a745ae18b24d90921b3fe6 *facts/window_weekday_2019.csv

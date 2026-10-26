@@ -1,0 +1,35 @@
+group panel: CL late, L_CL | final PAD late, L | slope late~L across PAD runs (n) | CL - PAD raw | CL - PAD at equal panel length (interp) | with slope incl N
+G2 SHRC w08 F14: CL 211.34 L 1540.02 | PAD 221.11 L 1544.45 (gap +4.42) | slope -2.16 (n 8, r -0.86) | raw -9.77 | eqLen -20.23 | eqLen(N incl, slope -3.39) -26.14 | via r* 1.02471: -22.87
+G2 SHRC w08 F16: CL 213.84 L 1550.62 | PAD 232.32 L 1546.87 (gap -3.76) | slope -1.95 (n 8, r -0.67) | raw -18.48 | eqLen -13.35 | eqLen(N incl, slope -2.64) -11.75 | via r* 1.03649: -8.71
+G2 SHRC w08 all: CL 212.67 L 1545.73 | PAD 227.09 L 1545.75 (gap +0.02) | slope -2.34 (n 8, r -0.81) | raw -14.41 | eqLen -16.36 | eqLen(N incl, slope -2.97) -16.96 | via r* 1.03006: -17.16
+G2 SHRC w17 F14: CL 209.79 L 1636.54 | PAD 205.29 L 1637.64 (gap +1.10) | slope -1.02 (n 9, r -0.53) | raw +4.50 | eqLen +0.31 | eqLen(N incl, slope -1.02) +0.30 | via r* 0.97353: -4.94
+G2 SHRC w17 F16: CL 210.49 L 1599.37 | PAD 225.90 L 1597.33 (gap -2.04) | slope -0.91 (n 9, r -0.92) | raw -15.41 | eqLen -12.18 | eqLen(N incl, slope -1.50) -9.77 | via r* 0.98162: -11.67
+G2 SHRC w17 all: CL 210.16 L 1616.43 | PAD 216.28 L 1615.83 (gap -0.60) | slope -1.21 (n 9, r -0.92) | raw -6.12 | eqLen -6.00 | eqLen(N incl, slope -1.37) -5.87 | via r* 0.97997: -5.91
+G2 SHHZ w08 F14: CL 207.91 L 1555.37 | PAD 210.54 L 1560.46 (gap +5.09) | slope -0.80 (n 6, r -0.90) | raw -2.63 | eqLen -5.63 | eqLen(N incl, slope -3.18) -14.35 | via r* 1.03109: -6.28
+G2 SHHZ w08 F16: CL 206.02 L 1559.18 | PAD 219.86 L 1555.57 (gap -3.61) | slope -1.18 (n 6, r -0.97) | raw -13.84 | eqLen -10.18 | eqLen(N incl, slope -3.20) -2.36 | via r* 1.03727: -10.21
+G2 SHHZ w08 all: CL 206.90 L 1557.41 | PAD 215.51 L 1557.84 (gap +0.43) | slope -1.07 (n 6, r -0.98) | raw -8.61 | eqLen -8.72 | eqLen(N incl, slope -3.20) -7.90 | via r* 1.03462: -8.71
+G2 SHHZ w17 F14: CL 208.37 L 1650.80 | PAD 199.60 L 1649.07 (gap -1.73) | slope -1.16 (n 5, r -0.95) | raw +8.77 | eqLen +9.51 | eqLen(N incl, slope -0.71) +8.16 | via r* 0.98202: +9.59
+G2 SHHZ w17 F16: CL 207.91 L 1607.21 | PAD 217.70 L 1608.71 (gap +1.50) | slope -2.06 (n 5, r -0.95) | raw -9.79 | eqLen -11.60 | eqLen(N incl, slope -1.73) -11.59 | via r* 0.97973: -11.65
+G2 SHHZ w17 all: CL 208.12 L 1627.25 | PAD 209.25 L 1627.23 (gap -0.03) | slope -1.70 (n 5, r -1.00) | raw -1.13 | eqLen -1.02 | eqLen(N incl, slope -1.26) -1.62 | via r* 0.98094: -1.01
+INS SHRC w08 F14: CL 208.67 L 1539.50 | PAD 217.01 L 1542.27 (gap +2.77) | slope -3.09 (n 2, r -1.00) | raw -8.34 | eqLen -16.91 | eqLen(N incl, slope -3.66) -18.26 | via r* 1.02951: -16.91
+INS SHRC w08 F16: CL 209.17 L 1544.92 | PAD 225.79 L 1543.44 (gap -1.48) | slope -0.17 (n 2, r -1.00) | raw -16.62 | eqLen -16.36 | eqLen(N incl, slope -3.27) -9.69 | via r* 1.03342: -16.36
+INS SHRC w08 all: CL 208.94 L 1542.41 | PAD 221.69 L 1542.90 (gap +0.49) | slope -1.12 (n 2, r -1.00) | raw -12.76 | eqLen -13.30 | eqLen(N incl, slope -3.44) -13.19 | via r* 1.03216: -13.30
+INS SHRC w17 F14: CL 205.98 L 1636.91 | PAD 199.14 L 1637.96 (gap +1.04) | slope -1.37 (n 10, r -0.77) | raw +6.83 | eqLen +3.67 | eqLen(N incl, slope -1.09) +3.83 | via r* 0.97772: +3.07
+INS SHRC w17 F16: CL 204.97 L 1593.98 | PAD 221.85 L 1593.58 (gap -0.41) | slope -1.18 (n 10, r -0.94) | raw -16.87 | eqLen -15.16 | eqLen(N incl, slope -1.58) -13.90 | via r* 0.98066: -14.89
+INS SHRC w17 all: CL 205.44 L 1613.68 | PAD 211.25 L 1613.89 (gap +0.21) | slope -1.36 (n 10, r -0.91) | raw -5.81 | eqLen -6.01 | eqLen(N incl, slope -1.39) -5.96 | via r* 0.97953: -5.74
+INS SHHZ w08 F14: CL 208.95 L 1545.05 | PAD 221.31 L 1547.49 (gap +2.44) | slope -0.87 (n 6, r -0.95) | raw -12.35 | eqLen -12.67 | eqLen(N incl, slope -2.91) -19.05 | via r* 1.02954: -12.82
+INS SHHZ w08 F16: CL 208.11 L 1545.02 | PAD 229.45 L 1543.63 (gap -1.39) | slope -3.11 (n 6, r -0.76) | raw -21.35 | eqLen -15.07 | eqLen(N incl, slope -3.08) -15.12 | via r* 1.03503: -12.33
+INS SHHZ w08 all: CL 208.50 L 1545.03 | PAD 225.65 L 1545.42 (gap +0.39) | slope -1.77 (n 6, r -0.95) | raw -17.15 | eqLen -15.98 | eqLen(N incl, slope -3.04) -16.95 | via r* 1.03081: -16.09
+INS SHHZ w17 F14: CL 206.51 L 1646.89 | PAD 194.77 L 1642.79 (gap -4.10) | slope -2.24 (n 7, r -0.88) | raw +11.75 | eqLen +21.93 | eqLen(N incl, slope -0.74) +12.67 | via r* 0.98907: +25.29
+INS SHHZ w17 F16: CL 204.13 L 1598.34 | PAD 214.02 L 1601.31 (gap +2.98) | slope -1.76 (n 7, r -0.97) | raw -9.89 | eqLen -16.36 | eqLen(N incl, slope -1.85) -16.33 | via r* 0.97934: -16.39
+INS SHHZ w17 all: CL 205.24 L 1620.62 | PAD 205.03 L 1620.33 (gap -0.29) | slope -2.00 (n 7, r -0.96) | raw +0.21 | eqLen +0.73 | eqLen(N incl, slope -1.35) -1.19 | via r* 0.98229: +1.08
+
+Summary (CL - PAD late/1000): raw vs equal-length by interpolation across PAD runs [late~L] / [late~L incl N] / [smooth in r]
+G2 SHRC w08: F14 raw -9.77 eq -20.23/-26.14/-22.87 | F16 raw -18.48 eq -13.35/-11.75/-8.71 | all raw -14.41 eq -16.36/-16.96/-17.16
+G2 SHRC w17: F14 raw +4.50 eq +0.31/+0.30/-4.94 | F16 raw -15.41 eq -12.18/-9.77/-11.67 | all raw -6.12 eq -6.00/-5.87/-5.91
+G2 SHHZ w08: F14 raw -2.63 eq -5.63/-14.35/-6.28 | F16 raw -13.84 eq -10.18/-2.36/-10.21 | all raw -8.61 eq -8.72/-7.90/-8.71
+G2 SHHZ w17: F14 raw +8.77 eq +9.51/+8.16/+9.59 | F16 raw -9.79 eq -11.60/-11.59/-11.65 | all raw -1.13 eq -1.02/-1.62/-1.01
+INS SHRC w08: F14 raw -8.34 eq -16.91/-18.26/-16.91 | F16 raw -16.62 eq -16.36/-9.69/-16.36 | all raw -12.76 eq -13.30/-13.19/-13.30
+INS SHRC w17: F14 raw +6.83 eq +3.67/+3.83/+3.07 | F16 raw -16.87 eq -15.16/-13.90/-14.89 | all raw -5.81 eq -6.01/-5.96/-5.74
+INS SHHZ w08: F14 raw -12.35 eq -12.67/-19.05/-12.82 | F16 raw -21.35 eq -15.07/-15.12/-12.33 | all raw -17.15 eq -15.98/-16.95/-16.09
+INS SHHZ w17: F14 raw +11.75 eq +21.93/+12.67/+25.29 | F16 raw -9.89 eq -16.36/-16.33/-16.39 | all raw +0.21 eq +0.73/-1.19/+1.08

@@ -1,0 +1,47 @@
+# wf21/n7 all gates (label wf21-n7-exploratory-post-audit), assembled 2026-10-26T08:46:51Z
+
+## Causal-index builder (before PLAN; input data only)
+2019-08 bins.csv rows 2976: differing cells per column day=0 bin=0 n=0 e_med=0 e_mean=767(maxRel 4.9e-15) q25=0 q75=0 e_h0=0 e_h1=0 e_yellow=0 n_yellow=0 e_boro=0 n_boro=0 e_trim=2246(maxRel 1.9e-13)
+2019-08 od_ref.csv: 3369 rows; as sorted sets IDENTICAL (file order differs only among ties of n)
+2019-09 bins.csv rows 2880: differing cells per column day=0 bin=0 n=0 e_med=0 e_mean=736(maxRel 3.3e-14) q25=0 q75=0 e_h0=0 e_h1=0 e_yellow=0 n_yellow=0 e_boro=0 n_boro=0 e_trim=2249(maxRel 7.9e-14)
+2019-09 od_ref.csv: 3369 rows; as sorted sets IDENTICAL (file order differs only among ties of n)
+2019-10 bins.csv rows 2976: differing cells per column day=0 bin=0 n=0 e_med=0 e_mean=795(maxRel 1.1e-13) q25=0 q75=0 e_h0=0 e_h1=0 e_yellow=0 n_yellow=0 e_boro=0 n_boro=0 e_trim=2278(maxRel 3.7e-14)
+2019-10 od_ref.csv: 3371 rows; as sorted sets IDENTICAL (file order differs only among ties of n)
+2019-11 bins.csv rows 2880: differing cells per column day=0 bin=0 n=0 e_med=0 e_mean=874(maxRel 2.2e-14) q25=0 q75=0 e_h0=0 e_h1=0 e_yellow=0 n_yellow=0 e_boro=0 n_boro=0 e_trim=2198(maxRel 9.7e-15)
+2019-11 od_ref.csv: 3358 rows; as sorted sets IDENTICAL (file order differs only among ties of n)
+2019-12 bins.csv rows 2976: differing cells per column day=0 bin=0 n=0 e_med=0 e_mean=740(maxRel 1.1e-14) q25=0 q75=0 e_h0=0 e_h1=0 e_yellow=0 n_yellow=0 e_boro=0 n_boro=0 e_trim=2348(maxRel 1.6e-14)
+2019-12 od_ref.csv: 3360 rows; as sorted sets IDENTICAL (file order differs only among ties of n)
+CI-1 old rule rebuilt == accuracy-index-2019.json: 153 days x 96 bins = 14688 values, mismatches 0, JSON string identical true -> PASS
+CI-2 per-target old-rule profiles == CL profiles from accuracy-index-2019.json: 60 day-windows, mismatches 0, both-null 0 -> PASS
+CI-3 causal file: all stored days < target, reference month before target month, >= 2 sources and the same source days as CL -> PASS
+
+## Pre-production (gates/gate_rows.ndjson, 96 rows)
+G1 N/CL rows == wf20 rows on every wf20 field (except label, ms, msScore): 48/48 equal, missing 0, field-set mismatches 0 -> PASS 
+G2 PAD(r=1) == N (sigR3 + every wf20 field except label, ms, msScore, mode, sig, sigX, fc): 24/24 -> PASS 
+G3 CLc path with OLD-rule index == CL (every field except label, ms, msScore, mode, fcIndex, variant): 24/24 -> PASS 
+G4 SHRC ledger breaches = 0: 48/48 -> PASS
+G5 x* = 72 % INS / 71 % G2: 96/96 -> PASS
+G8 plN = promised, plServedN = served: 96/96 -> PASS
+
+## After N/CL production (results/GATES-mid-NCL.txt)
+G1 N/CL rows == wf20 rows on every wf20 field (except label, ms, msScore): 1440/1440 equal, missing 0, field-set mismatches 0 -> PASS 
+G2 PAD(r=1) == N (sigR3 + every wf20 field except label, ms, msScore, mode, sig, sigX, fc): 0/0 -> n/a 
+G3 CLc path with OLD-rule index == CL (every field except label, ms, msScore, mode, fcIndex, variant): 0/0 -> n/a 
+G4 SHRC ledger breaches = 0: 720/720 -> PASS
+G5 x* = 72 % INS / 71 % G2: 1440/1440 -> PASS
+G8 plN = promised, plServedN = served: 1440/1440 -> PASS
+
+## Post-production (results/GATES-post.txt; G2/G3 are n/a there because their rows live in gates/, see pre-production)
+G1 N/CL rows == wf20 rows on every wf20 field (except label, ms, msScore): 1440/1440 equal, missing 0, field-set mismatches 0 -> PASS 
+G2 PAD(r=1) == N (sigR3 + every wf20 field except label, ms, msScore, mode, sig, sigX, fc): 0/0 -> n/a 
+G3 CLc path with OLD-rule index == CL (every field except label, ms, msScore, mode, fcIndex, variant): 0/0 -> n/a 
+G4 SHRC ledger breaches = 0: 1800/1800 -> PASS
+G5 x* = 72 % INS / 71 % G2: 3600/3600 -> PASS
+G8 plN = promised, plServedN = served: 3600/3600 -> PASS
+G6 CLc == CL on the 6 identical-profile days: 144/144 (expected 144) -> PASS 
+G7 completeness: 20 mode x config x arm groups, 20 with 180 cells, duplicates 0 -> PASS
+G9a gate rows (variant null) == production rows: 48/48 (missing 0) -> PASS
+G9b production PAD (and PADc) rows == calibration rows at the same flatRatio: 1440/1440 (missing 0) -> PASS
+
+## Calibration
+PAD: 7/8 groups |L_PAD - L_CL| <= 0.5 s; G2|w17|SHRC -0.60 s after 6 tries (best r used). PADc: 8/8 groups <= 0.5 s. Errors in any job: 0 (8,466 runs).

@@ -1,0 +1,28 @@
+{
+ "label": "wf21-n7-exploratory-post-audit; calibration reads promise length only",
+ "refMode": "CLc",
+ "variant": "calPADc",
+ "tolS": 0.5,
+ "converged": true,
+ "flat": {
+  "INS|w08|SHRC": 1.031702,
+  "INS|w08|SHHZ": 1.0298,
+  "INS|w17|SHRC": 0.978283,
+  "INS|w17|SHHZ": 0.98123,
+  "G2|w08|SHRC": 1.029652,
+  "G2|w08|SHHZ": 1.033319,
+  "G2|w17|SHRC": 0.980272,
+  "G2|w17|SHHZ": 0.981289
+ },
+ "table": [
+  "INS|w08|SHRC   L_N 1518.01  L*(CLc) 1541.79  (L*-L_N 23.78 s)  tried r=1.031702 L=1541.80 gap=0.02  CONVERGED",
+  "INS|w08|SHHZ   L_N 1518.78  L*(CLc) 1543.98  (L*-L_N 25.20 s)  tried r=1.033599 L=1547.92 gap=3.94; r=1.029058 L=1543.21 gap=-0.77; r=1.0298 L=1543.66 gap=-0.32  CONVERGED",
+  "INS|w17|SHRC   L_N 1631.44  L*(CLc) 1612.54  (L*-L_N -18.91 s)  tried r=0.974793 L=1607.61 gap=-4.92; r=0.98 L=1614.42 gap=1.88; r=0.978559 L=1614.50 gap=1.96; r=0.977489 L=1611.67 gap=-0.87; r=0.978283 L=1612.48 gap=-0.05  CONVERGED",
+  "INS|w17|SHHZ   L_N 1638.57  L*(CLc) 1619.42  (L*-L_N -19.14 s)  tried r=0.974473 L=1612.25 gap=-7.18; r=0.981432 L=1620.06 gap=0.63; r=0.980867 L=1618.28 gap=-1.14; r=0.98123 L=1619.72 gap=0.29  CONVERGED",
+  "G2|w08|SHRC    L_N 1518.80  L*(CLc) 1544.87  (L*-L_N 26.07 s)  tried r=1.034759 L=1548.29 gap=3.42; r=1.030733 L=1545.38 gap=0.51; r=1.030143 L=1545.69 gap=0.82; r=1.030052 L=1545.62 gap=0.75; r=1.029852 L=1547.21 gap=2.33; r=1.029652 L=1545.33 gap=0.46  CONVERGED",
+  "G2|w08|SHHZ    L_N 1529.87  L*(CLc) 1555.59  (L*-L_N 25.72 s)  tried r=1.034298 L=1556.98 gap=1.39; r=1.032539 L=1554.48 gap=-1.11; r=1.033319 L=1555.83 gap=0.24  CONVERGED",
+  "G2|w17|SHRC    L_N 1634.15  L*(CLc) 1616.46  (L*-L_N -17.68 s)  tried r=0.97642 L=1611.08 gap=-5.38; r=0.981923 L=1618.77 gap=2.31; r=0.980272 L=1616.44 gap=-0.03  CONVERGED",
+  "G2|w17|SHHZ    L_N 1643.65  L*(CLc) 1626.90  (L*-L_N -16.75 s)  tried r=0.97767 L=1623.67 gap=-3.24; r=0.981289 L=1627.22 gap=0.32  CONVERGED",
+  "max iterations so far (complete groups) 6; all converged true"
+ ]
+}

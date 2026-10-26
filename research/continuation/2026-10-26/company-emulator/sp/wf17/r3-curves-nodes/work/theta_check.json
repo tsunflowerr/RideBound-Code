@@ -1,0 +1,164 @@
+{
+ "label": "wf17-exploratory-post-audit",
+ "check": "R6 theta(x*) from --ref equals frozen theta",
+ "at": "2026-10-23T09:35:41.737Z",
+ "rows": [
+  {
+   "config": "INS",
+   "win": "w08",
+   "x": 72,
+   "thetaRef": 69.50030332890114,
+   "thetaFrozen": 69.50030332890114,
+   "bitwiseEqual": true,
+   "M": 20654
+  },
+  {
+   "config": "INS",
+   "win": "w08",
+   "x": 50,
+   "thetaRef": 34.32782341327787
+  },
+  {
+   "config": "INS",
+   "win": "w08",
+   "x": 60,
+   "thetaRef": 47.50372733210665
+  },
+  {
+   "config": "INS",
+   "win": "w08",
+   "x": 70,
+   "thetaRef": 65.40527548354645
+  },
+  {
+   "config": "INS",
+   "win": "w08",
+   "x": 80,
+   "thetaRef": 90.961676912592
+  },
+  {
+   "config": "INS",
+   "win": "w08",
+   "x": 90,
+   "thetaRef": 133.37117947033113
+  },
+  {
+   "config": "INS",
+   "win": "w17",
+   "x": 72,
+   "thetaRef": 54.43353339682125,
+   "thetaFrozen": 54.43353339682125,
+   "bitwiseEqual": true,
+   "M": 22943
+  },
+  {
+   "config": "INS",
+   "win": "w17",
+   "x": 50,
+   "thetaRef": 27.348258117257384
+  },
+  {
+   "config": "INS",
+   "win": "w17",
+   "x": 60,
+   "thetaRef": 37.32810917582523
+  },
+  {
+   "config": "INS",
+   "win": "w17",
+   "x": 70,
+   "thetaRef": 50.79953545165226
+  },
+  {
+   "config": "INS",
+   "win": "w17",
+   "x": 80,
+   "thetaRef": 72.43860847442407
+  },
+  {
+   "config": "INS",
+   "win": "w17",
+   "x": 90,
+   "thetaRef": 110.79515607670851
+  },
+  {
+   "config": "G2",
+   "win": "w08",
+   "x": 71,
+   "thetaRef": 66.72067841389695,
+   "thetaFrozen": 66.72067841389695,
+   "bitwiseEqual": true,
+   "M": 20917
+  },
+  {
+   "config": "G2",
+   "win": "w08",
+   "x": 50,
+   "thetaRef": 33.82950120887088
+  },
+  {
+   "config": "G2",
+   "win": "w08",
+   "x": 60,
+   "thetaRef": 47.04783450621888
+  },
+  {
+   "config": "G2",
+   "win": "w08",
+   "x": 70,
+   "thetaRef": 64.5395458238727
+  },
+  {
+   "config": "G2",
+   "win": "w08",
+   "x": 80,
+   "thetaRef": 90.18732272289427
+  },
+  {
+   "config": "G2",
+   "win": "w08",
+   "x": 90,
+   "thetaRef": 133.06335001572768
+  },
+  {
+   "config": "G2",
+   "win": "w17",
+   "x": 71,
+   "thetaRef": 52.494082647339084,
+   "thetaFrozen": 52.494082647339084,
+   "bitwiseEqual": true,
+   "M": 23295
+  },
+  {
+   "config": "G2",
+   "win": "w17",
+   "x": 50,
+   "thetaRef": 26.886266619048858
+  },
+  {
+   "config": "G2",
+   "win": "w17",
+   "x": 60,
+   "thetaRef": 36.76381940762284
+  },
+  {
+   "config": "G2",
+   "win": "w17",
+   "x": 70,
+   "thetaRef": 50.7100267574828
+  },
+  {
+   "config": "G2",
+   "win": "w17",
+   "x": 80,
+   "thetaRef": 70.98444440448176
+  },
+  {
+   "config": "G2",
+   "win": "w17",
+   "x": 90,
+   "thetaRef": 109.60342149302438
+  }
+ ],
+ "pass": true
+}

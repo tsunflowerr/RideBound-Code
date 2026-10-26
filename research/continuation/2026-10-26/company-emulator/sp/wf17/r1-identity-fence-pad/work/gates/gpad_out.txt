@@ -1,0 +1,18 @@
+RC120: k_w08 2.32%  k_w17 0.18% of remaining promise time
+  pooled Y: naive 15.15%  display 6.19%  pad(k_w) 9.02%  pad(k_cell) 9.07%
+  pooled E: naive 7.50%  display 8.44%  pad(k_w) 10.39%  pad(k_cell) 10.36%
+  dY display - naive        -9.01 pp [-10.13, -7.89]  0+/18-  sign p 0.0000076
+  dY pad(k_w) - naive       -6.13 pp [-6.65, -5.61]  0+/18-  sign p 0.0000076
+  dY display - pad(k_w)     -2.88 pp [-3.76, -2.00]  0+/17-  sign p 0.000015
+  dY display - pad(k_cell)  -2.92 pp [-3.58, -2.25]  0+/18-  sign p 0.0000076
+  w08: Y naive 25.85%  display 7.89%  pad(k_w) 13.50%
+  w17: Y naive 5.09%  display 4.58%  pad(k_w) 4.82%
+U: k_w08 2.49%  k_w17 0.17% of remaining promise time
+  pooled Y: naive 33.09%  display 26.77%  pad(k_w) 28.45%  pad(k_cell) 28.54%
+  pooled E: naive 5.41%  display 6.24%  pad(k_w) 7.87%  pad(k_cell) 7.83%
+  dY display - naive        -6.35 pp [-7.25, -5.46]  0+/18-  sign p 0.0000076
+  dY pad(k_w) - naive       -4.64 pp [-5.18, -4.11]  0+/18-  sign p 0.0000076
+  dY display - pad(k_w)     -1.71 pp [-2.38, -1.04]  1+/17-  sign p 0.00014
+  dY display - pad(k_cell)  -1.79 pp [-2.20, -1.38]  0+/18-  sign p 0.0000076
+  w08: Y naive 38.09%  display 25.16%  pad(k_w) 28.57%
+  w17: Y naive 28.55%  display 28.23%  pad(k_w) 28.35%

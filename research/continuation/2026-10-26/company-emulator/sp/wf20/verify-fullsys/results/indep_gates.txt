@@ -1,0 +1,19 @@
+verify-fullsys independent gate check 2026-10-26T04:47:34.421Z (thăm dò sau kiểm toán)
+rows 3600; label == wf20-fullsys-exploratory-post-audit: 3600; gate rows 120 (label ok 120)
+x*/theta*: Shadow rows 2232, wrong 0 -> PASS (x* 72 INS / 71 G2; theta = frozen theta*[config][window] exactly) 
+completeness: groups 40 (want 40), groups with wrong cell set 0, duplicate keys 0, cell/day/win/rs inconsistent 0; F14 days 14 (cells 84), F16 days 16 (cells 96) -> PASS
+wf15 main rows 5040, duplicate (cell|config|arm) keys 0
+g1 F14 N Shadow vs wf15: rows 504, compared 504, no ref 0; fields differing (count of rows): {"part":504,"engine":504,"ms":504,"panel":504,"variant":504,"fenceTolMs":504,"label":504,"audit":504,"sig":504,"sigX":504,"diagTieBreaks":504,"sigR3":504,"msScore":503}
+   -> non-bookkeeping fields differing: [["variant",504],["fenceTolMs",504],["audit",504],["sig",504],["sigX",504],["diagTieBreaks",504]]
+g1x F14 N EOHZ35/RCE35 vs wf15: rows 336, compared 336, no ref 0; fields differing (count of rows): {"part":336,"engine":336,"ms":336,"msScore":336,"panel":336,"variant":336,"fenceTolMs":336,"label":336,"audit":336,"sig":336,"sigX":336,"diagTieBreaks":336,"sigR3":336}
+   -> non-bookkeeping fields differing: [["variant",336],["fenceTolMs",336],["audit",336],["sig",336],["sigX",336],["diagTieBreaks",336]]
+wf17 R3 rows (flatRatio null) 2340, duplicate keys 0
+g2 EOHZ35/RCE35 vs wf17 R3: rows 1440, compared 1440, no ref 0; R3 fields differing: [["label",1440],["check",1440],["flatRatio",1440],["ms",1440],["sig",1440]]
+   -> non-bookkeeping R3 fields differing (sig differs by design: wf20 sig includes the clipped pickup ETA; sigR3 is the R3 fingerprint): [["flatRatio",1440]]
+rider fingerprint 'sig' of F14 N rows vs wf15 rows that carry sig: equal 0/0
+g3 SHRC N: rows 360, rows with any ledger breach 0 -> PASS
+g3 SHRC CL: rows 360, rows with any ledger breach 0 -> PASS
+context: total breachLedger by arm (sum over rows): {"SHF_INS_N":336,"SHHZ_INS_N":392,"SHRC_INS_N":0,"EOHZ35_INS_N":623,"RCE35_INS_N":0,"SHF_G2_N":2428,"SHHZ_G2_N":3115,"SHRC_G2_N":0,"EOHZ35_G2_N":2184,"RCE35_G2_N":0,"SHF_INS_CL":253,"SHHZ_INS_CL":275,"SHRC_INS_CL":0,"EOHZ35_INS_CL":395,"RCE35_INS_CL":0,"SHF_G2_CL":2605,"SHHZ_G2_CL":2996,"SHRC_G2_CL":0,"EOHZ35_G2_CL":2002,"RCE35_G2_CL":0}
+g5 determinism: gate rows 120, matched in production 120, differing 0 {} -> PASS
+forecast active (CL vs N same cell): {"SHF_INS":{"pairs":180,"sigEqual":0,"clipCL":20736,"clipN":0,"metricsEqual":0},"SHHZ_INS":{"pairs":180,"sigEqual":0,"clipCL":24140,"clipN":0,"metricsEqual":0},"SHRC_INS":{"pairs":180,"sigEqual":0,"clipCL":24262,"clipN":0,"metricsEqual":0},"EOHZ35_INS":{"pairs":180,"sigEqual":0,"clipCL":22805,"clipN":0,"metricsEqual":0},"RCE35_INS":{"pairs":180,"sigEqual":0,"clipCL":22763,"clipN":0,"metricsEqual":0},"SHF_G2":{"pairs":180,"sigEqual":0,"clipCL":17949,"clipN":0,"metricsEqual":0},"SHHZ_G2":{"pairs":180,"sigEqual":0,"clipCL":22557,"clipN":0,"metricsEqual":0},"SHRC_G2":{"pairs":180,"sigEqual":0,"clipCL":23383,"clipN":0,"metricsEqual":0},"EOHZ35_G2":{"pairs":180,"sigEqual":0,"clipCL":21091,"clipN":0,"metricsEqual":0},"RCE35_G2":{"pairs":180,"sigEqual":0,"clipCL":22138,"clipN":0,"metricsEqual":0}}
+error files in results/: none; run manifest lines 8; fields [{"tasks":168},{"finished":"2026-10-26T04:15:44.854Z","tasks":168,"errors":0},{"tasks":168},{"finished":"2026-10-26T04:24:06.812Z","tasks":168,"errors":0},{"tasks":192},{"finished":"2026-10-26T04:30:52.996Z","tasks":192,"errors":0},{"tasks":192},{"finished":"2026-10-26T04:37:28.528Z","tasks":192,"errors":0}]

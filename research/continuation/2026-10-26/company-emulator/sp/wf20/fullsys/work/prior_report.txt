@@ -1,0 +1,6 @@
+wf20-fullsys-exploratory-post-audit: prior export 2026-10-26T04:02:34.068Z
+g0a re-export of wf15 days_all.csv: sha256 d40e2f3b0c4b7ec4a4caa992f129d205cf618c3d51489776b3a5cfd7e694375b; wf15 d40e2f3b0c4b7ec4a4caa992f129d205cf618c3d51489776b3a5cfd7e694375b; PASS
+F16 prior E:/RideBoundData/company-intake/2026-10-23/sp/wf20/fullsys/work/prior_F16/prior_prevhour.csv: sha256 68a5269fb77d2f4ec532ecccd674a9b764faa960dd0f5cbea5253b57a8a20840; day-window keys 32 (want 32)
+F16 cells 96; cells without prior 0; O/D total mismatch 0; request zone mismatches 0
+F16 preceding-hour eligible requests per window: min 1151, median 1693, max 2807
+g0b F16 prior checks: PASS

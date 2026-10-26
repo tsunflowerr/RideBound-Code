@@ -1,0 +1,3 @@
+# wf21/n7 forecast accuracy (descriptive): MAE15 in % (mean |log error|), per window; days = 30 targets
+w08: MAE15 CL 2.874 %  CLc 2.871 %  naive 6.059 %  | days CLc better than CL 14, worse 10, equal 6 | CL better than naive 30/30, CLc better than naive 30/30
+w17: MAE15 CL 3.071 %  CLc 3.066 %  naive 9.288 %  | days CLc better than CL 14, worse 10, equal 6 | CL better than naive 30/30, CLc better than naive 30/30

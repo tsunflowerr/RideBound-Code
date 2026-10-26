@@ -1,0 +1,115 @@
+## (1a) rider-weighted mean promise length per panel x window (s): PAD - CL, PADc - CLc
+INS SHRC w08  F14: PAD-CL +2.77 PADc-CLc +2.88 | F16: PAD-CL -1.48 PADc-CLc -2.46 | all: PAD-CL +0.49 PADc-CLc +0.02
+INS SHRC w17  F14: PAD-CL +1.04 PADc-CLc +3.36 | F16: PAD-CL -0.41 PADc-CLc -2.93 | all: PAD-CL +0.21 PADc-CLc -0.05
+INS SHHZ w08  F14: PAD-CL +2.44 PADc-CLc +2.29 | F16: PAD-CL -1.39 PADc-CLc -2.58 | all: PAD-CL +0.39 PADc-CLc -0.32
+INS SHHZ w17  F14: PAD-CL -4.10 PADc-CLc -2.36 | F16: PAD-CL +2.98 PADc-CLc +2.53 | all: PAD-CL -0.29 PADc-CLc +0.29
+G2 SHRC w08  F14: PAD-CL +4.42 PADc-CLc +3.61 | F16: PAD-CL -3.76 PADc-CLc -2.23 | all: PAD-CL +0.02 PADc-CLc +0.46
+G2 SHRC w17  F14: PAD-CL +1.10 PADc-CLc +1.51 | F16: PAD-CL -2.04 PADc-CLc -1.35 | all: PAD-CL -0.60 PADc-CLc -0.03
+G2 SHHZ w08  F14: PAD-CL +5.09 PADc-CLc +5.56 | F16: PAD-CL -3.61 PADc-CLc -4.37 | all: PAD-CL +0.43 PADc-CLc +0.24
+G2 SHHZ w17  F14: PAD-CL -1.73 PADc-CLc +0.61 | F16: PAD-CL +1.50 PADc-CLc +0.16 | all: PAD-CL -0.03 PADc-CLc +0.32
+
+## (1b) OLS of per-day (CL - PAD) late/1000 on per-day (CL - PAD) PL (s), 30 days; slope b, intercept a = length-adjusted info effect at equal PL
+     cross-mode reference slope = (PAD - N late)/(PAD - N PL) pooled
+CL-PAD G2 SHRC w08: b -0.21 (se 0.36, r -0.11), a -14.37 (se 4.15); xmode slope -3.07 || F14: raw -9.77 PLd -4.15 adjOLS -10.62 adjX -22.52 | F16: raw -18.48 PLd +4.02 adjOLS -17.65 adjX -6.14 | all: raw -14.41 PLd +0.21 adjOLS -14.37 adjX -13.78 || pooled adjX -13.78 [-28.75, +1.19] 19-/11+ p 0.200 ; adjOLS -14.37 [-22.72, -6.02] 23-/7+ p 0.005
+CL-PAD G2 SHRC w17: b -0.31 (se 0.38, r -0.15), a -5.78 (se 4.19); xmode slope -1.33 || F14: raw +4.50 PLd -0.59 adjOLS +4.31 adjX +3.71 | F16: raw -15.41 PLd +2.56 adjOLS -14.62 adjX -12.01 | all: raw -6.12 PLd +1.09 adjOLS -5.78 adjX -4.67 || pooled adjX -4.67 [-14.08, +4.74] 15-/15+ p 1.000 ; adjOLS -5.78 [-14.16, +2.59] 17-/13+ p 0.585
+CL-PAD G2 SHRC day: b -0.47 (se 0.39, r -0.22), a -9.72 (se 3.21); xmode slope -7.13 || F14: raw -2.59 PLd -2.40 adjOLS -3.71 adjX -19.67 | F16: raw -16.37 PLd +2.97 adjOLS -14.98 adjX +4.82 | all: raw -9.94 PLd +0.47 adjOLS -9.72 adjX -6.61 || pooled adjX -6.61 [-28.11, +14.89] 15-/15+ p 1.000 ; adjOLS -9.72 [-16.15, -3.29] 21-/9+ p 0.043
+CL-PAD G2 SHHZ w08: b +0.51 (se 0.48, r 0.20), a -8.26 (se 4.38); xmode slope -3.13 || F14: raw -2.63 PLd -5.48 adjOLS +0.15 adjX -19.81 | F16: raw -13.84 PLd +3.49 adjOLS -15.61 adjX -2.91 | all: raw -8.61 PLd -0.70 adjOLS -8.26 adjX -10.80 || pooled adjX -10.80 [-26.14, +4.55] 18-/12+ p 0.362 ; adjOLS -8.26 [-17.03, +0.52] 18-/12+ p 0.362
+CL-PAD G2 SHHZ w17: b +0.31 (se 0.42, r 0.14), a -1.09 (se 4.20); xmode slope -1.18 || F14: raw +8.77 PLd +1.85 adjOLS +8.20 adjX +10.95 | F16: raw -9.79 PLd -1.84 adjOLS -9.22 adjX -11.96 | all: raw -1.13 PLd -0.12 adjOLS -1.09 adjX -1.27 || pooled adjX -1.27 [-11.43, +8.90] 16-/14+ p 0.856 ; adjOLS -1.09 [-9.52, +7.34] 13-/17+ p 0.585
+CL-PAD G2 SHHZ day: b +0.41 (se 0.51, r 0.15), a -4.54 (se 3.23); xmode slope -6.22 || F14: raw +2.92 PLd -1.56 adjOLS +3.55 adjX -6.79 | F16: raw -11.30 PLd +0.79 adjOLS -11.62 adjX -6.41 | all: raw -4.67 PLd -0.31 adjOLS -4.54 adjX -6.59 || pooled adjX -6.59 [-23.82, +10.64] 14-/16+ p 0.856 ; adjOLS -4.54 [-11.02, +1.94] 17-/13+ p 0.585
+CL-PAD INS SHRC w08: b -0.35 (se 0.42, r -0.15), a -12.88 (se 3.88); xmode slope -3.38 || F14: raw -8.34 PLd -2.66 adjOLS -9.27 adjX -17.34 | F16: raw -16.62 PLd +1.66 adjOLS -16.04 adjX -11.01 | all: raw -12.76 PLd -0.36 adjOLS -12.88 adjX -13.96 || pooled adjX -13.96 [-27.08, -0.85] 18-/12+ p 0.362 ; adjOLS -12.88 [-20.67, -5.09] 20-/10+ p 0.099
+CL-PAD INS SHRC w17: b -0.60 (se 0.38, r -0.29), a -5.87 (se 4.35); xmode slope -1.37 || F14: raw +6.83 PLd -0.65 adjOLS +6.44 adjX +5.95 | F16: raw -16.87 PLd +0.39 adjOLS -16.64 adjX -16.34 | all: raw -5.81 PLd -0.10 adjOLS -5.87 adjX -5.94 || pooled adjX -5.94 [-15.28, +3.40] 20-/10+ p 0.099 ; adjOLS -5.87 [-14.60, +2.87] 18-/12+ p 0.362
+CL-PAD INS SHRC day: b -0.44 (se 0.40, r -0.20), a -9.04 (se 3.04); xmode slope -9.27 || F14: raw -0.71 PLd -1.61 adjOLS -1.41 adjX -15.63 | F16: raw -16.19 PLd +1.08 adjOLS -15.72 adjX -6.19 | all: raw -8.97 PLd -0.18 adjOLS -9.04 adjX -10.59 || pooled adjX -10.59 [-36.47, +15.28] 16-/14+ p 0.856 ; adjOLS -9.04 [-15.14, -2.95] 22-/8+ p 0.016
+CL-PAD INS SHHZ w08: b -0.17 (se 0.40, r -0.08), a -17.21 (se 3.98); xmode slope -2.99 || F14: raw -12.35 PLd -2.37 adjOLS -12.75 adjX -19.43 | F16: raw -21.35 PLd +1.41 adjOLS -21.11 adjX -17.13 | all: raw -17.15 PLd -0.35 adjOLS -17.21 adjX -18.20 || pooled adjX -18.20 [-31.53, -4.88] 22-/8+ p 0.016 ; adjOLS -17.21 [-25.21, -9.21] 23-/7+ p 0.005
+CL-PAD INS SHHZ w17: b -0.17 (se 0.29, r -0.11), a +0.22 (se 4.15); xmode slope -1.14 || F14: raw +11.75 PLd +3.69 adjOLS +12.38 adjX +15.94 | F16: raw -9.89 PLd -3.07 adjOLS -10.42 adjX -13.38 | all: raw +0.21 PLd +0.08 adjOLS +0.22 adjX +0.30 || pooled adjX +0.30 [-9.56, +10.16] 16-/14+ p 0.856 ; adjOLS +0.22 [-8.12, +8.56] 14-/16+ p 0.856
+CL-PAD INS SHHZ day: b +0.00 (se 0.38, r 0.00), a -8.14 (se 3.09); xmode slope -7.81 || F14: raw -0.16 PLd +1.10 adjOLS -0.16 adjX +8.43 | F16: raw -15.12 PLd -0.81 adjOLS -15.12 adjX -21.46 | all: raw -8.14 PLd +0.08 adjOLS -8.14 adjX -7.51 || pooled adjX -7.51 [-32.40, +17.38] 18-/12+ p 0.362 ; adjOLS -8.14 [-14.35, -1.92] 19-/11+ p 0.200
+CLc-PADc G2 SHRC w08: b -0.17 (se 0.37, r -0.09), a -19.51 (se 4.08); xmode slope -3.07 || F14: raw -16.13 PLd -3.26 adjOLS -16.70 adjX -26.15 | F16: raw -22.37 PLd +2.26 adjOLS -21.98 adjX -15.42 | all: raw -19.46 PLd -0.32 adjOLS -19.51 adjX -20.43 || pooled adjX -20.43 [-35.06, -5.79] 20-/10+ p 0.099 ; adjOLS -19.51 [-27.71, -11.31] 25-/5+ p 3.2e-4
+CLc-PADc G2 SHRC w17: b -0.43 (se 0.36, r -0.22), a -2.95 (se 4.00); xmode slope -1.33 || F14: raw +6.77 PLd -0.86 adjOLS +6.40 adjX +5.62 | F16: raw -11.92 PLd +1.84 adjOLS -11.13 adjX -9.46 | all: raw -3.20 PLd +0.58 adjOLS -2.95 adjX -2.42 || pooled adjX -2.42 [-11.33, +6.49] 17-/13+ p 0.585 ; adjOLS -2.95 [-10.98, +5.08] 15-/15+ p 1.000
+CLc-PADc G2 SHRC day: b -0.84 (se 0.41, r -0.36), a -10.83 (se 2.86); xmode slope -7.13 || F14: raw -4.49 PLd -2.04 adjOLS -6.21 adjX -19.05 | F16: raw -16.51 PLd +1.93 adjOLS -14.88 adjX -2.77 | all: raw -10.90 PLd +0.07 adjOLS -10.83 adjX -10.37 || pooled adjX -10.37 [-27.96, +7.23] 19-/11+ p 0.200 ; adjOLS -10.83 [-16.58, -5.09] 21-/9+ p 0.043
+CLc-PADc G2 SHHZ w08: b +0.16 (se 0.45, r 0.07), a -11.29 (se 4.71); xmode slope -3.13 || F14: raw -4.57 PLd -5.84 adjOLS -3.65 adjX -22.86 | F16: raw -17.30 PLd +4.30 adjOLS -17.97 adjX -3.83 | all: raw -11.36 PLd -0.43 adjOLS -11.29 adjX -12.71 || pooled adjX -12.71 [-28.95, +3.53] 19-/11+ p 0.200 ; adjOLS -11.29 [-20.74, -1.84] 18-/12+ p 0.362
+CLc-PADc G2 SHHZ w17: b +0.05 (se 0.39, r 0.02), a -0.35 (se 4.14); xmode slope -1.18 || F14: raw +7.36 PLd -0.59 adjOLS +7.38 adjX +6.66 | F16: raw -7.13 PLd -0.36 adjOLS -7.11 adjX -7.56 | all: raw -0.37 PLd -0.47 adjOLS -0.35 adjX -0.92 || pooled adjX -0.92 [-10.61, +8.77] 13-/17+ p 0.585 ; adjOLS -0.35 [-8.65, +7.96] 14-/16+ p 0.856
+CLc-PADc G2 SHHZ day: b +0.51 (se 0.44, r 0.21), a -5.44 (se 3.20); xmode slope -6.22 || F14: raw +1.21 PLd -2.93 adjOLS +2.70 adjX -17.01 | F16: raw -11.64 PLd +1.83 adjOLS -12.57 adjX -0.27 | all: raw -5.64 PLd -0.39 adjOLS -5.44 adjX -8.08 || pooled adjX -8.08 [-27.63, +11.47] 15-/15+ p 1.000 ; adjOLS -5.44 [-11.87, +0.98] 19-/11+ p 0.200
+CLc-PADc INS SHRC w08: b -0.45 (se 0.38, r -0.22), a -15.19 (se 3.64); xmode slope -3.38 || F14: raw -13.17 PLd -2.73 adjOLS -14.38 adjX -22.41 | F16: raw -16.95 PLd +2.35 adjOLS -15.90 adjX -9.00 | all: raw -15.18 PLd -0.02 adjOLS -15.19 adjX -15.26 || pooled adjX -15.26 [-28.16, -2.36] 20-/10+ p 0.099 ; adjOLS -15.19 [-22.51, -7.88] 24-/6+ p 0.001
+CLc-PADc INS SHRC w17: b -0.41 (se 0.34, r -0.22), a -8.16 (se 4.64); xmode slope -1.37 || F14: raw +3.38 PLd -2.09 adjOLS +2.54 adjX +0.53 | F16: raw -18.84 PLd +3.26 adjOLS -17.51 adjX -14.39 | all: raw -8.47 PLd +0.76 adjOLS -8.16 adjX -7.42 || pooled adjX -7.42 [-18.00, +3.16] 18-/12+ p 0.362 ; adjOLS -8.16 [-17.47, +1.16] 19-/11+ p 0.200
+CLc-PADc INS SHRC day: b -0.27 (se 0.35, r -0.14), a -11.40 (se 2.96); xmode slope -9.27 || F14: raw -4.83 PLd -2.52 adjOLS -5.51 adjX -28.16 | F16: raw -17.33 PLd +2.86 adjOLS -16.56 adjX +9.23 | all: raw -11.49 PLd +0.35 adjOLS -11.40 adjX -8.22 || pooled adjX -8.22 [-37.65, +21.21] 16-/14+ p 0.856 ; adjOLS -11.40 [-17.34, -5.46] 22-/8+ p 0.016
+CLc-PADc INS SHHZ w08: b -0.13 (se 0.37, r -0.07), a -18.99 (se 3.95); xmode slope -2.99 || F14: raw -14.55 PLd -2.21 adjOLS -14.84 adjX -21.16 | F16: raw -22.97 PLd +2.65 adjOLS -22.63 adjX -15.04 | all: raw -19.04 PLd +0.38 adjOLS -18.99 adjX -17.90 || pooled adjX -17.90 [-31.93, -3.86] 20-/10+ p 0.099 ; adjOLS -18.99 [-26.92, -11.07] 25-/5+ p 3.2e-4
+CLc-PADc INS SHHZ w17: b -0.47 (se 0.30, r -0.28), a -1.98 (se 4.15); xmode slope -1.14 || F14: raw +10.51 PLd +1.91 adjOLS +11.41 adjX +12.68 | F16: raw -12.56 PLd -2.43 adjOLS -13.70 adjX -15.32 | all: raw -1.79 PLd -0.41 adjOLS -1.98 adjX -2.25 || pooled adjX -2.25 [-11.28, +6.77] 15-/15+ p 1.000 ; adjOLS -1.98 [-10.32, +6.35] 16-/14+ p 0.856
+CLc-PADc INS SHHZ day: b -0.16 (se 0.37, r -0.08), a -9.98 (se 3.08); xmode slope -7.81 || F14: raw -1.84 PLd +0.19 adjOLS -1.81 adjX -0.32 | F16: raw -17.15 PLd +0.14 adjOLS -17.13 adjX -16.02 | all: raw -10.00 PLd +0.17 adjOLS -9.98 adjX -8.69 || pooled adjX -8.69 [-33.88, +16.49] 19-/11+ p 0.200 ; adjOLS -9.98 [-16.16, -3.79] 21-/9+ p 0.043
+
+## (2) CL - PAD(r) late/1000 per window for every PAD run in calib.ndjson (pooled 30 days), with that run's pooled PL gap (rider-weighted) 
+G2 SHRC w08 r 1.029652 (calPADc) L 1545.33 gap(PAD-CL) -0.40  CL-PAD late -17.99 [-26.69, -9.29] 23-/7+ p 0.005  F14 -13.63 F16 -21.80
+G2 SHRC w08 r 1.029852 (calPADc) L 1547.21 gap(PAD-CL) +1.48  CL-PAD late -18.82 [-27.72, -9.91] 24-/6+ p 0.001  F14 -14.66 F16 -22.45
+G2 SHRC w08 r 1.030052 (calPADc) L 1545.62 gap(PAD-CL) -0.11  CL-PAD late -17.36 [-26.37, -8.34] 22-/8+ p 0.016  F14 -12.78 F16 -21.36
+G2 SHRC w08 r 1.030143 (calPADc) L 1545.69 gap(PAD-CL) -0.04  CL-PAD late -16.29 [-24.86, -7.73] 24-/6+ p 0.001  F14 -12.54 F16 -19.58
+G2 SHRC w08 r 1.030733 (calPADc) L 1545.38 gap(PAD-CL) -0.35  CL-PAD late -15.12 [-23.64, -6.61] 22-/8+ p 0.016  F14 -11.17 F16 -18.58
+G2 SHRC w08 r 1.031449 (calPAD) L 1545.75 gap(PAD-CL) +0.02  CL-PAD late -14.41 [-22.81, -6.02] 23-/7+ p 0.005  F14 -9.77 F16 -18.48
+G2 SHRC w08 r 1.034759 (calPADc) L 1548.29 gap(PAD-CL) +2.56  CL-PAD late -7.81 [-16.28, +0.66] 21-/9+ p 0.043  F14 -3.49 F16 -11.58
+G2 SHRC w08 r 1.035902 (calPAD) L 1549.54 gap(PAD-CL) +3.81  CL-PAD late -6.81 [-14.84, +1.22] 20-/10+ p 0.099  F14 -2.84 F16 -10.29
+  -> 8 PAD runs; late(PAD) range 219.49..231.49 (sd 4.57); CL late 212.67; CL - PAD range -18.82..-6.81; sign p range 0.001..0.099
+     late~L over PAD runs: slope -2.34 /s (r -0.81), at L_CL 1545.73: late 229.04 -> CL - smoothPAD -16.36; incl N point slope -2.97 -> CL - PAD -16.96
+     late~r slope -1.87 per 0.001 r (r -0.99); L~r slope +0.58 s per 0.001 r (r 0.88)
+G2 SHRC w17 r 0.976376 (calPAD) L 1613.72 gap(PAD-CL) -2.71  CL-PAD late -11.91 [-21.62, -2.19] 20-/10+ p 0.099  F14 -1.49 F16 -21.02
+G2 SHRC w17 r 0.976420 (calPADc) L 1611.08 gap(PAD-CL) -5.35  CL-PAD late -11.49 [-20.75, -2.24] 18-/12+ p 0.362  F14 -0.74 F16 -20.90
+G2 SHRC w17 r 0.979507 (calPAD) L 1615.27 gap(PAD-CL) -1.16  CL-PAD late -6.59 [-15.04, +1.85] 17-/13+ p 0.585  F14 +3.42 F16 -15.36
+G2 SHRC w17 r 0.979885 (calPAD) L 1615.83 gap(PAD-CL) -0.60  CL-PAD late -6.12 [-14.60, +2.36] 17-/13+ p 0.585  F14 +4.50 F16 -15.41
+G2 SHRC w17 r 0.980272 (calPADc) L 1616.44 gap(PAD-CL) +0.00  CL-PAD late -4.73 [-13.08, +3.63] 16-/14+ p 0.856  F14 +5.46 F16 -13.64
+G2 SHRC w17 r 0.980304 (calPAD) L 1617.42 gap(PAD-CL) +0.99  CL-PAD late -5.51 [-13.53, +2.51] 17-/13+ p 0.585  F14 +3.07 F16 -13.02
+G2 SHRC w17 r 0.980307 (calPAD) L 1617.72 gap(PAD-CL) +1.29  CL-PAD late -4.83 [-12.88, +3.22] 15-/15+ p 1.000  F14 +5.74 F16 -14.08
+G2 SHRC w17 r 0.980763 (calPAD) L 1617.09 gap(PAD-CL) +0.66  CL-PAD late -5.45 [-13.84, +2.95] 16-/14+ p 0.856  F14 +4.81 F16 -14.42
+G2 SHRC w17 r 0.981923 (calPADc) L 1618.77 gap(PAD-CL) +2.34  CL-PAD late -2.85 [-11.00, +5.31] 14-/16+ p 0.856  F14 +6.19 F16 -10.75
+  -> 9 PAD runs; late(PAD) range 213.01..222.07 (sd 3.07); CL late 210.16; CL - PAD range -11.91..-2.85; sign p range 0.099..1.000
+     late~L over PAD runs: slope -1.21 /s (r -0.92), at L_CL 1616.43: late 216.16 -> CL - smoothPAD -6.00; incl N point slope -1.37 -> CL - PAD -5.87
+     late~r slope -1.60 per 0.001 r (r -0.99); L~r slope +1.15 s per 0.001 r (r 0.93)
+G2 SHHZ w08 r 1.032539 (calPADc) L 1554.48 gap(PAD-CL) -2.93  CL-PAD late -11.74 [-21.06, -2.42] 19-/11+ p 0.200  F14 -4.90 F16 -17.73
+G2 SHHZ w08 r 1.033319 (calPADc) L 1555.83 gap(PAD-CL) -1.58  CL-PAD late -10.80 [-20.43, -1.17] 19-/11+ p 0.200  F14 -3.85 F16 -16.89
+G2 SHHZ w08 r 1.033914 (calPAD) L 1556.75 gap(PAD-CL) -0.66  CL-PAD late -9.51 [-18.70, -0.33] 19-/11+ p 0.200  F14 -2.84 F16 -15.35
+G2 SHHZ w08 r 1.034298 (calPADc) L 1556.98 gap(PAD-CL) -0.43  CL-PAD late -8.51 [-17.66, +0.65] 18-/12+ p 0.362  F14 -2.47 F16 -13.79
+G2 SHHZ w08 r 1.034545 (calPAD) L 1557.84 gap(PAD-CL) +0.43  CL-PAD late -8.61 [-17.56, +0.34] 18-/12+ p 0.362  F14 -2.63 F16 -13.84
+G2 SHHZ w08 r 1.036726 (calPAD) L 1559.69 gap(PAD-CL) +2.28  CL-PAD late -6.25 [-15.01, +2.52] 18-/12+ p 0.362  F14 -0.16 F16 -11.58
+  -> 6 PAD runs; late(PAD) range 213.15..218.64 (sd 1.93); CL late 206.90; CL - PAD range -11.74..-6.25; sign p range 0.200..0.362
+     late~L over PAD runs: slope -1.07 /s (r -0.98), at L_CL 1557.41: late 215.62 -> CL - smoothPAD -8.72; incl N point slope -3.20 -> CL - PAD -7.90
+     late~r slope -1.33 per 0.001 r (r -0.98); L~r slope +1.22 s per 0.001 r (r 0.98)
+G2 SHHZ w17 r 0.977670 (calPADc) L 1623.67 gap(PAD-CL) -3.59  CL-PAD late -7.21 [-16.22, +1.81] 16-/14+ p 0.856  F14 +2.92 F16 -16.07
+G2 SHHZ w17 r 0.978135 (calPAD) L 1623.79 gap(PAD-CL) -3.47  CL-PAD late -6.88 [-16.07, +2.32] 18-/12+ p 0.362  F14 +3.21 F16 -15.71
+G2 SHHZ w17 r 0.980806 (calPAD) L 1627.23 gap(PAD-CL) -0.03  CL-PAD late -1.13 [-9.64, +7.38] 12-/18+ p 0.362  F14 +8.77 F16 -9.79
+G2 SHHZ w17 r 0.981289 (calPADc) L 1627.22 gap(PAD-CL) -0.03  CL-PAD late -0.75 [-8.96, +7.46] 13-/17+ p 0.585  F14 +7.29 F16 -7.78
+G2 SHHZ w17 r 0.981950 (calPAD) L 1628.74 gap(PAD-CL) +1.48  CL-PAD late +1.31 [-6.87, +9.49] 12-/18+ p 0.362  F14 +9.71 F16 -6.04
+  -> 5 PAD runs; late(PAD) range 206.81..215.33 (sd 3.87); CL late 208.12; CL - PAD range -7.21..+1.31; sign p range 0.362..0.856
+     late~L over PAD runs: slope -1.70 /s (r -1.00), at L_CL 1627.25: late 209.14 -> CL - smoothPAD -1.02; incl N point slope -1.26 -> CL - PAD -1.62
+     late~r slope -1.99 per 0.001 r (r -1.00); L~r slope +1.16 s per 0.001 r (r 0.99)
+INS SHRC w08 r 1.031702 (calPADc) L 1541.80 gap(PAD-CL) -0.61  CL-PAD late -13.98 [-21.69, -6.27] 23-/7+ p 0.005  F14 -10.69 F16 -16.86
+INS SHRC w08 r 1.032530 (calPAD) L 1542.90 gap(PAD-CL) +0.49  CL-PAD late -12.76 [-20.64, -4.87] 21-/9+ p 0.043  F14 -8.34 F16 -16.62
+  -> 2 PAD runs; late(PAD) range 221.69..222.92 (sd 0.87); CL late 208.94; CL - PAD range -13.98..-12.76; sign p range 0.005..0.043
+     late~L over PAD runs: slope -1.12 /s (r -1.00), at L_CL 1542.41: late 222.24 -> CL - smoothPAD -13.30; incl N point slope -3.44 -> CL - PAD -13.19
+     late~r slope -1.48 per 0.001 r (r -1.00); L~r slope +1.32 s per 0.001 r (r 1.00)
+INS SHRC w17 r 0.974793 (calPADc) L 1607.61 gap(PAD-CL) -6.06  CL-PAD late -14.14 [-25.49, -2.80] 19-/11+ p 0.200  F14 -1.82 F16 -24.92
+INS SHRC w17 r 0.976315 (calPAD) L 1609.32 gap(PAD-CL) -4.36  CL-PAD late -12.39 [-22.92, -1.86] 20-/10+ p 0.099  F14 -0.12 F16 -23.12
+INS SHRC w17 r 0.977489 (calPADc) L 1611.67 gap(PAD-CL) -2.01  CL-PAD late -9.60 [-19.52, +0.31] 20-/10+ p 0.099  F14 +0.67 F16 -18.59
+INS SHRC w17 r 0.978283 (calPADc) L 1612.48 gap(PAD-CL) -1.19  CL-PAD late -8.31 [-17.92, +1.30] 20-/10+ p 0.099  F14 +3.46 F16 -18.61
+INS SHRC w17 r 0.978559 (calPADc) L 1614.50 gap(PAD-CL) +0.82  CL-PAD late -7.95 [-17.45, +1.54] 19-/11+ p 0.200  F14 +4.49 F16 -18.84
+INS SHRC w17 r 0.979369 (calPAD) L 1611.99 gap(PAD-CL) -1.68  CL-PAD late -5.83 [-15.31, +3.64] 17-/13+ p 0.585  F14 +7.72 F16 -17.69
+INS SHRC w17 r 0.979812 (calPAD) L 1613.89 gap(PAD-CL) +0.21  CL-PAD late -5.81 [-14.93, +3.31] 17-/13+ p 0.585  F14 +6.83 F16 -16.87
+INS SHRC w17 r 0.980000 (calPADc) L 1614.42 gap(PAD-CL) +0.74  CL-PAD late -4.92 [-14.31, +4.47] 15-/15+ p 1.000  F14 +9.30 F16 -17.36
+INS SHRC w17 r 0.980078 (calPAD) L 1614.69 gap(PAD-CL) +1.01  CL-PAD late -4.05 [-13.19, +5.09] 18-/12+ p 0.362  F14 +8.38 F16 -14.92
+INS SHRC w17 r 0.980979 (calPAD) L 1614.72 gap(PAD-CL) +1.04  CL-PAD late -2.69 [-11.79, +6.42] 16-/14+ p 0.856  F14 +9.91 F16 -13.70
+  -> 10 PAD runs; late(PAD) range 208.13..219.58 (sd 3.66); CL late 205.44; CL - PAD range -14.14..-2.69; sign p range 0.099..1.000
+     late~L over PAD runs: slope -1.36 /s (r -0.91), at L_CL 1613.68: late 211.45 -> CL - smoothPAD -6.01; incl N point slope -1.39 -> CL - PAD -5.96
+     late~r slope -1.90 per 0.001 r (r -0.99); L~r slope +1.19 s per 0.001 r (r 0.93)
+INS SHHZ w08 r 1.029058 (calPADc) L 1543.21 gap(PAD-CL) -1.82  CL-PAD late -18.48 [-26.41, -10.55] 24-/6+ p 0.001  F14 -13.06 F16 -23.21
+INS SHHZ w08 r 1.029800 (calPADc) L 1543.66 gap(PAD-CL) -1.38  CL-PAD late -18.11 [-26.15, -10.07] 23-/7+ p 0.005  F14 -12.82 F16 -22.74
+INS SHHZ w08 r 1.030446 (calPAD) L 1545.42 gap(PAD-CL) +0.39  CL-PAD late -17.15 [-25.17, -9.13] 23-/7+ p 0.005  F14 -12.35 F16 -21.35
+INS SHHZ w08 r 1.031717 (calPAD) L 1546.13 gap(PAD-CL) +1.10  CL-PAD late -14.24 [-21.72, -6.77] 21-/9+ p 0.043  F14 -9.56 F16 -18.34
+INS SHHZ w08 r 1.033599 (calPADc) L 1547.92 gap(PAD-CL) +2.88  CL-PAD late -11.35 [-19.11, -3.58] 20-/10+ p 0.099  F14 -7.11 F16 -15.05
+INS SHHZ w08 r 1.035002 (calPAD) L 1547.75 gap(PAD-CL) +2.72  CL-PAD late -9.65 [-17.18, -2.12] 18-/12+ p 0.362  F14 -6.53 F16 -12.38
+  -> 6 PAD runs; late(PAD) range 218.15..226.98 (sd 3.71); CL late 208.50; CL - PAD range -18.48..-9.65; sign p range 0.001..0.362
+     late~L over PAD runs: slope -1.77 /s (r -0.95), at L_CL 1545.03: late 224.48 -> CL - smoothPAD -15.98; incl N point slope -3.04 -> CL - PAD -16.95
+     late~r slope -1.60 per 0.001 r (r -0.99); L~r slope +0.82 s per 0.001 r (r 0.95)
+INS SHHZ w17 r 0.974473 (calPADc) L 1612.25 gap(PAD-CL) -8.37  CL-PAD late -14.98 [-26.04, -3.92] 21-/9+ p 0.043  F14 -0.94 F16 -27.26
+INS SHHZ w17 r 0.976073 (calPAD) L 1615.79 gap(PAD-CL) -4.83  CL-PAD late -11.80 [-22.33, -1.27] 21-/9+ p 0.043  F14 +2.60 F16 -24.39
+INS SHHZ w17 r 0.980867 (calPADc) L 1618.28 gap(PAD-CL) -2.34  CL-PAD late -1.41 [-10.25, +7.43] 15-/15+ p 1.000  F14 +11.47 F16 -12.67
+INS SHHZ w17 r 0.981145 (calPAD) L 1619.78 gap(PAD-CL) -0.84  CL-PAD late -1.19 [-9.96, +7.58] 16-/14+ p 0.856  F14 +11.23 F16 -12.06
+INS SHHZ w17 r 0.981230 (calPADc) L 1619.72 gap(PAD-CL) -0.91  CL-PAD late -1.22 [-10.19, +7.75] 16-/14+ p 0.856  F14 +11.50 F16 -12.35
+INS SHHZ w17 r 0.981432 (calPADc) L 1620.06 gap(PAD-CL) -0.57  CL-PAD late -0.71 [-9.41, +7.98] 16-/14+ p 0.856  F14 +12.07 F16 -11.90
+INS SHHZ w17 r 0.981987 (calPAD) L 1620.33 gap(PAD-CL) -0.29  CL-PAD late +0.21 [-8.18, +8.60] 15-/15+ p 1.000  F14 +11.75 F16 -9.89
+  -> 7 PAD runs; late(PAD) range 205.03..220.22 (sd 6.20); CL late 205.24; CL - PAD range -14.98..+0.21; sign p range 0.043..1.000
+     late~L over PAD runs: slope -2.00 /s (r -0.96), at L_CL 1620.62: late 204.51 -> CL - smoothPAD +0.73; incl N point slope -1.35 -> CL - PAD -1.19
+     late~r slope -2.06 per 0.001 r (r -1.00); L~r slope +0.96 s per 0.001 r (r 0.97)

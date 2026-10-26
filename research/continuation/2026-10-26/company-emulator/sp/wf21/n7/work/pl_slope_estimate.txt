@@ -1,0 +1,16 @@
+F14|INS|w08|EOHZ35     N 1550.9 CL-N 24.7 CLF r 1.0275 CLF-N 23.7 slope s/unit 862 r* est 1.0287
+F14|INS|w08|RCE35      N 1557.5 CL-N 17.0 CLF r 1.0275 CLF-N 17.0 slope s/unit 617 r* est 1.0275
+F14|INS|w17|EOHZ35     N 1738.0 CL-N -16.1 CLF r 0.9590 CLF-N -37.7 slope s/unit 919 r* est 0.9825
+F14|INS|w17|RCE35      N 1739.4 CL-N -19.1 CLF r 0.9590 CLF-N -37.6 slope s/unit 917 r* est 0.9792
+F14|G2|w08|EOHZ35      N 1556.7 CL-N 30.4 CLF r 1.0275 CLF-N 25.1 slope s/unit 912 r* est 1.0333
+F14|G2|w08|RCE35       N 1560.0 CL-N 21.2 CLF r 1.0275 CLF-N 18.4 slope s/unit 668 r* est 1.0317
+F14|G2|w17|EOHZ35      N 1740.0 CL-N -19.0 CLF r 0.9590 CLF-N -31.0 slope s/unit 757 r* est 0.9749
+F14|G2|w17|RCE35       N 1733.5 CL-N -12.3 CLF r 0.9590 CLF-N -29.6 slope s/unit 721 r* est 0.9830
+F16|INS|w08|EOHZ35     N 1554.9 CL-N 26.0 CLF r 1.0316 CLF-N 20.5 slope s/unit 649 r* est 1.0400
+F16|INS|w08|RCE35      N 1555.3 CL-N 25.4 CLF r 1.0316 CLF-N 22.0 slope s/unit 697 r* est 1.0365
+F16|INS|w17|EOHZ35     N 1677.8 CL-N -9.8 CLF r 0.9579 CLF-N -34.1 slope s/unit 811 r* est 0.9879
+F16|INS|w17|RCE35      N 1677.7 CL-N -10.2 CLF r 0.9579 CLF-N -28.9 slope s/unit 687 r* est 0.9852
+F16|G2|w08|EOHZ35      N 1560.7 CL-N 28.4 CLF r 1.0316 CLF-N 23.1 slope s/unit 732 r* est 1.0388
+F16|G2|w08|RCE35       N 1556.8 CL-N 27.5 CLF r 1.0316 CLF-N 22.6 slope s/unit 716 r* est 1.0385
+F16|G2|w17|EOHZ35      N 1683.7 CL-N -11.8 CLF r 0.9579 CLF-N -30.0 slope s/unit 713 r* est 0.9835
+F16|G2|w17|RCE35       N 1679.3 CL-N -12.8 CLF r 0.9579 CLF-N -31.3 slope s/unit 744 r* est 0.9829

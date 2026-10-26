@@ -1,0 +1,13 @@
+wf17 r1-identity-fence-pad ANALYSIS-HASH (wf17-exploratory-post-audit). Each block is written BEFORE the named check's first production run.
+== R3 (2026-10-23T14:48:43+07:00, before the R3 production run)
+9d909ee43c8b0a7816b70321cc54297e630af7d54430b8a0561a84a301215037 *analysis/lib17.js
+4e477017e049ee6066782addd779112e346c291acd5a4a26f4813e958cee063f *analysis/r3_analyze.js
+334da4980fc25d65410d6723414e1e40704d27baf623820cef51f062bd2efb39 *code/scripts/cmp_rows.js
+== R2 (2026-10-23T15:00:28+07:00, before the R2 production run)
+9d909ee43c8b0a7816b70321cc54297e630af7d54430b8a0561a84a301215037 *analysis/lib17.js
+abed09e8407e52f01a3b5c012dc4477c784915d184ccfb9a559131e8342045c5 *analysis/r2_analyze.js
+3b0939be6ed9e9a1b732eaeac6266f981dc4b1d0ac59171aba6d3d2cbc0ba758 *code/RUNBOOK.sh
+== R1 (2026-10-23T15:16:17+07:00, before the R1 production run; after the R1 smoke test)
+9d909ee43c8b0a7816b70321cc54297e630af7d54430b8a0561a84a301215037 *analysis/lib17.js
+74348f4680adda256a9440f42546bad93bc6343c1bf056d11e628a4bcb220957 *analysis/r1_analyze.js
+1b2116b8b58217d317de952685702ddf63106a60788cd2b7028eca5f2688722a *code/RUNBOOK.sh
