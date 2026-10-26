@@ -1,6 +1,7 @@
 # Trạng thái và decision log
 
 > Tệp sống — cập nhật ở cuối mọi task RideBound
+> Rà soát lại sau báo cáo 26/10: đã tạo hồ sơ cục bộ `C:/RideBoundContinuation/2026-10-26/audit-doc-lap-sau-doi-du-lieu-v1/RIDEBOUND-RA-SOAT-LAI-SAU-DOI-DU-LIEU-26-10.md`. Đánh giá lại 39 nhóm vấn đề cũ, đối chiếu số liệu và ghi 32 phát hiện/giới hạn hiện tại. Đây là audit tài liệu/mã/số liệu; không chạy thêm benchmark, không sửa triển khai hoặc luận văn, không commit/push. Nội dung chi tiết giữ cục bộ; xem phần bổ sung ADR-087.
 > Tiếp phiên ngoài cây chính:2026-10-16 — ADR079: C60/C120 COMPLETE: 2/2 smoke, 68/68 main; final verification và analysis exit0 lúc17:24:02+07; 4.355/4.355 đối chiếu số học đạt;0active/0pending/0STOP. C60 so C30: +32phục vụ/+113ghép/+19muộn60/+13trong60; C120 so C60: +34phục vụ/+192ghép/+121muộn60/−87trong60. Thăm dò34ô/nămngày đã thấy, không optimum/satisfaction/profit. PDF77trang giữ nguyên; audit/WP12 còn mở. Hourly PAUSED sau khi báo vàpush kết quả;one-off PAUSED.
 > Cầu nối bộ mô phỏng công ty (2026-10-23; nhánh `research/via-ref` → `research/via-core` → `research/g2-core`, chưa push): ADR-080 (PS/DL-HZ, bản nháp từ máy công ty) và ADR-081 (A0.1, Elmi, G2). Bộ mô phỏng khớp RideBound thật từng khách trên 11 ô Manhattan: chỉ chèn 55/55 ô-nhánh, Elmi 22/22, G2 33/33 (sau bản sửa adapter đã được chủ duyệt). Đây là độ trung thực cài đặt, không phải lợi ích của luật. Cây chính không đổi.
 > Cập nhật gần nhất: 2026-08-28 (cây chính); nhánh thăm dò `research/deadline-gate`: 2026-09-24 (ADR-074 Proposed); nhánh thăm dò `research/tier3-failure-aware`: 2026-09-25 (ADR-075, ADR-076 Proposed; thí điểm T3.7 xong, cổng dừng phục hồi bị kích hoạt); nhánh thăm dò `research/tier3-no-worse`: 2026-09-26 (ADR-077 Proposed; 28 job đầu-cuối A1 pass), 2026-09-29 (Tầng 3 việc A: 48 job `V`/`M` với hai luật phục hồi, thăm dò), 2026-09-30 (Tầng 3 việc B: 88 job khung 7:00–9:00 chỉ tắc đường thật, thăm dò), 2026-10-01 (w07x: mức hứa 90–240 s, 104 job, thăm dò), 2026-10-02 (T3.8/T3.9 trên panel A: 185 job, thăm dò có niêm phong), 2026-10-06 (hứa giờ có tính trước tắc đường: lớp lời hứa phát lại 170 job, 43 job đầu-cuối, thăm dò có niêm phong)
@@ -1732,6 +1733,11 @@ Date: 2026-08-27
 ```
 
 ## 5. Next action
+
+**Cập nhật 2026-10-26 22:40 (ADR-088):** khóa luận đã sửa theo bản rà soát lại 32 điểm (commit `7f93ee6`, 95 trang); các
+điểm còn mở và lý do ở ADR-088. Bản kê bản nộp: `C:/RideBoundContinuation/2026-10-26/MANIFEST-BAN-NOP-KHOA-LUAN.md`. Việc
+kế tiếp không đổi so với đoạn ADR-087 dưới đây; thêm một việc tùy chủ duyệt: so từng khách từ nhật ký cho 4 job cỡ Via đã
+hết bộ nhớ.
 
 **Cập nhật 2026-10-26 tối (ADR-087):** máy nhà chạy lại gói `company-emulator` trên panel F14 (14/30 ngày):
 wf20/fullsys 1.680/1.680 và wf21/n7 1.680/1.680 dòng trùng hoàn toàn, kể cả từng khách. Khóa luận đã sửa theo danh sách
@@ -5799,6 +5805,66 @@ không chép nguyên văn.
   - dự báo là một phần của hệ nhưng phải ghi công đúng từng phần.
 - Việc kế tiếp xem §5.
 
+#### Bổ sung ADR-087 — rà soát lại sau báo cáo DOCX 26/10
+
+- Yêu cầu trực tiếp của chủ: đánh giá lại công tâm sau các thay đổi dữ liệu/kết quả, tổng hợp toàn bộ lịch sử và các điểm yếu còn lại vào một tệp Markdown chi tiết.
+- Hồ sơ cục bộ: `C:/RideBoundContinuation/2026-10-26/audit-doc-lap-sau-doi-du-lieu-v1/`; bản chính `RIDEBOUND-RA-SOAT-LAI-SAU-DOI-DU-LIEU-26-10.md`; dấu vết kiểm ở `evidence/fresh-reconciliation.json`, `number-reconciliation.json` và `evidence/report-qa.json`.
+- Phương pháp: kiểm kê metadata/tài liệu, truy vết mã và receipt, tính lại bảng từ các dòng kết quả/digest đang có. Không tuyên bố đọc lại mọi raw, không có mô phỏng mới hay suite .NET mới. Cổng 1.230/1.230 vẫn là chứng cứ lịch sử gắn commit tương ứng.
+- Đánh giá mới ghi nhận các cải thiện PS/native, panel Via, Shadow trong emulator, cầu nối và PAD/CLc; không giữ nguyên những nhận xét cũ đã lỗi thời. Những khoảng hở về đơn vị metric, native/emulator, dwell, kiểm cỡ Via, F14/F16 và bản nộp được phân loại cùng điều kiện đóng trong hồ sơ.
+- Trạng thái triển khai và kết quả frozen không thay đổi. Chưa coi việc audit là hoàn tất native Shadow/CL, dwell dương, F16 hay claim hài lòng/công bằng. Chưa chỉnh PDF/TeX theo phát hiện mới.
+- Việc kế tiếp: báo bản audit cho chủ; ưu tiên thống nhất định nghĩa/claim và manifest bản nộp, sau đó xử lý các phần kiểm chứng còn thiếu theo phạm vi được chọn. Không tự mở benchmark, sửa code hay công bố tài liệu nội bộ.
+
+### ADR-088 — 2026-10-26 — Proposed (sửa khóa luận theo bản rà soát lại; không đổi mã RideBound)
+
+**Context:** chủ hỏi các khuyết điểm trong bản rà soát lại (`RIDEBOUND-RA-SOAT-LAI-SAU-DOI-DU-LIEU-26-10.md`, 32 điểm
+W01–W32) có sửa được không. Trước khi sửa, kiểm lại ở nguồn các điểm then chốt:
+- W01–W03: `sp/wf15/scripts/metrics_sh.js:9-12, 37, 48, 53-59, 65-66`;
+- W07: `sp/wf15/SPEC.md:1380, 1382, 1389, 1390`;
+- W06: `BAO-CAO-GIAI-DOAN-1.md` §3;
+- W15–W16: `be_run.js:57`, `BREAKEVEN-RESULT.md:40, 114`;
+- W28: `wf6/via-many-days/T.txt:187-189`.
+
+Mọi điểm đã kiểm đều đúng.
+
+**Decision:** sửa phần chữ trong khóa luận; ghi chú hồ sơ chạy lại; lập bản kê bản nộp. Không sửa mã, không chạy mô
+phỏng mới.
+
+**Đã sửa** (khóa luận commit `7f93ee6`, 95 trang, build sạch):
+- W01, W02: đơn vị đảo hứa là số khách, không phải số lần; định nghĩa đúng như mã (bỏ thay đổi dưới 60 s trước; mỗi khách
+  tối đa một).
+- W03: phụ lục mới có bảng định nghĩa chỉ số.
+- W04, W05, W06: bảng thành phần có trong RideBound / chỉ trong bộ mô phỏng / đã kiểm khớp; 6 trong 12 lần chạy cỡ Via;
+  phạm vi thời gian dừng 0 (6 lần chạy thử 24 s đều hỏng).
+- W07: bốn khác biệt so với bài Elmi.
+- W09, W10: phép so cùng Shadow và dự báo đặt trước phép so cả gói; phép tách là có điều kiện.
+- W11, W13, W15, W16, W17, W18, W19, W24, W27, W28: lần lượt là
+  - độ lớn thực tiễn khi chỉ chèn;
+  - đệm khớp độ dài trên chính tập đánh giá;
+  - α nội suy (37,4%);
+  - 97% là tỷ lệ của tổng có dấu;
+  - "cùng quy tắc cấp ngân sách";
+  - đơn vị ngày và cấu trúc 60 ngày;
+  - dữ liệu chỉ là chuyến hoàn thành;
+  - tối ưu trong tập phương án đã sinh;
+  - luật C khác phạt mềm ở giới hạn từng khách;
+  - câu "chưa so với trần từng lần" giới hạn vào tập Manhattan, kèm số cầu nối và 55 ngày Via.
+- W08, W12, W14, W20, W25, W26: đã đúng từ commit `20ed69a`, hoặc khóa luận không có câu bị nêu.
+- W21: ghi chú `HOME-RERUN-README.md` cạnh hai tệp `rows.ndjson` chỉ có F14.
+- W29: bản kê `C:/RideBoundContinuation/2026-10-26/MANIFEST-BAN-NOP-KHOA-LUAN.md`.
+
+**Chưa sửa, và lý do:**
+- W05: so từng khách từ nhật ký cho 4 job hết bộ nhớ. Cần viết bộ kiểm mới và có kế hoạch riêng; chờ chủ duyệt.
+- W06: thêm chặn thời gian dừng khác 0 trong mã C#. Là thay đổi mã, cần test và chủ duyệt; khóa luận đã ghi phạm vi.
+- W21: chạy F16 cần gói P0 hoặc 96 ô F16 từ máy công ty.
+- W22: số chỉ có trong báo cáo wf17 cần bản công ty ngày 24/10.
+- W23: thời gian thực theo quyết định cần đo riêng.
+- W30, W31, W32: thủ tục hồ sơ và bản nộp; chủ quyết.
+- Mức C (Shadow và dự báo trong RideBound, đo cảm nhận khách, dựng lại toàn bộ hệ của bài Elmi): ngoài phạm vi khóa luận
+  hiện tại.
+
+**Consequences:** cả hai bản tóm tắt nay dài hơn một trang. Việc này đã có từ `91ad6f4`; nếu khoa yêu cầu một trang thì phải
+rút gọn.
+
 ## Cập nhật khóa luận — 2026-10-16T00:09:00.907016+07:00
 
 Người dùng yêu cầu cập nhật toàn bộ nội dung theo cách đọc tự nhiên, bổ sung
@@ -5896,6 +5962,9 @@ Claude/Antigravity. Không có quyền commit/push mới trong lượt này.
 
 ## 9. Change history
 
+- 2026-10-26 22:40 (`research/company-emulator-2026-10-26`, không đổi mã RideBound): ADR-088. Sửa khóa luận theo bản
+  rà soát lại (đơn vị đảo hứa, định nghĩa chỉ số, phạm vi RideBound so với bộ mô phỏng, thời gian dừng 0, khác biệt so với
+  bài Elmi, phép hòa vốn, câu về trần từng lần; phụ lục mới), commit `7f93ee6`; ghi chú hồ sơ chạy lại F14; bản kê bản nộp.
 - 2026-10-26 tối (`research/company-emulator-2026-10-26`, không đổi mã RideBound): ADR-087. Máy nhà chạy lại bộ mô phỏng
   của máy công ty trên panel F14: wf20/fullsys 1.680/1.680 và wf21/n7 1.680/1.680 dòng trùng từng khách (sửa đổi A0 đầu
   vào mạng, A1 chỉ mục dự báo). F16 chưa chạy vì máy nhà thiếu đầu vào sinh ô. Khóa luận sửa theo 24 điểm (commit

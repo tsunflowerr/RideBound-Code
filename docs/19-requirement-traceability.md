@@ -1,5 +1,27 @@
 # Ma trận truy vết yêu cầu
 
+## Sửa khóa luận theo bản rà soát lại — 2026-10-26, 22:40
+
+ADR-088; không đổi mã RideBound, không chạy mô phỏng mới.
+
+| Yêu cầu | Chứng cứ | Trạng thái/giới hạn |
+|---|---|---|
+| Đơn vị và định nghĩa chỉ số khớp mã (W01–W03) | `metrics_sh.js:9-12, 37, 48, 53-59, 65-66`; phụ lục mới của khóa luận (bảng định nghĩa) | Xong ở commit `7f93ee6` |
+| Nói đúng phạm vi RideBound và bộ mô phỏng (W04–W06) | Bảng thành phần ở phụ lục; 6/12 lần chạy cỡ Via; 6 lần chạy thử với dwell 24 s hỏng | Xong phần chữ; chưa thêm chặn dwell trong mã |
+| Đối thủ, phép so và cách diễn giải (W07, W09–W11, W13, W15–W19, W24, W27, W28) | `SPEC.md:1380-1390`; `be_run.js:57`; `wf6 T.txt:187-189`; khóa luận `7f93ee6` | Xong |
+| Hồ sơ chạy lại và bản nộp (W21, W29) | `HOME-RERUN-README.md` cạnh hai tệp `rows.ndjson`; `MANIFEST-BAN-NOP-KHOA-LUAN.md` | Xong; F16 vẫn chờ đầu vào |
+
+## Rà soát lại sau báo cáo tổng hợp 26/10 — chỉ audit cục bộ
+
+Bổ sung ADR-087; không đổi triển khai, dữ liệu frozen hoặc nguồn/PDF luận văn. Báo cáo chi tiết chứa nội dung nội bộ, giữ tại `C:/RideBoundContinuation/2026-10-26/audit-doc-lap-sau-doi-du-lieu-v1/RIDEBOUND-RA-SOAT-LAI-SAU-DOI-DU-LIEU-26-10.md`.
+
+| Yêu cầu | Chứng cứ cục bộ | Trạng thái/giới hạn |
+|---|---|---|
+| Đánh giá lại theo DOCX 26/10 và bản luận văn hiện tại | Trích DOCX/PDF, hash và dấu vết nguồn trong hồ sơ audit | Xong việc rà soát; không sửa luận văn từ audit này |
+| Tập hợp lịch sử, cả kết quả âm và bị thay thế | Danh mục metadata, bảng lịch sử, đánh giá lại 39 nhóm vấn đề cũ | Không cộng run/bản sao thành mẫu độc lập; không nhận mọi raw đã được đọc lại |
+| Kiểm số liệu và liên hệ với mã thực | Các tệp reconciliation, code-trace và report-qa trong hồ sơ | Xong phép đối chiếu đã nêu; không có benchmark hay .NET test mới |
+| Nêu việc còn thiếu cùng cách đóng | 32 phát hiện hiện tại, ma trận sửa luận văn, kế hoạch ưu tiên và câu hỏi bảo vệ | Chưa đóng các khoảng hở native/emulator, dwell, cỡ Via hoặc F16 chỉ bằng việc viết báo cáo |
+
 ## Chạy lại bộ mô phỏng công ty ở máy nhà, sửa khóa luận 24 điểm — 2026-10-26 tối
 
 ADR-087; không đổi mã RideBound. Hồ sơ: `research/continuation/2026-10-26/company-emulator/home-rerun-2026-10-26/`.
