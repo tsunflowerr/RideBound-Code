@@ -66,8 +66,13 @@ Số tính cho mỗi ngày, trung bình 10 ngày. Δ = luật C trừ Elmi. "Kho
 - Chênh lệch "bị điều phối dời muộn quá 1 phút" là **+12,7** khách mỗi ngày.
 - Chênh lệch "muộn so với lời hứa đầu, mọi nguyên nhân" là +10,4.
 
-Phần do điều phối còn lớn hơn tổng, nên tắc đường không tạo ra khoảng chênh này. Dời quá 2 phút cũng cho cùng một khoảng
-chênh (+13,4), nên đây không phải những lần dời nhỏ vừa vượt ngưỡng 1 phút.
+Tính theo phút thì rõ hơn: so với Elmi nới, tổng số phút khách tới muộn hơn lời hứa đầu (cộng A − p0 của mọi khách được
+phục vụ) tăng **186,0 phút** mỗi ngày, trong đó **180,3 phút** là tổng phần dời do điều phối, tức khoảng **97%**
+(`BREAKEVEN-TABLE-v2.tsv:28`, cột `dDA_min` và `dNet_min`; `be_run.js:57`). Dời quá 2 phút cho khoảng chênh
++13,4 khách, nên đây không phải những lần dời nhỏ vừa vượt ngưỡng 1 phút.
+
+*Đính chính 26/10 (phản hồi của máy công ty):* bản trước viết "phần do điều phối còn lớn hơn tổng" khi so hai số đếm theo
+hai ngưỡng khác nhau (+12,7 và +10,4 khách). Hai số đếm ấy không cộng trừ được với nhau; phép so theo phút ở trên mới đúng.
 
 Ngay cả với Elmi nới α = 35%, trung bình mỗi khách tới muộn hơn lời hứa đầu 1,09 phút. Trong đó **1,00 phút do điều phối**.
 Phần do tắc đường gần như triệt tiêu giữa ca sáng (muộn hơn) và ca chiều (sớm hơn).

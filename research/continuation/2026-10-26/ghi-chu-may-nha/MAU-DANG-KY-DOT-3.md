@@ -22,7 +22,13 @@ sách mà phục vụ không kém quá ___ không?"
 
 ## 3. Ngày
 
-- **Quy tắc rút:** seed ghi trước; nguồn là `SP/wf12/r5-data-days/work/day_status.json` (khoảng 91 ngày AVAILABLE).
+- **Quy tắc rút:** seed ghi trước; nguồn là `SP/wf12/r5-data-days/work/day_status.json`.
+  - *Đính chính 26/10:* bản trước ghi "khoảng 91 ngày AVAILABLE". Đếm lại ở máy nhà: tệp có **151** ngày AVAILABLE.
+    Trừ 60 ngày wf14/wf15 và 16 ngày F16 của wf17 (hai tập không trùng), còn **75 ngày**, tất cả trong tháng 2–9/2019.
+  - Danh sách 16 ngày F16 lấy theo máy công ty (`wf17/a0-plan/RUNPLAN.md:132-136`, máy nhà chưa có tệp này): 2019-09-20,
+    09-26, 09-30; 10-02, 10-08, 10-10, 10-11, 10-16, 10-17, 10-23, 10-25, 10-28, 10-29; 12-04, 12-17, 12-19.
+  - Theo máy công ty, không ngày nào trong 75 ngày dùng được cho kiểm định dự báo với chỉ mục hiện có; muốn có thì phải
+    dựng chỉ mục dự báo nhân quả mới.
 - **Bắt buộc loại:**
   - 2019-10-22 và 2019-12-06 (dữ liệu hỏng);
   - tháng 11/2019;

@@ -1,6 +1,9 @@
 # Bàn giao RideBound cho máy công ty — 26/10/2026
 
-Tài liệu này dành cho AI (Claude) và chủ nghiên cứu ở máy công ty. Đọc hết trước khi làm gì. Mọi số ở đây đã được kiểm
+Tài liệu này dành cho AI (Claude) và chủ nghiên cứu ở máy công ty. Đọc hết trước khi làm gì.
+
+> **Cập nhật 26/10 chiều:** đã nhận phản hồi "Việc cho máy nhà" của máy công ty và sửa các chỗ máy nhà kiểm được. Xem
+> `docs/18` ADR-086 và bảng đầu `docs/19`. Bản công ty 24/10 (wf17, kế hoạch 24/10) **chưa có ở máy nhà**. Mọi số ở đây đã được kiểm
 trên máy nhà; đường dẫn bắt đầu bằng `E:/` hay `C:/` là của máy nhà, KHÔNG có trên máy công ty.
 
 ---
@@ -10,7 +13,7 @@ trên máy nhà; đường dẫn bắt đầu bằng `E:/` hay `C:/` là của m
 ```bash
 git clone https://github.com/tsunflowerr/RideBound-Code.git   # nếu chưa có
 git fetch origin
-git checkout research/via-zone-2026-10-26                       # commit mới nhất: e430b7d
+git checkout research/via-zone-2026-10-26                       # dùng commit mới nhất của nhánh (git log -1)
 ```
 
 Nên làm trong một worktree riêng, không sửa thẳng nhánh `main`. Repo `RideBound-Code` đang **công khai**.
@@ -44,7 +47,8 @@ nghiên cứu **luật C**:
 
 Hai chế độ điều phối:
 - **INS:** chỉ chèn khách mới.
-- **G2:** mỗi quyết định được dời tối đa một khách đang chờ sang 1 trong 8 xe gần nhất, giờ đón không muộn hơn.
+- **G2:** mỗi quyết định được dời tối đa một khách đang chờ sang 1 trong 8 xe gần nhất, không muộn hơn giờ đón **đã công
+  bố**. Có những lần dời xảy ra trước khi khách nhận lời hứa đầu.
 
 **Shadow** (cũng của bài Elmi): khách khó đi chung được bảo đảm tuyệt đối (ngân sách 0). Có ba cách xử lý ngân sách
 đi cùng:
@@ -104,7 +108,8 @@ hạn ETA, gán lại, ổn định lộ trình, cam kết tối thiểu, nhất
   - **Chưa phủ:** luật C chỉ chèn. Hai job này cùng RCE35 G2 ca sáng và U chỉ chèn ca sáng đều chạy hết mọi quyết định,
     nhưng runner báo `OutOfMemoryException` khi dựng bản chốt cuối (một dòng vài trăm MB), dù trần heap là 6 GiB.
   - Hai job U ca chiều không chạy vì đường ray ổ đĩa (ổ C dưới 30 GiB).
-- Ý nghĩa: số của bộ mô phỏng đáng tin ở cỡ Via cho EOHZ35, G2 và luật C có G2; luật C chỉ chèn chưa kiểm được.
+- Ý nghĩa, có giới hạn (ADR-085): RideBound thật trùng bộ mô phỏng từng khách trên kịch bản Via **gộp theo khu**, ngày
+  13/2/2019 (6 cặp, 2.407 khách). **Chính các ô P512 của công ty thì chưa bắc cầu.** Luật C chỉ chèn chưa kiểm được.
 
 ### 2.4 Phép hòa vốn, 26/10 (`kits/breakeven-2026-10-26/BREAKEVEN-RESULT.md`)
 
@@ -114,7 +119,9 @@ hạn ETA, gán lại, ổn định lộ trình, cam kết tối thiểu, nhất
 - **w\* = 0,94** (bootstrap theo ngày 0,46–1,61). Luật C chỉ đáng dùng nếu khách thấy một lần bị đảo hứa khó chịu ít
   nhất bằng 0,94 lần bị dời muộn quá 1 phút. Khoảng tin cậy chứa 1, nên **chưa phân thắng thua**.
 - Khi chỉ chèn: không phân biệt được hai luật. Phần "muộn" do điều phối, không do tắc đường.
-- Kế hoạch được khóa trước khi tính; cổng: chạy lại 2.520 lượt trùng tuyệt đối P5/N2.
+- Kế hoạch được khóa trước khi tính số mới, nhưng viết **sau** một lần tính minh họa w\* = 0,77 trên cùng 10 ngày; chỉ
+  thước đo Ld là mới; dấu thời gian khóa chỉ có trong log máy nhà. Cổng: chạy lại 2.520 lượt trùng tuyệt đối P5/N2. Máy
+  công ty chạy lại ra 0,944 [0,463; 1,614].
 
 ### 2.5 Kết luận trung thực hiện tại
 
@@ -136,7 +143,7 @@ script.
 | 18978dd, 1190518 | Ngân sách theo độ dư kiểu Elmi (`dropEtaBudgetSlackPermille`), hạn chót theo độ dư (`dropEtaDeadlineSlackPermille` + `dropEtaDeadlineRelaxed`) | 081 |
 | c6588f8, ef2b02f | G2: `waitingRiderRelocation`, `maximumTargetVehicles`; sửa adapter chặng 0 giây | 081 |
 | 6ab03fc | Sửa adapter: chặng dừng 0 giây bị khóa | 082 |
-| 9ace339 | `stopServiceDurationMs`, mặc định tắt (dwell khác 0 bị chặn: lõi thiếu trạng thái "xe bận tới T") | 083 |
+| 9ace339 | `stopServiceDurationMs`, mặc định tắt. Dwell khác 0 **không được hỗ trợ** theo quy tắc ADR-083 (lõi thiếu trạng thái "xe bận tới T"); mã vẫn nhận 0–3.600.000 ms (`Wp4RunnerConfiguration.cs:590-601`) | 083 |
 | 8ce0194 | Tài liệu: P5, P7, N1, N2, cầu nối 238 | 084 |
 | 2704600, 00ac6b4, e430b7d | Kit tháng 10, chạy Via thật, hòa vốn | 085 |
 

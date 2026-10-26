@@ -20,7 +20,11 @@ của P5 (10 ngày xác nhận đã xem); 2.160 dòng, 0 lỗi (`rows/n2-plain.n
 
 Luật C và hàng rào nới gần như trùng ở mọi α:
 - served lệch từ −6,3 (α = 0) tới +1,8;
-- đảo hứa của luật C thấp hơn 0,2–1,7 lần mỗi ngày.
+- đảo hứa của luật C thấp hơn **0,4–2,0** lần mỗi ngày.
+
+  *Đính chính 26/10 (phản hồi của máy công ty, kiểm lại ở nhà từ `N2-ALPHA-TABLE.tsv`, các dòng INS):* bản trước ghi
+  0,2–1,7. Đó là khoảng so với hàng rào **chặt** (EO). So với hàng rào nới (EOHZ), mức giảm theo α 0–100% là 0,36; 1,30;
+  1,30; 2,00; 1,10; 1,47; 0,54.
 
 Riêng **hàng rào chặt ở α = 0** phục vụ thấp hẳn (579,5 so với 617,5 của hàng rào nới). Đó là artefact ép xe khi ngân sách
 bằng 0, cùng loại với SHF.

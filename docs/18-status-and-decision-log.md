@@ -1733,6 +1733,14 @@ Date: 2026-08-27
 
 ## 5. Next action
 
+**Cập nhật 2026-10-26 chiều (ADR-086):** máy công ty đã kiểm lại và khớp hai kết quả của máy nhà. Việc kế tiếp, theo thứ
+tự:
+1. Chủ mang bản công ty 24/10 về (qua kênh được phép), rồi chép vào thư mục mới, chạy `sha256sum -c SHA256-TAT-CA.txt`
+   (58/58), và đọc báo cáo wf17 cùng kế hoạch 24/10.
+2. Sinh viên sửa khóa luận theo danh sách của máy công ty, tự viết lời.
+3. Chủ gặp thầy: đợt 3 (75 ngày 2019), khảo sát đo mức khó chịu của đảo hứa, khai báo AI, hàng "hệ đầy đủ".
+4. Mọi lượt chạy mới chỉ làm khi chủ duyệt, có kế hoạch khóa trước.
+
 **Nhánh `research/via-zone-2026-10-26`, cập nhật 2026-10-26:** RideBound thật chạy trên dữ liệu Via ở cỡ Via (gộp theo khu
 TLC) và phép hòa vốn (ADR-085). Script, cấu hình, kết quả nhỏ ở `research/continuation/2026-10-26/`; trạng thái job và
 kết quả so từng khách ở `kits/via-real-2026-10-26/VIA-LOG.md`. Việc kế tiếp:
@@ -1742,8 +1750,8 @@ kết quả so từng khách ở `kits/via-real-2026-10-26/VIA-LOG.md`. Việc k
 3. Các việc của sinh viên giữ nguyên (P4, P6, N9, họp giáo viên, quyết định đợt 3).
 
 **Nhánh `research/p1-fix` / `research/p1-dwell`, cập nhật 2026-10-25:** giai đoạn 1 xong (ADR-082). Phần dwell nằm ở ADR-083 trên
-`research/p1-dwell`. Đã đọc toàn bộ tài
-liệu công ty; danh sách việc ở
+`research/p1-dwell`. Đã đọc tài liệu công ty theo bản chép 23/10 (khoảng 15:50, trước wf18; chưa có wf17 và kế
+hoạch 24/10, theo đối chiếu của máy công ty ngày 26/10, ADR-086); danh sách việc ở
 `C:/RideBoundContinuation/2026-10-24/doc-toan-bo/CON-THIEU-SO-VOI-KE-HOACH-CONG-TY.md`.
 
 P5, P7, P4(a) bổ sung, N1, N2 đã xong ngày 25/10 (ADR-084). Việc kế tiếp:
@@ -5346,7 +5354,9 @@ không chép nguyên văn.
 
 **Decision:**
 1. **A0.1** (hai patch băm của máy công ty, `365caac`, `365b502`): băm trạng thái một lần mỗi epoch với mảnh chuẩn tắc được
-   cache. Byte giao thức và hash không đổi; checkpoint kiểm lại bằng bản dựng không cache.
+   cache. Byte giao thức và hash không đổi; checkpoint kiểm lại bằng bản dựng không cache. (Ghi thêm 26/10, ADR-086:
+   mọi job đều chạy với `RIDEBOUND_STATE_HASH` không đặt. Biến này là cờ thử nghiệm băm v2 ở `RunnerSession.cs:75-81`,
+   không có tài liệu và không có test.)
 2. **Ngân sách Elmi theo từng khách** (`6d6fa47`; v1.1 `4a24810`):
    - khóa `dropEtaBudgetSlackPermille` (RCE) và `dropEtaDeadlineSlackPermille` (EO; thêm `dropEtaDeadlineRelaxed` thì là
      EOHZ);
@@ -5509,7 +5519,8 @@ không chép nguyên văn.
 ### ADR-084 — 2026-10-25 — Proposed (thăm dò sau kiểm toán công ty 23/10; không đổi mã)
 
 **Context:**
-- Đã đọc toàn bộ tài liệu công ty. Danh sách việc còn thiếu:
+- Đã đọc tài liệu công ty theo bản chép 23/10 (khoảng 15:50; chưa gồm wf17 và kế hoạch 24/10; xem ADR-086). Danh sách
+  việc còn thiếu:
   `C:/RideBoundContinuation/2026-10-24/doc-toan-bo/CON-THIEU-SO-VOI-KE-HOACH-CONG-TY.md`.
 - Ngày 25/10 chủ duyệt "thực hiện toàn bộ", và cho phép chạy runner wf15 của công ty cho P5 và các việc trong bảng.
 
@@ -5550,7 +5561,9 @@ không chép nguyên văn.
 - Còn mở:
   - sinh viên duyệt mã (P4) và các việc P6, N9;
   - lần vết các ô lệch của E0 (N5);
-  - N3 và N4 mới có kết quả thăm dò a5 của công ty.
+  - N3 và N4 mới có kết quả thăm dò a5 của công ty. Theo máy công ty (26/10; máy nhà chưa có wf17 để kiểm), wf17 R4
+    phủ một phần N3 (phí chuyển xe 0/60/300 s × 8/16 xe) và R5 phủ một phần N4 (P256, đội 56/68, trần 1,5×/2,5×, dwell
+    24 s); chưa có BT, P128 và chuẩn hóa trên 1.000 khách.
 - Không push; cây chính không đổi.
 
 ### ADR-085 — 2026-10-26 — Proposed (thăm dò; RideBound thật trên dữ liệu Via ở cỡ Via; phép hòa vốn; nhánh `research/via-zone-2026-10-26`)
@@ -5592,7 +5605,9 @@ không chép nguyên văn.
   lặng lẽ bỏ phương án). Đầu ra hỏng giữ ở `E:/RideBoundData/research/via-real-v1/runs/trial/`.
 - **Dự đoán bộ mô phỏng** (`via-real-2026-10-26/emulate_via.js`, wf15) cho 6 luật × 2 ô khóa sha256 lúc
   2026-10-25T18:06:24Z, trước mọi job; khoảng 495 quyết định mỗi job, 362–464 khách được phục vụ, G2 dời 6–33 khách.
-- **Phép hòa vốn** (`breakeven-2026-10-26/BREAKEVEN-RESULT.md`; kế hoạch khóa trước, sha `2e82c711…`; chạy lại 2.520 lượt
+- **Phép hòa vốn** (`breakeven-2026-10-26/BREAKEVEN-RESULT.md`; kế hoạch khóa trước khi tính số mới, sha `2e82c711…`, nhưng
+  được viết **sau** một lần tính minh họa w\* = 0,77 trên cùng 10 ngày; chỉ thước đo Ld là mới; dấu thời gian khóa chỉ có
+  trong log máy nhà; chạy lại 2.520 lượt
   bộ mô phỏng, trùng tuyệt đối P5/N2): với G2 và cùng số khách phục vụ, so với EOHZ35, luật C bớt 13,5 khách bị đảo hứa và
   thêm 12,7 khách bị điều phối dời muộn quá 1 phút mỗi ngày; **w\* = 0,94** (bootstrap theo ngày 0,46–1,61). Qua α 10–75%,
   w\* 0,3–1,2; không mức α nào luật C hơn trên cả hai thước đo. Khi chỉ chèn: không phân biệt được. Phần "muộn" do điều
@@ -5625,6 +5640,67 @@ không chép nguyên văn.
 - Nhánh `research/via-zone-2026-10-26` đặt trên `research/p1-dwell`, thêm `research/continuation/2026-10-26/` (script,
   cấu hình, kết quả nhỏ; không có dữ liệu lớn và không có bộ mô phỏng của công ty) và tài liệu này; push lên
   `RideBound-Code` theo lệnh của chủ. Repo đang công khai.
+
+### ADR-086 — 2026-10-26 — Proposed (nhận phản hồi của máy công ty; đính chính tài liệu; không đổi mã)
+
+**Context:**
+- Chiều 26/10 chủ chuyển về tài liệu "Việc cho máy nhà sau ngày 26/10/2026", do máy công ty viết sau khi pull nhánh này ở
+  `4356b1e`. Bản lưu ở máy nhà: `C:/RideBoundContinuation/2026-10-26/VIEC-CHO-MAY-NHA-TU-CONG-TY-26-10.md`. Không đưa lên
+  repo vì có thông tin nội bộ.
+- Máy công ty đã chạy lại hai kết quả của máy nhà:
+  - phép hòa vốn, w\* = 0,944 [0,463; 1,614];
+  - cầu nối cỡ Via, dựng lại từ các tệp TSV trong kit.
+
+  Cả hai khớp.
+- Máy công ty chỉ ra: máy nhà đang dùng bản chép công ty ngày 23/10, khoảng 15:50, trước wf18. Bản này thiếu wf17 (độ
+  bền R1–R7 và định giá), thiếu kế hoạch 24/10 và thiếu các gói bổ sung.
+- **Bản 24/10 (58 tệp, khoảng 2,5 GB) chưa có trên máy nhà** (đã tìm ngày 26/10). Các bước 1–2 của tài liệu (chép,
+  `sha256sum -c`, đọc wf17) chờ chủ mang về qua kênh được phép.
+
+**Decision:** sửa các chỗ máy nhà kiểm lại được; ghi các chỗ chưa kiểm được là "theo máy công ty".
+
+**Đã kiểm ở máy nhà và sửa:**
+1. "Đã đọc toàn bộ tài liệu công ty" → ghi rõ là bản chép 23/10 (ADR-084 và §5).
+2. Phép hòa vốn: kế hoạch được viết **sau** một lần tính minh họa w\* = 0,77 trên cùng 10 ngày; chỉ thước đo Ld là mới.
+   Ghi vào ADR-085, docs/19 và tài liệu bàn giao.
+3. Dwell khác 0 **không bị mã chặn**: `Wp4RunnerConfiguration.cs:590-601` nhận 0–3.600.000 ms. "Không hỗ trợ" chỉ là quy
+   tắc của ADR-083.
+4. `N2-RESULT.md`: khi chỉ chèn, luật C ít đảo hứa hơn hàng rào nới **0,4–2,0** lần mỗi ngày, không phải 0,2–1,7.
+   Khoảng 0,2–1,7 là khoảng so với hàng rào chặt (`N2-ALPHA-TABLE.tsv`, các dòng INS).
+5. `BREAKEVEN-RESULT.md` §4: dùng phút thay cho so hai số đếm. Phần điều phối là 180,3 trong 186,0 phút trễ thêm mỗi
+   ngày, khoảng 97% (`BREAKEVEN-TABLE-v2.tsv:28`, cột `dNet_min`, `dDA_min`).
+6. Mẫu đăng ký đợt 3: còn **75 ngày**, không phải "khoảng 91". Đếm từ `wf12/r5-data-days/work/day_status.json`: 151
+   ngày AVAILABLE, trừ 60 ngày wf14 (theo tên ô P512) và 16 ngày F16 của wf17 (không trùng nhau); 75 ngày còn lại đều
+   trong 2–9/2019.
+7. ADR-081: mọi job đều chạy với `RIDEBOUND_STATE_HASH` không đặt (`RunnerSession.cs:75-81`; không có tài liệu, không có
+   test).
+8. Câu G2: "không muộn hơn giờ đón **đã công bố**"; có những lần dời trước khi khách nhận lời hứa đầu.
+9. Câu "số của bộ mô phỏng đáng tin ở cỡ Via" trong tài liệu bàn giao: giới hạn vào kịch bản Via **gộp theo khu**, ngày
+   13/2/2019. Chính các ô P512 thì chưa bắc cầu.
+10. Cấu hình `wp4-via-*-a1.json` dùng `no-worse-than-reference-v1`. Không dùng chúng cho EO35 ở cỡ Via; với EO35 dùng
+    `forced-reference-v1` như giai đoạn 1.
+11. Ma trận Via của công ty: phép đóng của bộ chuyển chỉ rút ngắn mỗi cạnh 1–2 ms (sai số làm tròn; 537 và 331 cạnh), không
+    cạnh nào tới 1 s. Ma trận gốc đạt phép kiểm tam giác của công ty (ngưỡng 1 s, `scenario.js:245-248`). Đính chính
+    câu "không phải metric đường ngắn nhất" trong `VIA-LOG.md`.
+
+**Theo máy công ty, chưa kiểm ở nhà (chờ bản 24/10):**
+- wf17 R4/R5 phủ một phần N3/N4;
+- trạng thái 14 điểm của `DINH-CHINH-KE-HOACH-MAY-NHA-23-10.md` so với kế hoạch 24/10. Đã ghi vào bản ghi chú, kèm nhãn
+  này.
+- Quy tắc `rid` đầy đủ, theo máy công ty (`extract_via_month.sql.tmpl:23` trong gói P0, máy nhà chưa có), thêm
+  `shared_request_flag, shared_match_flag` sau năm khóa. Máy nhà kiểm được: bản v2 (`p7_via_windows_v2.sql:29`) chỉ có năm
+  khóa. Trên hai tháng P7 (0/0 dòng lệch) hai khóa thêm không đổi thứ tự. Phải thêm vào trước khi dựng ô cho ngày mới.
+
+**Consequences:**
+- Trước khi trộn vào `main`: thêm unit test so bộ ghi chuẩn có cache với `OnlineStateCanonicalizer.CanonicalizeReference`
+  (`OnlineStateCanonicalizer.cs:77`), trên trạng thái có G2, có vi phạm bị ép và có đón muộn. Chưa làm.
+- Bản `transcript-late.md` ở máy nhà (`E:/RideBoundData/company-intake/2026-10-23/sp/wf16/a5-steering/`) nặng 149.521
+  byte, tức **bản chưa cắt**.
+  - Không trích các dòng 1110–1278.
+  - Không đưa `sp/` lên repo; kiểm ngày 26/10: hai nhánh đã push chỉ có số dòng của tệp này, ngoài vùng 1110–1278.
+  - Xóa bản cũ hay không là do chủ quyết.
+- Các lượt chạy mới đều chờ chủ duyệt: hàng "hệ đầy đủ" Shadow + luật C + dự báo; đợt 3; luật C chỉ chèn ở cỡ Via.
+- Sửa khóa luận theo danh sách của máy công ty: sinh viên tự viết lời.
 
 ## Cập nhật khóa luận — 2026-10-16T00:09:00.907016+07:00
 
@@ -5723,6 +5799,10 @@ Claude/Antigravity. Không có quyền commit/push mới trong lượt này.
 
 ## 9. Change history
 
+- 2026-10-26 chiều (`research/via-zone-2026-10-26`, chỉ tài liệu): ADR-086. Nhận phản hồi của máy công ty; sửa 10 chỗ máy
+  nhà kiểm lại được (hòa vốn viết sau lần minh họa 0,77; dwell không bị mã chặn; N2 INS 0,4–2,0; phút trễ 97% do điều
+  phối; đợt 3 còn 75 ngày; `RIDEBOUND_STATE_HASH`; câu G2; giới hạn "gộp theo khu"; cấu hình A1 không dùng cho EO35). Bản
+  công ty 24/10 chưa có ở nhà.
 - 2026-10-26 (`research/via-zone-2026-10-26`, trên `research/p1-dwell`; không đổi mã; push lên `RideBound-Code` theo lệnh
   của chủ): ADR-085. Bộ chuyển Via theo khu TLC và job RideBound thật ở cỡ Via (sửa đổi A1–A3; 6/6 cặp trùng bộ mô phỏng,
   2.407 khách, gồm luật C có G2; luật C chỉ chèn chưa kiểm vì bản chốt cuối hết bộ nhớ);

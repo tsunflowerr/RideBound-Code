@@ -21,3 +21,21 @@ Không sửa tệp gốc. Khi làm theo KH, áp các dòng dưới đây.
 | 12 | Không làm A1/A2 (KH:111) | Đảo chỉ đạo ngày 21/10 của chủ ("viết lại phần lõi không sao đâu"). Cần chủ xác nhận | extract-full:2390 |
 | 13 | Thiếu hẳn trong KH | Bổ sung: §6-P7 (đối chiếu TLC, máy nhà đang làm); §8.2 (sinh viên tự kiểm); §6-N10 (kiểm tính mới, email tác giả Elmi); §6-N11 (đuôi, \|A − p0\|); mục "Tính chất của luật C" (chứng minh c ≥ 0 có điều kiện, BBP) | KT:607, 683-684, 760-770; R2 5.3.2-3 |
 | 14 | Đối thủ chính "Elmi + HZ" (KH:24, 31) | **Đã chốt ngày 25/10:** EOHZ35/SHHZ chính, luôn báo kèm EO35/SHF | ADR-082 |
+
+## Cập nhật 26/10 theo phản hồi của máy công ty
+
+Máy công ty cho biết: 13 trích dẫn "KH:dòng" ở trên khớp từng chữ với bản kế hoạch **trước** wf18, tức bản chép ngày
+23/10 khoảng 15:50. Kế hoạch đã được sửa ngày 24/10 (wf18 sửa 74/75 lỗi, thêm mục 0.4). Máy nhà **chưa có** bản 24/10,
+nên trạng thái dưới đây là của máy công ty, chưa đối chiếu ở nhà:
+
+- **Đã sửa trong kế hoạch 24/10:** #3, #4, #6, #9, #10.
+- **Sửa một phần:**
+  - #1: KH:190 vẫn đề xuất biến thể EO35 dung sai 5 s; nên bỏ.
+  - #2: các chỗ máy nhà thêm chưa có trong kế hoạch: `08-chuong4.tex:778, 1310`, df = 5, Veterans Day.
+  - #7: còn thiếu cổng Σ|c| ≤ B khi chạy vòng kín.
+  - #8: BT, Chicago, khung 13–15 giờ, ngưỡng 300 s chưa máy nào chạy; ghi là giới hạn.
+  - #13: còn thiếu N10 và mục "Tính chất của luật C".
+- **#5 của bản này là sai:** `closure: 'none'` chỉ tắt bước Floyd–Warshall lúc chạy. Ma trận vẫn phải qua phép kiểm tam
+  giác (`scenario.js:246-248`), và các ô Via đã qua với 0 vi phạm. Giữ phép kiểm.
+- **#11:** "khoảng 91 ngày 2019" là sai; đúng là **75 ngày** (đếm lại ở nhà, xem `MAU-DANG-KY-DOT-3.md` §3).
+- **#11, #12, #14:** chủ đã quyết hoặc sẽ quyết; ghi quyết định vào kế hoạch.

@@ -1,5 +1,16 @@
 # Ma trận truy vết yêu cầu
 
+## Phản hồi của máy công ty — 2026-10-26 chiều
+
+ADR-086; chỉ tài liệu. Bản phản hồi lưu ở máy nhà (`C:/RideBoundContinuation/2026-10-26/VIEC-CHO-MAY-NHA-TU-CONG-TY-26-10.md`).
+
+| Yêu cầu | Chứng cứ | Trạng thái/giới hạn |
+|---|---|---|
+| Kết quả máy nhà được kiểm độc lập | Máy công ty chạy lại phép hòa vốn (w\* = 0,944 [0,463; 1,614]) và dựng lại cầu nối cỡ Via từ TSV của kit: khớp | Theo báo cáo máy công ty |
+| Tài liệu khớp số gốc | Đính chính ở nhà: N2 INS 0,4–2,0; phút trễ 97% do điều phối; đợt 3 còn 75 ngày (151 − 60 − 16, đếm lại từ `day_status.json`); dwell không bị mã chặn; `RIDEBOUND_STATE_HASH` không đặt | Xong cho các chỗ máy nhà kiểm được |
+| Máy nhà có bản tài liệu công ty mới nhất | Không: đang dùng bản 23/10 khoảng 15:50; bản 24/10 (wf17, kế hoạch 24/10) chưa có ở nhà | Chờ chủ mang về qua kênh được phép |
+| Bản transcript nhạy cảm không bị lộ | Bản ở nhà 149.521 byte = chưa cắt; hai nhánh đã push chỉ có số dòng ngoài vùng 1110–1278 | Xóa bản cũ do chủ quyết; không đưa `sp/` lên repo |
+
 ## RideBound thật trên dữ liệu Via, phép hòa vốn — 2026-10-26
 
 ADR-085; nhánh `research/via-zone-2026-10-26` (trên `research/p1-dwell`, không đổi mã). Nhật ký:
@@ -11,7 +22,7 @@ ADR-085; nhánh `research/via-zone-2026-10-26` (trên `research/p1-dwell`, khôn
 | Chạy RideBound thật trên dữ liệu Via ở cỡ Via | Bộ chuyển theo khu TLC: 509/508 yêu cầu, 62 xe, 60/58 điểm; dự đoán bộ mô phỏng khóa trước mọi job; **6/6 cặp trùng, 2.407/2.407 khách, dời G2 4/4** (EOHZ35 ×2, G2K8-EOHZ35 ×2, G2K8-RCE35 w17, G2K8-U w08) | Họ kịch bản mới (điểm gộp theo khu), 1 ngày; luật C chỉ chèn chưa kiểm vì hết bộ nhớ ở bản chốt cuối |
 | Ngân sách mặc định có đủ cho cỡ Via | Không: job thử dừng an toàn, ngân sách sinh phương án cấp quyết định 10.000 bị vượt với 62 xe | Sửa đổi A1 chỉ nâng ngân sách cấp quyết định và bộ giải bằng cấu hình; trần từng xe giữ nguyên |
 | Job Via chạy hết tới bản chốt cuối | Với A3 (heap 6 GiB): 6/10 job qua; 4 job (RCE35 w08, G2K8-RCE35 w08, U w08, RCE35 w17) báo `OutOfMemoryException` ở bản chốt cuối; 2 job không chạy vì sàn ổ C | Bản chốt là một dòng vài trăm MiB; cần đổi cách ghi bản chốt hoặc máy nhiều RAM hơn |
-| Điều kiện để luật C đáng dùng (phép hòa vốn) | Kế hoạch khóa trước; cổng 2.520/2.520 lượt trùng P5/N2; G2, cùng số khách, so EOHZ35: w\* = 0,94 (0,46–1,61) | Bộ mô phỏng, 10 ngày đã xem, thăm dò; không đo cảm giác khách; INS không phân biệt được |
+| Điều kiện để luật C đáng dùng (phép hòa vốn) | Kế hoạch khóa trước khi tính số mới, nhưng viết sau lần minh họa w\* = 0,77 trên cùng 10 ngày (chỉ Ld là mới); cổng 2.520/2.520 lượt trùng P5/N2; G2, cùng số khách, so EOHZ35: w\* = 0,94 (0,46–1,61); máy công ty chạy lại khớp (0,944) | Bộ mô phỏng, 10 ngày đã xem, thăm dò; không đo cảm giác khách; INS không phân biệt được |
 | Đưa code và script lên GitHub cho máy công ty | Nhánh `research/via-zone-2026-10-26`; `research/continuation/2026-10-26/kits/` (danh sách tệp và sha256 trong `COPY-MANIFEST.tsv`) | Không có dữ liệu lớn, transcript, bộ mô phỏng của công ty; repo công khai |
 
 ## Đóng cầu nối giai đoạn 1 — 2026-10-25
@@ -28,7 +39,7 @@ ADR-082 (và ADR-083 trên `research/p1-dwell`); nhánh thăm dò `research/p1-f
 | Sửa adapter ca "xe cho" theo 4 điều kiện của chủ | Test tái hiện hỏng trước, đạt sau; chạy lại 108 job G2: 106/106 giữ nguyên, 108/108 khớp; bộ test adapter 461 với 6 lỗi đã biết | Không đổi RideBound, không đổi bộ mô phỏng |
 | Tác giả commit là chủ nghiên cứu, không lộ e-mail máy công ty | Chuỗi `7435661..research/g2-core` tạo lại, cùng cây; ref cũ ở `refs/backup/pre-author-rewrite-20261025/` | Nguồn gốc ghi trong ADR-080/081/082 |
 | Đối thủ chính | Chủ quyết 25/10: EOHZ35/SHHZ chính, luôn báo kèm EO35/SHF | Thay câu "đối chứng chính EO35" của ADR-081 |
-| Thời gian phục vụ ở điểm dừng (ADR-083) | Tùy chọn `stopServiceDurationMs`, mặc định tắt; 1230/1230 test; khi tắt, phát lại 228/228 job giống từng byte | Dwell khác 0 bị chặn (lõi thiếu "xe bận tới T"); khóa luận ghi dwell 0 |
+| Thời gian phục vụ ở điểm dừng (ADR-083) | Tùy chọn `stopServiceDurationMs`, mặc định tắt; 1230/1230 test; khi tắt, phát lại 228/228 job giống từng byte | Dwell khác 0 không được hỗ trợ theo quy tắc ADR-083 (lõi thiếu "xe bận tới T"); mã vẫn nhận 0–3.600.000 ms (`Wp4RunnerConfiguration.cs:590-601`, ADR-086); khóa luận ghi dwell 0 |
 | Kết luận Via không phụ thuộc chế độ định danh (ADR-084, §6-P5) | Cổng 0: 840/840 dòng trùng công ty; các phép so chính giữ dấu trên 10 ngày | 7/84 ô đánh dấu, không dùng; thăm dò |
 | Dữ liệu Via là chuyến thật (ADR-084, §6-P7) | TLC 3/2019 và 9/2019 so EXCEPT ALL: 0/0 dòng lệch | Mới kiểm 2/10 tháng |
 | Hạn chót nới dạng của sinh viên (ADR-084, §6-P4a) | 11/11 ô, 976/976 khách trùng dự đoán DLHZ-120; tổng cầu nối 238 cặp | Ô Manhattan nhỏ |

@@ -21,6 +21,10 @@ Owner order 2026-10-26 ~00:45: "Chuẩn bị mọi thứ cho việc chạy bộ 
   The company matrix restricted to the representatives is not a shortest-path metric: the integer Floyd–Warshall closure
   made 542 / 334 updates, which shortened **537 / 331 distinct arcs** (erratum R1-4: the table column counts updates; the
   arc counts were recomputed against the source matrix). Both sides use the closed matrix.
+  *Erratum 26/10 (ADR-086):* every shortened arc changed by only **1–2 ms** (max 2 ms, none ≥ 1,000 ms): rounding
+  residue. The company matrix passes the company's triangle check, which counts a violation only at ≥ 1 s
+  (`sp/wf15/runner/scenario.js:245-248`). The closure was needed only because the RideBound job checks every arc against
+  FleetPy's shortest path to the millisecond. "Not a shortest-path metric" above means this ms-level residue, nothing more.
 - Emulator predictions (`emulate_via.js`, wf15 engine copy of bridge phase 1): 12 cell-arms, 8 s in all, ≈495 decisions
   per job, served 362–464, G2 relocations 6–33 per job. Sealed in `VIA-PREDICTIONS.sha256` at 2026-10-25T18:06:24Z, before
   any RideBound job.
@@ -165,6 +169,15 @@ Owner order 2026-10-26 ~00:45: "Chuẩn bị mọi thứ cho việc chạy bộ 
 - Coverage: Elmi relaxed fence (insertion-only and G2, both windows), rule C with G2 (w17), unconstrained with G2 (w08).
   Not covered: rule C insertion-only (w08 and w17 failed on the checkpoint), rule C with G2 in w08 (failed), U
   insertion-only (w08 failed, w17 not started), G2-U w17 (not started), and Shadow (not in RideBound).
+
+## V7 — 26/10 afternoon — company-machine feedback (ADR-086)
+
+- The company machine rebuilt the 6/6 comparison from this kit's TSV files and got the same result.
+- Wording limit: the result is about the zone-level Via cells (`vz`), one day (2019-02-13). The company P512 cells
+  themselves are not bridged.
+- The A1 configs (`configs/wp4-via-*-a1.json`) carry `commitmentRecovery: no-worse-than-reference-v1`. They were used only
+  for U, RCE35 and EOHZ35. Do NOT use them for EO35 (strict fence) at Via scale: EO35 needs `forced-reference-v1`, as in
+  bridge phase 1 (`bridge-phase1-2026-10-23/configs/wp4-*-forced.json`).
 
 ## R1 — 01:20–01:30 — independent review (fresh-context agent, read-only) and follow-ups
 
