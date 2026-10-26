@@ -5598,14 +5598,21 @@ không chép nguyên văn.
   w\* 0,3–1,2; không mức α nào luật C hơn trên cả hai thước đo. Khi chỉ chèn: không phân biệt được. Phần "muộn" do điều
   phối, không do tắc đường.
 
-- **Trạng thái lúc push lần 1 (26/10, khoảng 03:00):**
-  - đợt `runA3` (12 job) đang chạy;
-  - chưa có job Via nào qua tới bản chốt cuối, nên **chưa có kết quả so từng khách**;
-  - kết quả sẽ ghi vào `kits/via-real-2026-10-26/VIA-LOG.md` và một lần push sau.
+- **Kết quả so từng khách (26/10, 07:54; `kits/via-real-2026-10-26/compare/runA3-0746-compare.json`):**
+  - **3/3 cặp kịch bản–luật trùng hoàn toàn, 1.127/1.127 khách**: EOHZ35 chỉ chèn (370), G2K8-EOHZ35 (377, G2 dời 17/17),
+    G2K8-U (380, dời 27/27), ô `d20190213-vz-r0-w08`.
+  - Như vậy RideBound thật bằng bộ mô phỏng ở cỡ Via (509 yêu cầu, 62 xe), kể cả G2 chọn 8 trong 62 xe.
+  - **Chưa phủ luật C:** mọi job RCE35 (w08 chỉ chèn, w08 G2, w17 chỉ chèn) và U w08 chạy hết mọi quyết định nhưng
+    Runner báo `OutOfMemoryException` ở bản chốt cuối (stderr nhờ bản vá A3), dù trần heap 6 GiB. Bản chốt của các job qua
+    là một dòng vài trăm MiB. Chưa biết vì sao các nhánh RCE35 hỏng mà EOHZ35 qua.
+  - Lúc push lần 2 (khoảng 08:00) EOHZ35 w17 đã qua (chưa so); G2K8-RCE35 w17 và G2K8-EOHZ35 w17 còn chạy.
 
 **Consequences:**
-- Câu "RideBound thật chưa chạy ở cỡ Via" chỉ được sửa theo kết quả so từng khách của các job `runA3`. Phần Shadow vẫn chỉ
-  có trong bộ mô phỏng.
+- Câu "RideBound thật chưa chạy ở cỡ Via" có thể sửa thành: RideBound thật đã chạy ở cỡ Via (điểm gộp theo khu, 1 ô) và
+  trùng bộ mô phỏng từng khách ở Elmi nới và G2 (3/3, 1.127 khách); luật C ở cỡ này chưa kiểm được vì bản chốt cuối hết bộ
+  nhớ. Phần Shadow vẫn chỉ có trong bộ mô phỏng.
+- Việc kế tiếp nếu cần luật C ở cỡ Via: làm bản chốt cuối nhỏ lại hoặc ghi theo luồng (đổi mã Runner), hoặc chạy trên máy
+  nhiều RAM hơn.
 - Bộ máy chạy job hiện tại tốn khoảng 1,5 giờ và khoảng 1 GB nhật ký cho mỗi job Via chỉ chèn; job G2 lâu hơn. Đây là giới
   hạn thực tế cần ghi trong khóa luận nếu dùng.
 - Khóa luận không đổi trong ADR này.
@@ -5711,7 +5718,8 @@ Claude/Antigravity. Không có quyền commit/push mới trong lượt này.
 ## 9. Change history
 
 - 2026-10-26 (`research/via-zone-2026-10-26`, trên `research/p1-dwell`; không đổi mã; push lên `RideBound-Code` theo lệnh
-  của chủ): ADR-085. Bộ chuyển Via theo khu TLC và job RideBound thật ở cỡ Via (sửa đổi A1 về ngân sách cấp quyết định);
+  của chủ): ADR-085. Bộ chuyển Via theo khu TLC và job RideBound thật ở cỡ Via (sửa đổi A1–A3; 3/3 cặp trùng bộ mô phỏng,
+  1.127 khách; luật C chưa kiểm vì bản chốt cuối hết bộ nhớ);
   phép hòa vốn w\* = 0,94 (G2, cùng số khách, so EOHZ35); script và kết quả nhỏ của tháng 10 ở
   `research/continuation/2026-10-26/`.
 - 2026-10-25 (`research/p1-dwell`, chỉ tài liệu): ADR-084. Các phép thăm dò sau kiểm toán gồm P5, P7, nhánh hạn chót của

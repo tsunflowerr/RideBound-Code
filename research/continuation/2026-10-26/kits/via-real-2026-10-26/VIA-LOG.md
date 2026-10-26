@@ -102,6 +102,45 @@ Owner order 2026-10-26 ~00:45: "Chuẩn bị mọi thứ cho việc chạy bộ 
     20.5 GB, 9.7 GB free at 02:47).
 - The trial rerun is the first runA3 job; the comparison reads the trial first.
 
+## V4 — 04:08–07:50 — runA3: 3 of 7 finished jobs reached a final checkpoint; the others ran out of memory there
+
+| job | rc | minutes | peak tree MiB (dotnet / python) | final checkpoint |
+|---|---|---|---|---|
+| VIA-RCE35 w08 | 1 | 81.8 | 4,833 (4,689 / 146) | Runner `OutOfMemoryException` |
+| VIA-EOHZ35 w08 | 0 | 81.9 | 6,467 (5,268 / 2,370) | pass |
+| VIA-G2K8-RCE35 w08 | 1 | 81.4 | 5,781 (5,637 / 165) | Runner `OutOfMemoryException` |
+| VIA-G2K8-EOHZ35 w08 | 0 | 89.1 | 5,828 (5,397 / 2,499) | pass |
+| VIA-U w08 | 1 | 117.4 | 5,248 (5,092 / 171) | Runner `OutOfMemoryException` |
+| VIA-G2K8-U w08 | 0 | 110.6 | 7,155 (5,839 / 3,267) | pass |
+| VIA-RCE35 w17 | 1 | 91.4 | 5,435 (5,285 / 151) | Runner `OutOfMemoryException` |
+
+- The A3 diagnostic (4) shows the cause in every failed job's log: `Runner internal error: OutOfMemoryException`, on the
+  final `checkpoint` request, after every decision. The failure is not about decisions; the rider comparison simply has
+  no ledger for those jobs (`bridge_riders.py:57-60`).
+- The passed checkpoints are single protocol lines of several hundred MiB (node cannot even hold the tail as one string;
+  the adapter process grows to 2.4–3.3 GiB while receiving one). The 6 GiB GC cap is not always enough to build it.
+  Which arms fail is not explained yet (RCE35 failed in both windows, EOHZ35 passed in w08).
+- EOHZ35 w17, G2K8-RCE35 w17 and G2K8-EOHZ35 w17 were still running at 07:50.
+- 07:47 the comparison of the 3 passed jobs started; at 07:50 it was SUSPENDED (not killed) at 5.8 GiB because free
+  commit fell to 3.1 GB while a runner was about to build its checkpoint; resumed after that job ended.
+
+## V5 — 07:47–07:54 — rider comparison: 3/3 exact, 1,127/1,127 riders
+
+`compare_via.py compare/runA3-0746` (roots: runs/runA3; the 3 jobs that had passed when it started; seal checked):
+
+| cell-arm | riders | identical | G2 moves real / emulator |
+|---|---|---|---|
+| VIA-EOHZ35 d20190213-vz-r0-w08 | 370 | 370 | — |
+| VIA-G2K8-EOHZ35 d20190213-vz-r0-w08 | 377 | 377 | 17 / 17 (max 1 per decision) |
+| VIA-G2K8-U d20190213-vz-r0-w08 | 380 | 380 | 27 / 27 (max 1 per decision) |
+
+- Real RideBound equals the sealed emulator predictions rider for rider at Via scale (509 requests, 62 vehicles, 60
+  nodes), including G2 with 8 receivers out of 62 vehicles, which the small bridge never tested.
+- **Not covered:** rule C (RCE35). Every RCE35 job (w08 INS, w08 G2, w17 INS) ran all its decisions but ran out of memory
+  on the final checkpoint, so its ledger cannot be read; nothing is known yet about RideBound = emulator for rule C at
+  this scale. U (insertion-only) w08 also failed the same way.
+- VIA-EOHZ35 w17 passed at 07:51 (after this comparison started); it is compared in a later run.
+
 ## R1 — 01:20–01:30 — independent review (fresh-context agent, read-only) and follow-ups
 
 - **No blocker.** The reviewer rebuilt both fixtures from the source cell and its int32 matrix and matched medoids, the

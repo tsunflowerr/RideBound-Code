@@ -1,0 +1,74 @@
+{
+  "finishedJobs": 3,
+  "cellArmsCompared": 3,
+  "cellArmsExact": 3,
+  "riders": 1127,
+  "ridersIdentical": 1127,
+  "movesEqual": 2,
+  "g2CellArms": 2,
+  "byArm": {
+    "VIA-U": {
+      "cellArms": 0,
+      "exact": 0
+    },
+    "VIA-RCE35": {
+      "cellArms": 0,
+      "exact": 0
+    },
+    "VIA-EOHZ35": {
+      "cellArms": 1,
+      "exact": 1
+    },
+    "VIA-G2K8-U": {
+      "cellArms": 1,
+      "exact": 1
+    },
+    "VIA-G2K8-RCE35": {
+      "cellArms": 0,
+      "exact": 0
+    },
+    "VIA-G2K8-EOHZ35": {
+      "cellArms": 1,
+      "exact": 1
+    }
+  },
+  "realRidersTsv": "compare\\runA3-0746-real-riders.tsv",
+  "results": [
+    {
+      "arm": "VIA-EOHZ35",
+      "cell": "d20190213-vz-r0-w08",
+      "riders": 370,
+      "identical": 370,
+      "exact": true,
+      "onlyReal": 0,
+      "onlyEmulator": 0,
+      "firstDifference": null
+    },
+    {
+      "arm": "VIA-G2K8-EOHZ35",
+      "cell": "d20190213-vz-r0-w08",
+      "riders": 377,
+      "identical": 377,
+      "exact": true,
+      "onlyReal": 0,
+      "onlyEmulator": 0,
+      "firstDifference": null,
+      "movesReal": 17,
+      "movesEmulator": 17,
+      "maxMovesPerDecision": 1
+    },
+    {
+      "arm": "VIA-G2K8-U",
+      "cell": "d20190213-vz-r0-w08",
+      "riders": 380,
+      "identical": 380,
+      "exact": true,
+      "onlyReal": 0,
+      "onlyEmulator": 0,
+      "firstDifference": null,
+      "movesReal": 27,
+      "movesEmulator": 27,
+      "maxMovesPerDecision": 1
+    }
+  ]
+}

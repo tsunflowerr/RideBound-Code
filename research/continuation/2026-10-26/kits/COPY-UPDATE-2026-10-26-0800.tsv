@@ -1,0 +1,4 @@
+state	path	bytes	sha256
+added	via-real-2026-10-26/compare/runA3-0746-compare.json	1467	83b5a45c7e4c6c7beb3e41ffd2121d035ffe1a8d0e8808a83a8cf079b98ba192
+added	via-real-2026-10-26/compare/runA3-0746-real-riders.tsv	170868	56970432f7d01270fa5ed8b661371fa9f41b30839c21fb275d381726f436e4df
+changed	via-real-2026-10-26/VIA-LOG.md	14068	304dd7a68ae1bbb6d2c164deacf1794ccb9d6bdc6c91dd2a7dd98ab2e972b72c

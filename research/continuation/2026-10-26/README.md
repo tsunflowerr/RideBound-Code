@@ -20,7 +20,7 @@ Thư mục này mang các script, cấu hình và kết quả nhỏ của đợt
 | `kits/p7-tlc-2026-10-25/` | Đối chiếu dữ liệu Via với tệp gốc TLC (DuckDB SQL) | 0/0 dòng lệch, 2 tháng |
 | `kits/identity-2026-10-25/` | Kiểm đồng nhất RC = NC = OC khi chỉ chèn | 11/11 ô |
 | `kits/breakeven-2026-10-26/` | Phép hòa vốn: luật C đáng dùng khi một lần đảo hứa khó chịu ít nhất bằng w\* lần bị điều phối dời muộn quá 1 phút | G2, α 35%, cùng số khách: w\* ≈ 0,94 (khoảng 0,46–1,61) |
-| `kits/via-real-2026-10-26/` | RideBound thật trên dữ liệu Via ở cỡ Via (509 yêu cầu, 62 xe), gộp điểm theo khu TLC | xem `VIA-LOG.md` |
+| `kits/via-real-2026-10-26/` | RideBound thật trên dữ liệu Via ở cỡ Via (509 yêu cầu, 62 xe), gộp điểm theo khu TLC | 3/3 cặp trùng bộ mô phỏng, 1.127/1.127 khách (EOHZ35, G2K8-EOHZ35, G2K8-U); luật C chưa kiểm vì bản chốt cuối hết bộ nhớ; xem `VIA-LOG.md` |
 | `kits/tang3/` | Phần của tang3 mà các kit trên gọi tới: kiểm manifest runner, bộ trích khách, lớp bọc world, cấu hình WP4 | — |
 
 ## Nhánh này KHÔNG có gì (cố ý)
