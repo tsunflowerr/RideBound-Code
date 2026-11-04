@@ -1,0 +1,817 @@
+##### 101a4f5-vs-ad470c1 []
+SAME wp3 plain: exit 0/0 stdout 9743/9743 sha 13084605B2E1/13084605B2E1 lines 6
+SAME wp3 checkpoints: exit 0/0 stdout 37293/37293 sha E5B6293563B3/E5B6293563B3 lines 11
+  checkpoints: 5, sizes 879,4947,4976,8374,8369
+SAME wp3 restore@0: exit 0/0 stdout 36637/36637 sha C6B0B3716CA9/C6B0B3716CA9 lines 11
+SAME wp3 restore@1: exit 0/0 stdout 27759/27759 sha 7EF18E7A46EA/7EF18E7A46EA lines 9
+SAME wp3 restore@2: exit 0/0 stdout 21793/21793 sha 6A8A95113072/6A8A95113072 lines 7
+SAME wp3 restore@3: exit 0/0 stdout 10238/10238 sha B4C4E76A4584/B4C4E76A4584 lines 5
+SAME wp3 restore@4: exit 0/0 stdout 879/879 sha B02A51A06C07/B02A51A06C07 lines 3
+SAME wp2 online checkpoints: exit 0/0 stdout 14259/14259 sha B3344DF07979/B3344DF07979 lines 11
+SAME wp2 conformance: exit 0/0 stdout 4273/4273 sha FECD4D595C6F/FECD4D595C6F lines 15
+SAME full-tiny default: exit 0/0 stdout 1207/1207 sha 6A8A774E6012/6A8A774E6012 lines 4
+SAME wp6 paired commitment: exit 0/0 stdout 2219/2219 sha EEB00D2DF2BA/EEB00D2DF2BA lines 8
+SAME wp3 CRLF: exit 0/0 stdout 37293/37293 sha E5B6293563B3/E5B6293563B3 lines 11
+SAME wp3 CRCRLF: exit 0/0 stdout 37293/37293 sha E5B6293563B3/E5B6293563B3 lines 11
+SAME wp3 no final LF: exit 2/2 stdout 37293/37293 sha E5B6293563B3/E5B6293563B3 lines 11
+SAME wp3 BOM first line: exit 0/0 stdout 3849/3849 sha FB8D293AE749/FB8D293AE749 lines 15
+SAME wp3 blank lines: exit 0/0 stdout 39573/39573 sha 79830B0A2E00/79830B0A2E00 lines 26
+SAME wp3 invalid utf8 line: exit 0/0 stdout 37454/37454 sha 9E73E6B3728B/9E73E6B3728B lines 12
+SAME wp3 oversize line: exit 0/0 stdout 37460/37460 sha CA449ECCDA3B/CA449ECCDA3B lines 12
+SAME wp3 exact-limit line: exit 0/0 stdout 37481/37481 sha 07AD8F80BEAE/07AD8F80BEAE lines 12
+SAME wp3 exact-limit line incl CR: exit 0/0 stdout 37481/37481 sha 07AD8F80BEAE/07AD8F80BEAE lines 12
+SAME wp3 limit+CR line: exit 0/0 stdout 37460/37460 sha CA449ECCDA3B/CA449ECCDA3B lines 12
+SAME wp3 NUL line: exit 0/0 stdout 37445/37445 sha B47C212782EF/B47C212782EF lines 12
+SAME wp3 mid CR: exit 0/0 stdout 37445/37445 sha 0E00F19324C3/0E00F19324C3 lines 12
+SAME wp3 64MiB limit: exit 0/0 stdout 37293/37293 sha E5B6293563B3/E5B6293563B3 lines 11
+SAME wp3 64MiB+1 limit (expected diff): exit 0/0 stdout 37293/37293 sha E5B6293563B3/E5B6293563B3 lines 11
+  ledger histories at cp1: 1
+DIFF wp3 crafted restore with shadowAllocations (default config): exit 0/0 stdout 8199/3317 sha D19C125185E8/5BFA4B399BC0 lines 10
+  line 2:
+   old: {"messageType":"restore","payload":{"checkpointHash":"1c6ca95f05c75279d9aed92c9af36486d99e2f7d1eb69b5f4b29d80d66323eae","status":"restored"},"runId":"wp3-demo-run","scenarioId":"wp3-commitment-tiny","schemaVersion":"1.0.0"}
+   new: {"messageType":"error","payload":{"code":"SCHEMA_VALIDATION_FAILED","disposition":"rejectMessage","message":"Checkpoint online state is not an exact canonical domain state."},"runId":"wp3-demo-run","scenarioId":"wp3-commitment-tiny","schemaVersion":"1.0.0"}
+  stderr old: Protocol error: HASH_MISMATCH
+Protocol error: INVALID_SESSION_STATE
+Protocol error: INVALID_SESSION_STATE
+Protocol error: INVALID_SESSION_STATE
+Protocol error: INVALID_SESSION_STATE
+
+  stderr new: Protocol error: SCHEMA_VALIDATION_FAILED
+Protocol error: EPOCH_GAP
+Protocol error: INVALID_SESSION_STATE
+Protocol error: INVALID_SESSION_STATE
+Protocol error: INVALID_SESSION_STATE
+Protocol error: INVALID_SESSION_STATE
+Protocol error: INVALID_SESSION_STATE
+
+   old> {"messageType":"restore","payload":{"checkpointHash":"1c6ca95f05c75279d9aed92c9af36486d99e2f7d1eb69b5f4b29d80d66323eae","status":"restored"},"runId":"wp3-demo-run","scenarioId":"wp3-commitment-tiny","schemaVersion":"1.0.0"}
+   old> {"messageType":"checkpoint","payload":{"checkpointHash":"1c6ca95f05c75279d9aed92c9af36486d99e2f7d1eb69b5f4b29d80d66323eae","checkpointVersion":"1.0.0","content":{"appliedEpoch":1,"manifestHash":"fffdbc40e9e61d79dfa31b6c988aa119650335ef739bb2cf24f0f073a3086297"
+   old> {"epochId":2,"messageType":"decision","payload":{"actions":[],"certificate":{"body":{"certificateVersion":"1.0.0","inputStateHash":"e56484c71f802985ccd0dd7cdbef4ee5dac4464517b24b18c1ee627d84cd08a1","normalOperation":true,"physicalPlanCount":1,"promiseCount":1,
+   new> {"messageType":"error","payload":{"code":"SCHEMA_VALIDATION_FAILED","disposition":"rejectMessage","message":"Checkpoint online state is not an exact canonical domain state."},"runId":"wp3-demo-run","scenarioId":"wp3-commitment-tiny","schemaVersion":"1.0.0"}
+   new> {"messageType":"checkpoint","payload":{"checkpointHash":"84f4b0d8343157d90ef5adf2533a4517b4efe65f829cf38aceb92d6759aa4d56","checkpointVersion":"1.0.0","content":{"appliedEpoch":0,"manifestHash":"fffdbc40e9e61d79dfa31b6c988aa119650335ef739bb2cf24f0f073a3086297"
+   new> {"epochId":2,"messageType":"error","payload":{"code":"EPOCH_GAP","disposition":"failSession","message":"Expected epoch 1."},"runId":"wp3-demo-run","scenarioId":"wp3-commitment-tiny","schemaVersion":"1.0.0","simTimeMs":1100}
+FAILS 1
+##### 101a4f5-vs-ad470c1 [big]
+SAME big pad 65533 LF: exit 0/0 stdout 36413/36413 sha E4882F5AA2C4/E4882F5AA2C4 lines 10
+SAME big pad 65533 CRLF: exit 0/0 stdout 36413/36413 sha E4882F5AA2C4/E4882F5AA2C4 lines 10
+SAME big pad 65534 LF: exit 0/0 stdout 36413/36413 sha E4882F5AA2C4/E4882F5AA2C4 lines 10
+SAME big pad 65534 CRLF: exit 0/0 stdout 36413/36413 sha E4882F5AA2C4/E4882F5AA2C4 lines 10
+SAME big pad 65536 LF: exit 0/0 stdout 36413/36413 sha E4882F5AA2C4/E4882F5AA2C4 lines 10
+SAME big pad 65536 CRLF: exit 0/0 stdout 36413/36413 sha E4882F5AA2C4/E4882F5AA2C4 lines 10
+SAME big pad 131071 LF: exit 0/0 stdout 36413/36413 sha E4882F5AA2C4/E4882F5AA2C4 lines 10
+SAME big pad 131071 CRLF: exit 0/0 stdout 36413/36413 sha E4882F5AA2C4/E4882F5AA2C4 lines 10
+SAME big pad 3000001 LF: exit 0/0 stdout 36413/36413 sha E4882F5AA2C4/E4882F5AA2C4 lines 10
+SAME big pad 3000001 CRLF: exit 0/0 stdout 36413/36413 sha E4882F5AA2C4/E4882F5AA2C4 lines 10
+SAME big pad 4194104 LF: exit 0/0 stdout 36413/36413 sha E4882F5AA2C4/E4882F5AA2C4 lines 10
+SAME big pad 4194104 CRLF: exit 0/0 stdout 36413/36413 sha E4882F5AA2C4/E4882F5AA2C4 lines 10
+SAME big pad 4194304 LF: exit 0/0 stdout 16286/16286 sha F5E3A421F0B7/F5E3A421F0B7 lines 13
+SAME big pad 4194304 CRLF: exit 0/0 stdout 5903/5903 sha ADE53D3C4570/ADE53D3C4570 lines 14
+FAILS 0
+##### 101a4f5-vs-ad470c1 [light]
+light v2env=False: exit 0 decisions 6 checkpoints 7 errors 0
+   restore@1: restored True errors 0 decisions-equal-suffix True checkpoints-equal-suffix True
+   restore@2: restored True errors 0 decisions-equal-suffix True checkpoints-equal-suffix True
+   restore@3: restored True errors 0 decisions-equal-suffix True checkpoints-equal-suffix True
+   restore@4: restored True errors 0 decisions-equal-suffix True checkpoints-equal-suffix True
+   restore@5: restored True errors 0 decisions-equal-suffix True checkpoints-equal-suffix True
+   restore@6: restored True errors 0 decisions-equal-suffix True checkpoints-equal-suffix True
+full v2env=False: exit 0 decisions 6 checkpoints 7 errors 0
+   restore@1: restored True errors 0 decisions-equal-suffix True checkpoints-equal-suffix True
+   restore@2: restored True errors 0 decisions-equal-suffix True checkpoints-equal-suffix True
+   restore@3: restored True errors 0 decisions-equal-suffix True checkpoints-equal-suffix True
+   restore@4: restored True errors 0 decisions-equal-suffix True checkpoints-equal-suffix True
+   restore@5: restored True errors 0 decisions-equal-suffix True checkpoints-equal-suffix True
+   restore@6: restored True errors 0 decisions-equal-suffix True checkpoints-equal-suffix True
+light v2env=True: exit 64 decisions 0 checkpoints 0 errors 0
+full v2env=True: exit 0 decisions 6 checkpoints 7 errors 0
+   restore@1: restored True errors 0 decisions-equal-suffix True checkpoints-equal-suffix True
+   restore@2: restored True errors 0 decisions-equal-suffix True checkpoints-equal-suffix True
+   restore@3: restored True errors 0 decisions-equal-suffix True checkpoints-equal-suffix True
+   restore@4: restored True errors 0 decisions-equal-suffix True checkpoints-equal-suffix True
+   restore@5: restored True errors 0 decisions-equal-suffix True checkpoints-equal-suffix True
+   restore@6: restored True errors 0 decisions-equal-suffix True checkpoints-equal-suffix True
+##### 101a4f5-vs-ad470c1 [ids]
+SAME ids ascii-escapes: exit 0/0 stdout 18179/18179 sha DF4DDB70FD9C/DF4DDB70FD9C lines 14
+   decisions 1, errors 8, checkpoints 3
+   err: {"epochId":2,"messageType":"error","payload":{"code":"SCHEMA_VALIDATION_FAILED","disposition":"rejectMessage","message":"Expected stop 'rb-p-731b8440f7d329ed1db686332de7092f810b50149ef95e0672dff8b81374fdab', received 'rb-p-b822f9fa4b01eb0f6a89063a91a1e5cc5aa00fa6d3759dc66a21653f7bd33ae0'."},"runId":
+   err: {"epochId":1,"messageType":"error","payload":{"code":"INVALID_SESSION_STATE","disposition":"rejectMessage","message":"decisionApplied requires a pending decision."},"runId":"wp3-demo-run","scenarioId":"wp3-commitment-tiny","schemaVersion":"1.0.0","simTimeMs":1000}
+SAME    restore@1: exit 0/0 stdout 7997/7997 sha D1ACAFCA0981/D1ACAFCA0981 lines 12
+     restored? True errors 8
+SAME    restore@2: exit 0/0 stdout 2185/2185 sha 1822D8C5F0E8/1822D8C5F0E8 lines 9
+SAME ids unicode: exit 0/0 stdout 17826/17826 sha 2ACA60BDDF31/2ACA60BDDF31 lines 14
+   decisions 1, errors 8, checkpoints 3
+   err: {"epochId":2,"messageType":"error","payload":{"code":"SCHEMA_VALIDATION_FAILED","disposition":"rejectMessage","message":"Expected stop 'rb-p-6eb7d9da72a4146f364f66a97010228cc0db605331292089cca0d04ed3fa19ae', received 'rb-p-b822f9fa4b01eb0f6a89063a91a1e5cc5aa00fa6d3759dc66a21653f7bd33ae0'."},"runId":
+   err: {"epochId":1,"messageType":"error","payload":{"code":"INVALID_SESSION_STATE","disposition":"rejectMessage","message":"decisionApplied requires a pending decision."},"runId":"wp3-demo-run","scenarioId":"wp3-commitment-tiny","schemaVersion":"1.0.0","simTimeMs":1000}
+SAME    restore@1: exit 0/0 stdout 7859/7859 sha E13E115B27D4/E13E115B27D4 lines 12
+     restored? True errors 8
+SAME    restore@2: exit 0/0 stdout 2185/2185 sha 762446824E13/762446824E13 lines 9
+SAME ids runid-marker: exit 0/0 stdout 37458/37458 sha 4149E4C50D27/4149E4C50D27 lines 11
+   decisions 4, errors 0, checkpoints 5
+SAME    restore@1: exit 0/0 stdout 27880/27880 sha 03AB1B273A4A/03AB1B273A4A lines 9
+     restored? True errors 0
+SAME    restore@2: exit 0/0 stdout 21881/21881 sha D7C5F8AFC173/D7C5F8AFC173 lines 7
+SAME    restore@3: exit 0/0 stdout 10293/10293 sha A6EE6881371B/A6EE6881371B lines 5
+SAME    restore@4: exit 0/0 stdout 901/901 sha 21DE54D76413/21DE54D76413 lines 3
+FAILS 0
+##### 101a4f5-vs-ad470c1 [bindings-47.txt]
+SAME wp3 wp3-boundary-test-v1.json + wp9-fleetpy-ridebound-hard-vector-audited-v1.json: exit 0/0 stdout 51614/51614 sha 14F6682550EA/14F6682550EA lines 11
+   decisions 4, errors 0
+SAME    restore@1: exit 0/0 stdout 44876/44876 sha 2A9970689228/2A9970689228 lines 9
+SAME    restore@2: exit 0/0 stdout 30729/30729 sha 7130CA55E7A1/7130CA55E7A1 lines 7
+SAME    restore@3: exit 0/0 stdout 12618/12618 sha 713308891689/713308891689 lines 5
+SAME    restore@4: exit 0/0 stdout 879/879 sha D6CB39D1C3FF/D6CB39D1C3FF lines 3
+SAME wp6 wp3-boundary-test-v1.json + wp9-fleetpy-ridebound-hard-vector-audited-v1.json: exit 0/0 stdout 84052/84052 sha 512BE4DC032D/512BE4DC032D lines 15
+   decisions 6, errors 0
+SAME    restore@1: exit 0/0 stdout 77266/77266 sha 3A9EFBD0F92E/3A9EFBD0F92E lines 13
+SAME    restore@2: exit 0/0 stdout 69032/69032 sha 692EFCC600BA/692EFCC600BA lines 11
+SAME    restore@3: exit 0/0 stdout 49053/49053 sha BDE73FC5268A/BDE73FC5268A lines 9
+SAME    restore@4: exit 0/0 stdout 30315/30315 sha 0037954CD950/0037954CD950 lines 7
+SAME    restore@5: exit 0/0 stdout 13821/13821 sha DE4462099364/DE4462099364 lines 5
+SAME    restore@6: exit 0/0 stdout 903/903 sha 01485E85F228/01485E85F228 lines 3
+SAME wp3 wp3-boundary-test-v1.json + wp9-fleetpy-rolling-cost-audited-v1.json: exit 0/0 stdout 44474/44474 sha A02FE31440DF/A02FE31440DF lines 11
+   decisions 4, errors 0
+SAME    restore@1: exit 0/0 stdout 37736/37736 sha 1C1DCB61F640/1C1DCB61F640 lines 9
+SAME    restore@2: exit 0/0 stdout 27159/27159 sha 153DBEDE6F56/153DBEDE6F56 lines 7
+SAME    restore@3: exit 0/0 stdout 12618/12618 sha 9B3B7EEBB0C1/9B3B7EEBB0C1 lines 5
+SAME    restore@4: exit 0/0 stdout 879/879 sha 52ABF8257DF6/52ABF8257DF6 lines 3
+SAME wp6 wp3-boundary-test-v1.json + wp9-fleetpy-rolling-cost-audited-v1.json: exit 0/0 stdout 73342/73342 sha EF064043C212/EF064043C212 lines 15
+   decisions 6, errors 0
+SAME    restore@1: exit 0/0 stdout 66556/66556 sha FE3CD7C672F5/FE3CD7C672F5 lines 13
+SAME    restore@2: exit 0/0 stdout 58322/58322 sha 5D4C06E0A1D9/5D4C06E0A1D9 lines 11
+SAME    restore@3: exit 0/0 stdout 41913/41913 sha 7A048A2D19D8/7A048A2D19D8 lines 9
+SAME    restore@4: exit 0/0 stdout 26745/26745 sha 62B9A9797D20/62B9A9797D20 lines 7
+SAME    restore@5: exit 0/0 stdout 13821/13821 sha 03D4C1BA94EC/03D4C1BA94EC lines 5
+SAME    restore@6: exit 0/0 stdout 903/903 sha BED76FE47ED6/BED76FE47ED6 lines 3
+SAME wp3 wp3-boundary-test-v1.json + wp13-e1-fleetpy-ridebound-hard-vector-retained-v1.json: exit 0/0 stdout 60620/60620 sha ABBF8EC53A9D/ABBF8EC53A9D lines 11
+   decisions 4, errors 0
+SAME    restore@1: exit 0/0 stdout 51720/51720 sha 7A9D1BC338FB/7A9D1BC338FB lines 9
+SAME    restore@2: exit 0/0 stdout 34858/34858 sha 81D84DA97025/81D84DA97025 lines 7
+SAME    restore@3: exit 0/0 stdout 14032/14032 sha 8BEC957184A3/8BEC957184A3 lines 5
+SAME    restore@4: exit 0/0 stdout 879/879 sha 644902EE8871/644902EE8871 lines 3
+SAME wp6 wp3-boundary-test-v1.json + wp13-e1-fleetpy-ridebound-hard-vector-retained-v1.json: exit 0/0 stdout 104217/104217 sha 3ABC6E6D5FF4/3ABC6E6D5FF4 lines 15
+   decisions 6, errors 0
+SAME    restore@1: exit 0/0 stdout 95269/95269 sha F939291129F3/F939291129F3 lines 13
+SAME    restore@2: exit 0/0 stdout 80282/80282 sha 49DF02F5E7F7/49DF02F5E7F7 lines 11
+SAME    restore@3: exit 0/0 stdout 56973/56973 sha 8CF5DDB224E0/8CF5DDB224E0 lines 9
+SAME    restore@4: exit 0/0 stdout 35058/35058 sha 5803C06EB2E4/5803C06EB2E4 lines 7
+SAME    restore@5: exit 0/0 stdout 15544/15544 sha 79ACE443E6F1/79ACE443E6F1 lines 5
+SAME    restore@6: exit 0/0 stdout 903/903 sha 0A5E0BC52DF9/0A5E0BC52DF9 lines 3
+SAME wp3 wp3-boundary-test-v1.json + wp13-e1-fleetpy-rolling-cost-retained-v1.json: exit 0/0 stdout 51252/51252 sha E799E0BDD361/E799E0BDD361 lines 11
+   decisions 4, errors 0
+SAME    restore@1: exit 0/0 stdout 42351/42351 sha 0DAD7F2803B8/0DAD7F2803B8 lines 9
+SAME    restore@2: exit 0/0 stdout 30174/30174 sha 62F88BB95B45/62F88BB95B45 lines 7
+SAME    restore@3: exit 0/0 stdout 14033/14033 sha 1BE5B3E1A707/1BE5B3E1A707 lines 5
+SAME    restore@4: exit 0/0 stdout 879/879 sha C3A42EFD301D/C3A42EFD301D lines 3
+SAME wp6 wp3-boundary-test-v1.json + wp13-e1-fleetpy-rolling-cost-retained-v1.json: exit 0/0 stdout 90165/90165 sha 94BAD9815F9D/94BAD9815F9D lines 15
+   decisions 6, errors 0
+SAME    restore@1: exit 0/0 stdout 81216/81216 sha 882F3EB6C801/882F3EB6C801 lines 13
+SAME    restore@2: exit 0/0 stdout 66228/66228 sha FA63CA72ED56/FA63CA72ED56 lines 11
+SAME    restore@3: exit 0/0 stdout 47604/47604 sha D4123477A138/D4123477A138 lines 9
+SAME    restore@4: exit 0/0 stdout 30374/30374 sha 61B1D51C0B12/61B1D51C0B12 lines 7
+SAME    restore@5: exit 0/0 stdout 15545/15545 sha 5368DA8921FB/5368DA8921FB lines 5
+SAME    restore@6: exit 0/0 stdout 903/903 sha B7590FF148E4/B7590FF148E4 lines 3
+SAME wp3 wp3-boundary-test-v1.json + wp14-development-ridebound-hard-vector-v1.json: exit 0/0 stdout 60760/60760 sha E37F5697E1BA/E37F5697E1BA lines 11
+   decisions 4, errors 0
+SAME    restore@1: exit 0/0 stdout 51860/51860 sha 4A6B545A12A3/4A6B545A12A3 lines 9
+SAME    restore@2: exit 0/0 stdout 34952/34952 sha 4A24DF80E3BF/4A24DF80E3BF lines 7
+SAME    restore@3: exit 0/0 stdout 14080/14080 sha 161260B04095/161260B04095 lines 5
+SAME    restore@4: exit 0/0 stdout 879/879 sha 73FF157E0D3A/73FF157E0D3A lines 3
+SAME wp6 wp3-boundary-test-v1.json + wp14-development-ridebound-hard-vector-v1.json: exit 0/0 stdout 104403/104403 sha 05EE0024C96C/05EE0024C96C lines 15
+   decisions 6, errors 0
+SAME    restore@1: exit 0/0 stdout 95455/95455 sha 92ACD1565080/92ACD1565080 lines 13
+SAME    restore@2: exit 0/0 stdout 80468/80468 sha 0686EF0F5701/0686EF0F5701 lines 11
+SAME    restore@3: exit 0/0 stdout 57113/57113 sha EED9ADC92ECF/EED9ADC92ECF lines 9
+SAME    restore@4: exit 0/0 stdout 35152/35152 sha C4109E119885/C4109E119885 lines 7
+SAME    restore@5: exit 0/0 stdout 15592/15592 sha 5B5C76AB151D/5B5C76AB151D lines 5
+SAME    restore@6: exit 0/0 stdout 903/903 sha A06B7FA21572/A06B7FA21572 lines 3
+SAME wp3 wp3-boundary-test-v1.json + wp14-development-rolling-cost-v1.json: exit 0/0 stdout 51396/51396 sha 7C59E2D759EC/7C59E2D759EC lines 11
+   decisions 4, errors 0
+SAME    restore@1: exit 0/0 stdout 42495/42495 sha AABDFD624386/AABDFD624386 lines 9
+SAME    restore@2: exit 0/0 stdout 30270/30270 sha B4CE3395003C/B4CE3395003C lines 7
+SAME    restore@3: exit 0/0 stdout 14081/14081 sha 6E4AAEBE9114/6E4AAEBE9114 lines 5
+SAME    restore@4: exit 0/0 stdout 879/879 sha 5058C87E92F3/5058C87E92F3 lines 3
+SAME wp6 wp3-boundary-test-v1.json + wp14-development-rolling-cost-v1.json: exit 0/0 stdout 90357/90357 sha E1A3EBF1F06C/E1A3EBF1F06C lines 15
+   decisions 6, errors 0
+SAME    restore@1: exit 0/0 stdout 81408/81408 sha BD93258E5480/BD93258E5480 lines 13
+SAME    restore@2: exit 0/0 stdout 66420/66420 sha 8FD78543C7B4/8FD78543C7B4 lines 11
+SAME    restore@3: exit 0/0 stdout 47748/47748 sha A1B0DA1117CD/A1B0DA1117CD lines 9
+SAME    restore@4: exit 0/0 stdout 30470/30470 sha 2841BF3774F8/2841BF3774F8 lines 7
+SAME    restore@5: exit 0/0 stdout 15593/15593 sha 45147B82194B/45147B82194B lines 5
+SAME    restore@6: exit 0/0 stdout 903/903 sha 66DFD60A4601/66DFD60A4601 lines 3
+SAME wp3 wp8-drop-eta-budget-medium-v1.json + wp4-rolling-cost-boundary-v1.json: exit 0/0 stdout 37431/37431 sha 5385756FE0A7/5385756FE0A7 lines 11
+   decisions 4, errors 0
+SAME    restore@1: exit 0/0 stdout 27873/27873 sha 03574977B1CD/03574977B1CD lines 9
+SAME    restore@2: exit 0/0 stdout 21883/21883 sha C59A01ABFBAE/C59A01ABFBAE lines 7
+SAME    restore@3: exit 0/0 stdout 10283/10283 sha 5068DC71FC63/5068DC71FC63 lines 5
+SAME    restore@4: exit 0/0 stdout 879/879 sha 9C4DF81FB265/9C4DF81FB265 lines 3
+SAME wp6 wp8-drop-eta-budget-medium-v1.json + wp4-rolling-cost-boundary-v1.json: exit 0/0 stdout 120623/120623 sha 7D1A681B543A/7D1A681B543A lines 15
+   decisions 6, errors 0
+SAME    restore@1: exit 0/0 stdout 111017/111017 sha E85A975A494F/E85A975A494F lines 13
+SAME    restore@2: exit 0/0 stdout 91619/91619 sha 3435BFAEB19A/3435BFAEB19A lines 11
+SAME    restore@3: exit 0/0 stdout 65391/65391 sha ED8A7369A566/ED8A7369A566 lines 9
+SAME    restore@4: exit 0/0 stdout 43886/43886 sha 6FF2E6EE62E2/6FF2E6EE62E2 lines 7
+SAME    restore@5: exit 0/0 stdout 22391/22391 sha E4EA73EB658A/E4EA73EB658A lines 5
+SAME    restore@6: exit 0/0 stdout 903/903 sha FB6FD68C4AD7/FB6FD68C4AD7 lines 3
+SAME wp3 wp8-drop-eta-budget-medium-v1.json + wp4-ridebound-hard-vector-boundary-v1.json: exit 0/0 stdout 37431/37431 sha 7BFD6A1447C7/7BFD6A1447C7 lines 11
+   decisions 4, errors 0
+SAME    restore@1: exit 0/0 stdout 27873/27873 sha 080D421894AC/080D421894AC lines 9
+SAME    restore@2: exit 0/0 stdout 21883/21883 sha C13EC36AAF56/C13EC36AAF56 lines 7
+SAME    restore@3: exit 0/0 stdout 10283/10283 sha FF6060C7DB0D/FF6060C7DB0D lines 5
+SAME    restore@4: exit 0/0 stdout 879/879 sha D08EE43CF44F/D08EE43CF44F lines 3
+SAME wp6 wp8-drop-eta-budget-medium-v1.json + wp4-ridebound-hard-vector-boundary-v1.json: exit 0/0 stdout 120623/120623 sha E24414A5F17A/E24414A5F17A lines 15
+   decisions 6, errors 0
+SAME    restore@1: exit 0/0 stdout 111017/111017 sha AD53ED63DC48/AD53ED63DC48 lines 13
+SAME    restore@2: exit 0/0 stdout 91619/91619 sha 082943416C52/082943416C52 lines 11
+SAME    restore@3: exit 0/0 stdout 65391/65391 sha 87EE9496386D/87EE9496386D lines 9
+SAME    restore@4: exit 0/0 stdout 43886/43886 sha 370323C9CCD0/370323C9CCD0 lines 7
+SAME    restore@5: exit 0/0 stdout 22391/22391 sha 9F7907788CB3/9F7907788CB3 lines 5
+SAME    restore@6: exit 0/0 stdout 903/903 sha 86B0B7698290/86B0B7698290 lines 3
+SAME wp3 wp8-drop-eta-budget-medium-v1.json + wp7-fleetpy-ridebound-hard-vector-v1.json: exit 0/0 stdout 34760/34760 sha 58BC6C43A020/58BC6C43A020 lines 11
+   decisions 4, errors 0
+SAME    restore@1: exit 0/0 stdout 30177/30177 sha 597EF9FE1A43/597EF9FE1A43 lines 9
+SAME    restore@2: exit 0/0 stdout 21755/21755 sha EC008D643FBD/EC008D643FBD lines 7
+SAME    restore@3: exit 0/0 stdout 10496/10496 sha 07A6EB212CC5/07A6EB212CC5 lines 5
+SAME    restore@4: exit 0/0 stdout 879/879 sha 828F914E7EA9/828F914E7EA9 lines 3
+SAME wp6 wp8-drop-eta-budget-medium-v1.json + wp7-fleetpy-ridebound-hard-vector-v1.json: exit 0/0 stdout 55578/55578 sha 0AE95524B7EB/0AE95524B7EB lines 15
+   decisions 6, errors 0
+SAME    restore@1: exit 0/0 stdout 50947/50947 sha 6D16C10D09AA/6D16C10D09AA lines 13
+SAME    restore@2: exit 0/0 stdout 46061/46061 sha 000C1A70D526/000C1A70D526 lines 11
+SAME    restore@3: exit 0/0 stdout 35598/35598 sha 54E803C13E26/54E803C13E26 lines 9
+SAME    restore@4: exit 0/0 stdout 22543/22543 sha 759E59EE13F1/759E59EE13F1 lines 7
+SAME    restore@5: exit 0/0 stdout 11720/11720 sha B64137803F17/B64137803F17 lines 5
+SAME    restore@6: exit 0/0 stdout 903/903 sha C28D2671BBAD/C28D2671BBAD lines 3
+SAME wp3 wp8-drop-eta-budget-medium-v1.json + wp7-fleetpy-rolling-cost-v1.json: exit 0/0 stdout 34760/34760 sha 2F9B708F65EB/2F9B708F65EB lines 11
+   decisions 4, errors 0
+SAME    restore@1: exit 0/0 stdout 30177/30177 sha 9F4AAF83CD8E/9F4AAF83CD8E lines 9
+SAME    restore@2: exit 0/0 stdout 21755/21755 sha 95CD1A87D92A/95CD1A87D92A lines 7
+SAME    restore@3: exit 0/0 stdout 10496/10496 sha 4440AD871062/4440AD871062 lines 5
+SAME    restore@4: exit 0/0 stdout 879/879 sha C865154FD08E/C865154FD08E lines 3
+SAME wp6 wp8-drop-eta-budget-medium-v1.json + wp7-fleetpy-rolling-cost-v1.json: exit 0/0 stdout 55578/55578 sha 9D07BE108263/9D07BE108263 lines 15
+   decisions 6, errors 0
+SAME    restore@1: exit 0/0 stdout 50947/50947 sha 9919459FC578/9919459FC578 lines 13
+SAME    restore@2: exit 0/0 stdout 46061/46061 sha C70091A192CF/C70091A192CF lines 11
+SAME    restore@3: exit 0/0 stdout 35598/35598 sha E1E0CA53A185/E1E0CA53A185 lines 9
+SAME    restore@4: exit 0/0 stdout 22543/22543 sha C5E358FD78EA/C5E358FD78EA lines 7
+SAME    restore@5: exit 0/0 stdout 11720/11720 sha 9AA201BDEF06/9AA201BDEF06 lines 5
+SAME    restore@6: exit 0/0 stdout 903/903 sha B367148F457E/B367148F457E lines 3
+SAME wp3 wp8-drop-eta-budget-medium-v1.json + wp9-fleetpy-ridebound-hard-vector-audited-v1.json: exit 0/0 stdout 51740/51740 sha BCED5001EB46/BCED5001EB46 lines 11
+   decisions 4, errors 0
+SAME    restore@1: exit 0/0 stdout 44981/44981 sha 01A4BDA8B4B6/01A4BDA8B4B6 lines 9
+SAME    restore@2: exit 0/0 stdout 30813/30813 sha DA0271B66278/DA0271B66278 lines 7
+SAME    restore@3: exit 0/0 stdout 12660/12660 sha 8099D7CC0DF5/8099D7CC0DF5 lines 5
+SAME    restore@4: exit 0/0 stdout 879/879 sha 751BA8E9BB6F/751BA8E9BB6F lines 3
+SAME wp6 wp8-drop-eta-budget-medium-v1.json + wp9-fleetpy-ridebound-hard-vector-audited-v1.json: exit 0/0 stdout 84367/84367 sha EE61275E83E6/EE61275E83E6 lines 15
+   decisions 6, errors 0
+SAME    restore@1: exit 0/0 stdout 77560/77560 sha 1EDBC33DC5C2/1EDBC33DC5C2 lines 13
+SAME    restore@2: exit 0/0 stdout 69284/69284 sha E13098AA1C76/E13098AA1C76 lines 11
+SAME    restore@3: exit 0/0 stdout 49242/49242 sha 3E06D8C1E539/3E06D8C1E539 lines 9
+SAME    restore@4: exit 0/0 stdout 30441/30441 sha 73286CEF8BEE/73286CEF8BEE lines 7
+SAME    restore@5: exit 0/0 stdout 13884/13884 sha B5E6BF8BCAB7/B5E6BF8BCAB7 lines 5
+SAME    restore@6: exit 0/0 stdout 903/903 sha 6C0F973B591C/6C0F973B591C lines 3
+SAME wp3 wp8-drop-eta-budget-medium-v1.json + wp9-fleetpy-rolling-cost-audited-v1.json: exit 0/0 stdout 44600/44600 sha BA2026E5BCCD/BA2026E5BCCD lines 11
+   decisions 4, errors 0
+SAME    restore@1: exit 0/0 stdout 37841/37841 sha 93CA5BA54742/93CA5BA54742 lines 9
+SAME    restore@2: exit 0/0 stdout 27243/27243 sha F9E3E62B15E8/F9E3E62B15E8 lines 7
+SAME    restore@3: exit 0/0 stdout 12660/12660 sha 69AF3C026EE9/69AF3C026EE9 lines 5
+SAME    restore@4: exit 0/0 stdout 879/879 sha 6E6BE50AA242/6E6BE50AA242 lines 3
+SAME wp6 wp8-drop-eta-budget-medium-v1.json + wp9-fleetpy-rolling-cost-audited-v1.json: exit 0/0 stdout 73657/73657 sha 7F2BCFBD9AAA/7F2BCFBD9AAA lines 15
+   decisions 6, errors 0
+SAME    restore@1: exit 0/0 stdout 66850/66850 sha AF8997186801/AF8997186801 lines 13
+SAME    restore@2: exit 0/0 stdout 58574/58574 sha 0582F358BDBC/0582F358BDBC lines 11
+SAME    restore@3: exit 0/0 stdout 42102/42102 sha 12888550BB24/12888550BB24 lines 9
+SAME    restore@4: exit 0/0 stdout 26871/26871 sha 28E3CAB859E7/28E3CAB859E7 lines 7
+SAME    restore@5: exit 0/0 stdout 13884/13884 sha C16696C9EC0E/C16696C9EC0E lines 5
+SAME    restore@6: exit 0/0 stdout 903/903 sha CD8554FBE41F/CD8554FBE41F lines 3
+SAME wp3 wp8-drop-eta-budget-medium-v1.json + wp9-fleetpy-soft-hard-hybrid-audited-v1.json: exit 0/0 stdout 58452/58452 sha 0609EC31145A/0609EC31145A lines 11
+   decisions 4, errors 0
+SAME    restore@1: exit 0/0 stdout 51693/51693 sha 1251561CF94F/1251561CF94F lines 9
+SAME    restore@2: exit 0/0 stdout 34169/34169 sha 43E2D3E4CCEF/43E2D3E4CCEF lines 7
+SAME    restore@3: exit 0/0 stdout 12660/12660 sha BD147BF20E6F/BD147BF20E6F lines 5
+SAME    restore@4: exit 0/0 stdout 879/879 sha D79E63A1304F/D79E63A1304F lines 3
+SAME wp6 wp8-drop-eta-budget-medium-v1.json + wp9-fleetpy-soft-hard-hybrid-audited-v1.json: exit 0/0 stdout 94435/94435 sha 6F463FEC3CE6/6F463FEC3CE6 lines 15
+   decisions 6, errors 0
+SAME    restore@1: exit 0/0 stdout 87628/87628 sha 1107FB4C79E8/1107FB4C79E8 lines 13
+SAME    restore@2: exit 0/0 stdout 79352/79352 sha 8F557DF8C901/8F557DF8C901 lines 11
+SAME    restore@3: exit 0/0 stdout 55954/55954 sha E21D854A5612/E21D854A5612 lines 9
+SAME    restore@4: exit 0/0 stdout 33797/33797 sha 1DF773933735/1DF773933735 lines 7
+SAME    restore@5: exit 0/0 stdout 13884/13884 sha AED56801CE54/AED56801CE54 lines 5
+SAME    restore@6: exit 0/0 stdout 903/903 sha 030976BCE700/030976BCE700 lines 3
+SAME wp3 wp8-drop-eta-budget-medium-v1.json + wp13-e1-fleetpy-ridebound-hard-vector-retained-v1.json: exit 0/0 stdout 60746/60746 sha 045110945395/045110945395 lines 11
+   decisions 4, errors 0
+SAME    restore@1: exit 0/0 stdout 51825/51825 sha AEAFA497A246/AEAFA497A246 lines 9
+SAME    restore@2: exit 0/0 stdout 34942/34942 sha 18E0DB2156CA/18E0DB2156CA lines 7
+SAME    restore@3: exit 0/0 stdout 14074/14074 sha 05E2D0EDC57C/05E2D0EDC57C lines 5
+SAME    restore@4: exit 0/0 stdout 879/879 sha E3E33D3FED82/E3E33D3FED82 lines 3
+SAME wp6 wp8-drop-eta-budget-medium-v1.json + wp13-e1-fleetpy-ridebound-hard-vector-retained-v1.json: exit 0/0 stdout 104532/104532 sha DD6539D0092C/DD6539D0092C lines 15
+   decisions 6, errors 0
+SAME    restore@1: exit 0/0 stdout 95563/95563 sha D4A5029E8357/D4A5029E8357 lines 13
+SAME    restore@2: exit 0/0 stdout 80534/80534 sha FAF915EF554B/FAF915EF554B lines 11
+SAME    restore@3: exit 0/0 stdout 57162/57162 sha AED4749EE6F7/AED4749EE6F7 lines 9
+SAME    restore@4: exit 0/0 stdout 35184/35184 sha 320AB12CC4E6/320AB12CC4E6 lines 7
+SAME    restore@5: exit 0/0 stdout 15607/15607 sha 2F10E5BD54A2/2F10E5BD54A2 lines 5
+SAME    restore@6: exit 0/0 stdout 903/903 sha DC9A342FB455/DC9A342FB455 lines 3
+SAME wp3 wp8-drop-eta-budget-medium-v1.json + wp13-e1-fleetpy-rolling-cost-retained-v1.json: exit 0/0 stdout 51378/51378 sha 383AE2A25D79/383AE2A25D79 lines 11
+   decisions 4, errors 0
+SAME    restore@1: exit 0/0 stdout 42456/42456 sha 94E0FA6A4D5E/94E0FA6A4D5E lines 9
+SAME    restore@2: exit 0/0 stdout 30258/30258 sha 8E0DF1B24274/8E0DF1B24274 lines 7
+SAME    restore@3: exit 0/0 stdout 14075/14075 sha E2B2714707AE/E2B2714707AE lines 5
+SAME    restore@4: exit 0/0 stdout 879/879 sha 7BD05BE0DBF0/7BD05BE0DBF0 lines 3
+SAME wp6 wp8-drop-eta-budget-medium-v1.json + wp13-e1-fleetpy-rolling-cost-retained-v1.json: exit 0/0 stdout 90480/90480 sha C0AA979A9B39/C0AA979A9B39 lines 15
+   decisions 6, errors 0
+SAME    restore@1: exit 0/0 stdout 81510/81510 sha 707F12A78071/707F12A78071 lines 13
+SAME    restore@2: exit 0/0 stdout 66480/66480 sha FDABEA2FD535/FDABEA2FD535 lines 11
+SAME    restore@3: exit 0/0 stdout 47793/47793 sha F82B976C3DC5/F82B976C3DC5 lines 9
+SAME    restore@4: exit 0/0 stdout 30500/30500 sha 3EDE88E443E7/3EDE88E443E7 lines 7
+SAME    restore@5: exit 0/0 stdout 15608/15608 sha CC2631F679FA/CC2631F679FA lines 5
+SAME    restore@6: exit 0/0 stdout 903/903 sha F1899C84198C/F1899C84198C lines 3
+SAME wp3 wp8-drop-eta-budget-medium-v1.json + wp14-development-ridebound-hard-vector-v1.json: exit 0/0 stdout 60886/60886 sha 71E166D33705/71E166D33705 lines 11
+   decisions 4, errors 0
+SAME    restore@1: exit 0/0 stdout 51965/51965 sha CAE121497756/CAE121497756 lines 9
+SAME    restore@2: exit 0/0 stdout 35036/35036 sha 60042110FB95/60042110FB95 lines 7
+SAME    restore@3: exit 0/0 stdout 14122/14122 sha 5FB080F33D24/5FB080F33D24 lines 5
+SAME    restore@4: exit 0/0 stdout 879/879 sha 469BA7B3BAA6/469BA7B3BAA6 lines 3
+SAME wp6 wp8-drop-eta-budget-medium-v1.json + wp14-development-ridebound-hard-vector-v1.json: exit 0/0 stdout 104718/104718 sha 31D1B237F69F/31D1B237F69F lines 15
+   decisions 6, errors 0
+SAME    restore@1: exit 0/0 stdout 95749/95749 sha B6CF034A71CE/B6CF034A71CE lines 13
+SAME    restore@2: exit 0/0 stdout 80720/80720 sha 19560966EAC8/19560966EAC8 lines 11
+SAME    restore@3: exit 0/0 stdout 57302/57302 sha 23E050D6E239/23E050D6E239 lines 9
+SAME    restore@4: exit 0/0 stdout 35278/35278 sha 3552FFB8424A/3552FFB8424A lines 7
+SAME    restore@5: exit 0/0 stdout 15655/15655 sha F1CD35E8E2EA/F1CD35E8E2EA lines 5
+SAME    restore@6: exit 0/0 stdout 903/903 sha 5D3AA63B3764/5D3AA63B3764 lines 3
+SAME wp3 wp8-drop-eta-budget-medium-v1.json + wp14-development-rolling-cost-v1.json: exit 0/0 stdout 51522/51522 sha 7E00FD77DCAE/7E00FD77DCAE lines 11
+   decisions 4, errors 0
+SAME    restore@1: exit 0/0 stdout 42600/42600 sha 09247E09B2BF/09247E09B2BF lines 9
+SAME    restore@2: exit 0/0 stdout 30354/30354 sha C669F30E3476/C669F30E3476 lines 7
+SAME    restore@3: exit 0/0 stdout 14123/14123 sha 0EB5EAD6AC5B/0EB5EAD6AC5B lines 5
+SAME    restore@4: exit 0/0 stdout 879/879 sha 18651787ED6A/18651787ED6A lines 3
+SAME wp6 wp8-drop-eta-budget-medium-v1.json + wp14-development-rolling-cost-v1.json: exit 0/0 stdout 90672/90672 sha C850E2B5F401/C850E2B5F401 lines 15
+   decisions 6, errors 0
+SAME    restore@1: exit 0/0 stdout 81702/81702 sha EC2FD1BF9C90/EC2FD1BF9C90 lines 13
+SAME    restore@2: exit 0/0 stdout 66672/66672 sha 399561D46545/399561D46545 lines 11
+SAME    restore@3: exit 0/0 stdout 47937/47937 sha 9ECCBDF8E2FE/9ECCBDF8E2FE lines 9
+SAME    restore@4: exit 0/0 stdout 30596/30596 sha A4F29D45BD92/A4F29D45BD92 lines 7
+SAME    restore@5: exit 0/0 stdout 15656/15656 sha EC4D46FDB730/EC4D46FDB730 lines 5
+SAME    restore@6: exit 0/0 stdout 903/903 sha 47D6828C76C3/47D6828C76C3 lines 3
+SAME wp3 wp14-c1-h6-reference-v1.json + wp4-rolling-cost-boundary-v1.json: exit 0/0 stdout 37431/37431 sha 3B0DAD8F9E45/3B0DAD8F9E45 lines 11
+   decisions 4, errors 0
+SAME    restore@1: exit 0/0 stdout 27873/27873 sha BD670D0BEAD9/BD670D0BEAD9 lines 9
+SAME    restore@2: exit 0/0 stdout 21883/21883 sha 258F400A43BE/258F400A43BE lines 7
+SAME    restore@3: exit 0/0 stdout 10283/10283 sha 90E316E26FD3/90E316E26FD3 lines 5
+SAME    restore@4: exit 0/0 stdout 879/879 sha F742CBA46C0C/F742CBA46C0C lines 3
+SAME wp6 wp14-c1-h6-reference-v1.json + wp4-rolling-cost-boundary-v1.json: exit 0/0 stdout 120623/120623 sha E6FC3FFB9F28/E6FC3FFB9F28 lines 15
+   decisions 6, errors 0
+SAME    restore@1: exit 0/0 stdout 111017/111017 sha D0FA42B81C43/D0FA42B81C43 lines 13
+SAME    restore@2: exit 0/0 stdout 91619/91619 sha E75F5AF101B3/E75F5AF101B3 lines 11
+SAME    restore@3: exit 0/0 stdout 65391/65391 sha 438230B6487B/438230B6487B lines 9
+SAME    restore@4: exit 0/0 stdout 43886/43886 sha 6C25CBE14C6F/6C25CBE14C6F lines 7
+SAME    restore@5: exit 0/0 stdout 22391/22391 sha 67951A8CD239/67951A8CD239 lines 5
+SAME    restore@6: exit 0/0 stdout 903/903 sha 7EFEF4C0727F/7EFEF4C0727F lines 3
+SAME wp3 wp14-c1-h6-reference-v1.json + wp4-ridebound-hard-vector-boundary-v1.json: exit 0/0 stdout 37431/37431 sha 7D9412850387/7D9412850387 lines 11
+   decisions 4, errors 0
+SAME    restore@1: exit 0/0 stdout 27873/27873 sha 032F546A6E73/032F546A6E73 lines 9
+SAME    restore@2: exit 0/0 stdout 21883/21883 sha 3B80469871C6/3B80469871C6 lines 7
+SAME    restore@3: exit 0/0 stdout 10283/10283 sha C4FBB17AFFC1/C4FBB17AFFC1 lines 5
+SAME    restore@4: exit 0/0 stdout 879/879 sha CD354442C889/CD354442C889 lines 3
+SAME wp6 wp14-c1-h6-reference-v1.json + wp4-ridebound-hard-vector-boundary-v1.json: exit 0/0 stdout 120623/120623 sha 7EF1E0422A8A/7EF1E0422A8A lines 15
+   decisions 6, errors 0
+SAME    restore@1: exit 0/0 stdout 111017/111017 sha 41528813D1EC/41528813D1EC lines 13
+SAME    restore@2: exit 0/0 stdout 91619/91619 sha EB31C8E0D58D/EB31C8E0D58D lines 11
+SAME    restore@3: exit 0/0 stdout 65391/65391 sha 5685C9BC596C/5685C9BC596C lines 9
+SAME    restore@4: exit 0/0 stdout 43886/43886 sha 731528872E14/731528872E14 lines 7
+SAME    restore@5: exit 0/0 stdout 22391/22391 sha 5EE9D5E44C0F/5EE9D5E44C0F lines 5
+SAME    restore@6: exit 0/0 stdout 903/903 sha 6AA0DCADD423/6AA0DCADD423 lines 3
+SAME wp3 wp14-c1-h6-reference-v1.json + wp7-fleetpy-ridebound-hard-vector-v1.json: exit 0/0 stdout 34760/34760 sha 946BBB3084EC/946BBB3084EC lines 11
+   decisions 4, errors 0
+SAME    restore@1: exit 0/0 stdout 30177/30177 sha 4194A9431607/4194A9431607 lines 9
+SAME    restore@2: exit 0/0 stdout 21755/21755 sha 0283FFF5E2D4/0283FFF5E2D4 lines 7
+SAME    restore@3: exit 0/0 stdout 10496/10496 sha 3A0C14FE301B/3A0C14FE301B lines 5
+SAME    restore@4: exit 0/0 stdout 879/879 sha 04A36F119DF0/04A36F119DF0 lines 3
+SAME wp6 wp14-c1-h6-reference-v1.json + wp7-fleetpy-ridebound-hard-vector-v1.json: exit 0/0 stdout 55578/55578 sha 92A047D639BB/92A047D639BB lines 15
+   decisions 6, errors 0
+SAME    restore@1: exit 0/0 stdout 50947/50947 sha 718105DD5A29/718105DD5A29 lines 13
+SAME    restore@2: exit 0/0 stdout 46061/46061 sha 4738C405F61A/4738C405F61A lines 11
+SAME    restore@3: exit 0/0 stdout 35598/35598 sha E6F6BEF83875/E6F6BEF83875 lines 9
+SAME    restore@4: exit 0/0 stdout 22543/22543 sha 58C707B416F9/58C707B416F9 lines 7
+SAME    restore@5: exit 0/0 stdout 11720/11720 sha C3473B328439/C3473B328439 lines 5
+SAME    restore@6: exit 0/0 stdout 903/903 sha 4198DBCF3B35/4198DBCF3B35 lines 3
+SAME wp3 wp14-c1-h6-reference-v1.json + wp7-fleetpy-rolling-cost-v1.json: exit 0/0 stdout 34760/34760 sha 1DC38BECA333/1DC38BECA333 lines 11
+   decisions 4, errors 0
+SAME    restore@1: exit 0/0 stdout 30177/30177 sha D82906EDDA6F/D82906EDDA6F lines 9
+SAME    restore@2: exit 0/0 stdout 21755/21755 sha 83C1A9580189/83C1A9580189 lines 7
+SAME    restore@3: exit 0/0 stdout 10496/10496 sha F46D076DB40F/F46D076DB40F lines 5
+SAME    restore@4: exit 0/0 stdout 879/879 sha 24A0F5E341C9/24A0F5E341C9 lines 3
+SAME wp6 wp14-c1-h6-reference-v1.json + wp7-fleetpy-rolling-cost-v1.json: exit 0/0 stdout 55578/55578 sha E2DE12377627/E2DE12377627 lines 15
+   decisions 6, errors 0
+SAME    restore@1: exit 0/0 stdout 50947/50947 sha 808789030B79/808789030B79 lines 13
+SAME    restore@2: exit 0/0 stdout 46061/46061 sha 0C87EE68BF39/0C87EE68BF39 lines 11
+SAME    restore@3: exit 0/0 stdout 35598/35598 sha 8F96DA94A1B2/8F96DA94A1B2 lines 9
+SAME    restore@4: exit 0/0 stdout 22543/22543 sha AECFFF4CB92D/AECFFF4CB92D lines 7
+SAME    restore@5: exit 0/0 stdout 11720/11720 sha 938EB1BE3381/938EB1BE3381 lines 5
+SAME    restore@6: exit 0/0 stdout 903/903 sha 352040039AC4/352040039AC4 lines 3
+SAME wp3 wp14-c1-h6-reference-v1.json + wp9-fleetpy-ridebound-hard-vector-audited-v1.json: exit 0/0 stdout 51740/51740 sha 87583A413EDC/87583A413EDC lines 11
+   decisions 4, errors 0
+SAME    restore@1: exit 0/0 stdout 44981/44981 sha 813200B2E700/813200B2E700 lines 9
+SAME    restore@2: exit 0/0 stdout 30813/30813 sha 5F88E47E7FAB/5F88E47E7FAB lines 7
+SAME    restore@3: exit 0/0 stdout 12660/12660 sha 074A1CA7D420/074A1CA7D420 lines 5
+SAME    restore@4: exit 0/0 stdout 879/879 sha 4B030A27158D/4B030A27158D lines 3
+SAME wp6 wp14-c1-h6-reference-v1.json + wp9-fleetpy-ridebound-hard-vector-audited-v1.json: exit 0/0 stdout 84367/84367 sha 6D9A04643A30/6D9A04643A30 lines 15
+   decisions 6, errors 0
+SAME    restore@1: exit 0/0 stdout 77560/77560 sha 83BFE9A4B484/83BFE9A4B484 lines 13
+SAME    restore@2: exit 0/0 stdout 69284/69284 sha 760AC4552309/760AC4552309 lines 11
+SAME    restore@3: exit 0/0 stdout 49242/49242 sha 02023F018A8E/02023F018A8E lines 9
+SAME    restore@4: exit 0/0 stdout 30441/30441 sha 621993E5CA71/621993E5CA71 lines 7
+SAME    restore@5: exit 0/0 stdout 13884/13884 sha 7B5B3BE67186/7B5B3BE67186 lines 5
+SAME    restore@6: exit 0/0 stdout 903/903 sha C5A978313500/C5A978313500 lines 3
+SAME wp3 wp14-c1-h6-reference-v1.json + wp9-fleetpy-rolling-cost-audited-v1.json: exit 0/0 stdout 44600/44600 sha 0526C1A80B9C/0526C1A80B9C lines 11
+   decisions 4, errors 0
+SAME    restore@1: exit 0/0 stdout 37841/37841 sha 23E32184C220/23E32184C220 lines 9
+SAME    restore@2: exit 0/0 stdout 27243/27243 sha 31BFE472F520/31BFE472F520 lines 7
+SAME    restore@3: exit 0/0 stdout 12660/12660 sha 5E8B1494CDA2/5E8B1494CDA2 lines 5
+SAME    restore@4: exit 0/0 stdout 879/879 sha 94961D1DFAC0/94961D1DFAC0 lines 3
+SAME wp6 wp14-c1-h6-reference-v1.json + wp9-fleetpy-rolling-cost-audited-v1.json: exit 0/0 stdout 73657/73657 sha 90F1C5B6BB76/90F1C5B6BB76 lines 15
+   decisions 6, errors 0
+SAME    restore@1: exit 0/0 stdout 66850/66850 sha E7D33FB7F69D/E7D33FB7F69D lines 13
+SAME    restore@2: exit 0/0 stdout 58574/58574 sha 0C100B7F985C/0C100B7F985C lines 11
+SAME    restore@3: exit 0/0 stdout 42102/42102 sha 639F1259456C/639F1259456C lines 9
+SAME    restore@4: exit 0/0 stdout 26871/26871 sha 66ADD3DF2427/66ADD3DF2427 lines 7
+SAME    restore@5: exit 0/0 stdout 13884/13884 sha E62BA37B13BC/E62BA37B13BC lines 5
+SAME    restore@6: exit 0/0 stdout 903/903 sha AEA10748CADA/AEA10748CADA lines 3
+SAME wp3 wp14-c1-h6-reference-v1.json + wp13-e1-fleetpy-ridebound-hard-vector-retained-v1.json: exit 0/0 stdout 60746/60746 sha 15AF1B147C99/15AF1B147C99 lines 11
+   decisions 4, errors 0
+SAME    restore@1: exit 0/0 stdout 51825/51825 sha 5CAA2D5452AF/5CAA2D5452AF lines 9
+SAME    restore@2: exit 0/0 stdout 34942/34942 sha BFC552731FFB/BFC552731FFB lines 7
+SAME    restore@3: exit 0/0 stdout 14074/14074 sha 4364E17D0DF4/4364E17D0DF4 lines 5
+SAME    restore@4: exit 0/0 stdout 879/879 sha B0E74C0CFE29/B0E74C0CFE29 lines 3
+SAME wp6 wp14-c1-h6-reference-v1.json + wp13-e1-fleetpy-ridebound-hard-vector-retained-v1.json: exit 0/0 stdout 104532/104532 sha BC7D7A5AEA4F/BC7D7A5AEA4F lines 15
+   decisions 6, errors 0
+SAME    restore@1: exit 0/0 stdout 95563/95563 sha 52E9F648D132/52E9F648D132 lines 13
+SAME    restore@2: exit 0/0 stdout 80534/80534 sha DB5971BDDF72/DB5971BDDF72 lines 11
+SAME    restore@3: exit 0/0 stdout 57162/57162 sha 3973A3AEB4FB/3973A3AEB4FB lines 9
+SAME    restore@4: exit 0/0 stdout 35184/35184 sha D5F68CA7C980/D5F68CA7C980 lines 7
+SAME    restore@5: exit 0/0 stdout 15607/15607 sha F7A342524AED/F7A342524AED lines 5
+SAME    restore@6: exit 0/0 stdout 903/903 sha 9711807CE966/9711807CE966 lines 3
+SAME wp3 wp14-c1-h6-reference-v1.json + wp13-e1-fleetpy-rolling-cost-retained-v1.json: exit 0/0 stdout 51378/51378 sha 8AD81CB02B0F/8AD81CB02B0F lines 11
+   decisions 4, errors 0
+SAME    restore@1: exit 0/0 stdout 42456/42456 sha 293F2B8FC719/293F2B8FC719 lines 9
+SAME    restore@2: exit 0/0 stdout 30258/30258 sha 1F0528F1146B/1F0528F1146B lines 7
+SAME    restore@3: exit 0/0 stdout 14075/14075 sha 496381135673/496381135673 lines 5
+SAME    restore@4: exit 0/0 stdout 879/879 sha 4DB375CBC093/4DB375CBC093 lines 3
+SAME wp6 wp14-c1-h6-reference-v1.json + wp13-e1-fleetpy-rolling-cost-retained-v1.json: exit 0/0 stdout 90480/90480 sha E9F6B60224D1/E9F6B60224D1 lines 15
+   decisions 6, errors 0
+SAME    restore@1: exit 0/0 stdout 81510/81510 sha DABEB758357E/DABEB758357E lines 13
+SAME    restore@2: exit 0/0 stdout 66480/66480 sha D950C0CAD54E/D950C0CAD54E lines 11
+SAME    restore@3: exit 0/0 stdout 47793/47793 sha 5EA571F2ED85/5EA571F2ED85 lines 9
+SAME    restore@4: exit 0/0 stdout 30500/30500 sha 3CE0899A0EF7/3CE0899A0EF7 lines 7
+SAME    restore@5: exit 0/0 stdout 15608/15608 sha D5102A3BF81C/D5102A3BF81C lines 5
+SAME    restore@6: exit 0/0 stdout 903/903 sha B069A32BAABD/B069A32BAABD lines 3
+SAME wp3 wp14-c1-h6-reference-v1.json + wp14-development-ridebound-hard-vector-v1.json: exit 0/0 stdout 60886/60886 sha 611E29EC302E/611E29EC302E lines 11
+   decisions 4, errors 0
+SAME    restore@1: exit 0/0 stdout 51965/51965 sha C61194954414/C61194954414 lines 9
+SAME    restore@2: exit 0/0 stdout 35036/35036 sha 53EA8E821438/53EA8E821438 lines 7
+SAME    restore@3: exit 0/0 stdout 14122/14122 sha 74839DD023C9/74839DD023C9 lines 5
+SAME    restore@4: exit 0/0 stdout 879/879 sha C98D56368751/C98D56368751 lines 3
+SAME wp6 wp14-c1-h6-reference-v1.json + wp14-development-ridebound-hard-vector-v1.json: exit 0/0 stdout 104718/104718 sha F7B6950EA79C/F7B6950EA79C lines 15
+   decisions 6, errors 0
+SAME    restore@1: exit 0/0 stdout 95749/95749 sha 3BFB9BF78C61/3BFB9BF78C61 lines 13
+SAME    restore@2: exit 0/0 stdout 80720/80720 sha DF1AF2FCE21E/DF1AF2FCE21E lines 11
+SAME    restore@3: exit 0/0 stdout 57302/57302 sha F1464B455A9B/F1464B455A9B lines 9
+SAME    restore@4: exit 0/0 stdout 35278/35278 sha 2F22B30A338D/2F22B30A338D lines 7
+SAME    restore@5: exit 0/0 stdout 15655/15655 sha 5DF83EDD71F8/5DF83EDD71F8 lines 5
+SAME    restore@6: exit 0/0 stdout 903/903 sha D95DDBF0045B/D95DDBF0045B lines 3
+SAME wp3 wp14-c1-h6-reference-v1.json + wp14-development-rolling-cost-v1.json: exit 0/0 stdout 51522/51522 sha 10496FF4B136/10496FF4B136 lines 11
+   decisions 4, errors 0
+SAME    restore@1: exit 0/0 stdout 42600/42600 sha 349198DBC8BC/349198DBC8BC lines 9
+SAME    restore@2: exit 0/0 stdout 30354/30354 sha 5289BD9A0854/5289BD9A0854 lines 7
+SAME    restore@3: exit 0/0 stdout 14123/14123 sha 8862BC9CCA30/8862BC9CCA30 lines 5
+SAME    restore@4: exit 0/0 stdout 879/879 sha 8C856EB9B9C6/8C856EB9B9C6 lines 3
+SAME wp6 wp14-c1-h6-reference-v1.json + wp14-development-rolling-cost-v1.json: exit 0/0 stdout 90672/90672 sha 1208E653FF9B/1208E653FF9B lines 15
+   decisions 6, errors 0
+SAME    restore@1: exit 0/0 stdout 81702/81702 sha 3EFD099FEE9F/3EFD099FEE9F lines 13
+SAME    restore@2: exit 0/0 stdout 66672/66672 sha 812E85B3D837/812E85B3D837 lines 11
+SAME    restore@3: exit 0/0 stdout 47937/47937 sha 7B30A9CE6058/7B30A9CE6058 lines 9
+SAME    restore@4: exit 0/0 stdout 30596/30596 sha B11CC816612A/B11CC816612A lines 7
+SAME    restore@5: exit 0/0 stdout 15656/15656 sha F97FD267B73A/F97FD267B73A lines 5
+SAME    restore@6: exit 0/0 stdout 903/903 sha 937D3CB8B9CF/937D3CB8B9CF lines 3
+SAME wp3 wp14-c1-f1f2-freeze300-ratchet-v1.json + wp4-rolling-cost-boundary-v1.json: exit 0/0 stdout 37431/37431 sha CAA6BFAFA0A2/CAA6BFAFA0A2 lines 11
+   decisions 4, errors 0
+SAME    restore@1: exit 0/0 stdout 27873/27873 sha 7562B32DBE52/7562B32DBE52 lines 9
+SAME    restore@2: exit 0/0 stdout 21883/21883 sha 3B57021F7D72/3B57021F7D72 lines 7
+SAME    restore@3: exit 0/0 stdout 10283/10283 sha 14893D0EF2E7/14893D0EF2E7 lines 5
+SAME    restore@4: exit 0/0 stdout 879/879 sha 984024D72E7B/984024D72E7B lines 3
+SAME wp6 wp14-c1-f1f2-freeze300-ratchet-v1.json + wp4-rolling-cost-boundary-v1.json: exit 0/0 stdout 120623/120623 sha D861C2AB4A74/D861C2AB4A74 lines 15
+   decisions 6, errors 0
+SAME    restore@1: exit 0/0 stdout 111017/111017 sha AA4B0F04B9EE/AA4B0F04B9EE lines 13
+SAME    restore@2: exit 0/0 stdout 91619/91619 sha 5B5ABDD5FD98/5B5ABDD5FD98 lines 11
+SAME    restore@3: exit 0/0 stdout 65391/65391 sha BA517A1900F2/BA517A1900F2 lines 9
+SAME    restore@4: exit 0/0 stdout 43886/43886 sha 36FE79BA4591/36FE79BA4591 lines 7
+SAME    restore@5: exit 0/0 stdout 22391/22391 sha 60547B12725E/60547B12725E lines 5
+SAME    restore@6: exit 0/0 stdout 903/903 sha C2EA45EEB078/C2EA45EEB078 lines 3
+SAME wp3 wp14-c1-f1f2-freeze300-ratchet-v1.json + wp4-ridebound-hard-vector-boundary-v1.json: exit 0/0 stdout 37431/37431 sha ABB6E765D085/ABB6E765D085 lines 11
+   decisions 4, errors 0
+SAME    restore@1: exit 0/0 stdout 27873/27873 sha B0825116B63A/B0825116B63A lines 9
+SAME    restore@2: exit 0/0 stdout 21883/21883 sha 86DAAD015D4D/86DAAD015D4D lines 7
+SAME    restore@3: exit 0/0 stdout 10283/10283 sha 2637B8D82672/2637B8D82672 lines 5
+SAME    restore@4: exit 0/0 stdout 879/879 sha 291AC50EE5E3/291AC50EE5E3 lines 3
+SAME wp6 wp14-c1-f1f2-freeze300-ratchet-v1.json + wp4-ridebound-hard-vector-boundary-v1.json: exit 0/0 stdout 120623/120623 sha 00C6A5961E47/00C6A5961E47 lines 15
+   decisions 6, errors 0
+SAME    restore@1: exit 0/0 stdout 111017/111017 sha 9BD156FFF412/9BD156FFF412 lines 13
+SAME    restore@2: exit 0/0 stdout 91619/91619 sha 72FA0CED1A19/72FA0CED1A19 lines 11
+SAME    restore@3: exit 0/0 stdout 65391/65391 sha 7101A43FBB14/7101A43FBB14 lines 9
+SAME    restore@4: exit 0/0 stdout 43886/43886 sha 6CAADF084C4E/6CAADF084C4E lines 7
+SAME    restore@5: exit 0/0 stdout 22391/22391 sha 636BC9B9F604/636BC9B9F604 lines 5
+SAME    restore@6: exit 0/0 stdout 903/903 sha 0312723D745E/0312723D745E lines 3
+SAME wp3 wp14-c1-f1f2-freeze300-ratchet-v1.json + wp7-fleetpy-ridebound-hard-vector-v1.json: exit 0/0 stdout 34760/34760 sha FDBD1EF07005/FDBD1EF07005 lines 11
+   decisions 4, errors 0
+SAME    restore@1: exit 0/0 stdout 30177/30177 sha 42E67DD31129/42E67DD31129 lines 9
+SAME    restore@2: exit 0/0 stdout 21755/21755 sha 90D98268C4C6/90D98268C4C6 lines 7
+SAME    restore@3: exit 0/0 stdout 10496/10496 sha 0F5979285AEA/0F5979285AEA lines 5
+SAME    restore@4: exit 0/0 stdout 879/879 sha 9F2FCC6DB6CC/9F2FCC6DB6CC lines 3
+SAME wp6 wp14-c1-f1f2-freeze300-ratchet-v1.json + wp7-fleetpy-ridebound-hard-vector-v1.json: exit 0/0 stdout 55578/55578 sha 37160A2B0A86/37160A2B0A86 lines 15
+   decisions 6, errors 0
+SAME    restore@1: exit 0/0 stdout 50947/50947 sha 424328C5226B/424328C5226B lines 13
+SAME    restore@2: exit 0/0 stdout 46061/46061 sha 6AD026E87C3F/6AD026E87C3F lines 11
+SAME    restore@3: exit 0/0 stdout 35598/35598 sha 0B921BF5A899/0B921BF5A899 lines 9
+SAME    restore@4: exit 0/0 stdout 22543/22543 sha E91C7E0A61CD/E91C7E0A61CD lines 7
+SAME    restore@5: exit 0/0 stdout 11720/11720 sha 15735E37C7B0/15735E37C7B0 lines 5
+SAME    restore@6: exit 0/0 stdout 903/903 sha 9D3A0FDCC471/9D3A0FDCC471 lines 3
+SAME wp3 wp14-c1-f1f2-freeze300-ratchet-v1.json + wp7-fleetpy-rolling-cost-v1.json: exit 0/0 stdout 34760/34760 sha F446197E3880/F446197E3880 lines 11
+   decisions 4, errors 0
+SAME    restore@1: exit 0/0 stdout 30177/30177 sha 90707C733383/90707C733383 lines 9
+SAME    restore@2: exit 0/0 stdout 21755/21755 sha 671EFA9088B8/671EFA9088B8 lines 7
+SAME    restore@3: exit 0/0 stdout 10496/10496 sha 757662449675/757662449675 lines 5
+SAME    restore@4: exit 0/0 stdout 879/879 sha D92D29A5F32A/D92D29A5F32A lines 3
+SAME wp6 wp14-c1-f1f2-freeze300-ratchet-v1.json + wp7-fleetpy-rolling-cost-v1.json: exit 0/0 stdout 55578/55578 sha 917E283B4919/917E283B4919 lines 15
+   decisions 6, errors 0
+SAME    restore@1: exit 0/0 stdout 50947/50947 sha 3182340B1C44/3182340B1C44 lines 13
+SAME    restore@2: exit 0/0 stdout 46061/46061 sha 137971880211/137971880211 lines 11
+SAME    restore@3: exit 0/0 stdout 35598/35598 sha ECF582A27873/ECF582A27873 lines 9
+SAME    restore@4: exit 0/0 stdout 22543/22543 sha 79BDB7C7883E/79BDB7C7883E lines 7
+SAME    restore@5: exit 0/0 stdout 11720/11720 sha F56C6D917A15/F56C6D917A15 lines 5
+SAME    restore@6: exit 0/0 stdout 903/903 sha E70CCB1A916B/E70CCB1A916B lines 3
+SAME wp3 wp14-c1-f1f2-freeze300-ratchet-v1.json + wp9-fleetpy-ridebound-hard-vector-audited-v1.json: exit 0/0 stdout 51740/51740 sha 302DF55CFCE1/302DF55CFCE1 lines 11
+   decisions 4, errors 0
+SAME    restore@1: exit 0/0 stdout 44981/44981 sha A06285C774C9/A06285C774C9 lines 9
+SAME    restore@2: exit 0/0 stdout 30813/30813 sha A58CCF19262C/A58CCF19262C lines 7
+SAME    restore@3: exit 0/0 stdout 12660/12660 sha 0CBEC40DECB2/0CBEC40DECB2 lines 5
+SAME    restore@4: exit 0/0 stdout 879/879 sha FA840C05DCBA/FA840C05DCBA lines 3
+SAME wp6 wp14-c1-f1f2-freeze300-ratchet-v1.json + wp9-fleetpy-ridebound-hard-vector-audited-v1.json: exit 0/0 stdout 84367/84367 sha 4DADEC25FFD3/4DADEC25FFD3 lines 15
+   decisions 6, errors 0
+SAME    restore@1: exit 0/0 stdout 77560/77560 sha B7CA1462A9EF/B7CA1462A9EF lines 13
+SAME    restore@2: exit 0/0 stdout 69284/69284 sha 48C4F0A7DBFE/48C4F0A7DBFE lines 11
+SAME    restore@3: exit 0/0 stdout 49242/49242 sha 92D1818943A7/92D1818943A7 lines 9
+SAME    restore@4: exit 0/0 stdout 30441/30441 sha 8938C0919D9A/8938C0919D9A lines 7
+SAME    restore@5: exit 0/0 stdout 13884/13884 sha 9DDDDBFA07AF/9DDDDBFA07AF lines 5
+SAME    restore@6: exit 0/0 stdout 903/903 sha 563886E8C84C/563886E8C84C lines 3
+SAME wp3 wp14-c1-f1f2-freeze300-ratchet-v1.json + wp9-fleetpy-rolling-cost-audited-v1.json: exit 0/0 stdout 44600/44600 sha B4FD03973F4F/B4FD03973F4F lines 11
+   decisions 4, errors 0
+SAME    restore@1: exit 0/0 stdout 37841/37841 sha 9A1189E88F2E/9A1189E88F2E lines 9
+SAME    restore@2: exit 0/0 stdout 27243/27243 sha 8F35F05E965B/8F35F05E965B lines 7
+SAME    restore@3: exit 0/0 stdout 12660/12660 sha 5C443B5C70C9/5C443B5C70C9 lines 5
+SAME    restore@4: exit 0/0 stdout 879/879 sha 9E7E104EEC06/9E7E104EEC06 lines 3
+SAME wp6 wp14-c1-f1f2-freeze300-ratchet-v1.json + wp9-fleetpy-rolling-cost-audited-v1.json: exit 0/0 stdout 73657/73657 sha 5837CF6B81CD/5837CF6B81CD lines 15
+   decisions 6, errors 0
+SAME    restore@1: exit 0/0 stdout 66850/66850 sha 2F79155FEB06/2F79155FEB06 lines 13
+SAME    restore@2: exit 0/0 stdout 58574/58574 sha 768E75B86FA0/768E75B86FA0 lines 11
+SAME    restore@3: exit 0/0 stdout 42102/42102 sha 8B57575779F2/8B57575779F2 lines 9
+SAME    restore@4: exit 0/0 stdout 26871/26871 sha 774089953F74/774089953F74 lines 7
+SAME    restore@5: exit 0/0 stdout 13884/13884 sha 2397573B48A4/2397573B48A4 lines 5
+SAME    restore@6: exit 0/0 stdout 903/903 sha E465520B64F0/E465520B64F0 lines 3
+SAME wp3 wp14-c1-f1f2-freeze300-ratchet-v1.json + wp13-e1-fleetpy-ridebound-hard-vector-retained-v1.json: exit 0/0 stdout 60746/60746 sha 10B9DB9AB224/10B9DB9AB224 lines 11
+   decisions 4, errors 0
+SAME    restore@1: exit 0/0 stdout 51825/51825 sha E6B0C5FB1310/E6B0C5FB1310 lines 9
+SAME    restore@2: exit 0/0 stdout 34942/34942 sha A1D472C9DFFE/A1D472C9DFFE lines 7
+SAME    restore@3: exit 0/0 stdout 14074/14074 sha 2734B7290142/2734B7290142 lines 5
+SAME    restore@4: exit 0/0 stdout 879/879 sha 7871FDE208CA/7871FDE208CA lines 3
+SAME wp6 wp14-c1-f1f2-freeze300-ratchet-v1.json + wp13-e1-fleetpy-ridebound-hard-vector-retained-v1.json: exit 0/0 stdout 104532/104532 sha 10D471C24417/10D471C24417 lines 15
+   decisions 6, errors 0
+SAME    restore@1: exit 0/0 stdout 95563/95563 sha D7B2651DA0FB/D7B2651DA0FB lines 13
+SAME    restore@2: exit 0/0 stdout 80534/80534 sha 4EF255C213B0/4EF255C213B0 lines 11
+SAME    restore@3: exit 0/0 stdout 57162/57162 sha 8BB20F5BBF68/8BB20F5BBF68 lines 9
+SAME    restore@4: exit 0/0 stdout 35184/35184 sha 8EEE32C4F18D/8EEE32C4F18D lines 7
+SAME    restore@5: exit 0/0 stdout 15607/15607 sha 39F675CAD62D/39F675CAD62D lines 5
+SAME    restore@6: exit 0/0 stdout 903/903 sha E344D57A546B/E344D57A546B lines 3
+SAME wp3 wp14-c1-f1f2-freeze300-ratchet-v1.json + wp13-e1-fleetpy-rolling-cost-retained-v1.json: exit 0/0 stdout 51378/51378 sha 59ECFF8DB05B/59ECFF8DB05B lines 11
+   decisions 4, errors 0
+SAME    restore@1: exit 0/0 stdout 42456/42456 sha 2A6487AD5556/2A6487AD5556 lines 9
+SAME    restore@2: exit 0/0 stdout 30258/30258 sha 4E363562C81F/4E363562C81F lines 7
+SAME    restore@3: exit 0/0 stdout 14075/14075 sha 291675F9767F/291675F9767F lines 5
+SAME    restore@4: exit 0/0 stdout 879/879 sha 1C0C1EDE6A0A/1C0C1EDE6A0A lines 3
+SAME wp6 wp14-c1-f1f2-freeze300-ratchet-v1.json + wp13-e1-fleetpy-rolling-cost-retained-v1.json: exit 0/0 stdout 90480/90480 sha 0EE0442559BC/0EE0442559BC lines 15
+   decisions 6, errors 0
+SAME    restore@1: exit 0/0 stdout 81510/81510 sha 26B9D33AD996/26B9D33AD996 lines 13
+SAME    restore@2: exit 0/0 stdout 66480/66480 sha 11D17C1E70BF/11D17C1E70BF lines 11
+SAME    restore@3: exit 0/0 stdout 47793/47793 sha 11548C47500B/11548C47500B lines 9
+SAME    restore@4: exit 0/0 stdout 30500/30500 sha BFB14C96D0B8/BFB14C96D0B8 lines 7
+SAME    restore@5: exit 0/0 stdout 15608/15608 sha E3490C2943C0/E3490C2943C0 lines 5
+SAME    restore@6: exit 0/0 stdout 903/903 sha DAA0A0414362/DAA0A0414362 lines 3
+SAME wp3 wp14-c1-f1f2-freeze300-ratchet-v1.json + wp14-development-ridebound-hard-vector-v1.json: exit 0/0 stdout 60886/60886 sha B432CDC1E147/B432CDC1E147 lines 11
+   decisions 4, errors 0
+SAME    restore@1: exit 0/0 stdout 51965/51965 sha DABA12D62F4A/DABA12D62F4A lines 9
+SAME    restore@2: exit 0/0 stdout 35036/35036 sha 0EC30A3393CE/0EC30A3393CE lines 7
+SAME    restore@3: exit 0/0 stdout 14122/14122 sha 5BA0ECD36B3D/5BA0ECD36B3D lines 5
+SAME    restore@4: exit 0/0 stdout 879/879 sha 8662C75ED17D/8662C75ED17D lines 3
+SAME wp6 wp14-c1-f1f2-freeze300-ratchet-v1.json + wp14-development-ridebound-hard-vector-v1.json: exit 0/0 stdout 104718/104718 sha 60E1E7539D3F/60E1E7539D3F lines 15
+   decisions 6, errors 0
+SAME    restore@1: exit 0/0 stdout 95749/95749 sha 0481E4D03433/0481E4D03433 lines 13
+SAME    restore@2: exit 0/0 stdout 80720/80720 sha 20ACCDF2C7E2/20ACCDF2C7E2 lines 11
+SAME    restore@3: exit 0/0 stdout 57302/57302 sha 2BBC8CCDA8F0/2BBC8CCDA8F0 lines 9
+SAME    restore@4: exit 0/0 stdout 35278/35278 sha 25A1D0FA7B3E/25A1D0FA7B3E lines 7
+SAME    restore@5: exit 0/0 stdout 15655/15655 sha B4AE019BC2A6/B4AE019BC2A6 lines 5
+SAME    restore@6: exit 0/0 stdout 903/903 sha E99895FF00F3/E99895FF00F3 lines 3
+SAME wp3 wp14-c1-f1f2-freeze300-ratchet-v1.json + wp14-development-rolling-cost-v1.json: exit 0/0 stdout 51522/51522 sha 7BB9F2EA8274/7BB9F2EA8274 lines 11
+   decisions 4, errors 0
+SAME    restore@1: exit 0/0 stdout 42600/42600 sha 23CAE469401F/23CAE469401F lines 9
+SAME    restore@2: exit 0/0 stdout 30354/30354 sha 608A5580CB45/608A5580CB45 lines 7
+SAME    restore@3: exit 0/0 stdout 14123/14123 sha 9514A61B44DB/9514A61B44DB lines 5
+SAME    restore@4: exit 0/0 stdout 879/879 sha 7FF906FB3F16/7FF906FB3F16 lines 3
+SAME wp6 wp14-c1-f1f2-freeze300-ratchet-v1.json + wp14-development-rolling-cost-v1.json: exit 0/0 stdout 90672/90672 sha 46941AE3DEE8/46941AE3DEE8 lines 15
+   decisions 6, errors 0
+SAME    restore@1: exit 0/0 stdout 81702/81702 sha B300913BE99C/B300913BE99C lines 13
+SAME    restore@2: exit 0/0 stdout 66672/66672 sha 8B8860089644/8B8860089644 lines 11
+SAME    restore@3: exit 0/0 stdout 47937/47937 sha 871F37A46271/871F37A46271 lines 9
+SAME    restore@4: exit 0/0 stdout 30596/30596 sha B923589C9139/B923589C9139 lines 7
+SAME    restore@5: exit 0/0 stdout 15656/15656 sha 7D52A61F17A5/7D52A61F17A5 lines 5
+SAME    restore@6: exit 0/0 stdout 903/903 sha EC73CF3F7F7E/EC73CF3F7F7E lines 3
+SAME wp3 wp6-public-mechanical-commitment-v1.json + wp4-rolling-cost-boundary-v1.json: exit 0/0 stdout 37431/37431 sha 2BEB5A29ED77/2BEB5A29ED77 lines 11
+   decisions 4, errors 0
+SAME    restore@1: exit 0/0 stdout 27873/27873 sha FBEFB171595F/FBEFB171595F lines 9
+SAME    restore@2: exit 0/0 stdout 21883/21883 sha BB6958D667DC/BB6958D667DC lines 7
+SAME    restore@3: exit 0/0 stdout 10283/10283 sha FB8F1B310F61/FB8F1B310F61 lines 5
+SAME    restore@4: exit 0/0 stdout 879/879 sha 3E4934A7115B/3E4934A7115B lines 3
+SAME wp6 wp6-public-mechanical-commitment-v1.json + wp4-rolling-cost-boundary-v1.json: exit 0/0 stdout 120623/120623 sha B221B3676693/B221B3676693 lines 15
+   decisions 6, errors 0
+SAME    restore@1: exit 0/0 stdout 111017/111017 sha C67E5A51FC72/C67E5A51FC72 lines 13
+SAME    restore@2: exit 0/0 stdout 91619/91619 sha B52399727A59/B52399727A59 lines 11
+SAME    restore@3: exit 0/0 stdout 65391/65391 sha FA2D61EB47DC/FA2D61EB47DC lines 9
+SAME    restore@4: exit 0/0 stdout 43886/43886 sha 5820682DF71E/5820682DF71E lines 7
+SAME    restore@5: exit 0/0 stdout 22391/22391 sha 37C94E10CB9A/37C94E10CB9A lines 5
+SAME    restore@6: exit 0/0 stdout 903/903 sha 3EA3BBE015DB/3EA3BBE015DB lines 3
+SAME wp3 wp6-public-mechanical-commitment-v1.json + wp4-ridebound-hard-vector-boundary-v1.json: exit 0/0 stdout 37431/37431 sha 5D4B68CAB292/5D4B68CAB292 lines 11
+   decisions 4, errors 0
+SAME    restore@1: exit 0/0 stdout 27873/27873 sha D71978AC1FDB/D71978AC1FDB lines 9
+SAME    restore@2: exit 0/0 stdout 21883/21883 sha 1B2C0B3B1D51/1B2C0B3B1D51 lines 7
+SAME    restore@3: exit 0/0 stdout 10283/10283 sha 89DC54BEACED/89DC54BEACED lines 5
+SAME    restore@4: exit 0/0 stdout 879/879 sha 063804F6A848/063804F6A848 lines 3
+SAME wp6 wp6-public-mechanical-commitment-v1.json + wp4-ridebound-hard-vector-boundary-v1.json: exit 0/0 stdout 120623/120623 sha 41DEC8F80E49/41DEC8F80E49 lines 15
+   decisions 6, errors 0
+SAME    restore@1: exit 0/0 stdout 111017/111017 sha 05E5C4FA7286/05E5C4FA7286 lines 13
+SAME    restore@2: exit 0/0 stdout 91619/91619 sha 4B105F684CDE/4B105F684CDE lines 11
+SAME    restore@3: exit 0/0 stdout 65391/65391 sha 554EAC962CD6/554EAC962CD6 lines 9
+SAME    restore@4: exit 0/0 stdout 43886/43886 sha 9651ACE0B21B/9651ACE0B21B lines 7
+SAME    restore@5: exit 0/0 stdout 22391/22391 sha BEDD749DC818/BEDD749DC818 lines 5
+SAME    restore@6: exit 0/0 stdout 903/903 sha 774DA1F8CB4B/774DA1F8CB4B lines 3
+SAME wp3 wp6-public-mechanical-commitment-v1.json + wp7-fleetpy-ridebound-hard-vector-v1.json: exit 0/0 stdout 34760/34760 sha 13BA2E374EAA/13BA2E374EAA lines 11
+   decisions 4, errors 0
+SAME    restore@1: exit 0/0 stdout 30177/30177 sha 8647247D2C5C/8647247D2C5C lines 9
+SAME    restore@2: exit 0/0 stdout 21755/21755 sha 8A2B4072E3A9/8A2B4072E3A9 lines 7
+SAME    restore@3: exit 0/0 stdout 10496/10496 sha 8E8C911D4ACD/8E8C911D4ACD lines 5
+SAME    restore@4: exit 0/0 stdout 879/879 sha 5F1E1116CB64/5F1E1116CB64 lines 3
+SAME wp6 wp6-public-mechanical-commitment-v1.json + wp7-fleetpy-ridebound-hard-vector-v1.json: exit 0/0 stdout 55578/55578 sha 30E0D43C28D8/30E0D43C28D8 lines 15
+   decisions 6, errors 0
+SAME    restore@1: exit 0/0 stdout 50947/50947 sha D8F1022FE2C5/D8F1022FE2C5 lines 13
+SAME    restore@2: exit 0/0 stdout 46061/46061 sha 4AC8F513116D/4AC8F513116D lines 11
+SAME    restore@3: exit 0/0 stdout 35598/35598 sha 785675896033/785675896033 lines 9
+SAME    restore@4: exit 0/0 stdout 22543/22543 sha 8F9A32574D32/8F9A32574D32 lines 7
+SAME    restore@5: exit 0/0 stdout 11720/11720 sha 5CCCDC511096/5CCCDC511096 lines 5
+SAME    restore@6: exit 0/0 stdout 903/903 sha 3DDB581C42E2/3DDB581C42E2 lines 3
+SAME wp3 wp6-public-mechanical-commitment-v1.json + wp7-fleetpy-rolling-cost-v1.json: exit 0/0 stdout 34760/34760 sha 6D205D4C2678/6D205D4C2678 lines 11
+   decisions 4, errors 0
+SAME    restore@1: exit 0/0 stdout 30177/30177 sha 409E52138264/409E52138264 lines 9
+SAME    restore@2: exit 0/0 stdout 21755/21755 sha 7EBF8C9C0E77/7EBF8C9C0E77 lines 7
+SAME    restore@3: exit 0/0 stdout 10496/10496 sha 357A47ADDF50/357A47ADDF50 lines 5
+SAME    restore@4: exit 0/0 stdout 879/879 sha 40D40B1133AF/40D40B1133AF lines 3
+SAME wp6 wp6-public-mechanical-commitment-v1.json + wp7-fleetpy-rolling-cost-v1.json: exit 0/0 stdout 55578/55578 sha B2A8AB61E109/B2A8AB61E109 lines 15
+   decisions 6, errors 0
+SAME    restore@1: exit 0/0 stdout 50947/50947 sha 3DD76FC1C397/3DD76FC1C397 lines 13
+SAME    restore@2: exit 0/0 stdout 46061/46061 sha D5DDB2B29B36/D5DDB2B29B36 lines 11
+SAME    restore@3: exit 0/0 stdout 35598/35598 sha 060B1B18FCB0/060B1B18FCB0 lines 9
+SAME    restore@4: exit 0/0 stdout 22543/22543 sha F203A7E32C79/F203A7E32C79 lines 7
+SAME    restore@5: exit 0/0 stdout 11720/11720 sha BE03F358F403/BE03F358F403 lines 5
+SAME    restore@6: exit 0/0 stdout 903/903 sha CF74048FA2C7/CF74048FA2C7 lines 3
+SAME wp3 wp6-public-mechanical-commitment-v1.json + wp9-fleetpy-ridebound-hard-vector-audited-v1.json: exit 0/0 stdout 51740/51740 sha BC22B02842D6/BC22B02842D6 lines 11
+   decisions 4, errors 0
+SAME    restore@1: exit 0/0 stdout 44981/44981 sha A92698FF2DC0/A92698FF2DC0 lines 9
+SAME    restore@2: exit 0/0 stdout 30813/30813 sha 9E1D4CD7CF4F/9E1D4CD7CF4F lines 7
+SAME    restore@3: exit 0/0 stdout 12660/12660 sha 1558E58A5CF6/1558E58A5CF6 lines 5
+SAME    restore@4: exit 0/0 stdout 879/879 sha EE1F247132A3/EE1F247132A3 lines 3
+SAME wp6 wp6-public-mechanical-commitment-v1.json + wp9-fleetpy-ridebound-hard-vector-audited-v1.json: exit 0/0 stdout 84367/84367 sha 459DDB03DC39/459DDB03DC39 lines 15
+   decisions 6, errors 0
+SAME    restore@1: exit 0/0 stdout 77560/77560 sha C1E73755F93D/C1E73755F93D lines 13
+SAME    restore@2: exit 0/0 stdout 69284/69284 sha 89D10D7B02E6/89D10D7B02E6 lines 11
+SAME    restore@3: exit 0/0 stdout 49242/49242 sha FD6DE05505AF/FD6DE05505AF lines 9
+SAME    restore@4: exit 0/0 stdout 30441/30441 sha 54F89BDAE313/54F89BDAE313 lines 7
+SAME    restore@5: exit 0/0 stdout 13884/13884 sha 268DD6DB38D1/268DD6DB38D1 lines 5
+SAME    restore@6: exit 0/0 stdout 903/903 sha A6A456EAB39F/A6A456EAB39F lines 3
+SAME wp3 wp6-public-mechanical-commitment-v1.json + wp9-fleetpy-rolling-cost-audited-v1.json: exit 0/0 stdout 44600/44600 sha B07738767FAD/B07738767FAD lines 11
+   decisions 4, errors 0
+SAME    restore@1: exit 0/0 stdout 37841/37841 sha B61BB47318E2/B61BB47318E2 lines 9
+SAME    restore@2: exit 0/0 stdout 27243/27243 sha 29C3D1B82D85/29C3D1B82D85 lines 7
+SAME    restore@3: exit 0/0 stdout 12660/12660 sha 072C78136FE7/072C78136FE7 lines 5
+SAME    restore@4: exit 0/0 stdout 879/879 sha D3A2C3D691A9/D3A2C3D691A9 lines 3
+SAME wp6 wp6-public-mechanical-commitment-v1.json + wp9-fleetpy-rolling-cost-audited-v1.json: exit 0/0 stdout 73657/73657 sha 4385613FB68A/4385613FB68A lines 15
+   decisions 6, errors 0
+SAME    restore@1: exit 0/0 stdout 66850/66850 sha D408CF67C053/D408CF67C053 lines 13
+SAME    restore@2: exit 0/0 stdout 58574/58574 sha 1D1E7F08C822/1D1E7F08C822 lines 11
+SAME    restore@3: exit 0/0 stdout 42102/42102 sha B0D5854AAC49/B0D5854AAC49 lines 9
+SAME    restore@4: exit 0/0 stdout 26871/26871 sha 0B4F37A8793E/0B4F37A8793E lines 7
+SAME    restore@5: exit 0/0 stdout 13884/13884 sha 2F3BEDA48D9D/2F3BEDA48D9D lines 5
+SAME    restore@6: exit 0/0 stdout 903/903 sha 44E5C62862C5/44E5C62862C5 lines 3
+SAME wp3 wp6-public-mechanical-commitment-v1.json + wp13-e1-fleetpy-ridebound-hard-vector-retained-v1.json: exit 0/0 stdout 60746/60746 sha 337E4C9D112F/337E4C9D112F lines 11
+   decisions 4, errors 0
+SAME    restore@1: exit 0/0 stdout 51825/51825 sha A3428CAD5078/A3428CAD5078 lines 9
+SAME    restore@2: exit 0/0 stdout 34942/34942 sha 2F2D6981960D/2F2D6981960D lines 7
+SAME    restore@3: exit 0/0 stdout 14074/14074 sha 697F04AC9199/697F04AC9199 lines 5
+SAME    restore@4: exit 0/0 stdout 879/879 sha 97A95E7D5904/97A95E7D5904 lines 3
+SAME wp6 wp6-public-mechanical-commitment-v1.json + wp13-e1-fleetpy-ridebound-hard-vector-retained-v1.json: exit 0/0 stdout 104532/104532 sha 807748053AA4/807748053AA4 lines 15
+   decisions 6, errors 0
+SAME    restore@1: exit 0/0 stdout 95563/95563 sha 96BDAD06E8AA/96BDAD06E8AA lines 13
+SAME    restore@2: exit 0/0 stdout 80534/80534 sha 1A071B45F4F2/1A071B45F4F2 lines 11
+SAME    restore@3: exit 0/0 stdout 57162/57162 sha 81D7199634FA/81D7199634FA lines 9
+SAME    restore@4: exit 0/0 stdout 35184/35184 sha E4E3E2D4EDC7/E4E3E2D4EDC7 lines 7
+SAME    restore@5: exit 0/0 stdout 15607/15607 sha 4F7D2240F132/4F7D2240F132 lines 5
+SAME    restore@6: exit 0/0 stdout 903/903 sha 5973A4DEE412/5973A4DEE412 lines 3
+SAME wp3 wp6-public-mechanical-commitment-v1.json + wp13-e1-fleetpy-rolling-cost-retained-v1.json: exit 0/0 stdout 51378/51378 sha 97C55EBF012E/97C55EBF012E lines 11
+   decisions 4, errors 0
+SAME    restore@1: exit 0/0 stdout 42456/42456 sha FB901FC6B605/FB901FC6B605 lines 9
+SAME    restore@2: exit 0/0 stdout 30258/30258 sha 99BBF2FB3957/99BBF2FB3957 lines 7
+SAME    restore@3: exit 0/0 stdout 14075/14075 sha 8817A85A6AE0/8817A85A6AE0 lines 5
+SAME    restore@4: exit 0/0 stdout 879/879 sha 6F5875FC3374/6F5875FC3374 lines 3
+SAME wp6 wp6-public-mechanical-commitment-v1.json + wp13-e1-fleetpy-rolling-cost-retained-v1.json: exit 0/0 stdout 90480/90480 sha FC9D7A822F18/FC9D7A822F18 lines 15
+   decisions 6, errors 0
+SAME    restore@1: exit 0/0 stdout 81510/81510 sha 3BFEE622B74D/3BFEE622B74D lines 13
+SAME    restore@2: exit 0/0 stdout 66480/66480 sha 7449EEE905FB/7449EEE905FB lines 11
+SAME    restore@3: exit 0/0 stdout 47793/47793 sha 754B9A9727F0/754B9A9727F0 lines 9
+SAME    restore@4: exit 0/0 stdout 30500/30500 sha D8DE4EAD7187/D8DE4EAD7187 lines 7
+SAME    restore@5: exit 0/0 stdout 15608/15608 sha 2030A3C18BCC/2030A3C18BCC lines 5
+SAME    restore@6: exit 0/0 stdout 903/903 sha B782318B1C1E/B782318B1C1E lines 3
+SAME wp3 wp6-public-mechanical-commitment-v1.json + wp14-development-ridebound-hard-vector-v1.json: exit 0/0 stdout 60886/60886 sha 31831A49650C/31831A49650C lines 11
+   decisions 4, errors 0
+SAME    restore@1: exit 0/0 stdout 51965/51965 sha DBE6F51E1003/DBE6F51E1003 lines 9
+SAME    restore@2: exit 0/0 stdout 35036/35036 sha BEC36DA23A91/BEC36DA23A91 lines 7
+SAME    restore@3: exit 0/0 stdout 14122/14122 sha F48EFBF32431/F48EFBF32431 lines 5
+SAME    restore@4: exit 0/0 stdout 879/879 sha 290C82511DE3/290C82511DE3 lines 3
+SAME wp6 wp6-public-mechanical-commitment-v1.json + wp14-development-ridebound-hard-vector-v1.json: exit 0/0 stdout 104718/104718 sha 371967224A04/371967224A04 lines 15
+   decisions 6, errors 0
+SAME    restore@1: exit 0/0 stdout 95749/95749 sha 90D23D9955BB/90D23D9955BB lines 13
+SAME    restore@2: exit 0/0 stdout 80720/80720 sha CCDA17229FA1/CCDA17229FA1 lines 11
+SAME    restore@3: exit 0/0 stdout 57302/57302 sha 36EC8759256F/36EC8759256F lines 9
+SAME    restore@4: exit 0/0 stdout 35278/35278 sha AE97F37D8AA0/AE97F37D8AA0 lines 7
+SAME    restore@5: exit 0/0 stdout 15655/15655 sha A86BA5EB3FF7/A86BA5EB3FF7 lines 5
+SAME    restore@6: exit 0/0 stdout 903/903 sha 13ABDCDC84C4/13ABDCDC84C4 lines 3
+SAME wp3 wp6-public-mechanical-commitment-v1.json + wp14-development-rolling-cost-v1.json: exit 0/0 stdout 51522/51522 sha 6D1D6B7F25F0/6D1D6B7F25F0 lines 11
+   decisions 4, errors 0
+SAME    restore@1: exit 0/0 stdout 42600/42600 sha 0538C7CDDE68/0538C7CDDE68 lines 9
+SAME    restore@2: exit 0/0 stdout 30354/30354 sha C6FE8596F2B3/C6FE8596F2B3 lines 7
+SAME    restore@3: exit 0/0 stdout 14123/14123 sha 324CD365771C/324CD365771C lines 5
+SAME    restore@4: exit 0/0 stdout 879/879 sha 5414A1822044/5414A1822044 lines 3
+SAME wp6 wp6-public-mechanical-commitment-v1.json + wp14-development-rolling-cost-v1.json: exit 0/0 stdout 90672/90672 sha FEB280178DD2/FEB280178DD2 lines 15
+   decisions 6, errors 0
+SAME    restore@1: exit 0/0 stdout 81702/81702 sha 2A90DB67C355/2A90DB67C355 lines 13
+SAME    restore@2: exit 0/0 stdout 66672/66672 sha 867D21769CF6/867D21769CF6 lines 11
+SAME    restore@3: exit 0/0 stdout 47937/47937 sha DFE50E3E2B6F/DFE50E3E2B6F lines 9
+SAME    restore@4: exit 0/0 stdout 30596/30596 sha 40A65A50E683/40A65A50E683 lines 7
+SAME    restore@5: exit 0/0 stdout 15656/15656 sha 8BBE441E1199/8BBE441E1199 lines 5
+SAME    restore@6: exit 0/0 stdout 903/903 sha AF755A1563EB/AF755A1563EB lines 3
+FAILS 0
+##### 59c4ee8-vs-ad470c1 [main]
+SAME wp3 plain: exit 0/0 stdout 9743/9743 sha 13084605B2E1/13084605B2E1 lines 6
+SAME wp3 checkpoints: exit 0/0 stdout 37293/37293 sha E5B6293563B3/E5B6293563B3 lines 11
+  checkpoints: 5, sizes 879,4947,4976,8374,8369
+SAME wp3 restore@0: exit 0/0 stdout 36637/36637 sha C6B0B3716CA9/C6B0B3716CA9 lines 11
+SAME wp3 restore@1: exit 0/0 stdout 27759/27759 sha 7EF18E7A46EA/7EF18E7A46EA lines 9
+SAME wp3 restore@2: exit 0/0 stdout 21793/21793 sha 6A8A95113072/6A8A95113072 lines 7
+SAME wp3 restore@3: exit 0/0 stdout 10238/10238 sha B4C4E76A4584/B4C4E76A4584 lines 5
+SAME wp3 restore@4: exit 0/0 stdout 879/879 sha B02A51A06C07/B02A51A06C07 lines 3
+SAME wp2 online checkpoints: exit 0/0 stdout 14259/14259 sha B3344DF07979/B3344DF07979 lines 11
+SAME wp2 conformance: exit 0/0 stdout 4273/4273 sha FECD4D595C6F/FECD4D595C6F lines 15
+SAME full-tiny default: exit 0/0 stdout 1207/1207 sha 6A8A774E6012/6A8A774E6012 lines 4
+SAME wp6 paired commitment: exit 0/0 stdout 2219/2219 sha EEB00D2DF2BA/EEB00D2DF2BA lines 8
+SAME wp3 CRLF: exit 0/0 stdout 37293/37293 sha E5B6293563B3/E5B6293563B3 lines 11
+SAME wp3 CRCRLF: exit 0/0 stdout 37293/37293 sha E5B6293563B3/E5B6293563B3 lines 11
+SAME wp3 no final LF: exit 2/2 stdout 37293/37293 sha E5B6293563B3/E5B6293563B3 lines 11
+SAME wp3 BOM first line: exit 0/0 stdout 3849/3849 sha FB8D293AE749/FB8D293AE749 lines 15
+SAME wp3 blank lines: exit 0/0 stdout 39573/39573 sha 79830B0A2E00/79830B0A2E00 lines 26
+SAME wp3 invalid utf8 line: exit 0/0 stdout 37454/37454 sha 9E73E6B3728B/9E73E6B3728B lines 12
+SAME wp3 oversize line: exit 0/0 stdout 37460/37460 sha CA449ECCDA3B/CA449ECCDA3B lines 12
+SAME wp3 exact-limit line: exit 0/0 stdout 37481/37481 sha 07AD8F80BEAE/07AD8F80BEAE lines 12
+SAME wp3 exact-limit line incl CR: exit 0/0 stdout 37481/37481 sha 07AD8F80BEAE/07AD8F80BEAE lines 12
+SAME wp3 limit+CR line: exit 0/0 stdout 37460/37460 sha CA449ECCDA3B/CA449ECCDA3B lines 12
+SAME wp3 NUL line: exit 0/0 stdout 37445/37445 sha B47C212782EF/B47C212782EF lines 12
+SAME wp3 mid CR: exit 0/0 stdout 37445/37445 sha 0E00F19324C3/0E00F19324C3 lines 12
+SAME wp3 64MiB limit: exit 0/0 stdout 37293/37293 sha E5B6293563B3/E5B6293563B3 lines 11
+DIFF wp3 64MiB+1 limit (expected diff): exit 64/0 stdout 0/37293 sha E3B0C44298FC/E5B6293563B3 lines 0
+  line 0:
+   old: 
+   new: {"messageType":"helloAck","payload":{"capabilitySelection":{"capabilities":["dynamicTravelTimes","exactEventOrdering","oldPlanProjection"],"maxFleetSize":5000,"maxRequestCount":100000,"positionModel":"directedEdgeProgress","status":"accepted"},"selectedSchemaVersion":"1.0.0"},"schemaVersion":"1.0.0"}
+  stderr old: --maximum-line-bytes must be an integer from 1048576 through 67108864.
+
+  stderr new: 
+  ledger histories at cp1: 1
+SAME wp3 crafted restore with shadowAllocations (default config): exit 0/0 stdout 3317/3317 sha 5BFA4B399BC0/5BFA4B399BC0 lines 10
+   old> {"messageType":"error","payload":{"code":"SCHEMA_VALIDATION_FAILED","disposition":"rejectMessage","message":"Checkpoint online state is not an exact canonical domain state."},"runId":"wp3-demo-run","scenarioId":"wp3-commitment-tiny","schemaVersion":"1.0.0"}
+   old> {"messageType":"checkpoint","payload":{"checkpointHash":"84f4b0d8343157d90ef5adf2533a4517b4efe65f829cf38aceb92d6759aa4d56","checkpointVersion":"1.0.0","content":{"appliedEpoch":0,"manifestHash":"fffdbc40e9e61d79dfa31b6c988aa119650335ef739bb2cf24f0f073a3086297"
+   old> {"epochId":2,"messageType":"error","payload":{"code":"EPOCH_GAP","disposition":"failSession","message":"Expected epoch 1."},"runId":"wp3-demo-run","scenarioId":"wp3-commitment-tiny","schemaVersion":"1.0.0","simTimeMs":1100}
+   new> {"messageType":"error","payload":{"code":"SCHEMA_VALIDATION_FAILED","disposition":"rejectMessage","message":"Checkpoint online state is not an exact canonical domain state."},"runId":"wp3-demo-run","scenarioId":"wp3-commitment-tiny","schemaVersion":"1.0.0"}
+   new> {"messageType":"checkpoint","payload":{"checkpointHash":"84f4b0d8343157d90ef5adf2533a4517b4efe65f829cf38aceb92d6759aa4d56","checkpointVersion":"1.0.0","content":{"appliedEpoch":0,"manifestHash":"fffdbc40e9e61d79dfa31b6c988aa119650335ef739bb2cf24f0f073a3086297"
+   new> {"epochId":2,"messageType":"error","payload":{"code":"EPOCH_GAP","disposition":"failSession","message":"Expected epoch 1."},"runId":"wp3-demo-run","scenarioId":"wp3-commitment-tiny","schemaVersion":"1.0.0","simTimeMs":1100}
+FAILS 1

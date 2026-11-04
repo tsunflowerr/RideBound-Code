@@ -6,7 +6,7 @@ ADR-090; nhánh `research/fixes-perf-2026-11-04` (chưa push). Đo đạc: `rese
 
 | Yêu cầu | Chứng cứ | Trạng thái/giới hạn |
 |---|---|---|
-| Không đổi kết quả đã ghi | Harness Runner thật: 564/564 lượt WP4, 25/26 ca cơ bản (ca khác là khôi phục bản chốt chèn `shadowAllocations`, nay như trước khi có Shadow), 14/14 dòng lớn, 11/11 định danh; .NET 1.261/1.265 (4 lỗi môi trường có ở HEAD) | Đạt trên máy công ty; chưa chạy cổng G1/G2 trên transcript thật |
+| Không đổi kết quả đã ghi | Harness Runner thật (`research/continuation/2026-11-04/byte-harness/`): 564/564 lượt WP4, 25/26 ca cơ bản (ca khác là khôi phục bản chốt chèn `shadowAllocations`, nay như trước khi có Shadow), 14/14 dòng lớn, 11/11 định danh; .NET 1.261/1.265 (4 lỗi môi trường có ở HEAD) | Đạt trên máy công ty với cấu hình trong repo. Cấu hình Shadow/dự báo/light-v1 của đợt cuối nằm ngoài repo: chưa so byte, chỉ lập luận (ADR-090). Chưa chạy cổng G1/G2 trên transcript thật |
 | Sửa 8 lỗi đã xác nhận | Test mới đỏ trên HEAD, xanh trên nhánh; cấu hình hỏng nay bị từ chối khi đọc hoặc khi khởi tạo | Đạt |
 | Chạy ô Via đủ nút từ repo | Thiết lập `ridebound_maximum_line_bytes` (64 MiB..1 GiB, chỉ nâng); test adapter cho thiết lập, dòng lệnh, launcher vá hằng số và client tạo lại | Chưa chạy job đủ nút với thiết lập này |
 | Đọc stdout nhanh, giữ đúng byte | `RunnerClient` thật, cùng đầu vào: 64 MiB 99,8 → 0,81 s; sha256 trùng; bộ nhớ đỉnh với dòng lớn như cũ | Thời gian tiết kiệm ở job thật chưa đo |

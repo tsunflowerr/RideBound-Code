@@ -6096,7 +6096,8 @@ rút gọn.
 **Evidence (máy công ty, .NET SDK 10.0.400 chạy từ ngoài repo vì `global.json` ghim 10.0.301):**
 - .NET: 1.265 test, 1.261 đạt. 4 lỗi môi trường có ở HEAD cùng máy: 2 golden CRLF của Contracts, 2 test harness Tiny.
   Sáu test mới/sửa đỏ trên mã HEAD và xanh trên nhánh (lỗi 2, 4, 5, 6, 7 và cấu hình dự báo); test lỗi 8 đổi chữ ký hàm.
-- Harness so từng byte (`dotnet` chạy Runner thật, cùng stdin):
+- Harness so từng byte (`dotnet` chạy Runner thật, cùng stdin; mã, danh sách 47 cặp và kết quả ở
+  `research/continuation/2026-11-04/byte-harness/`):
   - HEAD so với nhánh: 25/26 ca cơ bản, khác đúng một ca có chủ ý (khôi phục bản chốt bị chèn `shadowAllocations`);
     564/564 lượt WP4 (47 cặp cấu hình × 2 kịch bản, bản chốt và khôi phục sau mỗi quyết định); 14/14 dòng lớn; 11/11 định danh.
   - `59c4ee8` so với nhánh: ca khôi phục trên trùng commit cha; khác một ca giới hạn 64 MiB + 1 (S3 của `9ba5568`).
@@ -6115,7 +6116,15 @@ rút gọn.
   `InvalidDataException`).
 
 **Consequences và giới hạn:**
-- Không đổi byte nào ở cấu hình mặc định và ở mọi cấu hình đã ghi; chỉ đổi hành vi ở các cấu hình trước đây hỏng.
+- Cấu hình mặc định và 47 cặp cấu hình trong repo: không đổi byte nào. Đây là kết quả so byte bằng harness
+  `research/continuation/2026-11-04/byte-harness/`.
+- Cấu hình Shadow, dự báo và light-v1 của đợt chạy cuối nằm ngoài repo và **chưa được so byte**: repo không có cấu hình,
+  cũng không có test phiên Runner nào bật Shadow hoặc dự báo. Kết luận "không đổi" ở đây là lập luận:
+  - bộ chấm điểm vẫn chia cho 600 000, cùng một phép chia double;
+  - các sửa còn lại chỉ từ chối những cấu hình mà không lần chạy đã ghi nào dùng.
+- Hành vi chỉ đổi ở các cấu hình trước đây hỏng.
+- Harness chỉ so mã cũ với mã mới trên các kịch bản tí hon. Nó không chạy lại transcript đã ghi (G1/G2), và không cho biết
+  HEAD có tái hiện T3.8 (stability-first, `runner-tier3-v2`) hay không.
 - Thời gian tiết kiệm thật ở job máy nhà chưa đo: cần bấm giờ một job đủ nút trước và sau (khung bản chốt cuối 0,4–0,8 GB).
 - Kế hoạch dọn mã (kiểm kê thành phần, đề xuất giữ/đơn giản hóa/bỏ) làm riêng, chờ chủ duyệt; chưa xóa thành phần nào.
 
@@ -6216,6 +6225,12 @@ Claude/Antigravity. Không có quyền commit/push mới trong lượt này.
 
 ## 9. Change history
 
+- 2026-11-04 chiều (`research/fixes-perf-2026-11-04`, chưa push; không đổi mã sản phẩm):
+  - Lưu harness so byte của ADR-090 vào `research/continuation/2026-11-04/byte-harness/`. Chạy lại bằng bản lưu, với
+    Runner publish từ `git archive` của `101a4f5` và `ad470c1`: trùng lần đầu, 564/564.
+  - Thu hẹp câu "không đổi byte" của ADR-090: cấu hình Shadow/dự báo/light-v1 của đợt cuối chưa được so byte.
+  - Kiểm toán mã và kế hoạch refactor ở `research/continuation/2026-11-04/simplification-audit/`. Đây chỉ là kế hoạch,
+    chờ chủ duyệt.
 - 2026-11-04 (`research/fixes-perf-2026-11-04`, chưa push): ADR-090. Sửa 8 lỗi đã xác nhận của bộ chạy nhanh (Shadow,
   dự báo, kiểm toán nhẹ, khôi phục, giới hạn dòng của adapter) và cho adapter đọc stdout có đệm (64 MiB: 99,8 → 0,81 s).
   Không đổi byte ở cấu hình mặc định: harness 564/564 lượt WP4 và 25/26 ca cơ bản (ca khác là ca sửa có chủ ý). Băm song song
