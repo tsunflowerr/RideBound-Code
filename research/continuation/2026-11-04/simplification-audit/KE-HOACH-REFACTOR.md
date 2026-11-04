@@ -642,7 +642,8 @@ Phân loại: phần mã INS là (c), phần cấu hình INS là (b). Không có
 ## 5. Kế hoạch refactor
 
 **Nguyên tắc.**
-- Làm trên một nhánh mới tách từ `ad470c1`, **sau** khi chiến dịch 168 job xong.
+- Làm trên một nhánh mới tách từ đỉnh hiện tại của `research/fixes-perf-2026-11-04`, **sau** khi chiến dịch 168 job xong.
+  Từ `ad470c1` tới đỉnh chỉ có tài liệu và harness; `ad470c1` vẫn là mốc mã trước refactor.
 - Mỗi bước là một commit, hoàn tác được bằng `git revert`.
 - Không xuất lại pack giữa chừng chiến dịch.
 - Chiến dịch chạy bằng Runner trong pack, nên refactor HEAD không làm đổi kết quả của nó. Nhưng nếu phải build lại pack, ví dụ để thêm các sửa ADR-090, thì phải chạy lại mọi gate trên binary mới.
@@ -704,7 +705,8 @@ Ghi chú: commit `0eb9a6ca` và `937bb31` (trước khi viết lại tác giả)
 - Kết quả bước này quyết định có làm các bước 2.x hay không.
 
 **Bước 0.5: Chuỗi công cụ.**
-- Thêm `ignore` cho `Google.OrTools*` và `Google.Protobuf` trong `dependabot.yml`.
+- Thêm `ignore` cho `Google.OrTools*` và `Google.Protobuf` trong `dependabot.yml`. Phải thêm trên `main`, vì Dependabot
+  chỉ đọc cấu hình ở nhánh mặc định; việc đưa vào `main` cần chủ đồng ý.
 - Viết biên bản build (SDK, runtime, lệnh publish, sha của cây, `deps.json`) cho `runner-fastrun-final1`, `runner-gd4-v1`, Runner final-v2.
 - Tùy chọn: cho Runner báo lỗi khi khởi động nếu phiên bản OR-Tools đã nạp khác `AdapterVersion`. Kiểm bằng K1 + K3; không byte nào được đổi.
 

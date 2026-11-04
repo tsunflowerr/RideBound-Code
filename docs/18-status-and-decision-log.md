@@ -6057,7 +6057,7 @@ rút gọn.
 - 04/11: chủ cho push; commit `9ba5568` trên nhánh `research/fast-runner-2026-11-02` (RideBound-Code, công khai), kèm
   `b7f7833`, `59c4ee8` chưa push trước đó. Cây chính `E:/Code/RideBound` không đổi. Chạy thật 168 job: chưa (chờ máy thuê).
 
-### ADR-090 — 2026-11-04 — Proposed (sửa các lỗi đã xác nhận của bộ chạy nhanh; adapter đọc stdout có đệm; nhánh `research/fixes-perf-2026-11-04`, chưa push)
+### ADR-090 — 2026-11-04 — Proposed (sửa các lỗi đã xác nhận của bộ chạy nhanh; adapter đọc stdout có đệm; nhánh `research/fixes-perf-2026-11-04`, đã push 04/11)
 
 **Context:**
 - Rà soát `9ba5568` (code-review mức xhigh; mỗi phát hiện một người kiểm phản biện; hai người rà soát độc lập chạy Runner của
@@ -6231,7 +6231,12 @@ Claude/Antigravity. Không có quyền commit/push mới trong lượt này.
 
 ## 9. Change history
 
-- 2026-11-04 chiều (`research/fixes-perf-2026-11-04`, chưa push; không đổi mã sản phẩm):
+- 2026-11-04 tối (`research/fixes-perf-2026-11-04`; chủ cho push, nhánh đã push tới `e3e4c0b`): thêm
+  `research/continuation/2026-11-04/KE-HOACH-MAY-NHA.md`, kế hoạch ở nhà theo thứ tự chuẩn bị → cổng → 168 job → nối số
+  khóa luận → refactor. Thêm `MUC-9-HE-THAT-VA-BO-MO-PHONG.md`, mục 9 mới của báo cáo hệ thống: hệ thật đã chạy được ô Via
+  đủ nút, nhưng chỉ được so với chế độ adapter của bộ mô phỏng. Cả hai tệp đã được kiểm chéo với repo. Khóa luận chỉ dùng Via (chủ quyết). Tối ưu #1 gần như không làm job qua launcher nhanh hơn.
+  `docs/19`: cập nhật dòng Shadow theo ADR-089.
+- 2026-11-04 chiều (`research/fixes-perf-2026-11-04`, sau đó đã push; không đổi mã sản phẩm):
   - Lưu harness so byte của ADR-090 vào `research/continuation/2026-11-04/byte-harness/`. Chạy lại bằng bản lưu, với
     Runner publish từ `git archive` của `101a4f5` và `ad470c1`: trùng lần đầu, 564/564.
   - Thu hẹp câu "không đổi byte" của ADR-090: cấu hình Shadow/dự báo/light-v1 của đợt cuối chưa được so byte.
