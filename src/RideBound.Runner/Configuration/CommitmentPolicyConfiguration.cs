@@ -187,9 +187,7 @@ public sealed class CommitmentPolicyConfiguration :
         // written before it, with its content hash.
         var shadowAllocation = OptionalBoolean(element, "dropEtaShadowAllocation");
 
-        if (shadowAllocation
-            && !(budgetPermille == 1000 && deadlinePermille is null)
-            && !(deadlinePermille == 1000 && budgetPermille is null))
+        if (shadowAllocation && !CommitmentPolicy.ShadowScalesOneLimit(budgetPermille, deadlinePermille))
         {
             throw new InvalidDataException(
                 "'dropEtaShadowAllocation' requires exactly one of 'dropEtaBudgetSlackPermille' or "

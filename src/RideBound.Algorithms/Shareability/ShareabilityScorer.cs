@@ -69,6 +69,9 @@ public sealed record ShareabilityScore(
 /// </summary>
 public sealed class ShareabilityScorer
 {
+    /// <summary>The emulator's rate interval (sscore.js IV_MS); scoring uses the rates' own interval.</summary>
+    public const double IntervalMilliseconds = ZoneDemandRates.DefaultIntervalMilliseconds;
+
     private readonly ShareabilityNetwork network;
     private readonly ShareabilityCell cell;
 

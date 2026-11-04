@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+import io
 import json
 import os
 import pathlib
@@ -309,17 +310,17 @@ class RunnerClient:
     def _read_stdout(self) -> None:
         process = self._process
         assert process is not None and process.stdout is not None
+        # The pipes are unbuffered (bufsize=0), and readline on a raw pipe makes one system call
+        # per byte. A buffer over process.stdout itself reads 1 MiB at a time and returns the same
+        # lines; once shutdown closes process.stdout, the next read fails as before.
+        stdout = io.BufferedReader(process.stdout, buffer_size=1024 * 1024)
         try:
-            # The pipes are unbuffered (bufsize=0), and readline on a raw pipe makes one system
-            # call per byte. This buffered view of the same pipe reads 1 MiB at a time and returns
-            # the same lines. It does not own the pipe: shutdown still closes process.stdout.
-            with open(process.stdout.fileno(), "rb", buffering=1024 * 1024, closefd=False) as stdout:
-                while True:
-                    line = stdout.readline(self._maximum_output_line_bytes + 2)
-                    if not line:
-                        self._stdout.put(_EOF)
-                        return
-                    self._stdout.put(line)
+            while True:
+                line = stdout.readline(self._maximum_output_line_bytes + 2)
+                if not line:
+                    self._stdout.put(_EOF)
+                    return
+                self._stdout.put(line)
         except BaseException as exc:
             self._stdout.put(exc)
 
@@ -387,7 +388,7 @@ class RunnerClient:
             self._fail("RBWP7_RUNNER_OUTPUT_TOO_LARGE", str(len(item)))
         if not item.endswith(b"\n"):
             self._fail("RBWP7_RUNNER_INCOMPLETE_FRAME", repr(item[-32:]))
-        frame = item[:-1]
+        frame = transcript_frame  # item[:-1]; a final checkpoint is up to ~0.8 GB, so no second copy
         if frame.endswith(b"\r"):
             self._fail("RBWP7_RUNNER_CRLF_FORBIDDEN", "stdout must use LF framing")
         try:

@@ -14,11 +14,11 @@ python -B bench_read.py <adapter-root-moi> 67108864 1
 
 | Dữ liệu | Cũ | Mới |
 |---|---|---|
-| 1 dòng 16 MiB | 28,2 s | 0,62 s |
-| 1 dòng 64 MiB | 99,8 s | 0,73 s |
-| 3.000 dòng × 20 KB | 87,4 s | 0,68 s |
-| 1 dòng 400 MiB | (không đo) | 2,16 s |
-| 1 dòng 768 MiB | (không đo) | 4,66 s |
+| 1 dòng 16 MiB | 28,2 s | 0,68 s |
+| 1 dòng 64 MiB | 99,8 s | 0,81 s |
+| 3.000 dòng × 20 KB | 87,4 s | 0,75 s |
+| 1 dòng 400 MiB | (không đo) | 2,36 s |
+| 1 dòng 768 MiB | (không đo) | 3,88 s |
 
 sha256 trùng giữa cũ và mới ở mọi ca đo cả hai. Bản cũ tuyến tính, khoảng 1,5 µs/byte trên máy này. Thời gian tiết kiệm ở
 một job thật chưa đo: bấm giờ một job đủ nút trước và sau.

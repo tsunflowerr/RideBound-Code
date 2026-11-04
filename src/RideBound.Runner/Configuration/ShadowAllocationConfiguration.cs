@@ -72,14 +72,14 @@ public static class ShadowAllocationConfiguration
             element.GetProperty("factors").EnumerateArray().Select(value => Decimal(value, "factors")).ToArray(),
             Integer(element, "pickupWindowMs"),
             Integer(element, "strideMs"),
-            PositiveInteger(element, "intervalMs"),
+            AtLeastAMinute(element, "intervalMs"),
             Decimal(element.GetProperty("alpha"), "alpha"),
             Decimal(element.GetProperty("phi"), "phi"),
             Integer(element, "sampled"),
             priorOrigin,
             priorDestination,
             Decimal(element.GetProperty("threshold"), "threshold"),
-            PositiveInteger(element, "binMs"),
+            AtLeastAMinute(element, "binMs"),
             NetworkNodes(element, network.NodeCount));
     }
 
@@ -134,11 +134,12 @@ public static class ShadowAllocationConfiguration
             ? result
             : throw new InvalidDataException($"shadowAllocation.{name} must be a non-negative integer.");
 
-    // intervalMs and binMs are divisors: the rate interval and the evaluation-time bin.
-    private static long PositiveInteger(JsonElement element, string name) =>
-        Integer(element, name) is > 0 and var result
+    // intervalMs and binMs divide time into rate intervals and factor bins (the emulator's 600 s and
+    // 900 s). A floor of a minute keeps them away from zero and from millions of empty intervals.
+    private static long AtLeastAMinute(JsonElement element, string name) =>
+        Integer(element, name) is >= 60_000 and var result
             ? result
-            : throw new InvalidDataException($"shadowAllocation.{name} must be a positive integer.");
+            : throw new InvalidDataException($"shadowAllocation.{name} must be at least 60000.");
 
     private static double[] Counts(JsonElement element, string name) =>
         element.GetProperty(name).EnumerateArray()

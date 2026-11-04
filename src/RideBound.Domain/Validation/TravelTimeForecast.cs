@@ -14,8 +14,9 @@ namespace RideBound.Domain.Validation;
 /// </summary>
 public sealed class TravelTimeForecast
 {
-    // A step crosses at most one bin, so bins of at least a minute integrate any leg up to
-    // 100,000 minutes (about 69 days) within the step cap. The recorded runs use 15-minute bins.
+    // A step crosses one bin, so a leg converges when its forecast duration (the leg scaled by the
+    // profile weights) spans fewer than MaximumBinSteps bins: with bins of at least a minute, about
+    // 69 days of forecast time. The recorded runs use 15-minute bins and weights near 1.
     public const long MinimumBinMilliseconds = 60_000;
     private const int MaximumBinSteps = 100_000;
     private readonly double[] _profile;

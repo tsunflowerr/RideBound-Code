@@ -43,15 +43,27 @@ public static class RunnerHost
 
         var reader = new NdjsonReader(input, maximumLineBytes);
         var writer = new NdjsonWriter(output);
-        var session = new RunnerSession(
-            RunnerDefaults.CapabilityRequirements,
-            executionMode,
-            commitmentPolicies: commitmentPolicies,
-            stopDistances: stopDistances,
-            commitmentPolicyConfigurationHash:
-                commitmentPolicyConfigurationHash,
-            wp4Configuration: wp4Configuration,
-            useManifestSolverSeed: useManifestSolverSeed);
+        RunnerSession session;
+
+        try
+        {
+            session = new RunnerSession(
+                RunnerDefaults.CapabilityRequirements,
+                executionMode,
+                commitmentPolicies: commitmentPolicies,
+                stopDistances: stopDistances,
+                commitmentPolicyConfigurationHash:
+                    commitmentPolicyConfigurationHash,
+                wp4Configuration: wp4Configuration,
+                useManifestSolverSeed: useManifestSolverSeed);
+        }
+        catch (ArgumentException error)
+        {
+            // A refused combination of settings, reported like Program's configuration errors.
+            await diagnostics.WriteLineAsync(
+                $"Invalid runner configuration: {error.Message}").ConfigureAwait(false);
+            return 64;
+        }
 
         while (true)
         {

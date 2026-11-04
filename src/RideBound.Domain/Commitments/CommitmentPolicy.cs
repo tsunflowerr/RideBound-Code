@@ -285,12 +285,8 @@ public sealed class CommitmentPolicy
                 nameof(waitingRiderRelocation));
         }
 
-        // Shadow Control (ADR-089 GĐ4): an allowed rider gets its whole slack and a guaranteed rider
-        // none, so the class scales the policy's one slack-proportional limit, a budget or a
-        // deadline of exactly 1000 permille. With both, the class would have no single meaning.
         if (dropEtaShadowAllocation
-            && !(dropEtaBudgetSlackPermille == 1000 && dropEtaDeadlineSlackPermille is null)
-            && !(dropEtaDeadlineSlackPermille == 1000 && dropEtaBudgetSlackPermille is null))
+            && !ShadowScalesOneLimit(dropEtaBudgetSlackPermille, dropEtaDeadlineSlackPermille))
         {
             throw new ArgumentException(
                 "Shadow allocation scales one 1000-permille slack-proportional budget or deadline.",
@@ -313,6 +309,15 @@ public sealed class CommitmentPolicy
         WaitingRiderRelocation = waitingRiderRelocation;
         DropEtaShadowAllocation = dropEtaShadowAllocation;
     }
+
+    /// <summary>
+    /// Shadow Control (ADR-089 GĐ4): an allowed rider gets its whole slack and a guaranteed rider
+    /// none, so the class scales the policy's one slack-proportional limit, a budget or a deadline
+    /// of exactly 1000 permille. With both, the class would have no single meaning.
+    /// </summary>
+    public static bool ShadowScalesOneLimit(int? budgetSlackPermille, int? deadlineSlackPermille) =>
+        (budgetSlackPermille == 1000 && deadlineSlackPermille is null)
+        || (deadlineSlackPermille == 1000 && budgetSlackPermille is null);
 
     /// <summary>
     /// The rider's drop slack at the first published promise, scaled by a permille share

@@ -6072,19 +6072,21 @@ rút gọn.
    `ShareabilityScorer`. Với 600 000 vẫn là cùng phép chia double, nên trùng từng bit.
 2. Shadow cần **đúng một** chiều tỷ lệ theo độ dư (quỹ hoặc hạn chót) ở mức 1000‰; cấu hình có cả hai bị từ chối
    (`CommitmentPolicy` và bộ đọc cấu hình), vì lớp Shadow khi đó không có nghĩa duy nhất.
-3. Adapter: thiết lập tùy chọn `ridebound_maximum_line_bytes` (1 MiB..1 GiB, đúng dải của Runner) dùng cho cả
-   `--maximum-line-bytes` và hai giới hạn của `RunnerClient`. Không đặt thì giữ 64 MiB; hằng số được đọc lúc tạo phiên nên
-   launcher cũ vá hằng số (`bridge_launcher_via.py`) vẫn chạy như trước. Không ghi giá trị vào manifest, để `manifestHash`
-   của mọi lần chạy giữ nguyên; giá trị nằm trong thiết lập của driver và dòng lệnh Runner.
-4. `auditHash: light-v1` cùng `RIDEBOUND_STATE_HASH=v2`: `RunnerSession` từ chối khi khởi tạo (trước đây hỏng ở bản chốt đầu).
+3. Adapter: thiết lập tùy chọn `ridebound_maximum_line_bytes` (64 MiB..1 GiB) chỉ **nâng** giới hạn: mỗi chiều lấy số
+   lớn hơn giữa thiết lập và hằng 64 MiB, cho cả `--maximum-line-bytes` và hai giới hạn của `RunnerClient`. Hằng số vẫn đọc
+   lúc dùng (mỗi lần tạo client), nên launcher cũ vá hằng số (`bridge_launcher_via.py`) chạy như trước. Không ghi giá trị
+   vào manifest, để `manifestHash` của mọi lần chạy giữ nguyên; giá trị nằm trong thiết lập của driver và dòng lệnh Runner.
+4. `auditHash: light-v1` cùng `RIDEBOUND_STATE_HASH=v2`: `RunnerSession` từ chối khi khởi tạo; `RunnerHost` báo lỗi cấu hình
+   và thoát mã 64 như các lỗi cấu hình khác (trước đây hỏng ở bản chốt đầu).
 5. `shadowAllocation` đòi `scheduleStrategy: earliest-feasible` (bộ chấm điểm không xử lý điểm chờ của origin-hold).
-6. `shadowAllocation.intervalMs` và `binMs` phải dương (là số chia).
-7. `TravelTimeForecast`: ô dự báo tối thiểu 60 000 ms, để mọi chặng tới khoảng 69 ngày tích phân xong trong 100 000 bước;
-   bộ đọc WP4 báo lỗi cấu hình như các trường khác.
+6. `shadowAllocation.intervalMs` và `binMs` tối thiểu 60 000 ms (là số chia; bộ mô phỏng dùng 600 000 và 900 000).
+7. `TravelTimeForecast`: ô dự báo tối thiểu 60 000 ms; một chặng hội tụ khi thời gian dự báo của nó (đã nhân hệ số) trải
+   ít hơn 100 000 ô, tức khoảng 69 ngày. Bộ đọc WP4 báo lỗi cấu hình như các trường khác.
 8. Khôi phục: bộ giải mã chỉ đọc `shadowAllocations` khi phiên có Shadow. Không có Shadow thì bản chốt có mục này bị từ chối
    đúng như trước khi có Shadow (cùng mã lỗi, cùng thông điệp).
-9. Tối ưu #1: `RunnerClient._read_stdout` đọc qua một lớp đệm 1 MiB trên cùng ống stdout (không sở hữu ống; tắt máy vẫn
-   đóng `process.stdout`). Trước đó `readline` trên ống không đệm gọi hệ thống một lần cho mỗi byte.
+9. Tối ưu #1: `RunnerClient._read_stdout` đọc qua `io.BufferedReader` 1 MiB bọc chính `process.stdout`, nên khi tắt máy đóng
+   ống thì lần đọc sau báo tệp đã đóng như cũ. Trước đó `readline` trên ống không đệm gọi hệ thống một lần cho mỗi byte.
+   `_read_expected` dùng chung một bản cắt cho transcript và phân tích (bớt một bản sao cỡ khung, tới 0,8 GB).
 10. Tối ưu #3 (băm phần đầu vào của `decisionHash` song song với pha quyết định, chế độ đầy đủ): **không làm**. Thiết kế khả
     thi (các trường vào băm chỉ đổi ở `decisionApplied`, khởi tạo, khôi phục; mảnh canonical là mảng bất biến), nhưng đợt
     chạy cuối và job đủ nút dùng chế độ nhẹ, nơi tối ưu này không có tác dụng; máy công ty không có transcript cỡ Via để
@@ -6101,9 +6103,16 @@ rút gọn.
 - Adapter (Python 3.13 của LibreOffice, máy không có numpy/jsonschema): 235 test chạy, tập lỗi trùng mốc HEAD (3 F, 32 E do
   thiếu thư viện); 3 test mới đạt. Bộ test adapter đầy đủ (467) chưa chạy ở máy này.
 - Đo bộ đọc stdout (`research/continuation/2026-11-04/perf-stdout-reader/`, `RunnerClient` thật của HEAD và của nhánh, cùng
-  tiến trình con phát dữ liệu, chạy liền nhau, máy rảnh): 16 MiB 28,2 → 0,62 s; 64 MiB 99,8 → 0,73 s; 3.000 dòng 20 KB
-  87,4 → 0,68 s; 400 MiB 2,16 s và 768 MiB 4,66 s với bản mới (bản cũ tuyến tính khoảng 1,5 µs/byte, ngoại suy khoảng 10 và
-  20 phút). sha256 các dòng nhận được trùng giữa hai bản; bộ nhớ đỉnh như cũ (khoảng 2 lần cỡ dòng).
+  tiến trình con phát dữ liệu, máy rảnh): 16 MiB 28,2 → 0,68 s; 64 MiB 99,8 → 0,81 s; 3.000 dòng 20 KB 87,4 → 0,75 s;
+  400 MiB 2,36 s và 768 MiB 3,88 s với bản mới (bản cũ tuyến tính khoảng 1,5 µs/byte, ngoại suy khoảng 10 và 20 phút).
+  sha256 các dòng nhận được trùng giữa hai bản. Bộ nhớ đỉnh với dòng lớn như cũ (khoảng 2 lần cỡ dòng); với 3.000 dòng nhỏ
+  tăng 31,7 → 54,2 MiB vì bộ đọc nhanh hơn bên lấy dòng trong phép đo (ở job thật mỗi yêu cầu chỉ có một khung trả lời).
+- Code-review lại phần sửa (mức xhigh, 14 điểm): sửa 11 (bộ đọc bọc `process.stdout` thay vì mở lại số mô tả tệp; Runner
+  thoát mã 64 thay vì sập; thiết lập chỉ nâng giới hạn; khoảng Shadow tối thiểu một phút; chú thích hội tụ; test khôi phục
+  biến môi trường; một hàm dùng chung cho quy tắc Shadow một chiều; giữ hằng công khai của bộ chấm điểm; bớt một bản sao
+  khung; câu về bộ nhớ). Giữ 3: đổi thông điệp lỗi ở cấu hình vốn đã bị từ chối; tham số `shadowAllocation = false` mặc
+  định của bộ giải mã (an toàn cho mọi công cụ cũ); kiểm ô dự báo ở cả bộ đọc cấu hình lẫn lớp miền (để lỗi cấu hình vẫn là
+  `InvalidDataException`).
 
 **Consequences và giới hạn:**
 - Không đổi byte nào ở cấu hình mặc định và ở mọi cấu hình đã ghi; chỉ đổi hành vi ở các cấu hình trước đây hỏng.
@@ -6208,7 +6217,7 @@ Claude/Antigravity. Không có quyền commit/push mới trong lượt này.
 ## 9. Change history
 
 - 2026-11-04 (`research/fixes-perf-2026-11-04`, chưa push): ADR-090. Sửa 8 lỗi đã xác nhận của bộ chạy nhanh (Shadow,
-  dự báo, kiểm toán nhẹ, khôi phục, giới hạn dòng của adapter) và cho adapter đọc stdout có đệm (64 MiB: 99,8 → 0,73 s).
+  dự báo, kiểm toán nhẹ, khôi phục, giới hạn dòng của adapter) và cho adapter đọc stdout có đệm (64 MiB: 99,8 → 0,81 s).
   Không đổi byte ở cấu hình mặc định: harness 564/564 lượt WP4 và 25/26 ca cơ bản (ca khác là ca sửa có chủ ý). Băm song song
   ở chế độ đầy đủ không làm (đợt chạy cuối dùng chế độ nhẹ).
 - 2026-10-26 22:40 (`research/company-emulator-2026-10-26`, không đổi mã RideBound): ADR-088. Sửa khóa luận theo bản

@@ -17,7 +17,7 @@ public sealed class ProcessEnvironmentCollection;
 public sealed class RunnerSessionAuditHashTests
 {
     [Fact]
-    public void Light_audit_is_refused_with_the_v2_state_hash_prototype()
+    public async Task Light_audit_is_refused_with_the_v2_state_hash_prototype()
     {
         var root = AppContext.BaseDirectory;
         while (!File.Exists(Path.Combine(root, "RideBound.slnx")))
@@ -42,16 +42,32 @@ public sealed class RunnerSessionAuditHashTests
             commitmentPolicyConfigurationHash: commitment.ContentHash,
             wp4Configuration: light);
 
-        Session();
-
-        Environment.SetEnvironmentVariable("RIDEBOUND_STATE_HASH", "v2");
+        var original = Environment.GetEnvironmentVariable("RIDEBOUND_STATE_HASH");
         try
         {
+            Environment.SetEnvironmentVariable("RIDEBOUND_STATE_HASH", null);
+            Session();
+
+            Environment.SetEnvironmentVariable("RIDEBOUND_STATE_HASH", "v2");
             Assert.Contains("light-v1", Assert.Throws<ArgumentException>(Session).Message);
+
+            // The process host reports it as a configuration error instead of crashing.
+            using var diagnostics = new StringWriter();
+            var exitCode = await RunnerHost.RunAsync(
+                new MemoryStream(),
+                new MemoryStream(),
+                diagnostics,
+                executionMode: RunnerExecutionMode.OnlineCommitment,
+                commitmentPolicies: commitment,
+                stopDistances: commitment,
+                commitmentPolicyConfigurationHash: commitment.ContentHash,
+                wp4Configuration: light);
+            Assert.Equal(64, exitCode);
+            Assert.Contains("light-v1", diagnostics.ToString());
         }
         finally
         {
-            Environment.SetEnvironmentVariable("RIDEBOUND_STATE_HASH", null);
+            Environment.SetEnvironmentVariable("RIDEBOUND_STATE_HASH", original);
         }
     }
 }

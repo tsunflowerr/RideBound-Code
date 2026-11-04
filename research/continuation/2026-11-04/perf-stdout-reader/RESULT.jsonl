@@ -1,8 +1,8 @@
 old {"lineBytes": 16777216, "count": 1, "lines": 1, "seconds": 28.246, "sha256": "36f9fd719b17f5c268da4ec408071520d228a864f1be5709b1853feab06c7335", "peakWorkingSetMiB": 62.1}
-new {"lineBytes": 16777216, "count": 1, "lines": 1, "seconds": 0.624, "sha256": "36f9fd719b17f5c268da4ec408071520d228a864f1be5709b1853feab06c7335", "peakWorkingSetMiB": 60.8}
 old {"lineBytes": 67108864, "count": 1, "lines": 1, "seconds": 99.785, "sha256": "172fd098480f1d4e083654fd6ca537c3986202b16ae08fa9b8bc801d5086b339", "peakWorkingSetMiB": 155.6}
-new {"lineBytes": 67108864, "count": 1, "lines": 1, "seconds": 0.733, "sha256": "172fd098480f1d4e083654fd6ca537c3986202b16ae08fa9b8bc801d5086b339", "peakWorkingSetMiB": 156.4}
 old {"lineBytes": 20480, "count": 3000, "lines": 3000, "seconds": 87.431, "sha256": "ca16c8368f2646d0198dd64202000344de3ec8408eb3a37d2a4b0b4649b70402", "peakWorkingSetMiB": 31.7}
-new {"lineBytes": 20480, "count": 3000, "lines": 3000, "seconds": 0.678, "sha256": "ca16c8368f2646d0198dd64202000344de3ec8408eb3a37d2a4b0b4649b70402", "peakWorkingSetMiB": 56.3}
-new {"lineBytes": 419430400, "count": 1, "lines": 1, "seconds": 2.16, "sha256": "96300685a52d2a793418bd134fbd05125806f4cbbd46fa0b39639e6fb9821858", "peakWorkingSetMiB": 829.7}
-new {"lineBytes": 805306368, "count": 1, "lines": 1, "seconds": 4.66, "sha256": "825bf15f9548a5f588465b25ba0debf621717aca9f345895e79ebe50db2435ca", "peakWorkingSetMiB": 1567.2}
+new {"lineBytes": 16777216, "count": 1, "lines": 1, "seconds": 0.675, "sha256": "36f9fd719b17f5c268da4ec408071520d228a864f1be5709b1853feab06c7335", "peakWorkingSetMiB": 60.6}
+new {"lineBytes": 67108864, "count": 1, "lines": 1, "seconds": 0.814, "sha256": "172fd098480f1d4e083654fd6ca537c3986202b16ae08fa9b8bc801d5086b339", "peakWorkingSetMiB": 156.8}
+new {"lineBytes": 20480, "count": 3000, "lines": 3000, "seconds": 0.749, "sha256": "ca16c8368f2646d0198dd64202000344de3ec8408eb3a37d2a4b0b4649b70402", "peakWorkingSetMiB": 54.2}
+new {"lineBytes": 419430400, "count": 1, "lines": 1, "seconds": 2.363, "sha256": "96300685a52d2a793418bd134fbd05125806f4cbbd46fa0b39639e6fb9821858", "peakWorkingSetMiB": 830.2}
+new {"lineBytes": 805306368, "count": 1, "lines": 1, "seconds": 3.878, "sha256": "825bf15f9548a5f588465b25ba0debf621717aca9f345895e79ebe50db2435ca", "peakWorkingSetMiB": 1567.4}

@@ -85,7 +85,7 @@ public sealed class ShadowAllocationConfigurationTests : IDisposable
     }
 
     [Fact]
-    public void The_rate_interval_and_the_score_bin_must_be_positive()
+    public void The_rate_interval_and_the_factor_bin_are_at_least_a_minute()
     {
         JsonObject With(string name, long value)
         {
@@ -94,10 +94,16 @@ public sealed class ShadowAllocationConfigurationTests : IDisposable
             return block;
         }
 
-        Assert.Contains("intervalMs", Assert.Throws<InvalidDataException>(
-            () => ShadowAllocationConfiguration.Read(Element(With("intervalMs", 0)))).Message);
-        Assert.Contains("binMs", Assert.Throws<InvalidDataException>(
-            () => ShadowAllocationConfiguration.Read(Element(With("binMs", 0)))).Message);
+        foreach (var name in new[] { "intervalMs", "binMs" })
+        {
+            foreach (var value in new long[] { 0, 1, 59_999 })
+            {
+                Assert.Contains(name, Assert.Throws<InvalidDataException>(
+                    () => ShadowAllocationConfiguration.Read(Element(With(name, value)))).Message);
+            }
+
+            ShadowAllocationConfiguration.Read(Element(With(name, 60_000)));
+        }
 
         // A zero stride or pickup window is a defined, if degenerate, score.
         ShadowAllocationConfiguration.Read(Element(With("strideMs", 0)));

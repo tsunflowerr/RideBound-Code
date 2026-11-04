@@ -28,8 +28,9 @@ RUNNER_MAXIMUM_INPUT_LINE_BYTES = 64 * 1024 * 1024
 RUNNER_MAXIMUM_OUTPUT_LINE_BYTES = 64 * 1024 * 1024
 # ADR-089 S3: the Runner accepts --maximum-line-bytes up to 1 GiB. A full-node Via cell
 # needs it (travel snapshots of ~130 MB, final checkpoints up to ~0.8 GB), so the operator
-# setting `ridebound_maximum_line_bytes` raises both bounds for one run.
-RUNNER_LINE_BYTES_RANGE = (1024 * 1024, 1024 * 1024 * 1024)
+# setting `ridebound_maximum_line_bytes` raises both bounds for one run. It can only raise
+# them: each bound is the larger of the setting and its constant above.
+RUNNER_LINE_BYTES_RANGE = (64 * 1024 * 1024, 1024 * 1024 * 1024)
 
 
 def _fail(code: str, path: str, detail: str) -> AdapterFailure:
@@ -259,7 +260,7 @@ class RideBoundSessionSettings:
     # ADR-089 GĐ4: true when the WP4 configuration declares `planningForecast`. The Runner
     # then owns the pickup window and the maximum trip; FleetPy keeps capacity and structure.
     planning_forecast: bool = False
-    # ADR-089 S3: the frame bound of both directions; None keeps the 64 MiB constants.
+    # ADR-089 S3: raises the frame bound of both directions; None keeps the 64 MiB constants.
     maximum_line_bytes: int | None = None
 
     @classmethod
@@ -423,13 +424,6 @@ class RideBoundProtocolSession:
         client_factory: Callable[..., RunnerClient] = RunnerClient,
     ) -> None:
         self.settings = settings
-        # Read the constants here, not at import, so launchers that patch them keep working.
-        self._maximum_input_line_bytes = (
-            settings.maximum_line_bytes or RUNNER_MAXIMUM_INPUT_LINE_BYTES
-        )
-        self._maximum_output_line_bytes = (
-            settings.maximum_line_bytes or RUNNER_MAXIMUM_OUTPUT_LINE_BYTES
-        )
         command = [
             str(settings.dotnet),
             str(settings.runner_dll),
@@ -442,7 +436,7 @@ class RideBoundProtocolSession:
             "--solver-seed-source",
             "manifest-master-seed",
             "--maximum-line-bytes",
-            str(self._maximum_input_line_bytes),
+            str(self._line_bound(RUNNER_MAXIMUM_INPUT_LINE_BYTES)),
         ]
         self._command = tuple(command)
         self._client_factory = client_factory
@@ -458,13 +452,17 @@ class RideBoundProtocolSession:
         self._initialize_envelope: dict[str, Any] | None = None
         self._last_checkpoint: dict[str, Any] | None = None
 
+    def _line_bound(self, constant: int) -> int:
+        # The constant is read at call time, as before, so launchers that patch it keep working.
+        return max(self.settings.maximum_line_bytes or 0, constant)
+
     def _new_client(self):
         return self._client_factory(
             self._command,
             self.settings.artifact_paths,
             timeout_seconds=self.settings.timeout_seconds,
-            maximum_input_line_bytes=self._maximum_input_line_bytes,
-            maximum_output_line_bytes=self._maximum_output_line_bytes,
+            maximum_input_line_bytes=self._line_bound(RUNNER_MAXIMUM_INPUT_LINE_BYTES),
+            maximum_output_line_bytes=self._line_bound(RUNNER_MAXIMUM_OUTPUT_LINE_BYTES),
             transcript_writer=(
                 self._transcript.record
                 if self._transcript is not None
