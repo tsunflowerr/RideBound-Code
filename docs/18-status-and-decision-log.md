@@ -6057,6 +6057,59 @@ rút gọn.
 - 04/11: chủ cho push; commit `9ba5568` trên nhánh `research/fast-runner-2026-11-02` (RideBound-Code, công khai), kèm
   `b7f7833`, `59c4ee8` chưa push trước đó. Cây chính `E:/Code/RideBound` không đổi. Chạy thật 168 job: chưa (chờ máy thuê).
 
+### ADR-090 — 2026-11-04 — Proposed (sửa các lỗi đã xác nhận của bộ chạy nhanh; adapter đọc stdout có đệm; nhánh `research/fixes-perf-2026-11-04`, chưa push)
+
+**Context:**
+- Rà soát `9ba5568` (code-review mức xhigh; mỗi phát hiện một người kiểm phản biện; hai người rà soát độc lập chạy Runner của
+  `59c4ee8` và `9ba5568` trên cùng đầu vào): ở cấu hình mặc định không thấy khác byte nào (23/23 ca cơ bản, 564/564 lượt WP4,
+  các ca biên NDJSON). Lỗi xác nhận nằm ở tính năng bật thêm (Shadow, dự báo, kiểm toán nhẹ) và adapter. Không lỗi nào đổi
+  số đã ghi: mọi lần chạy đã ghi dùng `intervalMs` 600 000, `binMs` 900 000, `earliest-feasible`, một chiều quỹ mỗi nhánh.
+- Chủ cho phép (04/11): sửa các lỗi đã xác nhận, làm tối ưu #1 (đọc stdout của adapter) và #3 (băm song song ở chế độ đầy
+  đủ) nếu không làm mã phức tạp quá; chưa refactor lớn trước khi duyệt kế hoạch.
+
+**Decision:**
+1. Shadow chấm điểm theo khoảng λ của chính `ZoneDemandRates` (`IntervalMilliseconds`), bỏ hằng 600 000 thứ hai trong
+   `ShareabilityScorer`. Với 600 000 vẫn là cùng phép chia double, nên trùng từng bit.
+2. Shadow cần **đúng một** chiều tỷ lệ theo độ dư (quỹ hoặc hạn chót) ở mức 1000‰; cấu hình có cả hai bị từ chối
+   (`CommitmentPolicy` và bộ đọc cấu hình), vì lớp Shadow khi đó không có nghĩa duy nhất.
+3. Adapter: thiết lập tùy chọn `ridebound_maximum_line_bytes` (1 MiB..1 GiB, đúng dải của Runner) dùng cho cả
+   `--maximum-line-bytes` và hai giới hạn của `RunnerClient`. Không đặt thì giữ 64 MiB; hằng số được đọc lúc tạo phiên nên
+   launcher cũ vá hằng số (`bridge_launcher_via.py`) vẫn chạy như trước. Không ghi giá trị vào manifest, để `manifestHash`
+   của mọi lần chạy giữ nguyên; giá trị nằm trong thiết lập của driver và dòng lệnh Runner.
+4. `auditHash: light-v1` cùng `RIDEBOUND_STATE_HASH=v2`: `RunnerSession` từ chối khi khởi tạo (trước đây hỏng ở bản chốt đầu).
+5. `shadowAllocation` đòi `scheduleStrategy: earliest-feasible` (bộ chấm điểm không xử lý điểm chờ của origin-hold).
+6. `shadowAllocation.intervalMs` và `binMs` phải dương (là số chia).
+7. `TravelTimeForecast`: ô dự báo tối thiểu 60 000 ms, để mọi chặng tới khoảng 69 ngày tích phân xong trong 100 000 bước;
+   bộ đọc WP4 báo lỗi cấu hình như các trường khác.
+8. Khôi phục: bộ giải mã chỉ đọc `shadowAllocations` khi phiên có Shadow. Không có Shadow thì bản chốt có mục này bị từ chối
+   đúng như trước khi có Shadow (cùng mã lỗi, cùng thông điệp).
+9. Tối ưu #1: `RunnerClient._read_stdout` đọc qua một lớp đệm 1 MiB trên cùng ống stdout (không sở hữu ống; tắt máy vẫn
+   đóng `process.stdout`). Trước đó `readline` trên ống không đệm gọi hệ thống một lần cho mỗi byte.
+10. Tối ưu #3 (băm phần đầu vào của `decisionHash` song song với pha quyết định, chế độ đầy đủ): **không làm**. Thiết kế khả
+    thi (các trường vào băm chỉ đổi ở `decisionApplied`, khởi tạo, khôi phục; mảnh canonical là mảng bất biến), nhưng đợt
+    chạy cuối và job đủ nút dùng chế độ nhẹ, nơi tối ưu này không có tác dụng; máy công ty không có transcript cỡ Via để
+    đo; và nó thêm một luồng song song vào đường kiểm toán. Chỉ đáng làm nếu job chế độ đầy đủ cỡ Via trở thành việc chính.
+11. Khôi phục bản chốt cỡ Via vẫn tạo nhiều bản sao (có từ trước `9ba5568`): chỉ ghi nhận, vì không lần chạy nào khôi phục.
+
+**Evidence (máy công ty, .NET SDK 10.0.400 chạy từ ngoài repo vì `global.json` ghim 10.0.301):**
+- .NET: 1.265 test, 1.261 đạt. 4 lỗi môi trường có ở HEAD cùng máy: 2 golden CRLF của Contracts, 2 test harness Tiny.
+  Sáu test mới/sửa đỏ trên mã HEAD và xanh trên nhánh (lỗi 2, 4, 5, 6, 7 và cấu hình dự báo); test lỗi 8 đổi chữ ký hàm.
+- Harness so từng byte (`dotnet` chạy Runner thật, cùng stdin):
+  - HEAD so với nhánh: 25/26 ca cơ bản, khác đúng một ca có chủ ý (khôi phục bản chốt bị chèn `shadowAllocations`);
+    564/564 lượt WP4 (47 cặp cấu hình × 2 kịch bản, bản chốt và khôi phục sau mỗi quyết định); 14/14 dòng lớn; 11/11 định danh.
+  - `59c4ee8` so với nhánh: ca khôi phục trên trùng commit cha; khác một ca giới hạn 64 MiB + 1 (S3 của `9ba5568`).
+- Adapter (Python 3.13 của LibreOffice, máy không có numpy/jsonschema): 235 test chạy, tập lỗi trùng mốc HEAD (3 F, 32 E do
+  thiếu thư viện); 3 test mới đạt. Bộ test adapter đầy đủ (467) chưa chạy ở máy này.
+- Đo bộ đọc stdout (`research/continuation/2026-11-04/perf-stdout-reader/`, `RunnerClient` thật của HEAD và của nhánh, cùng
+  tiến trình con phát dữ liệu, chạy liền nhau, máy rảnh): 16 MiB 28,2 → 0,62 s; 64 MiB 99,8 → 0,73 s; 3.000 dòng 20 KB
+  87,4 → 0,68 s; 400 MiB 2,16 s và 768 MiB 4,66 s với bản mới (bản cũ tuyến tính khoảng 1,5 µs/byte, ngoại suy khoảng 10 và
+  20 phút). sha256 các dòng nhận được trùng giữa hai bản; bộ nhớ đỉnh như cũ (khoảng 2 lần cỡ dòng).
+
+**Consequences và giới hạn:**
+- Không đổi byte nào ở cấu hình mặc định và ở mọi cấu hình đã ghi; chỉ đổi hành vi ở các cấu hình trước đây hỏng.
+- Thời gian tiết kiệm thật ở job máy nhà chưa đo: cần bấm giờ một job đủ nút trước và sau (khung bản chốt cuối 0,4–0,8 GB).
+- Kế hoạch dọn mã (kiểm kê thành phần, đề xuất giữ/đơn giản hóa/bỏ) làm riêng, chờ chủ duyệt; chưa xóa thành phần nào.
+
 ## Cập nhật khóa luận — 2026-10-16T00:09:00.907016+07:00
 
 Người dùng yêu cầu cập nhật toàn bộ nội dung theo cách đọc tự nhiên, bổ sung
@@ -6154,6 +6207,10 @@ Claude/Antigravity. Không có quyền commit/push mới trong lượt này.
 
 ## 9. Change history
 
+- 2026-11-04 (`research/fixes-perf-2026-11-04`, chưa push): ADR-090. Sửa 8 lỗi đã xác nhận của bộ chạy nhanh (Shadow,
+  dự báo, kiểm toán nhẹ, khôi phục, giới hạn dòng của adapter) và cho adapter đọc stdout có đệm (64 MiB: 99,8 → 0,73 s).
+  Không đổi byte ở cấu hình mặc định: harness 564/564 lượt WP4 và 25/26 ca cơ bản (ca khác là ca sửa có chủ ý). Băm song song
+  ở chế độ đầy đủ không làm (đợt chạy cuối dùng chế độ nhẹ).
 - 2026-10-26 22:40 (`research/company-emulator-2026-10-26`, không đổi mã RideBound): ADR-088. Sửa khóa luận theo bản
   rà soát lại (đơn vị đảo hứa, định nghĩa chỉ số, phạm vi RideBound so với bộ mô phỏng, thời gian dừng 0, khác biệt so với
   bài Elmi, phép hòa vốn, câu về trần từng lần; phụ lục mới), commit `7f93ee6`; ghi chú hồ sơ chạy lại F14; bản kê bản nộp.

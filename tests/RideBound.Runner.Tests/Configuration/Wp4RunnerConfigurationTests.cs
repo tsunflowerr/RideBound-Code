@@ -932,6 +932,8 @@ public sealed class Wp4RunnerConfigurationTests
                      "{\"profile\": [\"x\"], \"binMs\": 900000}",
                      "{\"profile\": [1], \"binMs\": 900000}",
                      "{\"profile\": [\"1\"], \"binMs\": 0}",
+                     "{\"profile\": [\"1\"], \"binMs\": 1}",
+                     "{\"profile\": [\"1\"], \"binMs\": 59999}",
                      "{\"profile\": [\"1\"]}",
                      "{\"profile\": [\"1\"], \"binMs\": 900000, \"clipPickup\": true}",
                  })

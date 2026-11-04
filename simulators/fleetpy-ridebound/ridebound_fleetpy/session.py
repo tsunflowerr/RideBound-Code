@@ -26,6 +26,10 @@ ADAPTER_VERSION = "1.0.0"
 # recorded so the headroom stays visible.
 RUNNER_MAXIMUM_INPUT_LINE_BYTES = 64 * 1024 * 1024
 RUNNER_MAXIMUM_OUTPUT_LINE_BYTES = 64 * 1024 * 1024
+# ADR-089 S3: the Runner accepts --maximum-line-bytes up to 1 GiB. A full-node Via cell
+# needs it (travel snapshots of ~130 MB, final checkpoints up to ~0.8 GB), so the operator
+# setting `ridebound_maximum_line_bytes` raises both bounds for one run.
+RUNNER_LINE_BYTES_RANGE = (1024 * 1024, 1024 * 1024 * 1024)
 
 
 def _fail(code: str, path: str, detail: str) -> AdapterFailure:
@@ -76,6 +80,17 @@ def _positive_integer(values: Mapping[str, Any], key: str) -> int:
 def _nonnegative_integer(values: Mapping[str, Any], key: str, default: int = 0) -> int:
     value = _setting(values, key, default)
     if isinstance(value, bool) or not isinstance(value, int) or value < 0:
+        raise _fail("RBWP7_SETTING_INTEGER_INVALID", f"$.operator.{key}", repr(value))
+    return value
+
+
+def _maximum_line_bytes(values: Mapping[str, Any]) -> int | None:
+    key = "ridebound_maximum_line_bytes"
+    value = _setting(values, key)
+    low, high = RUNNER_LINE_BYTES_RANGE
+    if value is not None and (
+        isinstance(value, bool) or not isinstance(value, int) or not low <= value <= high
+    ):
         raise _fail("RBWP7_SETTING_INTEGER_INVALID", f"$.operator.{key}", repr(value))
     return value
 
@@ -244,6 +259,8 @@ class RideBoundSessionSettings:
     # ADR-089 GĐ4: true when the WP4 configuration declares `planningForecast`. The Runner
     # then owns the pickup window and the maximum trip; FleetPy keeps capacity and structure.
     planning_forecast: bool = False
+    # ADR-089 S3: the frame bound of both directions; None keeps the 64 MiB constants.
+    maximum_line_bytes: int | None = None
 
     @classmethod
     def from_attributes(
@@ -393,6 +410,7 @@ class RideBoundSessionSettings:
             runner_service_bounds,
             waiting_rider_relocation,
             planning_forecast,
+            _maximum_line_bytes(attributes),
         )
 
 
@@ -405,6 +423,13 @@ class RideBoundProtocolSession:
         client_factory: Callable[..., RunnerClient] = RunnerClient,
     ) -> None:
         self.settings = settings
+        # Read the constants here, not at import, so launchers that patch them keep working.
+        self._maximum_input_line_bytes = (
+            settings.maximum_line_bytes or RUNNER_MAXIMUM_INPUT_LINE_BYTES
+        )
+        self._maximum_output_line_bytes = (
+            settings.maximum_line_bytes or RUNNER_MAXIMUM_OUTPUT_LINE_BYTES
+        )
         command = [
             str(settings.dotnet),
             str(settings.runner_dll),
@@ -417,7 +442,7 @@ class RideBoundProtocolSession:
             "--solver-seed-source",
             "manifest-master-seed",
             "--maximum-line-bytes",
-            str(RUNNER_MAXIMUM_INPUT_LINE_BYTES),
+            str(self._maximum_input_line_bytes),
         ]
         self._command = tuple(command)
         self._client_factory = client_factory
@@ -438,8 +463,8 @@ class RideBoundProtocolSession:
             self._command,
             self.settings.artifact_paths,
             timeout_seconds=self.settings.timeout_seconds,
-            maximum_input_line_bytes=RUNNER_MAXIMUM_INPUT_LINE_BYTES,
-            maximum_output_line_bytes=RUNNER_MAXIMUM_OUTPUT_LINE_BYTES,
+            maximum_input_line_bytes=self._maximum_input_line_bytes,
+            maximum_output_line_bytes=self._maximum_output_line_bytes,
             transcript_writer=(
                 self._transcript.record
                 if self._transcript is not None

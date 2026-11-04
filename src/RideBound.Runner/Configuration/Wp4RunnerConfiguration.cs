@@ -463,9 +463,15 @@ public sealed class Wp4RunnerConfiguration : ICommitmentWarningProfileProvider
                         : throw new InvalidDataException(
                             "planningForecast.profile holds positive decimal strings."))
                 .ToArray();
-            planningForecast = new TravelTimeForecast(
-                profile,
-                PositiveInteger(forecastElement.GetProperty("binMs"), "planningForecast.binMs"));
+            var bin = PositiveInteger(forecastElement.GetProperty("binMs"), "planningForecast.binMs");
+
+            if (bin < TravelTimeForecast.MinimumBinMilliseconds)
+            {
+                throw new InvalidDataException(
+                    $"'planningForecast.binMs' must be at least {TravelTimeForecast.MinimumBinMilliseconds}.");
+            }
+
+            planningForecast = new TravelTimeForecast(profile, bin);
         }
 
         ShadowAllocationInputs? shadowAllocation = null;
@@ -554,6 +560,14 @@ public sealed class Wp4RunnerConfiguration : ICommitmentWarningProfileProvider
         {
             throw new InvalidDataException(
                 "'shadowAllocation' and 'dropEtaShadowAllocation' on every commitment policy go together.");
+        }
+
+        // Shadow scores a route of rider stops; origin-hold adds waypoints it does not score.
+        if (shadowAllocation is not null
+            && generation.ScheduleStrategy != CandidateScheduleStrategy.EarliestFeasible)
+        {
+            throw new InvalidDataException(
+                "'shadowAllocation' requires scheduleStrategy 'earliest-feasible'.");
         }
 
         SolverBackedRidePoolingPolicyOptions? solverOptions = null;

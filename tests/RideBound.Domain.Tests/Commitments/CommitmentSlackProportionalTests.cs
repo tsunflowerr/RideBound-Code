@@ -276,6 +276,11 @@ public sealed class CommitmentSlackProportionalTests
 
         Assert.Throws<ArgumentException>(() => Policy(budgetPermille: 350, shadow: true));
         Assert.Throws<ArgumentException>(() => Policy(shadow: true));
+
+        // The class scales one slack-proportional limit; a second one would get no defined share.
+        Assert.Throws<ArgumentException>(() => Policy(budgetPermille: 1000, deadlinePermille: 300, shadow: true));
+        Assert.Throws<ArgumentException>(() => Policy(budgetPermille: 300, deadlinePermille: 1000, shadow: true));
+        Assert.Throws<ArgumentException>(() => Policy(budgetPermille: 1000, deadlinePermille: 1000, shadow: true));
         Assert.Equal(
             ShadowAllocationClass.Guaranteed,
             ShadowAllocation.From(66.72067841389695, 66.72067841389695).Class);

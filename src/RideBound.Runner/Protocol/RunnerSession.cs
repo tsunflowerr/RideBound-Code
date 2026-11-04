@@ -147,6 +147,15 @@ public sealed class RunnerSession
             ? new RideBound.Algorithms.Shareability.ShadowAllocator(shadowInputs)
             : null;
         _lightAudit = wp4Configuration?.UsesLightAuditHash == true;
+
+        // Light audit replaces the state hash with an identity hash; the v2 prototype hashes state.
+        if (_lightAudit && _hashV2 is not null)
+        {
+            throw new ArgumentException(
+                "auditHash light-v1 cannot run with RIDEBOUND_STATE_HASH=v2.",
+                nameof(wp4Configuration));
+        }
+
         _useManifestSolverSeed = useManifestSolverSeed;
         _solverBackedPolicy = wp4Configuration is not null
                 && wp4Configuration.SolverPolicyOptions is not null
@@ -845,7 +854,8 @@ public sealed class RunnerSession
         }
 
         var restored = OnlineStateCheckpointCodec.Decode(
-            checkpoint.Content.OnlineState);
+            checkpoint.Content.OnlineState,
+            shadowAllocation: _shadowAllocator is not null);
 
         if (!restored.IsSuccess)
         {

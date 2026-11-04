@@ -442,22 +442,27 @@ public sealed class OnlineStateCheckpointCodecTests
             new OnlineStateHashV2(cached: false).Calculate(shadow));
 
         using var document = JsonDocument.Parse(shadowCanonical);
-        var decoded = OnlineStateCheckpointCodec.Decode(document.RootElement);
+        var decoded = OnlineStateCheckpointCodec.Decode(document.RootElement, shadowAllocation: true);
         Assert.True(decoded.IsSuccess, decoded.Error);
         Assert.Equal(shadowCanonical, OnlineStateCanonicalizer.Canonicalize(decoded.State!));
         Assert.Equal(
             ShadowAllocationClass.Guaranteed,
             decoded.State!.Commitments.ShadowAllocationOf(new RequestId("request-1"))!.Class);
 
+        // A run without Shadow refuses the member exactly as before Shadow existed.
+        Assert.Equal(
+            "Checkpoint online state is not an exact canonical domain state.",
+            OnlineStateCheckpointCodec.Decode(document.RootElement).Error);
+
         var tampered = JsonNode.Parse(shadowCanonical)!;
         tampered["shadowAllocations"]![0]!["class"] = "maybe";
         using var tamperedDocument = JsonDocument.Parse(tampered.ToJsonString());
-        Assert.False(OnlineStateCheckpointCodec.Decode(tamperedDocument.RootElement).IsSuccess);
+        Assert.False(OnlineStateCheckpointCodec.Decode(tamperedDocument.RootElement, shadowAllocation: true).IsSuccess);
 
         var orphan = JsonNode.Parse(shadowCanonical)!;
         orphan["shadowAllocations"]![0]!["requestId"] = "request-unknown";
         using var orphanDocument = JsonDocument.Parse(orphan.ToJsonString());
-        Assert.False(OnlineStateCheckpointCodec.Decode(orphanDocument.RootElement).IsSuccess);
+        Assert.False(OnlineStateCheckpointCodec.Decode(orphanDocument.RootElement, shadowAllocation: true).IsSuccess);
     }
 
     [Fact]

@@ -310,12 +310,16 @@ class RunnerClient:
         process = self._process
         assert process is not None and process.stdout is not None
         try:
-            while True:
-                line = process.stdout.readline(self._maximum_output_line_bytes + 2)
-                if not line:
-                    self._stdout.put(_EOF)
-                    return
-                self._stdout.put(line)
+            # The pipes are unbuffered (bufsize=0), and readline on a raw pipe makes one system
+            # call per byte. This buffered view of the same pipe reads 1 MiB at a time and returns
+            # the same lines. It does not own the pipe: shutdown still closes process.stdout.
+            with open(process.stdout.fileno(), "rb", buffering=1024 * 1024, closefd=False) as stdout:
+                while True:
+                    line = stdout.readline(self._maximum_output_line_bytes + 2)
+                    if not line:
+                        self._stdout.put(_EOF)
+                        return
+                    self._stdout.put(line)
         except BaseException as exc:
             self._stdout.put(exc)
 

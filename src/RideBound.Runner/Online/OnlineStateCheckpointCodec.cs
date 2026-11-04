@@ -28,7 +28,11 @@ public sealed record OnlineStateCheckpointReadResult(
 
 public static class OnlineStateCheckpointCodec
 {
-    public static OnlineStateCheckpointReadResult Decode(JsonElement element)
+    /// <param name="shadowAllocation">
+    /// Whether the run uses Shadow Control. Only then is a `shadowAllocations` member read;
+    /// otherwise it stays unknown and the canonical round trip rejects it, as before Shadow existed.
+    /// </param>
+    public static OnlineStateCheckpointReadResult Decode(JsonElement element, bool shadowAllocation = false)
     {
         try
         {
@@ -93,7 +97,7 @@ public static class OnlineStateCheckpointCodec
 
             // ADR-089 GĐ4: present only under Shadow Control; the canonical round trip below
             // rejects any other shape.
-            if (element.TryGetProperty("shadowAllocations", out var shadowElement))
+            if (shadowAllocation && element.TryGetProperty("shadowAllocations", out var shadowElement))
             {
                 foreach (var item in shadowElement.EnumerateArray())
                 {

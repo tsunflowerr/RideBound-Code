@@ -286,13 +286,14 @@ public sealed class CommitmentPolicy
         }
 
         // Shadow Control (ADR-089 GĐ4): an allowed rider gets its whole slack and a guaranteed rider
-        // none, so the class scales a slack-proportional budget or deadline of exactly 1000 permille.
+        // none, so the class scales the policy's one slack-proportional limit, a budget or a
+        // deadline of exactly 1000 permille. With both, the class would have no single meaning.
         if (dropEtaShadowAllocation
-            && dropEtaBudgetSlackPermille != 1000
-            && dropEtaDeadlineSlackPermille != 1000)
+            && !(dropEtaBudgetSlackPermille == 1000 && dropEtaDeadlineSlackPermille is null)
+            && !(dropEtaDeadlineSlackPermille == 1000 && dropEtaBudgetSlackPermille is null))
         {
             throw new ArgumentException(
-                "Shadow allocation scales a 1000-permille slack-proportional budget or deadline.",
+                "Shadow allocation scales one 1000-permille slack-proportional budget or deadline.",
                 nameof(dropEtaShadowAllocation));
         }
 

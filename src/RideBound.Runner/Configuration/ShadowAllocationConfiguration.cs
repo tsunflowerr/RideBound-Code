@@ -72,14 +72,14 @@ public static class ShadowAllocationConfiguration
             element.GetProperty("factors").EnumerateArray().Select(value => Decimal(value, "factors")).ToArray(),
             Integer(element, "pickupWindowMs"),
             Integer(element, "strideMs"),
-            Integer(element, "intervalMs"),
+            PositiveInteger(element, "intervalMs"),
             Decimal(element.GetProperty("alpha"), "alpha"),
             Decimal(element.GetProperty("phi"), "phi"),
             Integer(element, "sampled"),
             priorOrigin,
             priorDestination,
             Decimal(element.GetProperty("threshold"), "threshold"),
-            Integer(element, "binMs"),
+            PositiveInteger(element, "binMs"),
             NetworkNodes(element, network.NodeCount));
     }
 
@@ -133,6 +133,12 @@ public static class ShadowAllocationConfiguration
         && result >= 0
             ? result
             : throw new InvalidDataException($"shadowAllocation.{name} must be a non-negative integer.");
+
+    // intervalMs and binMs are divisors: the rate interval and the evaluation-time bin.
+    private static long PositiveInteger(JsonElement element, string name) =>
+        Integer(element, name) is > 0 and var result
+            ? result
+            : throw new InvalidDataException($"shadowAllocation.{name} must be a positive integer.");
 
     private static double[] Counts(JsonElement element, string name) =>
         element.GetProperty(name).EnumerateArray()

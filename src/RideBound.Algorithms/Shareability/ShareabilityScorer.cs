@@ -69,8 +69,6 @@ public sealed record ShareabilityScore(
 /// </summary>
 public sealed class ShareabilityScorer
 {
-    public const double IntervalMilliseconds = 600_000;
-
     private readonly ShareabilityNetwork network;
     private readonly ShareabilityCell cell;
 
@@ -359,12 +357,14 @@ public sealed class ShareabilityScorer
             unionCount[k] = (int[])runningCount.Clone();
         }
 
+        // The rate interval is the one the rates were binned with (the emulator's 600 s).
         var rates = cell.Rates;
+        var interval = rates.IntervalMilliseconds;
         var causalWeights = cell.Oracle
             ? null
-            : rates.Causal((long)Math.Floor(context.EvaluationTime / IntervalMilliseconds));
+            : rates.Causal((long)Math.Floor(context.EvaluationTime / interval));
         ZoneWeights WeightsAt(double t) =>
-            cell.Oracle ? rates.Oracle((long)Math.Floor(t / IntervalMilliseconds)) : causalWeights!;
+            cell.Oracle ? rates.Oracle((long)Math.Floor(t / interval)) : causalWeights!;
 
         var pickupCount = new int[zones];
         var dropCount = new int[zones];

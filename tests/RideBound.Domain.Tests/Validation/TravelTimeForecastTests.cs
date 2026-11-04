@@ -61,6 +61,17 @@ public sealed class TravelTimeForecastTests
     }
 
     [Fact]
+    public void A_bin_shorter_than_a_minute_is_refused_so_every_leg_converges()
+    {
+        Assert.Throws<ArgumentOutOfRangeException>(() => new TravelTimeForecast([1.0], 1));
+        Assert.Throws<ArgumentOutOfRangeException>(() => new TravelTimeForecast([1.0], 59_999));
+
+        // The shortest bin still integrates a day-long leg crossing every bin.
+        var forecast = new TravelTimeForecast([1.0, 2.0], TravelTimeForecast.MinimumBinMilliseconds);
+        Assert.True(forecast.Arrive(new SimTime(0), new SimTime(0), new Duration(86_400_000)).Milliseconds > 86_400_000);
+    }
+
+    [Fact]
     public void A_plain_lookup_adds_the_leg_time()
     {
         ITravelTimeLookup lookup = new FlatLookup();

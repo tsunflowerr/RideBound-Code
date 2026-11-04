@@ -1,5 +1,17 @@
 # Ma trận truy vết yêu cầu
 
+## Sửa lỗi đã xác nhận và đọc stdout có đệm — 2026-11-04
+
+ADR-090; nhánh `research/fixes-perf-2026-11-04` (chưa push). Đo đạc: `research/continuation/2026-11-04/perf-stdout-reader/`.
+
+| Yêu cầu | Chứng cứ | Trạng thái/giới hạn |
+|---|---|---|
+| Không đổi kết quả đã ghi | Harness Runner thật: 564/564 lượt WP4, 25/26 ca cơ bản (ca khác là khôi phục bản chốt chèn `shadowAllocations`, nay như trước khi có Shadow), 14/14 dòng lớn, 11/11 định danh; .NET 1.261/1.265 (4 lỗi môi trường có ở HEAD) | Đạt trên máy công ty; chưa chạy cổng G1/G2 trên transcript thật |
+| Sửa 8 lỗi đã xác nhận | Test mới đỏ trên HEAD, xanh trên nhánh; cấu hình hỏng nay bị từ chối khi đọc hoặc khi khởi tạo | Đạt |
+| Chạy ô Via đủ nút từ repo | Thiết lập `ridebound_maximum_line_bytes` (1 MiB..1 GiB); test adapter cho thiết lập, dòng lệnh và launcher vá hằng số | Chưa chạy job đủ nút với thiết lập này |
+| Đọc stdout nhanh, giữ đúng byte | `RunnerClient` thật, cùng đầu vào: 64 MiB 99,8 → 0,73 s; sha256 trùng; bộ nhớ đỉnh như cũ | Thời gian tiết kiệm ở job thật chưa đo |
+| Băm song song ở chế độ đầy đủ | Không làm; lý do ở ADR-090 | Chờ chủ quyết nếu cần job đầy đủ cỡ Via |
+
 ## Bộ chạy nhanh: tăng tốc chính xác và kiểm toán nhẹ — 2026-11-02/03
 
 ADR-089; nhánh `research/fast-runner-2026-11-02`, commit `9ba5568` (đã push 04/11). Hồ sơ: `C:/RideBoundContinuation/2026-11-02/`, công cụ
