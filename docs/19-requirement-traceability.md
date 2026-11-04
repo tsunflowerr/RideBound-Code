@@ -2,7 +2,7 @@
 
 ## Bộ chạy nhanh: tăng tốc chính xác và kiểm toán nhẹ — 2026-11-02/03
 
-ADR-089; nhánh `research/fast-runner-2026-11-02`, chưa commit. Hồ sơ: `C:/RideBoundContinuation/2026-11-02/`, công cụ
+ADR-089; nhánh `research/fast-runner-2026-11-02`, commit `9ba5568` (đã push 04/11). Hồ sơ: `C:/RideBoundContinuation/2026-11-02/`, công cụ
 `E:/Code/Report_INT3508/ridebound-scratchpad/fastrun-2026-11-02/`.
 
 | Yêu cầu | Chứng cứ | Trạng thái/giới hạn |

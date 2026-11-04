@@ -6054,7 +6054,8 @@ rút gọn.
 - Shadow mới có bộ chấm điểm. Chưa làm: tệp dữ liệu mạng đầy đủ cho Runner, λ của ô (prior giờ trước, phi), ngưỡng θ, lớp
   khách lưu trong trạng thái cam kết, nối vào SHF/SHHZ/SHRC, so từng khách với bộ mô phỏng. Dự báo vòng kín (legF, prev4,
   clipPickup) chưa làm; nó đổi phép chiếu giờ và kiểm khả thi, nên phải bật bằng cờ và có cổng riêng.
-- Chưa commit, chưa push; cây chính `E:/Code/RideBound` không đổi.
+- 04/11: chủ cho push; commit `9ba5568` trên nhánh `research/fast-runner-2026-11-02` (RideBound-Code, công khai), kèm
+  `b7f7833`, `59c4ee8` chưa push trước đó. Cây chính `E:/Code/RideBound` không đổi. Chạy thật 168 job: chưa (chờ máy thuê).
 
 ## Cập nhật khóa luận — 2026-10-16T00:09:00.907016+07:00
 
