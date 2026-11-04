@@ -1173,7 +1173,7 @@ Cách các cơ chế này phối hợp:
 
 | Câu hỏi | Vì sao quan trọng | Cách kiểm |
 |---|---|---|
-| Bản nộp là `7f93ee6` hay `34920ee`? | Quyết định stability-first, `customerVisible`, M+, B1, normalizer là (b)-LV hay chỉ là (b) | xem biên bản nộp (W30–W32 còn mở, `docs/18:5861`) |
+| Bản nộp là `7f93ee6` hay `34920ee`? | Quyết định stability-first, `customerVisible`, M+, B1, normalizer là (b)-LV hay chỉ là (b) | **Chủ đã trả lời ngày 04/11: chỉ dùng Via, như bản `34920ee`.** Vì vậy các mục trên là (b), không còn là (b)-LV. Riêng bảng cầu nối (238 cặp Manhattan, cost-first) vẫn được trích làm kiểm chứng; nó được G1 canh |
 | HEAD có tái lập từng byte T3.8/Stage 1b không? | Nếu không, các số đó chỉ tái lập từ tag | chạy N1 |
 | Byte cấu hình final-v2: recovery của SH*, `auditHash` ghi rõ hay để vắng, ngân sách ô đầy đủ, bằng chứng của 168 job, `stopDistances`, `maximumRidersPerVehicle`, input Shadow/forecast từng ô | Ràng buộc mọi bước bỏ khóa | bước 0.4 |
 | Runner nào chạy 168 job: pack (trước ADR-090) hay HEAD? | Sửa ADR-090 chưa được G1/G2 kiểm trên transcript thật (`docs/19:9`) | `MANIFEST.tsv` |

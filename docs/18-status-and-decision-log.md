@@ -6125,7 +6125,13 @@ rút gọn.
 - Hành vi chỉ đổi ở các cấu hình trước đây hỏng.
 - Harness chỉ so mã cũ với mã mới trên các kịch bản tí hon. Nó không chạy lại transcript đã ghi (G1/G2), và không cho biết
   HEAD có tái hiện T3.8 (stability-first, `runner-tier3-v2`) hay không.
-- Thời gian tiết kiệm thật ở job máy nhà chưa đo: cần bấm giờ một job đủ nút trước và sau (khung bản chốt cuối 0,4–0,8 GB).
+- Tối ưu #1 gần như không làm các job đã ghi nhanh hơn. Mọi kit chạy job trong repo (`run_via.py`, `run_bridge.py`,
+  `run_g2.py`, `run_p1.py` và các driver dùng lại chúng) đặt `RB_REALJOB_BUFFERED_READ=1`, nên launcher đã vá đúng bộ đọc
+  có đệm này.
+  - Lợi ích chỉ có ở các lần chạy không qua launcher. Ví dụ `run_t38.py` và `run_forecast.py` gọi preflight trực tiếp.
+  - Thêm một lợi ích nhỏ về bộ nhớ: bỏ được một bản sao khung trong `_read_expected`.
+  - Job đủ nút chạy bằng launcher ngoài repo. Repo không ghi launcher đó có vá hay không, nhưng thời gian 15–21 phút
+    mỗi job cho thấy là có: bộ đọc cũ cần 10–20 phút chỉ để đọc bản chốt cuối.
 - Kế hoạch dọn mã (kiểm kê thành phần, đề xuất giữ/đơn giản hóa/bỏ) làm riêng, chờ chủ duyệt; chưa xóa thành phần nào.
 
 ## Cập nhật khóa luận — 2026-10-16T00:09:00.907016+07:00

@@ -20,5 +20,8 @@ python -B bench_read.py <adapter-root-moi> 67108864 1
 | 1 dòng 400 MiB | (không đo) | 2,36 s |
 | 1 dòng 768 MiB | (không đo) | 3,88 s |
 
-sha256 trùng giữa cũ và mới ở mọi ca đo cả hai. Bản cũ tuyến tính, khoảng 1,5 µs/byte trên máy này. Thời gian tiết kiệm ở
-một job thật chưa đo: bấm giờ một job đủ nút trước và sau.
+sha256 trùng giữa cũ và mới ở mọi ca đo cả hai. Bản cũ tuyến tính, khoảng 1,5 µs/byte trên máy này.
+
+**Ở job thật:** các kit chạy job trong repo đặt `RB_REALJOB_BUFFERED_READ=1`, nên launcher đã vá đúng bộ đọc này. Vì vậy
+job chạy qua launcher gần như không nhanh hơn. Bản sửa chỉ đưa bản vá đó vào chính adapter, có ích cho các lần chạy không
+qua launcher.
