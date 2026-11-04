@@ -169,6 +169,30 @@ def runner_owns_service_bounds(wp4_value: Mapping[str, Any], path: pathlib.Path)
     return late_boarding == "record-v1"
 
 
+def runner_plans_with_forecast(wp4_value: Mapping[str, Any], path: pathlib.Path) -> bool:
+    """ADR-089 GĐ4: true when the WP4 configuration declares `planningForecast`.
+
+    The Runner then plans and validates every time window with forecast travel times, while
+    FleetPy's plan check prices the same route at the current travel times; the two disagree
+    by design, so FleetPy's pickup-window and maximum-trip checks are dropped and the Runner
+    owns them. That needs the Runner to record late boardings (`lateBoarding: record-v1`).
+    Absent keeps every earlier adapter path unchanged; any value other than an object fails
+    here before the Runner starts (the Runner validates the object's contents).
+    """
+    forecast = wp4_value.get("planningForecast")
+    if forecast is None:
+        return False
+    if not isinstance(forecast, Mapping):
+        raise _fail("RBWP7_WP4_PLANNING_FORECAST_INVALID", str(path), repr(forecast))
+    if not runner_owns_service_bounds(wp4_value, path):
+        raise _fail(
+            "RBWP7_WP4_PLANNING_FORECAST_NEEDS_RECORDED_LATE_BOARDING",
+            str(path),
+            repr(wp4_value.get("lateBoarding", "reject")),
+        )
+    return True
+
+
 def runner_relocates_waiting_riders(wp4_value: Mapping[str, Any], path: pathlib.Path) -> bool:
     """G2: true when the WP4 `candidateGeneration` declares `waitingRiderRelocation`.
 
@@ -217,6 +241,9 @@ class RideBoundSessionSettings:
     # `candidateGeneration.waitingRiderRelocation`. The adapter then infers and checks the one
     # waiting rider a decision may move between vehicles (relocation.py).
     waiting_rider_relocation: bool = False
+    # ADR-089 GĐ4: true when the WP4 configuration declares `planningForecast`. The Runner
+    # then owns the pickup window and the maximum trip; FleetPy keeps capacity and structure.
+    planning_forecast: bool = False
 
     @classmethod
     def from_attributes(
@@ -242,6 +269,7 @@ class RideBoundSessionSettings:
             raise _fail("RBWP7_WP4_POLICY_INVALID", str(wp4), repr(policy_version))
         runner_service_bounds = runner_owns_service_bounds(wp4_value, wp4)
         waiting_rider_relocation = runner_relocates_waiting_riders(wp4_value, wp4)
+        planning_forecast = runner_plans_with_forecast(wp4_value, wp4)
         commitment_policy_id = _required_text(
             attributes,
             "ridebound_commitment_policy_id",
@@ -364,6 +392,7 @@ class RideBoundSessionSettings:
             tuple(path.resolve() for path in artifacts),
             runner_service_bounds,
             waiting_rider_relocation,
+            planning_forecast,
         )
 
 

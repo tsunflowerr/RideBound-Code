@@ -1,5 +1,23 @@
 # Ma trận truy vết yêu cầu
 
+## Bộ chạy nhanh: tăng tốc chính xác và kiểm toán nhẹ — 2026-11-02/03
+
+ADR-089; nhánh `research/fast-runner-2026-11-02`, chưa commit. Hồ sơ: `C:/RideBoundContinuation/2026-11-02/`, công cụ
+`E:/Code/Report_INT3508/ridebound-scratchpad/fastrun-2026-11-02/`.
+
+| Yêu cầu | Chứng cứ | Trạng thái/giới hạn |
+|---|---|---|
+| Tăng tốc không đổi quyết định nào | Test protobuf CP-SAT từng byte (401 bài toán); phát lại Via 730/730 khung giống từng byte; cổng G1 228/228 job Manhattan, 176.074 khung giống từng byte | Đạt |
+| Hết lỗi hết bộ nhớ ở bản chốt | Bản chốt ghi theo luồng = dòng đường phong bì cũ (test); Via đủ bản chốt 2.908/2.908 khung giống từng byte; 4/4 job Via từng hết bộ nhớ: mọi khung giống từng byte (2.927, 3.219, 2.851, 3.114), bản chốt 382–563 MB, RAM Runner ≤ 1,93 GiB; lưới Via gộp khu 12/12 cặp, 4.878/4.878 khách giống dự đoán khóa trước | Đạt; 2/12 job chạy ở chế độ nhanh |
+| Chế độ kiểm toán nhẹ chỉ đổi trường băm | Test so mọi trường trừ `*Hash`; cổng G2 228/228 job; Via 2.907/2.907 khung | Chuỗi băm khác v1; khóa luận phải nói rõ chế độ |
+| Thời gian chạy | Via gộp khu 2.905 qđ: khoảng 80 → 9,1 phút; ô 512: 16–21 phút mỗi job | Đo khi có tải khác |
+| Chạy ô 512 | Mạng ma trận (`complete-graph-direct-v1`), bộ chuyển đủ nút, đọc dòng 1 GiB; job thử 332/332 khách giống dự đoán khóa trước | Cổng G3a đạt (ô 60 nút, 4/4 transcript giống từng byte giữa NetworkBasic và mạng ma trận). Cổng G3b đạt: 16/16 cặp, 5.925/5.925 khách giống dự đoán khóa trước. Chỉ 1 ngày × 2 ca; ô vẫn từ P512 của công ty; chưa nối với số khóa luận (chế độ plain) |
+| Shadow trong C# | Bộ chấm điểm chép từng phép tính: 1.440 ca đồ chơi + 300 ca Manhattan đầy đủ khớp từng bit với `sscore.js`; 04/11: nối vào quyết định (lớp khách trong sổ cam kết, SHRC/SHHZ). Cổng Shadow lần 1 hỏng (mã nút mờ của adapter); sửa bằng `shadowAllocation.networkNodes`, 5 test mới, 1.261/1.261. Gói v2: SHRC71-CL w08 khớp dự đoán khóa ở cả 4 mặt (339/339 khách: trường, chuỗi giờ trả, lớp/điểm Shadow, chuỗi giờ công bố) | Các cặp cổng còn lại đang chạy |
+| Dự báo vòng kín trong C# | `TravelTimeForecast` chép `legF`, test vàng; cổng dự báo lần 1 hỏng vì adapter (FleetPy kiểm giờ đón bằng thời gian hiện tại), đã sửa adapter có cờ, test adapter 467 (6 lỗi có sẵn từ trước); chạy lại 2/2 cặp chính xác, 704/704 khách | Đạt (1 ngày × 2 ca) |
+| Chạy trên máy thuê | Dockerfile, hàng đợi chạy lại được, export không có `company-emulator/`, commit export cố định `6240da33`; 04/11: gói Windows `final-v1` (commit xuất `9b22349f`, Runner build từ chính repo xuất, .NET đi kèm), `run_cloud.ps1`, kiểm "máy thuê = máy nhà" theo biên nhận từng khung | Tham chiếu Windows từ commit export xong: 6/6 job, transcript khớp với main16 sau khi bỏ commit và trường băm (55.635 dòng). Image Linux chưa dựng (ổ C); hướng chính đổi sang máy thuê Windows; chưa chạy trên máy thuê |
+| Giữ dữ liệu gọn (≤ 20 GB mỗi ổ) | `finalize_job.py` + `evidence_reader.py`: bằng chứng trích đọc lại qua đúng các hàm cũ phải trùng, rồi mới bỏ transcript; bản ghi nhớ ra tệp trùng từng byte bản đầu, 293 s thay 719 s; so từ bằng chứng 704/704 dòng trùng so từ transcript; chạy lại hàng đợi 0 byte mới | Đạt ở nhà; trên máy thuê ước 18 GB với 8 job song song (đã tính trên giấy, chưa đo ở máy thuê) |
+| Chạy thật lần cuối (168 job) | Gói `final-v2` + `run_cloud.ps1` + `cloud_gates.py`; dự đoán có giờ công bố khóa trước mọi job | Chưa chạy; chờ chủ thuê máy Windows |
+
 ## Sửa khóa luận theo bản rà soát lại — 2026-10-26, 22:40
 
 ADR-088; không đổi mã RideBound, không chạy mô phỏng mới.

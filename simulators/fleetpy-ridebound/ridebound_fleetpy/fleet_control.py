@@ -73,6 +73,12 @@ class RideBoundFleetControl(FleetControlBase):
         settings = getattr(self, "_rb_settings", None)
         return bool(getattr(settings, "runner_service_bounds", False))
 
+    @property
+    def _rb_planning_forecast(self) -> bool:
+        """ADR-089 GĐ4: true when the WP4 configuration declares `planningForecast`."""
+        settings = getattr(self, "_rb_settings", None)
+        return bool(getattr(settings, "planning_forecast", False))
+
     def __init__(
         self,
         op_id,
@@ -1110,11 +1116,18 @@ class RideBoundFleetControl(FleetControlBase):
         if stop.kind == "pickup":
             if prq.o_pos != position:
                 raise _fail("RBWP7_PICKUP_NODE_MISMATCH", "$.route.stop.nodeId", repr(stop.raw_request))
+            # ADR-089 GĐ4: under a planning forecast the Runner validates the pickup window with
+            # forecast travel times and FleetPy would price it at the current ones, so the window
+            # is the Runner's alone (late boardings are recorded, `lateBoarding: record-v1`). The
+            # earliest pickup stays: it is a hold the vehicle executes, not a check.
+            latest_pickup = (
+                {} if self._rb_planning_forecast else {stop.raw_request: prq.t_pu_latest}
+            )
             return BoardingPlanStop(
                 position,
                 boarding_dict={1: [stop.raw_request], -1: []},
                 earliest_pickup_time_dict={stop.raw_request: prq.t_pu_earliest},
-                latest_pickup_time_dict={stop.raw_request: prq.t_pu_latest},
+                latest_pickup_time_dict=latest_pickup,
                 change_nr_pax=prq.nr_pax,
                 duration=duration,
                 locked=locked,
@@ -1135,10 +1148,12 @@ class RideBoundFleetControl(FleetControlBase):
             latest_arrival = (
                 {} if self._rb_runner_service_bounds else {stop.raw_request: prq.t_do_latest}
             )
+            # ADR-089 GĐ4: the maximum trip likewise, under a planning forecast.
+            max_trip = {} if self._rb_planning_forecast else {stop.raw_request: prq.max_trip_time}
             return BoardingPlanStop(
                 position,
                 boarding_dict={1: [], -1: [stop.raw_request]},
-                max_trip_time_dict={stop.raw_request: prq.max_trip_time},
+                max_trip_time_dict=max_trip,
                 latest_arrival_time_dict=latest_arrival,
                 change_nr_pax=-prq.nr_pax,
                 duration=duration,

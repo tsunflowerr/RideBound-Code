@@ -401,8 +401,17 @@ public sealed class CommitmentDecisionValidator
                 anchor = initialEntry.PublishedPromise.Projection;
             }
 
+            // ADR-089 GĐ4: under Shadow Control the rider's class, frozen at its first promise,
+            // scales its slack-proportional budget or deadline.
+            var shadowAllocation = policy.DropEtaShadowAllocation
+                ? ledger.ShadowAllocationOf(request.Id)
+                : null;
+
             // Per-rider drop_eta_total_ms limit of a slack-proportional budget; null otherwise.
-            var dropEtaTotalLimit = policy.DropEtaTotalLimitFor(anchor, request.MaxRideTime);
+            var dropEtaTotalLimit = policy.DropEtaTotalLimitFor(
+                anchor,
+                request.MaxRideTime,
+                shadowAllocation);
 
             var lockWitnesses = _lockEvaluator.Evaluate(
                 request,
@@ -411,7 +420,8 @@ public sealed class CommitmentDecisionValidator
                 candidateProjection.Value!,
                 context.CandidateState.Run.SimulationTime,
                 policy,
-                anchor);
+                anchor,
+                shadowAllocation);
 
             // A vehicle named as forced-reference keeps its route although a gate rejects it:
             // its deadline and budget overruns become an exemption instead of a rejection. A
@@ -432,7 +442,8 @@ public sealed class CommitmentDecisionValidator
                     context,
                     policy,
                     anchor,
-                    dropEtaTotalLimit)
+                    dropEtaTotalLimit,
+                    shadowAllocation)
                 : null;
 
             if (noWorseRoute && reference is null)
@@ -769,7 +780,8 @@ public sealed class CommitmentDecisionValidator
         CommitmentValidationContext context,
         CommitmentPolicy policy,
         PromiseProjection? anchor,
-        long? dropEtaTotalLimit)
+        long? dropEtaTotalLimit,
+        ShadowAllocation? shadowAllocation)
     {
         var keptLocks = _lockEvaluator.Evaluate(
             request,
@@ -778,7 +790,8 @@ public sealed class CommitmentDecisionValidator
             exogenous,
             context.CandidateState.Run.SimulationTime,
             policy,
-            anchor);
+            anchor,
+            shadowAllocation);
         var keptDeltas = _deltaCalculator.Calculate(
             priorHistory.Current.PublishedPromise,
             exogenous,

@@ -903,6 +903,44 @@ public sealed class Wp4RunnerConfigurationTests
                     commitment)).Message);
     }
 
+    [Fact]
+    public void A_planning_forecast_is_optional_closed_and_parsed_to_the_exact_doubles()
+    {
+        // ADR-089 GĐ4: omitted keeps the archived content hash; factors are decimal strings
+        // because canonical JSON holds integers only.
+        var commitment = CommitmentConfiguration();
+        string WithForecast(string value) => PublishedJson().Replace(
+            "\"policyVersion\": \"wp4-boundary-v1\"",
+            "\"policyVersion\": \"wp4-boundary-v1\",\n  \"planningForecast\": " + value,
+            StringComparison.Ordinal);
+
+        var off = Wp4RunnerConfiguration.Decode(Encoding.UTF8.GetBytes(PublishedJson()), commitment);
+        var on = Wp4RunnerConfiguration.Decode(
+            Encoding.UTF8.GetBytes(WithForecast(
+                "{\"profile\": [\"1\", \"1.0638210000000001\", \"0.98\"], \"binMs\": 900000}")),
+            commitment);
+
+        Assert.Null(off.PlanningForecast);
+        Assert.NotEqual(off.ContentHash, on.ContentHash);
+        Assert.Equal(900_000, on.PlanningForecast!.BinMilliseconds);
+        Assert.Equal([1.0, 1.0638210000000001, 0.98], on.PlanningForecast.Profile);
+
+        foreach (var value in new[]
+                 {
+                     "{\"profile\": [], \"binMs\": 900000}",
+                     "{\"profile\": [\"0\"], \"binMs\": 900000}",
+                     "{\"profile\": [\"x\"], \"binMs\": 900000}",
+                     "{\"profile\": [1], \"binMs\": 900000}",
+                     "{\"profile\": [\"1\"], \"binMs\": 0}",
+                     "{\"profile\": [\"1\"]}",
+                     "{\"profile\": [\"1\"], \"binMs\": 900000, \"clipPickup\": true}",
+                 })
+        {
+            Assert.Throws<InvalidDataException>(
+                () => Wp4RunnerConfiguration.Decode(Encoding.UTF8.GetBytes(WithForecast(value)), commitment));
+        }
+    }
+
     private static string HardVectorJson(string? selectionObjectiveOrder)
     {
         var json = File.ReadAllText(Path.Combine(

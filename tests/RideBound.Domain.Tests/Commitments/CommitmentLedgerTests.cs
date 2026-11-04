@@ -230,6 +230,76 @@ public sealed class CommitmentLedgerTests
         Assert.Single(ledger.Histories[TestData.RequestOne].Entries);
     }
 
+    /// <summary>
+    /// ADR-089: the persistent publication set must reject every identifier any earlier entry
+    /// used (the initial promise and earlier revisions), as the old scan of every entry did.
+    /// </summary>
+    [Fact]
+    public void Revision_rejects_the_publication_identifier_of_any_earlier_entry()
+    {
+        var delta = new ThreeWayPromiseDelta(
+            CommitmentVector.Zero,
+            CommitmentTestData.Vector(CommitmentDimension.PickupEtaTotalMs, 1),
+            CommitmentTestData.Vector(CommitmentDimension.PickupEtaTotalMs, 1));
+        var opened = CommitmentLedger.Empty.OpenInitial(
+            "pub-1",
+            CommitmentTestData.Projection(),
+            1,
+            new SimTime(1_000),
+            "INITIAL_ACCEPTANCE",
+            3).Ledger!;
+        var revised = opened.AppendRevision(
+            "pub-2",
+            TestData.RequestOne,
+            new PromiseVersion(1),
+            CommitmentTestData.Projection(),
+            CommitmentTestData.Projection(pickupEta: 10_001),
+            delta,
+            CommitmentBudgetBasis.DecisionInduced,
+            2,
+            new SimTime(2_000),
+            "REPLAN",
+            4);
+        Assert.True(revised.IsSuccess, revised.Failure?.Message);
+
+        CommitmentLedgerAppendResult Revise(string publicationId) =>
+            revised.Ledger!.AppendRevision(
+                publicationId,
+                TestData.RequestOne,
+                new PromiseVersion(2),
+                CommitmentTestData.Projection(pickupEta: 10_001),
+                CommitmentTestData.Projection(pickupEta: 10_002),
+                delta,
+                CommitmentBudgetBasis.DecisionInduced,
+                3,
+                new SimTime(3_000),
+                "REPLAN",
+                5);
+
+        foreach (var reused in new[] { "pub-1", "pub-2" })
+        {
+            var rejected = Revise(reused);
+            Assert.False(rejected.IsSuccess);
+            Assert.Equal("publicationId", rejected.Failure?.Dimension);
+        }
+
+        Assert.True(Revise("pub-3").IsSuccess);
+        Assert.False(opened.AppendRevision(
+            "pub-1",
+            TestData.RequestOne,
+            new PromiseVersion(1),
+            CommitmentTestData.Projection(),
+            CommitmentTestData.Projection(pickupEta: 10_001),
+            delta,
+            CommitmentBudgetBasis.DecisionInduced,
+            2,
+            new SimTime(2_000),
+            "REPLAN",
+            4).IsSuccess);
+        Assert.Equal(2, revised.Ledger!.Histories[TestData.RequestOne].Entries.Count);
+        Assert.Single(opened.Histories[TestData.RequestOne].Entries);
+    }
+
     [Fact]
     public void Deterministic_random_histories_conserve_all_dimensions_without_refund()
     {

@@ -890,6 +890,159 @@ public sealed class Wp4RunnerIntegrationTests
     }
 
     /// <summary>
+    /// ADR-089: under `auditHash: light-v1` every decision field except the hashes is the same
+    /// as under the full audit; the state hash is the state identity hash; the decision hash
+    /// differs; and a light checkpoint restores into a light session.
+    /// </summary>
+    [Fact]
+    public void Light_audit_changes_only_hash_fields_and_restores()
+    {
+        var commitment = CommitmentConfiguration();
+        var full = CreateSession(PublishedWp4Configuration(commitment), commitmentConfiguration: commitment);
+        var lightWp4 = LightAuditConfiguration(commitment);
+        var light = CreateSession(lightWp4, commitmentConfiguration: commitment);
+
+        Assert.True(lightWp4.UsesLightAuditHash);
+        Assert.False(full.Wp4.UsesLightAuditHash);
+
+        var bootstrap = ReadFixture("wp2/valid-bootstrap-event-batch.json");
+        var booking = Encoding.UTF8.GetBytes(
+            """
+            {"schemaVersion":"1.0.0","messageType":"eventBatch","runId":"wp2-run-001",
+             "scenarioId":"wp2-two-epoch-small","epochId":2,"simTimeMs":1000,
+             "payload":{"events":[{"eventSeq":4,"eventType":"bookingConfirmed","payload":{"requestId":"r-1"}}]}}
+            """);
+        var steps = new (byte[] Batch, long Epoch, long Sequence, long SimTime)[]
+        {
+            (bootstrap, 1, 4, 1_000),
+            (booking, 2, 5, 1_000),
+        };
+        var actionsCompared = 0;
+
+        foreach (var (batch, epoch, sequence, simTime) in steps)
+        {
+            var fullResponse = full.Session.Process(batch).Response!;
+            var lightResponse = light.Session.Process(batch).Response!;
+            var fullDecision = DecisionPayloadCodec.Decode(fullResponse.Payload);
+            var lightDecision = DecisionPayloadCodec.Decode(lightResponse.Payload);
+            Assert.True(fullDecision.IsSuccess, fullDecision.Error?.Message);
+            Assert.True(lightDecision.IsSuccess, lightDecision.Error?.Message);
+            actionsCompared += fullDecision.Value!.Actions.Count;
+
+            Assert.Equal(WithoutHashes(fullResponse.Payload), WithoutHashes(lightResponse.Payload));
+            Assert.Null(full.Session.Process(
+                DecisionApplied(epoch, simTime, fullDecision.Value.DecisionHash.Value)).Response);
+            Assert.Null(light.Session.Process(
+                DecisionApplied(epoch, simTime, lightDecision.Value!.DecisionHash.Value)).Response);
+            EpochId.TryCreate(epoch, out var epochId);
+            EventSequence.TryCreate(sequence, out var nextSequence);
+            SimulationTimeMilliseconds.TryCreate(simTime, out var time);
+            Assert.Equal(
+                ProtocolHash.CalculateStateIdentityHash(epochId!, nextSequence!, time!),
+                lightDecision.Value.StateAfterHash);
+            Assert.NotEqual(fullDecision.Value.DecisionHash, lightDecision.Value.DecisionHash);
+        }
+
+        Assert.True(actionsCompared > 0);
+
+        var checkpoint = light.Session.Process(CheckpointRequest()).Response!;
+        Assert.Equal("checkpoint", checkpoint.MessageType.Value);
+        var restoredSession = CreateSession(lightWp4, commitmentConfiguration: commitment);
+        var restore = restoredSession.Session.Process(
+            Encoding.UTF8.GetBytes(
+                "{\"schemaVersion\":\"1.0.0\",\"messageType\":\"restore\"," +
+                "\"runId\":\"wp2-run-001\",\"scenarioId\":\"wp2-two-epoch-small\"," +
+                $"\"payload\":{checkpoint.Payload.GetRawText()}}}"));
+
+        Assert.Equal("restore", restore.Response?.MessageType.Value);
+        Assert.Equal(2, restoredSession.Session.AppliedEpoch);
+    }
+
+    /// <summary>
+    /// The decision payload without its hash-valued fields (every member named *Hash, at any
+    /// depth): those are the only fields the audit mode may change.
+    /// </summary>
+    private static string WithoutHashes(JsonElement payload)
+    {
+        var node = JsonNode.Parse(payload.GetRawText())!;
+        Strip(node);
+        return node.ToJsonString();
+
+        static void Strip(JsonNode? value)
+        {
+            switch (value)
+            {
+                case JsonObject item:
+                    foreach (var name in item.Select(member => member.Key)
+                                 .Where(key => key.EndsWith("Hash", StringComparison.Ordinal))
+                                 .ToArray())
+                    {
+                        item.Remove(name);
+                    }
+
+                    foreach (var member in item)
+                    {
+                        Strip(member.Value);
+                    }
+
+                    break;
+                case JsonArray list:
+                    foreach (var element in list)
+                    {
+                        Strip(element);
+                    }
+
+                    break;
+            }
+        }
+    }
+
+    [Theory]
+    [InlineData("full-v1", false)]
+    [InlineData("light-v1", true)]
+    [InlineData("light", null)]
+    [InlineData("v2", null)]
+    public void Audit_hash_values_are_closed(string value, bool? light)
+    {
+        var commitment = CommitmentConfiguration();
+        var json = File.ReadAllText(Path.Combine(
+                RepositoryRoot(),
+                "benchmarks",
+                "configurations",
+                "wp4-rolling-cost-boundary-v1.json"))
+            .Replace(
+                "\"policyVersion\": \"wp4-boundary-v1\"",
+                $"\"policyVersion\": \"wp4-boundary-v1\",\n  \"auditHash\": \"{value}\"",
+                StringComparison.Ordinal);
+
+        if (light is null)
+        {
+            Assert.Throws<InvalidDataException>(
+                () => Wp4RunnerConfiguration.Decode(Encoding.UTF8.GetBytes(json), commitment));
+            return;
+        }
+
+        Assert.Equal(
+            light.Value,
+            Wp4RunnerConfiguration.Decode(Encoding.UTF8.GetBytes(json), commitment).UsesLightAuditHash);
+    }
+
+    private static Wp4RunnerConfiguration LightAuditConfiguration(
+        CommitmentPolicyConfiguration commitment)
+    {
+        var json = File.ReadAllText(Path.Combine(
+                RepositoryRoot(),
+                "benchmarks",
+                "configurations",
+                "wp4-rolling-cost-boundary-v1.json"))
+            .Replace(
+                "\"policyVersion\": \"wp4-boundary-v1\"",
+                "\"policyVersion\": \"wp4-boundary-v1\",\n  \"auditHash\": \"light-v1\"",
+                StringComparison.Ordinal);
+        return Wp4RunnerConfiguration.Decode(Encoding.UTF8.GetBytes(json), commitment);
+    }
+
+    /// <summary>
     /// Replays the booking-confirmation scenario of the C1 ranking test up to the
     /// progress observation and returns the response to that observation.
     /// </summary>

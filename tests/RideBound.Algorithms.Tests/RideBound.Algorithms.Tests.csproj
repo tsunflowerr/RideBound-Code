@@ -19,6 +19,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="Shareability\shareability-golden-toy.json"
+                      LogicalName="RideBound.Algorithms.Tests.Shareability.shareability-golden-toy.json" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\src\RideBound.Algorithms\RideBound.Algorithms.csproj" />
     <ProjectReference Include="..\..\src\RideBound.Application\RideBound.Application.csproj" />
     <ProjectReference Include="..\..\src\RideBound.Domain\RideBound.Domain.csproj" />

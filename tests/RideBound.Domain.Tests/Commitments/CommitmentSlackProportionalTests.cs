@@ -234,6 +234,55 @@ public sealed class CommitmentSlackProportionalTests
             () => Policy(budgetPermille: 350).DropEtaTotalLimitFor(null, new Duration(MaxRide)));
     }
 
+    [Fact]
+    public void A_shadow_class_gives_a_guaranteed_rider_nothing_and_an_allowed_rider_its_whole_slack()
+    {
+        // ADR-089 GĐ4: bSH = round(aSH * slack) with slack 300_000 here (SHRC budget, SHHZ deadline).
+        var guaranteed = new ShadowAllocation(ShadowAllocationClass.Guaranteed, "12.5");
+        var allowed = new ShadowAllocation(ShadowAllocationClass.Allowed, "80");
+        var rule = Policy(budgetPermille: 1000, shadow: true);
+        var fence = Policy(deadlinePermille: 1000, relaxed: true, shadow: true);
+        var anchor = Projection(PickupAnchor, DropAnchor);
+
+        Assert.Equal(0, rule.DropEtaTotalLimitFor(anchor, new Duration(MaxRide), guaranteed));
+        Assert.Equal(300_000, rule.DropEtaTotalLimitFor(anchor, new Duration(MaxRide), allowed));
+        Assert.Equal(0, fence.DeadlineSlackFor(anchor, new Duration(MaxRide), guaranteed)!.Value.Milliseconds);
+        Assert.Equal(300_000, fence.DeadlineSlackFor(anchor, new Duration(MaxRide), allowed)!.Value.Milliseconds);
+        Assert.Throws<InvalidOperationException>(() => rule.DropEtaTotalLimitFor(anchor, new Duration(MaxRide)));
+
+        // Without the flag a class changes nothing.
+        Assert.Equal(300_000, Policy(budgetPermille: 1000).DropEtaTotalLimitFor(anchor, new Duration(MaxRide), guaranteed));
+
+        // A guaranteed rider's relaxed fence is the kept route: any later drop than it is refused.
+        var later = Projection(PickupAnchor, DropAnchor + 1);
+        Assert.Single(new CommitmentLockEvaluator().Evaluate(
+            WaitingRequest(),
+            new PublishedPromise(new PromiseVersion(1), 1, new SimTime(0), anchor),
+            anchor,
+            later,
+            new SimTime(0),
+            fence,
+            anchor,
+            guaranteed));
+        Assert.Empty(new CommitmentLockEvaluator().Evaluate(
+            WaitingRequest(),
+            new PublishedPromise(new PromiseVersion(1), 1, new SimTime(0), anchor),
+            anchor,
+            later,
+            new SimTime(0),
+            fence,
+            anchor,
+            allowed));
+
+        Assert.Throws<ArgumentException>(() => Policy(budgetPermille: 350, shadow: true));
+        Assert.Throws<ArgumentException>(() => Policy(shadow: true));
+        Assert.Equal(
+            ShadowAllocationClass.Guaranteed,
+            ShadowAllocation.From(66.72067841389695, 66.72067841389695).Class);
+        Assert.Equal(ShadowAllocationClass.Allowed, ShadowAllocation.From(66.7206784138970, 66.72067841389695).Class);
+        Assert.Equal("0.1", ShadowAllocation.From(0.1, double.PositiveInfinity).Score);
+    }
+
     private static IReadOnlyList<CommitmentLockWitness> EvaluateLocks(
         CommitmentPolicy policy,
         PromiseProjection exogenous,
@@ -254,7 +303,8 @@ public sealed class CommitmentSlackProportionalTests
         bool relaxed = false,
         long? dropHardLimit = null,
         long? otherHardLimit = null,
-        bool relaxedWithoutDeadline = false) =>
+        bool relaxedWithoutDeadline = false,
+        bool shadow = false) =>
         new(
             "policy-1",
             CommitmentBudgetBasis.DecisionInduced,
@@ -267,7 +317,8 @@ public sealed class CommitmentSlackProportionalTests
             dropEtaDeadlineSlack: fixedSlack is long slack ? new Duration(slack) : null,
             dropEtaDeadlineRelaxed: relaxed || relaxedWithoutDeadline,
             dropEtaBudgetSlackPermille: budgetPermille,
-            dropEtaDeadlineSlackPermille: deadlinePermille);
+            dropEtaDeadlineSlackPermille: deadlinePermille,
+            dropEtaShadowAllocation: shadow);
 
     private static RideRequest WaitingRequest()
     {

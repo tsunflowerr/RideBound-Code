@@ -20,11 +20,34 @@ public sealed class TravelTimeSnapshot : ITravelTimeLookup
         _travelTimes = travelTimes.ToFrozenDictionary();
     }
 
+    private TravelTimeSnapshot(TravelTimeSnapshot source, TravelTimeForecast? forecast)
+    {
+        Version = source.Version;
+        SnapshotHash = source.SnapshotHash;
+        _travelTimes = source._travelTimes;
+        Forecast = forecast;
+    }
+
     public long Version { get; }
 
     public string SnapshotHash { get; }
 
     public IReadOnlyDictionary<TravelArc, Duration> TravelTimes => _travelTimes;
+
+    /// <summary>
+    /// Planning forecast attached by the Runner configuration (closed-loop forecast); null
+    /// holds the snapshot flat. Not part of the snapshot's identity or canonical state.
+    /// </summary>
+    public TravelTimeForecast? Forecast { get; }
+
+    /// <summary>The same snapshot (shared arcs) with the given planning forecast.</summary>
+    public TravelTimeSnapshot WithForecast(TravelTimeForecast? forecast) =>
+        new(this, forecast);
+
+    public SimTime Arrive(SimTime evaluationTime, SimTime departure, Duration travelTime) =>
+        Forecast is null
+            ? departure + travelTime
+            : Forecast.Arrive(evaluationTime, departure, travelTime);
 
     public static DomainResult<TravelTimeSnapshot> Create(
         long version,

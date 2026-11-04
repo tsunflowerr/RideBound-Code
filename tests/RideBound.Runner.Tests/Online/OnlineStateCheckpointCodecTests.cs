@@ -417,6 +417,50 @@ public sealed class OnlineStateCheckpointCodecTests
     }
 
     [Fact]
+    public void Shadow_allocations_round_trip_on_every_state_path_and_are_absent_by_default()
+    {
+        // ADR-089 GĐ4: the fast writer, the reference canonicalizer, the v2 hash and the checkpoint codec.
+        var (run, _, promises, travel) = SingleRiderState();
+        var plain = new OnlineState(run, travel, 5, travel.SnapshotHash, promises);
+        var shadow = plain with
+        {
+            Commitments = promises.WithShadowAllocation(
+                new RequestId("request-1"),
+                new ShadowAllocation(ShadowAllocationClass.Guaranteed, "52.494082647339084")),
+        };
+
+        var plainCanonical = OnlineStateCanonicalizer.Canonicalize(plain);
+        var shadowCanonical = OnlineStateCanonicalizer.Canonicalize(shadow);
+        using var plainDocument = JsonDocument.Parse(plainCanonical);
+        Assert.False(plainDocument.RootElement.TryGetProperty("shadowAllocations", out _));
+        Assert.Contains(
+            "\"shadowAllocations\":[{\"class\":\"guaranteed\",\"requestId\":\"request-1\",\"score\":\"52.494082647339084\"}]",
+            System.Text.Encoding.UTF8.GetString(shadowCanonical));
+        Assert.Equal(shadowCanonical, OnlineStateCanonicalWriter.Write(shadow, null).ToArray());
+        Assert.NotEqual(
+            new OnlineStateHashV2(cached: false).Calculate(plain),
+            new OnlineStateHashV2(cached: false).Calculate(shadow));
+
+        using var document = JsonDocument.Parse(shadowCanonical);
+        var decoded = OnlineStateCheckpointCodec.Decode(document.RootElement);
+        Assert.True(decoded.IsSuccess, decoded.Error);
+        Assert.Equal(shadowCanonical, OnlineStateCanonicalizer.Canonicalize(decoded.State!));
+        Assert.Equal(
+            ShadowAllocationClass.Guaranteed,
+            decoded.State!.Commitments.ShadowAllocationOf(new RequestId("request-1"))!.Class);
+
+        var tampered = JsonNode.Parse(shadowCanonical)!;
+        tampered["shadowAllocations"]![0]!["class"] = "maybe";
+        using var tamperedDocument = JsonDocument.Parse(tampered.ToJsonString());
+        Assert.False(OnlineStateCheckpointCodec.Decode(tamperedDocument.RootElement).IsSuccess);
+
+        var orphan = JsonNode.Parse(shadowCanonical)!;
+        orphan["shadowAllocations"]![0]!["requestId"] = "request-unknown";
+        using var orphanDocument = JsonDocument.Parse(orphan.ToJsonString());
+        Assert.False(OnlineStateCheckpointCodec.Decode(orphanDocument.RootElement).IsSuccess);
+    }
+
+    [Fact]
     public void A_state_without_late_pickups_writes_no_late_pickup_field()
     {
         var (run, _, promises, travel) = SingleRiderState();

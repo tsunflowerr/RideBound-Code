@@ -3,12 +3,14 @@ using System.Text.Json;
 using RideBound.Algorithms.Candidates;
 using RideBound.Algorithms.Commitments;
 using RideBound.Algorithms.Policies;
+using RideBound.Algorithms.Shareability;
 using RideBound.Application.Commitments;
 using RideBound.Application.Optimization;
 using RideBound.Contracts.Protocol;
 using RideBound.Contracts.Serialization;
 using RideBound.Domain.Commitments;
 using RideBound.Domain.Common;
+using RideBound.Domain.Validation;
 using RideBound.Solvers.OrTools;
 
 namespace RideBound.Runner.Configuration;
@@ -43,7 +45,22 @@ public sealed class Wp4RunnerConfiguration : ICommitmentWarningProfileProvider
         "solverExecutionEvidenceProfile",
         "commitmentRecovery",
         "lateBoarding",
-        "selectionObjectiveOrder");
+        "selectionObjectiveOrder",
+        "auditHash",
+        "planningForecast",
+        "shadowAllocation");
+
+    /// <summary>
+    /// ADR-089 GĐ4 (exploratory). Optional; omitted means every projected leg is the snapshot
+    /// time (as before, same content hash). `{ "profile": [f0, f1, …], "binMs": 900000 }`
+    /// turns on the closed-loop planning forecast (<see cref="TravelTimeForecast"/>): the
+    /// profile is the forecast traffic factor of each bin from the run start, held after the
+    /// last value. Only the dispatcher's projections change; the simulator moves vehicles as
+    /// before.
+    /// </summary>
+    private static readonly IReadOnlySet<string> PlanningForecastFields = Fields(
+        "profile",
+        "binMs");
 
     /// <summary>
     /// ADR-075 (exploratory). Optional; omitted means fail-closed, so every
@@ -65,6 +82,15 @@ public sealed class Wp4RunnerConfiguration : ICommitmentWarningProfileProvider
     /// </summary>
     public const string RecordLateBoarding = "record-v1";
     public const string RejectLateBoarding = "reject";
+
+    /// <summary>
+    /// ADR-089. `auditHash` omitted or `full-v1` hashes the whole canonical online state for every
+    /// decision, as before. `light-v1` binds each decision to the event batch and the state
+    /// identity only (epoch, next event sequence, simulation time), with its own decision-hash
+    /// domain; the checkpoint hash still covers the whole state. No decision changes.
+    /// </summary>
+    public const string FullAuditHash = "full-v1";
+    public const string LightAuditHash = "light-v1";
 
     /// <summary>
     /// ADR-078 (exploratory). Optional; omitted means stability-first, so every configuration
@@ -139,8 +165,13 @@ public sealed class Wp4RunnerConfiguration : ICommitmentWarningProfileProvider
         IEnumerable<CommitmentWarningProfile> warningProfiles,
         bool emitSolverExecutionEvidence,
         string? solverExecutionEvidenceProfile,
-        bool recordsLateBoarding)
+        bool recordsLateBoarding,
+        bool usesLightAuditHash,
+        TravelTimeForecast? planningForecast,
+        ShadowAllocationInputs? shadowAllocation)
     {
+        PlanningForecast = planningForecast;
+        ShadowAllocation = shadowAllocation;
         ContentHash = contentHash;
         PolicyId = policyId;
         PolicyVersion = policyVersion;
@@ -151,6 +182,7 @@ public sealed class Wp4RunnerConfiguration : ICommitmentWarningProfileProvider
         EmitSolverExecutionEvidence = emitSolverExecutionEvidence;
         SolverExecutionEvidenceProfile = solverExecutionEvidenceProfile;
         RecordsLateBoarding = recordsLateBoarding;
+        UsesLightAuditHash = usesLightAuditHash;
         _warningProfiles = new CommitmentWarningProfileCatalog(warningProfiles);
     }
 
@@ -174,6 +206,18 @@ public sealed class Wp4RunnerConfiguration : ICommitmentWarningProfileProvider
 
     /// <summary>True only for `lateBoarding: record-v1` (ADR-076).</summary>
     public bool RecordsLateBoarding { get; }
+
+    /// <summary>True only for `auditHash: light-v1` (ADR-089).</summary>
+    public bool UsesLightAuditHash { get; }
+
+    /// <summary>The planning forecast of `planningForecast`; null when the key is omitted.</summary>
+    public TravelTimeForecast? PlanningForecast { get; }
+
+    /// <summary>
+    /// ADR-089 GĐ4: Shadow Control inputs of `shadowAllocation`; null when the key is omitted. A
+    /// commitment policy with `dropEtaShadowAllocation` needs them, and they need such a policy.
+    /// </summary>
+    public ShadowAllocationInputs? ShadowAllocation { get; }
 
     /// <summary>
     /// RB-WP14-003. The retained-portfolio evidence profile is the only caller
@@ -376,6 +420,66 @@ public sealed class Wp4RunnerConfiguration : ICommitmentWarningProfileProvider
             }
             : false;
 
+        var usesLightAuditHash = root.TryGetProperty("auditHash", out _)
+            ? Text(root, "auditHash") switch
+            {
+                FullAuditHash => false,
+                LightAuditHash => true,
+                _ => throw new InvalidDataException("Unknown auditHash."),
+            }
+            : false;
+
+        TravelTimeForecast? planningForecast = null;
+
+        if (root.TryGetProperty("planningForecast", out var forecastElement))
+        {
+            RequireObject(
+                forecastElement,
+                PlanningForecastFields,
+                PlanningForecastFields,
+                "$.planningForecast");
+            var profileElement = forecastElement.GetProperty("profile");
+
+            if (profileElement.ValueKind != JsonValueKind.Array
+                || profileElement.GetArrayLength() == 0)
+            {
+                throw new InvalidDataException(
+                    "planningForecast.profile must be a non-empty array.");
+            }
+
+            // Canonical JSON holds integers only, so each factor is the shortest decimal string
+            // of the double (as JavaScript writes it); parsing it returns that exact double.
+            var profile = profileElement.EnumerateArray()
+                .Select(value =>
+                    value.ValueKind == JsonValueKind.String
+                    && double.TryParse(
+                        value.GetString(),
+                        System.Globalization.NumberStyles.Float,
+                        System.Globalization.CultureInfo.InvariantCulture,
+                        out var factor)
+                    && double.IsFinite(factor)
+                    && factor > 0
+                        ? factor
+                        : throw new InvalidDataException(
+                            "planningForecast.profile holds positive decimal strings."))
+                .ToArray();
+            planningForecast = new TravelTimeForecast(
+                profile,
+                PositiveInteger(forecastElement.GetProperty("binMs"), "planningForecast.binMs"));
+        }
+
+        ShadowAllocationInputs? shadowAllocation = null;
+
+        if (root.TryGetProperty("shadowAllocation", out var shadowElement))
+        {
+            RequireObject(
+                shadowElement,
+                ShadowAllocationConfiguration.Fields,
+                ShadowAllocationConfiguration.Fields,
+                "$.shadowAllocation");
+            shadowAllocation = ShadowAllocationConfiguration.Read(shadowElement);
+        }
+
         var selectionObjectiveOrder = root.TryGetProperty("selectionObjectiveOrder", out _)
             ? Text(root, "selectionObjectiveOrder") switch
             {
@@ -436,6 +540,20 @@ public sealed class Wp4RunnerConfiguration : ICommitmentWarningProfileProvider
             throw new InvalidDataException(
                 "A commitment policy with 'waitingRiderRelocation' requires "
                 + "'candidateGeneration.waitingRiderRelocation'.");
+        }
+
+        // ADR-089 GĐ4: Shadow classes are assigned for every rider of a run, so every policy is
+        // shadow-allocated when the inputs are given, and the inputs are given when one is.
+        var shadowPolicies = commitmentConfiguration.PolicyIds
+            .Count(id => commitmentConfiguration.TryGetPolicy(id, out var policy)
+                && policy.DropEtaShadowAllocation);
+
+        if (root.TryGetProperty("shadowAllocation", out _)
+            ? shadowPolicies != commitmentConfiguration.PolicyIds.Count
+            : shadowPolicies > 0)
+        {
+            throw new InvalidDataException(
+                "'shadowAllocation' and 'dropEtaShadowAllocation' on every commitment policy go together.");
         }
 
         SolverBackedRidePoolingPolicyOptions? solverOptions = null;
@@ -527,7 +645,10 @@ public sealed class Wp4RunnerConfiguration : ICommitmentWarningProfileProvider
             warningProfiles,
             emitSolverExecutionEvidence,
             solverExecutionEvidenceProfile,
-            recordsLateBoarding);
+            recordsLateBoarding,
+            usesLightAuditHash,
+            planningForecast,
+            shadowAllocation);
     }
 
     private static CandidateGenerationOptions ReadGeneration(JsonElement element)

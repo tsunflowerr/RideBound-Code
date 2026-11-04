@@ -155,6 +155,22 @@ def _materialize_network(root, source):
     return node_index, mapping_hash
 
 
+def _assert_complete_shortest_path_closure(source, node_index):
+    """ADR-089: every ordered node pair has an arc and no two-arc path is shorter (integer ms, Floyd-Warshall test)."""
+    import numpy as np
+
+    size = len(node_index)
+    matrix = np.full((size, size), -1, dtype=np.int64)
+    np.fill_diagonal(matrix, 0)
+    for arc in source["travelSnapshots"][0]["arcs"]:
+        matrix[node_index[arc["fromNodeId"]], node_index[arc["toNodeId"]]] = arc["travelTimeMs"]
+    if (matrix < 0).any():
+        raise RuntimeError("complete-graph-direct-v1 needs an arc for every ordered node pair")
+    for via in range(size):
+        if (matrix[:, via:via + 1] + matrix[via:via + 1, :] < matrix).any():
+            raise RuntimeError(f"arcs are not a shortest-path closure (a path through node index {via} is shorter)")
+
+
 def _source_requests(source):
     result = []
     for event in source["events"]:
@@ -432,7 +448,18 @@ def _run_repeat(arguments, repeat, source, driver, output_directory):
         temporary_path = pathlib.Path(temporary)
         network_root = temporary_path / "network"
         node_index, node_mapping_hash = _materialize_network(network_root, source)
-        routing = NetworkBasic(str(network_root))
+        routing_engine = driver.get("routingEngine", "network-basic-v1")
+        if routing_engine == "network-basic-v1":
+            routing = NetworkBasic(str(network_root))
+        elif routing_engine == "complete-graph-direct-v1":
+            # ADR-089: full-node Via cells. The direct-edge network is only valid when every arc is a shortest
+            # path, which NetworkBasic's per-arc check below would otherwise establish with a Dijkstra per arc.
+            from ridebound_fleetpy.direct_network import CompleteGraphDirectNetwork
+
+            _assert_complete_shortest_path_closure(source, node_index)
+            routing = CompleteGraphDirectNetwork(str(network_root))
+        else:
+            raise RuntimeError(f"unknown routingEngine {routing_engine!r}")
         snapshot = source["travelSnapshots"][0]
         for arc in snapshot["arcs"]:
             origin = (node_index[arc["fromNodeId"]], None, None)
@@ -495,12 +522,16 @@ def _run_repeat(arguments, repeat, source, driver, output_directory):
                 "actual_fleetpy_medium_verify.py"
             ).resolve(),
         ]
+        compression = driver.get("transcriptCompression", "none")
+        if compression not in ("none", "gzip-v1"):
+            raise RuntimeError(f"unknown transcriptCompression {compression!r}")
         operator = _operator_settings(
             arguments,
             scenario_root,
             additional,
             driver["completeTravelSnapshotMaximumNodes"],
-            output_directory / f"transcript-{repeat:02d}.ndjson",
+            output_directory
+            / (f"transcript-{repeat:02d}.ndjson" + (".gz" if compression == "gzip-v1" else "")),
         )
         scenario = {
             "n_cpu_per_sim": 1,

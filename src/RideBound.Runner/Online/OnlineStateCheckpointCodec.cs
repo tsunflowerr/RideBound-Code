@@ -90,6 +90,21 @@ public static class OnlineStateCheckpointCodec
 
             var commitments = ReadCommitmentLedger(
                 element.GetProperty("commitmentLedger"));
+
+            // ADR-089 GĐ4: present only under Shadow Control; the canonical round trip below
+            // rejects any other shape.
+            if (element.TryGetProperty("shadowAllocations", out var shadowElement))
+            {
+                foreach (var item in shadowElement.EnumerateArray())
+                {
+                    commitments = commitments.WithShadowAllocation(
+                        new RequestId(Text(item, "requestId")),
+                        new ShadowAllocation(
+                            OnlineStateCanonicalWriter.ShadowClassFrom(Text(item, "class")),
+                            Text(item, "score")));
+                }
+            }
+
             var incidents = ReadIncidentLedger(
                 element.GetProperty("incidentLedger"));
             var planPool = element.TryGetProperty(

@@ -85,7 +85,7 @@ public sealed class RouteScheduleProjector
                         fullEdgeTime.Milliseconds
                         * (1000 - edge.ProgressPermille)),
                     1000);
-                time += new Duration(remaining);
+                time = travelTimes.Arrive(evaluationTime, time, new Duration(remaining));
             }
             catch (Exception error) when (
                 error is OverflowException or ArgumentOutOfRangeException)
@@ -120,7 +120,7 @@ public sealed class RouteScheduleProjector
 
             try
             {
-                arrival = time + travelTime;
+                arrival = travelTimes.Arrive(evaluationTime, time, travelTime);
                 serviceStart = GetServiceStart(run, stop, arrival);
                 departure = serviceStart + stop.ServiceDuration;
             }

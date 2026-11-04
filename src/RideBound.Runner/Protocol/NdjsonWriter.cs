@@ -31,4 +31,15 @@ public sealed class NdjsonWriter
         await _stream.WriteAsync(LineFeed, cancellationToken).ConfigureAwait(false);
         await _stream.FlushAsync(cancellationToken).ConfigureAwait(false);
     }
+
+    /// <summary>ADR-089: writes a response that is already canonical bytes, part by part.</summary>
+    public async ValueTask WriteAsync(
+        StreamedResponse response,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(response);
+        await response.WriteToAsync(_stream, cancellationToken).ConfigureAwait(false);
+        await _stream.WriteAsync(LineFeed, cancellationToken).ConfigureAwait(false);
+        await _stream.FlushAsync(cancellationToken).ConfigureAwait(false);
+    }
 }

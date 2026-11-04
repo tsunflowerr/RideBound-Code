@@ -5,10 +5,12 @@ using RideBound.Algorithms.Candidates;
 using RideBound.Algorithms.Commitments;
 using RideBound.Algorithms.Policies;
 using RideBound.Application.Commitments;
+using RideBound.Application.Events;
 using RideBound.Application.Optimization;
 using RideBound.Application.State;
 using RideBound.Contracts.Protocol;
 using RideBound.Contracts.Serialization;
+using RideBound.Domain.Commitments;
 using RideBound.Domain.Common;
 using RideBound.Domain.Incidents;
 using RideBound.Domain.Runs;
@@ -38,7 +40,28 @@ public enum RunnerExecutionMode
 
 public sealed record RunnerSessionResult(
     ProtocolEnvelope? Response,
-    bool ShouldTerminate = false);
+    bool ShouldTerminate = false)
+{
+    private readonly ProtocolEnvelope? _response = Response;
+
+    public RunnerSessionResult(StreamedResponse streamed)
+        : this((ProtocolEnvelope?)null)
+    {
+        Streamed = streamed;
+    }
+
+    /// <summary>
+    /// ADR-089: set when the response is written part by part (the checkpoint);
+    /// <see cref="Response"/> then decodes it on demand.
+    /// </summary>
+    public StreamedResponse? Streamed { get; }
+
+    public ProtocolEnvelope? Response
+    {
+        get => _response ?? Streamed?.ToEnvelope();
+        init => _response = value;
+    }
+}
 
 public sealed class RunnerSession
 {
@@ -55,6 +78,7 @@ public sealed class RunnerSession
     private readonly CommitmentDecisionValidator _commitmentValidator;
     private readonly ExogenousServiceQualityBreachBridge _breachBridge;
     private readonly Wp4RunnerConfiguration? _wp4Configuration;
+    private readonly RideBound.Algorithms.Shareability.ShadowAllocator? _shadowAllocator;
     private readonly SolverBackedRidePoolingPolicy? _solverBackedPolicy;
     private readonly bool _useManifestSolverSeed;
     private readonly MultiplePlanConsensusPolicy _multiplePlanPolicy;
@@ -71,6 +95,9 @@ public sealed class RunnerSession
     private Sha256Hex _previousDecisionHash = ProtocolHash.ZeroHash;
     private EventReductionCoordinator? _onlineCoordinator;
     private readonly OnlineStateCanonicalCache _canonicalCache = new();
+
+    // ADR-089: `auditHash: light-v1` in the WP4 configuration.
+    private readonly bool _lightAudit;
 
     // PROTOTYPE option b (wf9): RIDEBOUND_STATE_HASH=v2 switches state and decision hashes to v2.
     private readonly OnlineStateHashV2? _hashV2 = string.Equals(
@@ -116,6 +143,10 @@ public sealed class RunnerSession
             ?? new CommitmentDecisionValidator();
         _breachBridge = new ExogenousServiceQualityBreachBridge();
         _wp4Configuration = wp4Configuration;
+        _shadowAllocator = wp4Configuration?.ShadowAllocation is { } shadowInputs
+            ? new RideBound.Algorithms.Shareability.ShadowAllocator(shadowInputs)
+            : null;
+        _lightAudit = wp4Configuration?.UsesLightAuditHash == true;
         _useManifestSolverSeed = useManifestSolverSeed;
         _solverBackedPolicy = wp4Configuration is not null
                 && wp4Configuration.SolverPolicyOptions is not null
@@ -367,13 +398,22 @@ public sealed class RunnerSession
                     run,
                     _identity.Manifest.TravelTimeSnapshotHash.Value),
                 CreateEventReducer());
-            var initialCanonical = CanonicalOf(_onlineCoordinator.CommittedState);
-            _committedCanonical = new CanonicalStateBytes(
-                _onlineCoordinator.CommittedState,
-                initialCanonical);
             _stagedCanonical = null;
-            _stateHash = _hashV2?.Calculate(_onlineCoordinator.CommittedState)
-                ?? OnlineStateCanonicalWriter.HashV1(initialCanonical);
+
+            if (_lightAudit)
+            {
+                // ADR-089 light audit: the state hash stays the identity hash computed above.
+                _committedCanonical = null;
+            }
+            else
+            {
+                var initialCanonical = CanonicalOf(_onlineCoordinator.CommittedState);
+                _committedCanonical = new CanonicalStateBytes(
+                    _onlineCoordinator.CommittedState,
+                    initialCanonical);
+                _stateHash = _hashV2?.Calculate(_onlineCoordinator.CommittedState)
+                    ?? OnlineStateCanonicalWriter.HashV1(initialCanonical);
+            }
         }
 
         Status = RunnerSessionStatus.Initialized;
@@ -506,7 +546,18 @@ public sealed class RunnerSession
 
         if (IsOnlineMode)
         {
-            var online = BuildOnlineDecision(envelope, canonicalBatchHash, ref timing);
+            // ADR-089 light audit: the staged state is identified, not hashed.
+            var lightStateAfterHash = _lightAudit
+                ? ProtocolHash.CalculateStateIdentityHash(
+                    nextEpochId!,
+                    nextEventSequence!,
+                    nextSimulationTime!)
+                : null;
+            var online = BuildOnlineDecision(
+                envelope,
+                canonicalBatchHash,
+                lightStateAfterHash,
+                ref timing);
 
             if (online.Error is not null)
             {
@@ -552,7 +603,14 @@ public sealed class RunnerSession
         timing.Lap(HashTiming.Phase.Decide);
         var canonicalDecision = CanonicalJson.Canonicalize(
             DecisionPayloadCodec.Encode(shell, hashProjection: true));
-        var decisionHash = _hashV2 is null
+        var decisionHash = _lightAudit
+            ? ProtocolHash.CalculateDecisionHashLight(
+                _previousDecisionHash,
+                _manifestHash,
+                _identity!.Manifest.PolicyVersion,
+                CreateCanonicalInputParts(canonicalBatch, includeOnlineState: false),
+                canonicalDecision)
+            : _hashV2 is null
             ? ProtocolHash.CalculateDecisionHash(
                 _previousDecisionHash,
                 _manifestHash,
@@ -664,7 +722,7 @@ public sealed class RunnerSession
         _previousDecisionHash = _pending.DecisionHash;
         _pending = null;
         Status = RunnerSessionStatus.Initialized;
-        return new RunnerSessionResult(null);
+        return new RunnerSessionResult((ProtocolEnvelope?)null);
     }
 
     private RunnerSessionResult ProcessCheckpoint(ProtocolEnvelope envelope)
@@ -691,13 +749,13 @@ public sealed class RunnerSession
                 envelope);
         }
 
-        var committedBytes = CanonicalOf(_onlineCoordinator.CommittedState).ToArray();
+        var committed = CanonicalOf(_onlineCoordinator.CommittedState);
 
         // The checkpoint re-derives the committed state's bytes without any cache: a stale
         // fragment (an entity mutated in place) fails the session instead of passing silently.
         if (_hashV2 is null
             && !OnlineStateCanonicalWriter.Write(_onlineCoordinator.CommittedState, null)
-                .ContentEquals(committedBytes))
+                .ContentEquals(committed))
         {
             return Error(
                 "INTERNAL_ERROR",
@@ -705,16 +763,6 @@ public sealed class RunnerSession
                 "Cached canonical state differs from its full recomputation.",
                 envelope);
         }
-
-        using var stateDocument = JsonDocument.Parse(committedBytes);
-        var content = new CheckpointContent(
-            _manifestHash,
-            _stateHash,
-            _previousDecisionHash,
-            _appliedEpoch,
-            _nextEventSequence,
-            _simulationTimeMilliseconds,
-            stateDocument.RootElement.Clone());
 
         // v2 prototype: the checkpoint is where cached digests are checked against a full
         // recomputation without any cache, so a stale cache entry can never pass silently.
@@ -729,18 +777,37 @@ public sealed class RunnerSession
                 envelope);
         }
 
-        var hash = CheckpointPayloadCodec.CalculateHash(content);
-        var payload = new CheckpointPayload(
-            CheckpointPayloadCodec.CurrentVersion,
-            hash,
-            content);
-
-        return new RunnerSessionResult(
+        // ADR-089: the response is the canonical envelope line the envelope path wrote, built
+        // around the cached canonical state instead of from copies of it. The shell is the same
+        // checkpoint with an empty online state; its canonical line is split at that empty
+        // object and the state's own canonical bytes are written there. Canonical JSON writes an
+        // object member's value in place, so the line equals the canonical line of the full
+        // envelope, and the hash streams the same canonical content.
+        using var emptyState = JsonDocument.Parse("{}"u8.ToArray());
+        var shell = new CheckpointContent(
+            _manifestHash,
+            _stateHash,
+            _previousDecisionHash,
+            _appliedEpoch,
+            _nextEventSequence,
+            _simulationTimeMilliseconds,
+            emptyState.RootElement.Clone());
+        var stateParts = committed.Parts
+            .Select(part => (ReadOnlyMemory<byte>)part.AsMemory())
+            .ToArray();
+        var hash = CheckpointPayloadCodec.CalculateHash(shell, stateParts);
+        var line = CanonicalJson.Serialize(
             CreateEnvelope(
                 "checkpoint",
-                CheckpointPayloadCodec.Encode(payload),
+                CheckpointPayloadCodec.EncodeShell(hash, shell),
                 envelope.RunId,
                 envelope.ScenarioId));
+        var (before, after) = CheckpointPayloadCodec.SplitAtEmptyOnlineState(line);
+
+        return new RunnerSessionResult(
+            new StreamedResponse(
+                "checkpoint",
+                [before, .. stateParts, after]));
     }
 
     private RunnerSessionResult ProcessRestore(ProtocolEnvelope envelope)
@@ -790,8 +857,16 @@ public sealed class RunnerSession
         }
 
         var state = restored.State!;
+
+        if (_wp4Configuration?.PlanningForecast is { } forecast && state.TravelTimes is not null)
+        {
+            state = state with { TravelTimes = state.TravelTimes.WithForecast(forecast) };
+        }
+
         var restoredCanonical = CanonicalOf(state);
-        var calculatedStateHash = _hashV2 is null
+        var calculatedStateHash = _lightAudit
+            ? LightStateIdentityHash(state)
+            : _hashV2 is null
             ? OnlineStateCanonicalWriter.HashV1(restoredCanonical)
             : new OnlineStateHashV2(cached: false).Calculate(state);
 
@@ -883,15 +958,58 @@ public sealed class RunnerSession
     }
 
     /// <summary>
+    /// ADR-089 GĐ4: the configured planning forecast rides on every travel snapshot the adapter
+    /// sends (and on a restored one, see ProcessCheckpoint). One instance per snapshot, so the
+    /// reference comparisons of snapshots keep their meaning; without a forecast the batch is
+    /// returned as it is.
+    /// </summary>
+    private InternalEventBatch WithPlanningForecast(InternalEventBatch batch)
+    {
+        if (_wp4Configuration?.PlanningForecast is not { } forecast
+            || !batch.Events.Any(value => value is TravelTimesUpdated))
+        {
+            return batch;
+        }
+
+        return batch with
+        {
+            Events = batch.Events
+                .Select(value => value is TravelTimesUpdated travel
+                    ? travel with { Snapshot = travel.Snapshot.WithForecast(forecast) }
+                    : value)
+                .ToArray(),
+        };
+    }
+
+    /// <summary>
+    /// ADR-089: under the light audit a state is identified by its epoch, next event sequence
+    /// and simulation time; the checkpoint hash is what binds a restored state's content.
+    /// </summary>
+    private static Sha256Hex? LightStateIdentityHash(OnlineState state) =>
+        EpochId.TryCreate(state.Run.AppliedEpoch, out var epoch)
+        && EventSequence.TryCreate(state.NextEventSequence, out var sequence)
+        && SimulationTimeMilliseconds.TryCreate(state.Run.SimulationTime.Milliseconds, out var time)
+            ? ProtocolHash.CalculateStateIdentityHash(epoch!, sequence!, time!)
+            : null;
+
+    /// <summary>
     /// stateAfterHash of the staged state: OnlineStateHash.v1 over cached canonical segments
-    /// (exact), or the v2 prototype when RIDEBOUND_STATE_HASH=v2.
+    /// (exact), the v2 prototype when RIDEBOUND_STATE_HASH=v2, or under the light audit
+    /// (ADR-089) the state identity hash the caller computed, without writing the state.
     /// </summary>
     private Sha256Hex HashStagedState(
         OnlineState state,
+        Sha256Hex? lightStateHash,
         ref CanonicalSegments? canonical,
         ref HashTiming timing)
     {
         timing.Lap(HashTiming.Phase.Decide);
+
+        if (lightStateHash is not null)
+        {
+            timing.Lap(HashTiming.Phase.StateHash);
+            return lightStateHash;
+        }
 
         if (_hashV2 is not null)
         {
@@ -931,6 +1049,7 @@ public sealed class RunnerSession
     private OnlineDecisionBuildResult BuildOnlineDecision(
         ProtocolEnvelope envelope,
         string publicationScope,
+        Sha256Hex? lightStateAfterHash,
         ref HashTiming timing)
     {
         if (_onlineCoordinator is null)
@@ -952,7 +1071,8 @@ public sealed class RunnerSession
                 mapped.Witness!.Message);
         }
 
-        var reduced = _onlineCoordinator.Propose(mapped.Batch!);
+        var batch = WithPlanningForecast(mapped.Batch!);
+        var reduced = _onlineCoordinator.Propose(batch);
 
         if (!reduced.IsSuccess)
         {
@@ -966,7 +1086,7 @@ public sealed class RunnerSession
         ICommitmentPolicyProvider validationPolicies = _commitmentPolicies!;
         RollingCostDecisionResult decision;
 
-        var sourceEventSequence = mapped.Batch!.Events[^1].EventSequence;
+        var sourceEventSequence = batch.Events[^1].EventSequence;
 
         if (_wp4Configuration is not null)
         {
@@ -1134,9 +1254,24 @@ public sealed class RunnerSession
                 stateToStage = bridged.State!;
             }
 
+            // ADR-089 GĐ4: Shadow Control. Every rider whose first promise this decision publishes
+            // gets its frozen class now, from this staged state, so the next decision reads it and
+            // the state hash and checkpoint carry it (engine17.js:742-776).
+            if (_shadowAllocator is not null)
+            {
+                var opened = publications
+                    .Where(value => value.Entry.Kind == CommitmentLedgerEntryKind.InitialPromise)
+                    .Select(value => value.Entry.PublishedPromise.Projection.RequestId)
+                    .ToArray();
+                stateToStage = _shadowAllocator.Allocate(
+                    stateToStage,
+                    opened,
+                    stateToStage.Run.SimulationTime);
+            }
+
             // One canonicalization and one hash of the staged state per epoch; the original
             // computed the same hash twice (here and in the Success call below).
-            stagedHash = HashStagedState(stateToStage, ref stagedCanonical, ref timing);
+            stagedHash = HashStagedState(stateToStage, lightStateAfterHash, ref stagedCanonical, ref timing);
             var afterHash = stagedHash;
             var breachWitnesses = ForcedBreachWitnesses(validation.ForcedExemptions);
             certificate = new CertificateShell(
@@ -1174,7 +1309,7 @@ public sealed class RunnerSession
                 staged.Witness!.Message);
         }
 
-        stagedHash ??= HashStagedState(stateToStage, ref stagedCanonical, ref timing);
+        stagedHash ??= HashStagedState(stateToStage, lightStateAfterHash, ref stagedCanonical, ref timing);
         _stagedCanonical = stagedCanonical is null
             ? null
             : new CanonicalStateBytes(stateToStage, stagedCanonical);

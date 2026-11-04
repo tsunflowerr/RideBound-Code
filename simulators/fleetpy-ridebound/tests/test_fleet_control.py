@@ -165,6 +165,32 @@ class RunnerServiceBoundsSettingTests(unittest.TestCase):
         with self.assertRaises(AdapterFailure) as failure:
             settings({"lateBoarding": "record-v2"})
         self.assertEqual("RBWP7_WP4_LATE_BOARDING_INVALID", failure.exception.code)
+        # ADR-089 GĐ4
+        self.assertFalse(settings({"lateBoarding": "record-v1"}).planning_forecast)
+        self.assertTrue(
+            settings({"lateBoarding": "record-v1", "planningForecast": {"profile": []}}).planning_forecast
+        )
+
+    def test_planning_forecast_key_needs_an_object_and_recorded_late_boarding(self) -> None:
+        # ADR-089 GĐ4
+        from ridebound_fleetpy.session import runner_plans_with_forecast
+
+        path = pathlib.Path("wp4.json")
+        recorded = {"lateBoarding": "record-v1"}
+
+        self.assertFalse(runner_plans_with_forecast({}, path))
+        self.assertFalse(runner_plans_with_forecast(recorded, path))
+        self.assertTrue(runner_plans_with_forecast({**recorded, "planningForecast": {"binMs": 900000}}, path))
+        with self.assertRaises(AdapterFailure) as invalid:
+            runner_plans_with_forecast({**recorded, "planningForecast": []}, path)
+        self.assertEqual("RBWP7_WP4_PLANNING_FORECAST_INVALID", invalid.exception.code)
+        for late in ({}, {"lateBoarding": "reject"}):
+            with self.subTest(late=late), self.assertRaises(AdapterFailure) as unrecorded:
+                runner_plans_with_forecast({**late, "planningForecast": {}}, path)
+            self.assertEqual(
+                "RBWP7_WP4_PLANNING_FORECAST_NEEDS_RECORDED_LATE_BOARDING",
+                unrecorded.exception.code,
+            )
 
 
 @unittest.skipUnless(FLEETPY_ROOT, "RIDEBOUND_FLEETPY_ROOT is required")
@@ -272,9 +298,12 @@ class FleetControlContractTests(unittest.TestCase):
         self.assertEqual((0.75, None), plan.list_plan_stops[1].get_duration_and_earliest_departure())
 
     @staticmethod
-    def _plan_control(latest_pickup=100, record_late_boarding=False):
+    def _plan_control(latest_pickup=100, record_late_boarding=False, planning_forecast=False):
         control = RideBoundFleetControl.__new__(RideBoundFleetControl)
-        control._rb_settings = SimpleNamespace(runner_service_bounds=record_late_boarding)
+        control._rb_settings = SimpleNamespace(
+            runner_service_bounds=record_late_boarding,
+            planning_forecast=planning_forecast,
+        )
         request = _PlanRequest(10)
         request.t_pu_latest = latest_pickup
         control.rq_dict = {10: request}
@@ -355,6 +384,31 @@ class FleetControlContractTests(unittest.TestCase):
         with self.assertRaises(AdapterFailure) as over:
             plan_at(345, record=True)
         self.assertEqual("RBWP7_FLEETPY_PLAN_INFEASIBLE", over.exception.code)
+
+    def test_under_a_planning_forecast_the_runner_owns_pickup_window_and_maximum_trip(self) -> None:
+        # ADR-089 GĐ4 (forecast gate 2026-11-04: FleetPy priced a forecast-planned pickup
+        # 0.88 s after its latest time at the current travel times). The plan that FleetPy
+        # vetoes without a forecast (latest pickup 0 s, reached at 1 s) is accepted, and both
+        # time bounds are empty; the earliest pickup hold stays.
+        control = self._plan_control(latest_pickup=0, record_late_boarding=True, planning_forecast=True)
+
+        plan = control._fleetpy_plan(0, self._pickup_and_drop(), 0)
+
+        self.assertTrue(plan.is_feasible())
+        earliest, latest, _, _ = plan.list_plan_stops[0].get_boarding_time_constraint_dicts()
+        _, _, max_trip, latest_arrival = plan.list_plan_stops[1].get_boarding_time_constraint_dicts()
+        self.assertEqual({10: 0}, earliest)
+        self.assertEqual({}, latest)
+        self.assertEqual({}, max_trip)
+        self.assertEqual({}, latest_arrival)
+
+    def test_a_planning_forecast_keeps_the_capacity_check(self) -> None:
+        control = self._plan_control(record_late_boarding=True, planning_forecast=True)
+        control.rq_dict[10].nr_pax = 5
+
+        with self.assertRaises(AdapterFailure) as failure:
+            control._fleetpy_plan(0, self._pickup_and_drop(), 0)
+        self.assertEqual("RBWP7_FLEETPY_PLAN_INFEASIBLE", failure.exception.code)
 
     def test_recording_late_boarding_keeps_the_capacity_check(self) -> None:
         control = self._plan_control(record_late_boarding=True)

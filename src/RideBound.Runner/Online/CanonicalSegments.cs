@@ -70,6 +70,49 @@ public sealed class CanonicalSegments
 
         return true;
     }
+
+    /// <summary>Compares the bytes of two segment lists without joining either (ADR-089).</summary>
+    public bool ContentEquals(CanonicalSegments other)
+    {
+        ArgumentNullException.ThrowIfNull(other);
+
+        if (other.Length != Length)
+        {
+            return false;
+        }
+
+        var otherPart = 0;
+        var otherOffset = 0;
+
+        foreach (var part in _parts)
+        {
+            var remaining = part.AsSpan();
+
+            while (!remaining.IsEmpty)
+            {
+                var available = other._parts[otherPart].AsSpan(otherOffset);
+
+                if (available.IsEmpty)
+                {
+                    otherPart++;
+                    otherOffset = 0;
+                    continue;
+                }
+
+                var count = Math.Min(remaining.Length, available.Length);
+
+                if (!remaining[..count].SequenceEqual(available[..count]))
+                {
+                    return false;
+                }
+
+                remaining = remaining[count..];
+                otherOffset += count;
+            }
+        }
+
+        return true;
+    }
 }
 
 /// <summary>

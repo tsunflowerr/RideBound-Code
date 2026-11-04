@@ -26,6 +26,8 @@ public sealed class OrToolsCandidateSelectionSolver : ICandidateSelectionSolver
             ? ConstantsToSkip(problem)
             : null;
         var skippedLevels = 0;
+        ModelContext? context = null;
+        var boundsInModel = 0;
 
         for (var levelIndex = 0;
              levelIndex < problem.ObjectiveLevels.Count;
@@ -93,7 +95,11 @@ public sealed class OrToolsCandidateSelectionSolver : ICandidateSelectionSolver
                         "level was proven optimal.");
             }
 
-            var built = BuildModel(problem, fixedBounds);
+            // The first pass builds the model; each later pass only appends the equalities of the
+            // levels proven since, which yields the model a fresh build would (ADR-089).
+            var built = context is null
+                ? BuildModel(problem, new ModelIndex(problem), fixedBounds)
+                : ExtendModel(context, fixedBounds, boundsInModel);
 
             if (built.Error is not null)
             {
@@ -109,9 +115,10 @@ public sealed class OrToolsCandidateSelectionSolver : ICandidateSelectionSolver
                     bounds);
             }
 
-            var context = built.Context!;
+            context = built.Context!;
+            boundsInModel = fixedBounds.Count;
             var level = problem.ObjectiveLevels[levelIndex];
-            var expression = context.Objectives[levelIndex];
+            var expression = context.Objective(levelIndex);
 
             if (level.Sense == CandidateSelectionObjectiveSense.Maximize)
             {
@@ -336,72 +343,64 @@ public sealed class OrToolsCandidateSelectionSolver : ICandidateSelectionSolver
         return constants;
     }
 
-    private static BuildResult BuildModel(
+    /// <summary>
+    /// Builds the model of one lexicographic pass. The model is the same, variable for variable
+    /// and constraint for constraint, as the archived builder's (ADR-089; the model-identity
+    /// tests compare the CP-SAT protos byte for byte): the lookups come from
+    /// <paramref name="index"/> instead of a scan of every option per vehicle, request and level,
+    /// and a Sum objective is created only when a pass uses it, because creating an expression
+    /// does not change the model.
+    /// </summary>
+    internal static BuildResult BuildModel(
         CandidateSelectionProblem problem,
+        ModelIndex index,
         IReadOnlyList<ObjectiveSolveBound> fixedBounds)
     {
         var model = new CpModel();
-        var variables = problem.Options.ToDictionary(
-            option => option.OptionId,
-            option => model.NewBoolVar(option.OptionId),
-            StringComparer.Ordinal);
+        var options = problem.Options;
+        var variables = new Dictionary<string, BoolVar>(options.Count, StringComparer.Ordinal);
+        var literals = new BoolVar[options.Count];
 
-        foreach (var vehicle in problem.VehicleIds)
+        for (var optionIndex = 0; optionIndex < options.Count; optionIndex++)
         {
-            model.Add(
-                LinearExpr.Sum(
-                    problem.Options
-                        .Where(option => option.VehicleId == vehicle)
-                        .Select(option => variables[option.OptionId])) == 1);
+            var variable = model.NewBoolVar(options[optionIndex].OptionId);
+            variables.Add(options[optionIndex].OptionId, variable);
+            literals[optionIndex] = variable;
         }
 
-        foreach (var request in problem.RequestIds)
+        foreach (var vehicleOptions in index.VehicleOptions)
         {
-            model.Add(
-                LinearExpr.Sum(
-                    problem.Options
-                        .Where(option => option.RequestIds.Contains(request))
-                        .Select(option => variables[option.OptionId])) <= 1);
+            model.Add(LinearExpr.Sum(vehicleOptions.Select(option => literals[option])) == 1);
+        }
+
+        foreach (var requestOptions in index.RequestOptions)
+        {
+            model.Add(LinearExpr.Sum(requestOptions.Select(option => literals[option])) <= 1);
         }
 
         // G2 coupling, added only when relocation options exist: a rider's donors and
         // receivers are selected together, and at most one rider moves.
-        var receivers = problem.Options
-            .Where(option => option.RelocationIn is not null)
-            .ToArray();
-
-        if (receivers.Length != 0
-            || problem.Options.Any(option => option.RelocationOut is not null))
+        if (index.HasRelocation)
         {
-            foreach (var rider in problem.Options
-                         .Select(option => option.RelocationOut ?? option.RelocationIn)
-                         .OfType<RequestId>()
-                         .Distinct()
-                         .OrderBy(value => value.Value, StringComparer.Ordinal))
+            foreach (var (donors, receivers) in index.RelocationRiders)
             {
                 model.Add(
-                    LinearExpr.Sum(
-                        problem.Options
-                            .Where(option => option.RelocationOut == rider)
-                            .Select(option => variables[option.OptionId]))
-                    == LinearExpr.Sum(
-                        problem.Options
-                            .Where(option => option.RelocationIn == rider)
-                            .Select(option => variables[option.OptionId])));
+                    LinearExpr.Sum(donors.Select(option => literals[option]))
+                    == LinearExpr.Sum(receivers.Select(option => literals[option])));
             }
 
             model.Add(
-                LinearExpr.Sum(receivers.Select(option => variables[option.OptionId])) <= 1);
+                LinearExpr.Sum(index.Receivers.Select(option => literals[option])) <= 1);
         }
 
-        var objectives = new List<LinearExpr>(problem.ObjectiveLevels.Count);
+        var objectives = new LinearExpr?[problem.ObjectiveLevels.Count];
 
         for (var levelIndex = 0;
              levelIndex < problem.ObjectiveLevels.Count;
              levelIndex++)
         {
             var level = problem.ObjectiveLevels[levelIndex];
-            var upperBound = ObjectiveUpperBound(problem, levelIndex);
+            var upperBound = index.UpperBounds[levelIndex];
 
             if (upperBound is null)
             {
@@ -411,12 +410,6 @@ public sealed class OrToolsCandidateSelectionSolver : ICandidateSelectionSolver
 
             if (level.Aggregation == CandidateSelectionObjectiveAggregation.Sum)
             {
-                objectives.Add(
-                    LinearExpr.WeightedSum(
-                        problem.Options.Select(
-                            option => variables[option.OptionId]),
-                        problem.Options.Select(
-                            option => option.ObjectiveContributions[levelIndex])));
                 continue;
             }
 
@@ -426,53 +419,175 @@ public sealed class OrToolsCandidateSelectionSolver : ICandidateSelectionSolver
                 $"objective-max-{levelIndex}");
             model.AddMaxEquality(
                 maximum,
-                problem.Options.Select(
-                    option => LinearExpr.Term(
-                        variables[option.OptionId],
+                options.Select(
+                    (option, optionIndex) => LinearExpr.Term(
+                        literals[optionIndex],
                         option.ObjectiveContributions[levelIndex])));
-            objectives.Add(maximum);
+            objectives[levelIndex] = maximum;
         }
+
+        var context = new ModelContext(model, variables, literals, options, objectives);
 
         foreach (var bound in fixedBounds)
         {
-            model.Add(objectives[bound.LevelIndex] == bound.IncumbentValue);
+            model.Add(context.Objective(bound.LevelIndex) == bound.IncumbentValue);
         }
 
         var validation = model.Validate();
         return string.IsNullOrEmpty(validation)
-            ? BuildResult.Success(
-                new ModelContext(model, variables, objectives.AsReadOnly()))
+            ? BuildResult.Success(context)
             : BuildResult.Failure(validation);
     }
 
-    private static long? ObjectiveUpperBound(
-        CandidateSelectionProblem problem,
-        int levelIndex)
+    /// <summary>
+    /// Brings the previous pass's model to the next pass: clears the objective and appends the
+    /// equalities of the bounds proven since, in order. A fresh build adds the same equalities
+    /// after the same base constraints, so the model is identical (ADR-089).
+    /// </summary>
+    internal static BuildResult ExtendModel(
+        ModelContext context,
+        IReadOnlyList<ObjectiveSolveBound> fixedBounds,
+        int boundsInModel)
     {
-        if (problem.ObjectiveLevels[levelIndex].Aggregation
-            == CandidateSelectionObjectiveAggregation.Maximum)
+        // CpModel.ClearObjective is not public in this package; clearing both proto fields is
+        // what it does, and the model-identity tests check the result byte for byte.
+        context.Model.Model.Objective = null;
+        context.Model.Model.FloatingPointObjective = null;
+
+        for (var boundIndex = boundsInModel; boundIndex < fixedBounds.Count; boundIndex++)
         {
-            return problem.Options.Max(
-                option => option.ObjectiveContributions[levelIndex]);
+            var bound = fixedBounds[boundIndex];
+            context.Model.Add(context.Objective(bound.LevelIndex) == bound.IncumbentValue);
         }
 
-        long total = 0;
+        var validation = context.Model.Validate();
+        return string.IsNullOrEmpty(validation)
+            ? BuildResult.Success(context)
+            : BuildResult.Failure(validation);
+    }
 
-        foreach (var vehicle in problem.VehicleIds)
+    /// <summary>
+    /// Per-problem lookups for <see cref="BuildModel"/>, computed once per solve. Every list keeps
+    /// option order, and vehicles, requests and relocation riders keep the order the archived
+    /// builder visited them in, so each constraint has the same terms in the same order.
+    /// </summary>
+    internal sealed class ModelIndex
+    {
+        public ModelIndex(CandidateSelectionProblem problem)
         {
-            var maximum = problem.Options
-                .Where(option => option.VehicleId == vehicle)
-                .Max(option => option.ObjectiveContributions[levelIndex]);
+            var options = problem.Options;
+            var byVehicle = new Dictionary<VehicleId, List<int>>();
+            var byRequest = new Dictionary<RequestId, List<int>>();
+            var donorsByRider = new Dictionary<RequestId, List<int>>();
+            var receiversByRider = new Dictionary<RequestId, List<int>>();
+            var receivers = new List<int>();
+            var riders = new HashSet<RequestId>();
+            var hasDonor = false;
 
-            if (total > DomainLimits.MaxCanonicalInteger - maximum)
+            for (var optionIndex = 0; optionIndex < options.Count; optionIndex++)
             {
-                return null;
+                var option = options[optionIndex];
+                Append(byVehicle, option.VehicleId, optionIndex);
+
+                // Request identifiers are unique within an option (problem validation), so an
+                // option enters each of its requests' lists once, as Contains selected it once.
+                foreach (var request in option.RequestIds)
+                {
+                    Append(byRequest, request, optionIndex);
+                }
+
+                if (option.RelocationOut is RequestId donated)
+                {
+                    hasDonor = true;
+                    riders.Add(donated);
+                    Append(donorsByRider, donated, optionIndex);
+                }
+
+                if (option.RelocationIn is RequestId received)
+                {
+                    receivers.Add(optionIndex);
+                    riders.Add(received);
+                    Append(receiversByRider, received, optionIndex);
+                }
             }
 
-            total += maximum;
+            VehicleOptions = problem.VehicleIds
+                .Select(vehicle => Lookup(byVehicle, vehicle))
+                .ToArray();
+            RequestOptions = problem.RequestIds
+                .Select(request => Lookup(byRequest, request))
+                .ToArray();
+            Receivers = receivers.ToArray();
+            HasRelocation = receivers.Count != 0 || hasDonor;
+            RelocationRiders = riders
+                .OrderBy(value => value.Value, StringComparer.Ordinal)
+                .Select(rider => (Lookup(donorsByRider, rider), Lookup(receiversByRider, rider)))
+                .ToArray();
+            UpperBounds = Enumerable.Range(0, problem.ObjectiveLevels.Count)
+                .Select(level => ObjectiveUpperBound(problem, VehicleOptions, level))
+                .ToArray();
         }
 
-        return total;
+        public IReadOnlyList<int[]> VehicleOptions { get; }
+
+        public IReadOnlyList<int[]> RequestOptions { get; }
+
+        public int[] Receivers { get; }
+
+        public bool HasRelocation { get; }
+
+        public IReadOnlyList<(int[] Donors, int[] Receivers)> RelocationRiders { get; }
+
+        public IReadOnlyList<long?> UpperBounds { get; }
+
+        private static void Append<TKey>(
+            Dictionary<TKey, List<int>> lists,
+            TKey key,
+            int optionIndex)
+            where TKey : notnull
+        {
+            if (!lists.TryGetValue(key, out var list))
+            {
+                list = [];
+                lists.Add(key, list);
+            }
+
+            list.Add(optionIndex);
+        }
+
+        private static int[] Lookup<TKey>(Dictionary<TKey, List<int>> lists, TKey key)
+            where TKey : notnull =>
+            lists.TryGetValue(key, out var list) ? list.ToArray() : [];
+
+        private static long? ObjectiveUpperBound(
+            CandidateSelectionProblem problem,
+            IReadOnlyList<int[]> vehicleOptions,
+            int levelIndex)
+        {
+            if (problem.ObjectiveLevels[levelIndex].Aggregation
+                == CandidateSelectionObjectiveAggregation.Maximum)
+            {
+                return problem.Options.Max(
+                    option => option.ObjectiveContributions[levelIndex]);
+            }
+
+            long total = 0;
+
+            foreach (var options in vehicleOptions)
+            {
+                var maximum = options.Max(
+                    option => problem.Options[option].ObjectiveContributions[levelIndex]);
+
+                if (total > DomainLimits.MaxCanonicalInteger - maximum)
+                {
+                    return null;
+                }
+
+                total += maximum;
+            }
+
+            return total;
+        }
     }
 
     private static string Parameters(
@@ -623,12 +738,28 @@ public sealed class OrToolsCandidateSelectionSolver : ICandidateSelectionSolver
         return created.Value!;
     }
 
-    private sealed record ModelContext(
-        CpModel Model,
-        IReadOnlyDictionary<string, BoolVar> Variables,
-        IReadOnlyList<LinearExpr> Objectives);
+    /// <summary>
+    /// A built model and its objective expressions. A Maximum level's expression is the variable
+    /// the build added; a Sum level's is created on first use and never enters the model by itself.
+    /// </summary>
+    internal sealed class ModelContext(
+        CpModel model,
+        IReadOnlyDictionary<string, BoolVar> variables,
+        BoolVar[] literals,
+        IReadOnlyList<CandidateSelectionOption> options,
+        LinearExpr?[] objectives)
+    {
+        public CpModel Model { get; } = model;
 
-    private sealed record BuildResult(ModelContext? Context, string? Error)
+        public IReadOnlyDictionary<string, BoolVar> Variables { get; } = variables;
+
+        public LinearExpr Objective(int levelIndex) =>
+            objectives[levelIndex] ??= LinearExpr.WeightedSum(
+                literals.AsEnumerable(),
+                options.Select(option => option.ObjectiveContributions[levelIndex]));
+    }
+
+    internal sealed record BuildResult(ModelContext? Context, string? Error)
     {
         public static BuildResult Success(ModelContext context) =>
             new(context, null);

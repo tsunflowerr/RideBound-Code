@@ -311,7 +311,7 @@ public sealed class PhysicalPlanValidator
                 return Overflow(vehicle.Id);
             }
 
-            var advanced = TryAdvance(time, remainingDuration);
+            var advanced = TryArrive(context, time, remainingDuration);
 
             if (advanced is null)
             {
@@ -345,7 +345,7 @@ public sealed class PhysicalPlanValidator
                     dimension: "routeConnectivity");
             }
 
-            var arrival = TryAdvance(time, travelTime);
+            var arrival = TryArrive(context, time, travelTime);
 
             if (arrival is null)
             {
@@ -819,6 +819,27 @@ public sealed class PhysicalPlanValidator
         }
 
         return PhysicalValidationResult.Feasible;
+    }
+
+    // A driven leg (or the rest of the current edge): the lookup's arrival, which a planning
+    // forecast may stretch; service durations stay plain additions (TryAdvance).
+    private static SimTime? TryArrive(
+        PhysicalValidationContext context,
+        SimTime time,
+        Duration travelTime)
+    {
+        try
+        {
+            return context.TravelTimes.Arrive(context.EvaluationTime, time, travelTime);
+        }
+        catch (OverflowException)
+        {
+            return null;
+        }
+        catch (ArgumentOutOfRangeException)
+        {
+            return null;
+        }
     }
 
     private static SimTime? TryAdvance(SimTime time, Duration duration)

@@ -107,6 +107,29 @@ public static class ProtocolHash
     private static readonly byte[] DecisionDomainV2 =
         "RideBound.DecisionHash.v2\0"u8.ToArray();
 
+    /// <summary>
+    /// ADR-089, light audit: the decision hash chains the previous decision, the manifest, the
+    /// event batch, the state identity (epoch, sequence, simulation time and the state hash field)
+    /// and the decision, but not the canonical online state, which is not hashed per decision in
+    /// this mode. Its own domain keeps it from being mistaken for a v1 or v2 hash.
+    /// </summary>
+    public static Sha256Hex CalculateDecisionHashLight(
+        Sha256Hex previousDecisionHash,
+        Sha256Hex manifestHash,
+        string policyVersion,
+        IReadOnlyList<ReadOnlyMemory<byte>> canonicalInputStateParts,
+        ReadOnlySpan<byte> canonicalDecision) =>
+        CalculateDecisionHash(
+            DecisionDomainLight,
+            previousDecisionHash,
+            manifestHash,
+            policyVersion,
+            canonicalInputStateParts,
+            canonicalDecision);
+
+    private static readonly byte[] DecisionDomainLight =
+        "RideBound.DecisionHash.light.v1\0"u8.ToArray();
+
     private static Sha256Hex CalculateDecisionHash(
         byte[] domain,
         Sha256Hex previousDecisionHash,

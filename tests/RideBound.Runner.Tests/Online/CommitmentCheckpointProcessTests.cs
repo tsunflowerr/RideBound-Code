@@ -1,6 +1,8 @@
 using System.Diagnostics;
 using System.Reflection;
 using System.Text.Json;
+using RideBound.Contracts.Protocol;
+using RideBound.Contracts.Serialization;
 
 namespace RideBound.Runner.Tests.Online;
 
@@ -50,6 +52,53 @@ public sealed class CommitmentCheckpointProcessTests
             payload.GetProperty("checkpointHash").GetString(),
             restoreAck.RootElement.GetProperty("payload")
                 .GetProperty("checkpointHash").GetString());
+    }
+
+    /// <summary>
+    /// ADR-089: the streamed checkpoint line equals, byte for byte, the line the envelope path
+    /// builds from the same content (old hash, Encode, envelope, canonical NDJSON).
+    /// </summary>
+    [Fact]
+    public async Task Streamed_checkpoint_line_equals_the_envelope_path_line()
+    {
+        var scenarioLines = File.ReadAllLines(
+            ScenarioPath("commitment-demo.input.ndjson"));
+        var checkpointRequest =
+            "{\"schemaVersion\":\"1.0.0\",\"messageType\":\"checkpoint\"," +
+            "\"runId\":\"wp3-demo-run\",\"scenarioId\":\"wp3-commitment-tiny\"," +
+            "\"payload\":{}}";
+        var run = await RunProcess(
+            scenarioLines.Take(4).Concat([checkpointRequest, scenarioLines[^1]]));
+        Assert.Equal(0, run.ExitCode);
+        var line = run.StandardOutput.Split('\n', StringSplitOptions.RemoveEmptyEntries)
+            .Single(value => JsonDocument.Parse(value).RootElement
+                .GetProperty("messageType").GetString() == "checkpoint");
+        var streamed = System.Text.Encoding.UTF8.GetBytes(line);
+        var decoded = ProtocolEnvelopeCodec.Decode(streamed).Envelope!;
+        var content = decoded.Payload.GetProperty("content");
+        var archivedContent = new CheckpointContent(
+            Hash(content, "manifestHash"),
+            Hash(content, "stateHash"),
+            Hash(content, "previousDecisionHash"),
+            content.GetProperty("appliedEpoch").GetInt64(),
+            content.GetProperty("nextEventSeq").GetInt64(),
+            content.GetProperty("simTimeMs").GetInt64(),
+            content.GetProperty("onlineState").Clone());
+        var archivedHash = CheckpointPayloadCodec.CalculateHash(archivedContent);
+        using var archivedPayload = JsonDocument.Parse(
+            CheckpointPayloadCodec.Encode(
+                new CheckpointPayload("1.0.0", archivedHash, archivedContent)));
+        var archivedLine = CanonicalJson.Serialize(
+            decoded with { Payload = archivedPayload.RootElement.Clone() });
+
+        Assert.Equal(archivedHash.Value, decoded.Payload.GetProperty("checkpointHash").GetString());
+        Assert.Equal(archivedLine, streamed);
+    }
+
+    private static Sha256Hex Hash(JsonElement content, string name)
+    {
+        Assert.True(Sha256Hex.TryCreate(content.GetProperty(name).GetString(), out var hash));
+        return hash!;
     }
 
     private static async Task<ProcessResult> RunProcess(

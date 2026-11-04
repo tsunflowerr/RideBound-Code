@@ -32,7 +32,8 @@ public sealed class CommitmentLockEvaluator
         PromiseProjection candidate,
         SimTime evaluationTime,
         CommitmentPolicy policy,
-        PromiseProjection? anchor = null)
+        PromiseProjection? anchor = null,
+        ShadowAllocation? shadowAllocation = null)
     {
         ArgumentNullException.ThrowIfNull(request);
         ArgumentNullException.ThrowIfNull(previous);
@@ -115,7 +116,8 @@ public sealed class CommitmentLockEvaluator
                 exogenous,
                 candidate,
                 anchor,
-                policy);
+                policy,
+                shadowAllocation);
         }
 
         // The revision cap is appended after the deadline for the same reason.
@@ -195,7 +197,8 @@ public sealed class CommitmentLockEvaluator
         PromiseProjection exogenous,
         PromiseProjection candidate,
         PromiseProjection? anchor,
-        CommitmentPolicy policy)
+        CommitmentPolicy policy,
+        ShadowAllocation? shadowAllocation)
     {
         if (anchor is null)
         {
@@ -211,8 +214,9 @@ public sealed class CommitmentLockEvaluator
                 nameof(anchor));
         }
 
-        // Fixed slack, or the slack-proportional share of this rider's first promise.
-        var slack = policy.DeadlineSlackFor(anchor, request.MaxRideTime)
+        // Fixed slack, or the slack-proportional share of this rider's first promise (scaled by
+        // its Shadow class under a shadow-allocated policy).
+        var slack = policy.DeadlineSlackFor(anchor, request.MaxRideTime, shadowAllocation)
             ?? throw new InvalidOperationException("A deadline rule has no slack.");
 
         // Both values are canonical non-negative integers below 2^53, so the

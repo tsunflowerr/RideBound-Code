@@ -177,6 +177,28 @@ public static class OnlineStateCanonicalizer
             writer.WritePropertyName("incidentLedger");
             WriteIncidentLedger(writer, state.Incidents);
 
+            // ADR-089 GĐ4: only under Shadow Control.
+            if (state.Commitments.ShadowAllocations.Count != 0)
+            {
+                writer.WritePropertyName("shadowAllocations");
+                writer.WriteStartArray();
+
+                foreach (var (requestId, allocation) in state.Commitments.ShadowAllocations.OrderBy(
+                             pair => pair.Key.Value,
+                             StringComparer.Ordinal))
+                {
+                    writer.WriteStartObject();
+                    writer.WriteString(
+                        "class",
+                        OnlineStateCanonicalWriter.ShadowClassText(allocation.Class));
+                    writer.WriteString("requestId", requestId.Value);
+                    writer.WriteString("score", allocation.Score);
+                    writer.WriteEndObject();
+                }
+
+                writer.WriteEndArray();
+            }
+
             writer.WriteEndObject();
         }
 

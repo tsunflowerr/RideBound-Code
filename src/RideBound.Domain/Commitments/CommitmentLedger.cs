@@ -1,4 +1,4 @@
-using System.Collections.Frozen;
+using System.Collections.Immutable;
 using RideBound.Domain.Common;
 
 namespace RideBound.Domain.Commitments;
@@ -147,20 +147,67 @@ public sealed record CommitmentLedgerAppendResult
                 dimension));
 }
 
+/// <remarks>
+/// ADR-089: the ledger is persistent. Each append shares the unchanged histories and keeps the
+/// set of every publication identifier, so an append no longer rebuilds the history map or scans
+/// every entry of every rider for a duplicate publication (on a Via job, 79,000 entries and about
+/// 27 appends per decision). The enumeration order of <see cref="Histories"/> was already
+/// unspecified (hash order of the request identifiers); every reader sorts or looks up by key.
+/// </remarks>
 public sealed class CommitmentLedger
 {
-    private readonly FrozenDictionary<RequestId, RiderCommitmentHistory> _histories;
+    private readonly ImmutableDictionary<RequestId, RiderCommitmentHistory> _histories;
+    private readonly ImmutableHashSet<string> _publicationIds;
+    private readonly ImmutableDictionary<RequestId, ShadowAllocation> _shadowAllocations;
 
     private CommitmentLedger(
-        IEnumerable<KeyValuePair<RequestId, RiderCommitmentHistory>> histories)
+        ImmutableDictionary<RequestId, RiderCommitmentHistory> histories,
+        ImmutableHashSet<string> publicationIds,
+        ImmutableDictionary<RequestId, ShadowAllocation> shadowAllocations)
     {
-        _histories = histories.ToFrozenDictionary();
+        _histories = histories;
+        _publicationIds = publicationIds;
+        _shadowAllocations = shadowAllocations;
     }
 
     public IReadOnlyDictionary<RequestId, RiderCommitmentHistory> Histories =>
         _histories;
 
-    public static CommitmentLedger Empty { get; } = new([]);
+    /// <summary>
+    /// ADR-089 GĐ4: Shadow Control class of every rider with a promise, frozen at its first
+    /// promise; empty unless a shadow-allocated policy runs (then the canonical state is as before).
+    /// </summary>
+    public IReadOnlyDictionary<RequestId, ShadowAllocation> ShadowAllocations =>
+        _shadowAllocations;
+
+    public static CommitmentLedger Empty { get; } = new(
+        ImmutableDictionary<RequestId, RiderCommitmentHistory>.Empty,
+        ImmutableHashSet.Create<string>(StringComparer.Ordinal),
+        ImmutableDictionary<RequestId, ShadowAllocation>.Empty);
+
+    /// <summary>Records the class of a rider whose initial promise is in this ledger; once only.</summary>
+    public CommitmentLedger WithShadowAllocation(RequestId requestId, ShadowAllocation allocation)
+    {
+        ArgumentNullException.ThrowIfNull(allocation);
+
+        if (!_histories.ContainsKey(requestId))
+        {
+            throw new InvalidOperationException("A shadow class needs the rider's initial promise.");
+        }
+
+        if (_shadowAllocations.ContainsKey(requestId))
+        {
+            throw new InvalidOperationException("A rider's shadow class is frozen at its first promise.");
+        }
+
+        return new CommitmentLedger(
+            _histories,
+            _publicationIds,
+            _shadowAllocations.Add(requestId, allocation));
+    }
+
+    public ShadowAllocation? ShadowAllocationOf(RequestId requestId) =>
+        _shadowAllocations.TryGetValue(requestId, out var allocation) ? allocation : null;
 
     public CommitmentLedgerAppendResult OpenInitial(
         string publicationId,
@@ -209,10 +256,9 @@ public sealed class CommitmentLedger
 
         return CommitmentLedgerAppendResult.Success(
             new CommitmentLedger(
-                _histories.Append(
-                    new KeyValuePair<RequestId, RiderCommitmentHistory>(
-                        projection.RequestId,
-                        history))));
+                _histories.Add(projection.RequestId, history),
+                _publicationIds.Add(publicationId),
+                _shadowAllocations));
     }
 
     public CommitmentLedgerAppendResult AppendRevision(
@@ -317,22 +363,15 @@ public sealed class CommitmentLedger
 
         return CommitmentLedgerAppendResult.Success(
             new CommitmentLedger(
-                _histories
-                    .Where(pair => pair.Key != requestId)
-                    .Append(
-                        new KeyValuePair<RequestId, RiderCommitmentHistory>(
-                            requestId,
-                            updatedHistory))));
+                _histories.SetItem(requestId, updatedHistory),
+                _publicationIds.Add(publicationId),
+                _shadowAllocations));
     }
 
+    // Every entry enters the ledger through OpenInitial or AppendRevision, which add its
+    // publication identifier here, so this is the set of every entry's identifier.
     private bool ContainsPublication(string publicationId) =>
-        _histories.Values
-            .SelectMany(history => history.Entries)
-            .Any(
-                entry => string.Equals(
-                    entry.PublicationId,
-                    publicationId,
-                    StringComparison.Ordinal));
+        _publicationIds.Contains(publicationId);
 
     private static CommitmentLedgerAppendResult DuplicatePublication(
         string publicationId) =>

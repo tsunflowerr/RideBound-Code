@@ -145,6 +145,14 @@ public sealed class OnlineStateHashV2
             Frame(root, "latePickups", Digest(LeafDomain, late.WrittenSpan));
         }
 
+        // ADR-089 GĐ4: only under Shadow Control, so every other state keeps its v2 hash.
+        if (state.Commitments.ShadowAllocations.Count != 0)
+        {
+            var shadow = new CanonicalBuffer(256);
+            OnlineStateCanonicalWriter.WriteShadowAllocations(shadow, state.Commitments);
+            Frame(root, "shadowAllocations", Digest(LeafDomain, shadow.WrittenSpan));
+        }
+
         Sha256Hex.TryCreate(Convert.ToHexStringLower(root.GetHashAndReset()), out var result);
         return result!;
     }

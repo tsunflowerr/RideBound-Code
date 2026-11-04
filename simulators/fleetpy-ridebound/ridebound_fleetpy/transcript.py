@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import base64
+import gzip
 import hashlib
 import pathlib
 import threading
@@ -10,12 +11,20 @@ from .mapping import canonical_json_bytes
 
 
 class ProtocolTranscriptRecorder:
-    """Append-only exact-byte transcript shared across Runner restarts."""
+    """Append-only exact-byte transcript shared across Runner restarts.
+
+    ADR-089: a path ending in .gz is written gzip-compressed, with the same records. A full-node Via job sends about
+    16 travel snapshots of about 140 MB, so its plain transcript would be about 3 GB.
+    """
 
     def __init__(self, path: pathlib.Path) -> None:
         self.path = path.resolve()
         try:
-            self._target = self.path.open("xb")
+            self._target = (
+                gzip.open(self.path, "xb", compresslevel=6)
+                if self.path.suffix == ".gz"
+                else self.path.open("xb")
+            )
         except OSError as exc:
             raise AdapterFailure(
                 "RBWP7_TRANSCRIPT_OPEN_FAILED",

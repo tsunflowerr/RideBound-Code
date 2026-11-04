@@ -19,6 +19,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="Validation\travel-forecast-golden.json"
+                      LogicalName="RideBound.Domain.Tests.Validation.travel-forecast-golden.json" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\src\RideBound.Domain\RideBound.Domain.csproj" />
   </ItemGroup>
 

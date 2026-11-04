@@ -5865,6 +5865,197 @@ phỏng mới.
 **Consequences:** cả hai bản tóm tắt nay dài hơn một trang. Việc này đã có từ `91ad6f4`; nếu khoa yêu cầu một trang thì phải
 rút gọn.
 
+### ADR-089 — 2026-11-02 — Proposed (bộ chạy nhanh: tăng tốc chính xác và chế độ kiểm toán nhẹ; nhánh `research/fast-runner-2026-11-02`)
+
+**Context:**
+- Chủ quyết ngày 30/10: Via là đánh giá chính, Manhattan là thí điểm. Ngày 02/11 chủ cho phép sửa bộ chạy để chạy nhanh,
+  kết quả vẫn đúng, và chạy được ô Via 512 yêu cầu (kế hoạch `C:/RideBoundContinuation/2026-11-02/KE-HOACH-BO-CHAY-NHANH.md`).
+- Đo trên job `VIA-EOHZ35-d20190213-vz-r0-w08` (60 nút, 509 yêu cầu, 62 xe, 2.905 quyết định), bằng cách phát lại transcript
+  qua đúng bản `runner-p1-dwell-v1`:
+  - job mất 81,6 phút; phía Python/FleetPy chỉ dùng 85,5 giây CPU;
+  - băm v1 toàn bộ trạng thái hai lần mỗi quyết định (`RunnerSession.cs` cũ :862-869, :903-905); trạng thái lên 388 MiB,
+    372 MiB là sổ cam kết (78.981 mục, khoảng 5 KB mỗi mục);
+  - hồ sơ CPU 400 quyết định đầu: 66% trong `OrToolsCandidateSelectionSolver.BuildModel`. Có 64 tầng mục tiêu (2 + một tầng
+    phá hòa mỗi xe); mô hình dựng lại ở mỗi tầng, mỗi lần quét xe × phương án × tầng. CP-SAT giải chỉ 1,8%;
+  - hồ sơ CPU đoạn cuối job (chế độ nhẹ): 70% trong `CommitmentLedger.AppendRevision`. Kiểm trùng mã công bố duyệt mọi mục
+    của mọi khách, và bảng khách dựng lại ở mỗi lần thêm mục.
+- Không thay đổi nào dưới đây là một claim nghiên cứu mới; đây là kỹ thuật thực thi (`docs/03-related-work-and-claim-boundary.md`).
+
+**Decision:**
+1. **Không đổi byte đầu ra ở chế độ mặc định:**
+   - S1/S1b: `BuildModel` dùng bảng tra lập một lần cho mỗi bài toán. Mô hình dựng một lần, mỗi lượt chỉ nối ràng buộc của tầng
+     vừa giải; biểu thức mục tiêu dạng tổng chỉ tạo khi dùng;
+   - S2: bản chốt ghi theo luồng: dòng canonical của phong bì có `onlineState` rỗng được cắt ở chỗ đó, rồi ghép các đoạn byte
+     canonical đã có của trạng thái; `checkpointHash` băm cuốn chiếu cùng nội dung (`CheckpointPayloadCodec.CalculateHash`
+     dạng đoạn, `EncodeShell`, `SplitAtEmptyOnlineState`);
+   - S3: `--maximum-line-bytes` nhận tới 1 GiB (`NdjsonReader.MaximumConfigurableLineBytes`);
+   - sổ cam kết bền vững (`ImmutableDictionary` cho lịch sử, `ImmutableHashSet` cho mã công bố). Thứ tự duyệt `Histories`
+     vốn không xác định (băm chuỗi ngẫu nhiên theo tiến trình); mọi chỗ đọc đều sắp xếp hoặc tra theo khóa;
+   - `NdjsonReader` đọc theo khối 64 KiB và kiểm bằng `Utf8.IsValid`, thay vì đọc từng byte và giải mã cả dòng sang UTF-16.
+     Giữ nguyên quy tắc giới hạn (tính cả `\r` trước `\n`), cách bỏ dòng quá dài và các thông điệp lỗi.
+2. **Chế độ kiểm toán nhẹ, chỉ bật bằng `auditHash: light-v1` trong cấu hình WP4** (mặc định `full-v1`):
+   - `stateHash` là mã nhận dạng trạng thái (epoch, số thứ tự sự kiện kế, thời gian mô phỏng);
+   - mã băm quyết định có miền riêng `RideBound.DecisionHash.light.v1`, nối chuỗi gói sự kiện, mã nhận dạng trạng thái và
+     quyết định;
+   - `checkpointHash` vẫn băm toàn bộ trạng thái canonical; khôi phục kiểm mã nhận dạng;
+   - adapter không đổi: nó chỉ dùng `decisionHash` làm mã xác nhận (`runner_client.py:219-240`).
+3. Tắt bằng chứng bộ giải ở đợt chạy lớn dùng khóa có sẵn `emitSolverExecutionEvidence: false`; giữ bật ở các job mẫu.
+
+**Evidence:**
+- Test: mốc 1.230 (1.229 đạt; đỏ đã biết `StrictBagItBundleTests` trên cây sạch) → 1.247/1.247 đạt trên cây có thay đổi.
+  Test mới:
+  - `NdjsonReader` mới so với bản cũ (giữ nguyên văn trong test) trên 3.000 luồng byte ngẫu nhiên, đọc từng mẩu 1–7 byte,
+    có `\r`, `\n`, UTF-8 hỏng và giới hạn ngẫu nhiên; mọi kết quả (loại, byte, mã và thông điệp lỗi) bằng nhau;
+  - mô hình CP-SAT so từng byte protobuf với bản dựng cũ (giữ nguyên văn trong test): 401 bài toán ngẫu nhiên, mọi lượt,
+    cả đường dựng mới và đường nối thêm;
+  - mã băm bản chốt cuốn chiếu bằng mã băm cũ với mọi cách cắt đoạn; dòng bản chốt của Runner thật bằng dòng đường phong bì
+    cũ;
+  - chế độ nhẹ: mọi trường trừ `*Hash` giống chế độ đầy đủ; khôi phục; giá trị cấu hình đóng;
+  - sổ: mã công bố của bất kỳ mục trước nào bị từ chối.
+  - Mỗi test so sánh được thử làm hỏng có chủ đích và đã đỏ.
+- Phát lại `VIA-EOHZ35` w08:
+  - S1b, chế độ đầy đủ: 730 quyết định đầu, 730/730 khung giống từng byte; khâu ra quyết định 305 → 121 ms/qđ;
+  - bản cuối, chế độ nhẹ, tắt bằng chứng: đủ 2.905 quyết định, 2.907/2.907 khung bằng nhau sau khi bỏ `*Hash`;
+    **545 giây (9,1 phút)** so với khoảng 80 phút; RAM đỉnh 339 MB (cũ 4,8–7,2 GiB). Đo khi cổng G1 chạy song song.
+- Cổng G1 (`ridebound-scratchpad/fastrun-2026-11-02/replay_gate_g1.py`): phát lại 228 job cầu nối Manhattan đã ghi, so từng
+  byte mọi khung kể cả bản chốt cuối.
+  - Bản `runner-fastrun-g1` (S1/S1b/S2/S3): 146/146 job giống từng byte, rồi dừng có chủ ý để chạy lại bằng bản cuối
+    (kết quả từng job giữ ở `replay-g1/`).
+  - Bản cuối `runner-fastrun-final1`: **228/228 job, 176.074/176.074 khung giống từng byte** (cùng tổng số với P9 của
+    PHASE1-LOG), `replay-g1-final1/SUMMARY.json`.
+- Cổng G2 (`replay_gate_g2.py`, chế độ nhẹ, giữ bằng chứng bộ giải): cùng 228 job, so mọi khung sau khi bỏ `*Hash`, kể cả
+  bản chốt: **228/228 job, 176.074/176.074 khung**.
+- Via ở chế độ đầy đủ (`replay_runner_big.py`, heap 6 GiB): trọn job `VIA-EOHZ35` w08, **2.908/2.908 khung giống từng
+  byte, kể cả bản chốt cuối 406 MB**; RAM đỉnh Runner 1.400 MiB (bản cũ hết bộ nhớ ở mức 6 GiB); 75 phút (băm v1).
+- Bốn job Via hết bộ nhớ (`complete_oom_job.py`): phát lại chế độ đầy đủ, mọi khung trước bản chốt giống từng byte, rồi
+  thay khung lỗi cuối bằng bản chốt của bản mới, ghi vào `via-real-v1/runs/runA3-fastrun/` (thư mục gốc không đổi).
+  `VIA-RCE35` w08: 2.927/2.927 khung, bản chốt 420,9 MB, RAM đỉnh 1.505 MiB; w17: 3.219/3.219 khung, bản chốt 452,0 MB,
+  RAM đỉnh 1.535 MiB; `VIA-G2K8-RCE35` w08: 2.851/2.851 khung, 381,7 MB, 1.341 MiB; `VIA-U` w08: 3.114/3.114 khung,
+  562,8 MB, 1.930 MiB. Cả 4 job xong.
+- **Lưới Via gộp khu đủ 12/12** (luật C chỉ chèn ở cỡ Via): so từng khách với dự đoán đã khóa (`compare_via.py`):
+  - `runA3` (6 job pass) + `runA3-fastrun` (4 job hoàn tất): 10/10 cặp ô–nhánh khớp, 3.971/3.971 khách giống hệt, số lần
+    đổi xe G2 5/5 (`compare/runA3-with-fastrun-compare.json`). Lần chạy đầu bị dừng vì thiếu bộ nhớ khi main16 chạy cùng;
+    tệp dở được đổi tên `*.partial-stopped-0525`, không dùng;
+  - hai job chưa từng chạy (`VIA-U` w17, `VIA-G2K8-U` w17; ngày 26/10 bị chặn bởi sàn đĩa C) chạy bằng bản nhanh
+    (driver mạng ma trận, transcript thường, `runs/runA3-fastrun-missing`): 443/443 và 464/464 khách, đổi xe 33/33.
+  - Tổng: **12/12 cặp, 4.878/4.878 khách, đổi xe 6/6.** Mười job chạy ở chế độ đầy đủ, hai job ở chế độ nhanh (quy tắc so
+    khách không phụ thuộc chế độ băm).
+- **Ô Via đủ nút (GĐ3)**:
+  - `convert_via_full.py`: ô 13/2/2019 r0 w08 (824 nút, 678.152 cạnh) và w17 (830 nút, 688.070 cạnh), 512/512 khách,
+    không gộp khu. Bao đóng Floyd–Warshall hạ 85% phần tử, nhưng tối đa 9 ms (trung vị 2 ms).
+  - Dự đoán bộ mô phỏng wf15 ở chế độ adapter (`emulate_via_full.js`, 8 nhánh × 2 ô, thêm EO35) khóa sha256 lúc
+    2026-11-02T17:40:02Z (`VIA-FULL-PREDICTIONS.sha256`), trước mọi job RideBound.
+  - Adapter:
+    - `direct_network.py`: `NetworkBasic` với `Router` thay bằng cạnh nối thẳng, theo đúng ngữ nghĩa của
+      `Router.createRoutes` (đích đã chạm được báo kể cả khi chưa chốt). Ba test so với `NetworkBasic` đạt, kể cả giới
+      hạn số tuyến, bán kính và ca nút xuất phát nằm trong đích;
+    - transcript gzip; khóa driver `routingEngine` và `transcriptCompression`; kiểm bao đóng bằng numpy;
+    - bộ test adapter 464, đúng 6 lỗi đã biết.
+  - Job thử `VIA-EOHZ35` w08 (FleetPy + adapter + Runner thật, chế độ nhanh): pass, 20,6 phút, RAM đỉnh cả cây 5,9 GB.
+    **So với dự đoán đã khóa: 332/332 khách giống hệt.**
+  - **Cổng G3b: 16/16 job pass, 16/16 cặp ô–nhánh khớp, 5.925/5.925 khách giống hệt dự đoán, số lần đổi xe G2 8/8**
+    (`compare_via_full.py`, `compare-full/main16-compare.json`). Mỗi job 15,0–21,3 phút, RAM đỉnh cả cây 5,2–8,0 GB.
+  - Điều này chứng minh: ở cỡ 512 khách và 824–830 nút, trên hai ô này, chế độ adapter của bộ mô phỏng cho đúng từng khách
+    như hệ thật (FleetPy + adapter + Runner). Nó không chứng minh các số trong khóa luận: các số đó lấy từ chế độ plain của
+    bộ mô phỏng trên nhiều ngày; khoảng cách plain/adapter phải đo riêng (GĐ6).
+  - **Cổng G3a: đạt 4/4.** Ô gộp khu 60 nút, `VIA-EOHZ35` và `VIA-G2K8-EO35` × w08/w17; mỗi job chạy hai lần, chỉ khác
+    `routingEngine` (`network-basic-v1` / `complete-graph-direct-v1`). So transcript đã giải nén từng byte
+    (`compare_runs_os.py`, `gate-g3a/G3A-COMPARE.json`): 36.952/36.952 dòng giống nhau, cùng semanticHash, cùng 370/425/381/425
+    khách nhận. Driver: `make_run_drivers.py` (tái tạo đúng từng byte hai driver của ô đủ nút). Mỗi job trọn (FleetPy +
+    adapter + Runner, chế độ nhanh) 6,0–10,1 phút; cùng ô, bản cũ 81,6 phút. Giới hạn: trên ô 824 nút chỉ chạy mạng ma trận
+    (NetworkBasic quá chậm ở cỡ đó); ở đó bằng chứng là so từng khách với bộ mô phỏng.
+- **Shadow, bước 1 (GĐ4)**: `RideBound.Algorithms.Shareability` (`ShareabilityNetwork`, `ZoneDemandRates`,
+  `ShareabilityScorer`) là bản chép từng phép tính của bộ chấm điểm dễ ghép trong bộ mô phỏng (`sscore.js` makeScorer,
+  `lambda.js`; Elmi, Moylan, Alonso-Mora & Fielbaum 2026). Mã thuần, chỉ đọc, chưa nối vào quyết định nào.
+  - Dữ liệu chuẩn sinh bằng chính mã bộ mô phỏng (`shadow/gen_golden.js`, ô và ngữ cảnh ngẫu nhiên hợp lệ). So từng bit
+    S, S^w, S^d, số mốc và trọng số λ từng khu:
+    - test trong repo, 240 ca mạng đồ chơi: đạt;
+    - cổng ngoài repo (`shadow/gate`): 1.200/1.200 ca đồ chơi và 300/300 ca trên mạng Manhattan đầy đủ (4.411 nút, 63 khu);
+      5.376 véc-tơ trọng số λ khớp từng bit.
+  - Thử đổi một phép `<=` thành `<`: test đỏ. Toàn bộ test 1.250/1.250 đạt.
+- **Đóng gói máy thuê (GĐ5)**, `ridebound-scratchpad/fastrun-2026-11-02/docker/`:
+  - `assemble_context.py` dựng `E:/RideBoundData/dkr/via-full-v1`: bản export của worktree chạy job, bỏ
+    `research/continuation/2026-10-26/company-emulator/` (371 tệp, gồm `sp/`) và một manifest có đường dẫn logo, quét lại
+    không còn tên công ty; FleetPy 1.0.2; Runner `runner-fastrun-final1`; công cụ job; cấu hình.
+  - Adapter ghi HEAD vào mọi bản ghi chạy (`coreCommitSha`). Commit 59c4ee8 chứa `sp/` nên không đem đi được, vì vậy bản
+    export là một commit cục bộ cố định `6240da33` (cùng người ký và thời điểm), đóng gói kèm `.git`. Dockerfile dừng nếu
+    HEAD trong image khác commit này. Mã kiểm kê `8d1941d4…` (chạy thử: đúng HEAD, cây không đổi sau khi chạy).
+  - `run_queue.py`: hàng đợi chạy lại được. Job đã đạt thì bỏ qua; job dở được giữ dưới tên `<job>.interrupted-k`, không
+    xóa; log không ghi đè. `make_jobs.py`, `compare_runs_os.py` (so một job với chính nó: giống hệt), `README.md`.
+  - Tham chiếu Windows cho cổng Linux: 6 job (U, EO35, G2K8-EOHZ35 × w08/w17) chạy từ commit export, cùng Runner, đều
+    pass (13,3–18,2 phút), ở `via-full-v1/runs/export-win6`. So với 6 job main16 cùng tên (chạy từ worktree 59c4ee8):
+    - mọi trường của `semantic` bằng nhau, trừ `manifestHash` và `checkpointBindingHash` (chứa commit);
+    - transcript: 55.635/55.635 dòng khớp. 18.555 dòng giống từng byte; 37.080 dòng bằng nhau sau khi bỏ `coreCommitSha` và
+      các khóa `*Hash`/`*Sha256` (chỉ ở khung initializeRun, initialized, decision, decisionApplied, checkpoint)
+      (`compare_runs_commit_free.py`, `runs/EXPORT-VS-MAIN16-COMMIT-FREE.json`).
+    - Vậy bản export (bỏ 371 tệp) chạy như worktree chạy job. Image Linux chưa dựng: dữ liệu Docker Desktop nằm ở ổ C, dựng
+      image sẽ đẩy C xuống dưới mức sàn 50 GB. Khi có image, job Linux so từng byte với `export-win6` (cùng commit).
+- **Shadow và dự báo vòng kín trong C# (GĐ4, 03–04/11)**, sau cờ, tắt thì trạng thái giống từng byte:
+  - Dự báo: `ITravelTimeLookup.Arrive` (mặc định = cộng), `TravelTimeForecast` chép `legF` (engine17.js:151-167; làm tròn
+    từng chặng như quy ước adapter), dùng ở `RouteScheduleProjector` và `PhysicalPlanValidator`; cấu hình WP4
+    `planningForecast`. Test vàng sinh bằng mã bộ mô phỏng.
+  - Shadow: `ShadowAllocator` (Algorithms), lớp khách trong `CommitmentLedger.ShadowAllocations` (chỉ ghi khi bật, 4 đường
+    ghi trạng thái), `dropEtaShadowAllocation` trong chính sách, WP4 `shadowAllocation` (mạng đủ nút kiểm sha256). Test
+    1.256/1.256 (03/11).
+  - Dự đoán khóa trước mọi job: `FULLSYS-F14-PREDICTIONS.sha256` (168 cặp ô–nhánh, 16:57:42Z 03/11),
+    `FULLSYS-F14-SEQUENCES.sha256` (chuỗi giờ trả; 58.034/58.034 khách chạy lại trùng), `FORECAST-GATE-PREDICTIONS.sha256`.
+  - Chỉ số mới (chỉ là chỉ số đánh giá, không phải đóng góp mới): số lần đảo chiều ETA (`reversal_counts.py`) và sai số ETA
+    theo thời gian E_i = (1/(A − t0))∫|p(t) − A|dt (`eta_metrics.py`, tự kiểm đúng hai ví dụ 0,71 và 4,29 phút).
+  - Phép so chính (SHRC71 + dự báo so với SHHZ71 không dự báo) khác cả luật lẫn dự báo; thêm 2 nhánh tách biến SHHZ71-CL
+    và SHRC71-N (bộ mô phỏng đủ 84 ô; hệ thật mẫu 2 ô).
+- **Cổng dự báo bắt được lỗi adapter (04/11)**: lần 1 cả 2 job hỏng `RBWP7_FLEETPY_PLAN_INFEASIBLE`: FleetPy tính giờ đón
+  theo thời gian đi hiện tại muộn 0,88 s so với giờ đón muộn nhất, còn Runner lập kế hoạch bằng dự báo nên tính là kịp.
+  Sửa: khi WP4 có `planningForecast`, adapter bỏ kiểm giờ đón muộn nhất và thời gian đi tối đa của FleetPy (Runner giữ hai
+  ràng buộc này với dự báo; `lateBoarding: record-v1` bắt buộc, thiếu thì dừng trước khi chạy); sức chứa và cấu trúc vẫn
+  kiểm. Không dự báo thì đường mã cũ. Bộ mô phỏng đã khóa cũng cho phép đón muộn vật lý (`engine_wf15_clint.js:192`).
+  Test adapter: 467 (3 mới), 6 lỗi có sẵn từ trước, đúng 6 lỗi đó ở worktree chưa sửa (464 test).
+  Chạy lại sau sửa (worktree chạy job, `runner-gd4-v1`): 2/2 job pass; **2/2 cặp chính xác, 704/704 khách trùng mọi trường,
+  số lần chuyển xe G2 bằng nhau** với dự đoán khóa 2026-11-03T16:08:40Z. Từ gói (commit xuất `9b22349f`): job w08 pass,
+  so từ bằng chứng 338/338 khách, các dòng khách trùng từng dòng lần chạy trước.
+- **Cổng Shadow bắt được lỗi mã nút (04/11)**: job Shadow đầu tiên hỏng sau 1,9 phút (`ShadowAllocator` đọc mã nút
+  `node-%06d`, nhưng mã nút trong Runner là mã mờ của adapter: `node-` + SHA-256 của chỉ số nút FleetPy cục bộ). Sửa:
+  `shadowAllocation.networkNodes` (mã nút → chỉ số mạng) sinh bằng chính hàm của adapter trên `globalOf` đã khóa; kiểm trên
+  dữ liệu thật (850/850 nút, 2.000 cung khớp D × kappa). Trước đó không có test cho `Allocate` và đọc cấu hình Shadow; thêm
+  5 test; 1.261/1.261. Gói `final-v2` (commit xuất `0eb9a6ca`). Cổng từ gói v2: SHRC71-CL w08, SHHZ71-N w08,
+  SHRC71-CL w17 pass; so 4 mặt với dự đoán khóa `allExact` (1.045/1.045 khách: trường, chuỗi giờ trả, lớp/điểm Shadow, chuỗi
+  giờ công bố). 5 job kiểm còn lại (SHHZ71-N w17, 4 job nhánh tách biến) chuyển thành bước 3 trên máy thuê vì ổ E chạm
+  sàn; bước 3 còn kiểm máy thuê = máy nhà theo biên nhận từng khung.
+- **Dữ liệu dự đoán có giờ công bố khóa trước 168 job**: `FULLSYS-F14-TIMED.sha256` (2026-11-03T23:44:51Z; 58.034/58.034
+  dòng chạy lại trùng hai seal trước; kèm cấu hình v2 và danh sách job); `FULLSYS-F14-TIMED-GATE.sha256` (2 ô cổng × 4
+  nhánh, 20:46:38Z) + phụ lục sửa `eta_metrics.py` sau seal (chỉ phần tóm tắt và đọc .gz).
+- **Đĩa (yêu cầu ≤ 20 GB/ổ, 04/11)**: một job ô 512 = 0,72–0,76 GB, 99,99% là transcript; bằng chứng sau trích 12 MB/job.
+  Chạy lại hàng đợi trên job đã xong: 0 byte mới, mọi tệp trùng sha256. Nén NTFS fixtures và bản xuất plain (506/506 tệp
+  giữ sha256). Không xóa dữ liệu cũ nào (mọi thư mục cũ đều được tệp khác tham chiếu; khóa luận trích dữ liệu Manhattan).
+  Ổ E tụt 4,3 GiB ngoài thư mục RideBound trong lúc chạy job, nghi VSS; cần quyền admin để kiểm.
+- **Gói cho máy thuê (04/11 07:35)**: `E:/RideBoundData/final-v2-pack/ridebound-final-v2.zip` (sha256 467c735b…, 66.545 tệp,
+  6,75 GiB giải nén, 1,27 GiB nén) + `MANIFEST.tsv` + `run_cloud.ps1`. Kiểm CRC, danh sách, sha256 từng tệp, đọc bằng .NET.
+  Giải nén bằng .NET vì `tar.exe` của Windows bỏ qua tệp tên UTF-8 (`docs/benchmarking/Kết quả benchmark.md`). Chưa chạy trên
+  máy thuê.
+- **Bảng 2×2 luật × dự báo, chế độ của báo cáo (bộ mô phỏng, plain, F14 84 ô, 336/336 cặp trùng chữ ký dòng của
+  báo cáo)**: sai số ETA theo thời gian C+CL 0,607, rào+CL 0,608, C+N 0,675, rào+N 0,675 phút (độ chính xác do dự báo; luật C
+  không đổi); lần đảo/ngày 24,88; 46,10; 45,52; 70,71 (luật C và dự báo mỗi thứ ~−35%); khách được phục vụ 28.781; 29.225;
+  28.784; 29.195 (luật C −1,5%). Chưa có khoảng tin cậy; khóa luận không được gán toàn bộ −65% cho luật C.
+- **Gói chạy cuối (GĐ5/GĐ6, 04/11)**, `ridebound-scratchpad/fastrun-2026-11-02/final/`:
+  - Lỗ hổng nguồn gốc đã thấy: worktree chạy job không có mã C# GĐ4, Runner `runner-gd4-v1` build từ worktree phát triển.
+    Gói `E:/RideBoundData/final-v1`: repo xuất từ worktree phát triển (6.322 tệp, bỏ `company-emulator/`, quét tên công ty
+    không thấy, commit xuất `9b22349f`), Runner publish từ chính repo đó, .NET 10.0.9 đi kèm. Test trên repo xuất
+    1.255/1.256; test còn lại đòi worktree đang có thay đổi chưa commit (`StrictBagItBundleTests.cs:32`), đạt ở worktree
+    phát triển.
+  - Máy thuê: Windows, cùng đường dẫn `E:` (subst), cùng Python, .NET, Runner → khung phải giống từng byte; bước đầu trên máy
+    thuê so biên nhận từng khung của 4 job với máy nhà.
+  - Đĩa: một job ô 512 = 669 MiB, 99,99% là transcript (11 ảnh chụp thời gian đi ~130 MB JSON và bản chốt cuối 768 MB, nén
+    gzip). `finalize_job.py` trích mọi thứ các phép so và chỉ số đọc (bảng sổ cam kết, trạng thái cuối, giờ lên/xuống xe, số
+    lần chuyển xe, lớp Shadow, biên nhận sha256 từng khung), đọc lại qua đúng các hàm cũ (`evidence_reader.py`) và chỉ khi
+    trùng mới bỏ transcript theo chính sách của job.
+
+**Consequences và giới hạn:**
+- Chạy nhẹ thì chuỗi băm khác v1. Khóa luận chỉ được nói "niêm phong" theo đúng chế độ đã dùng; job mẫu vẫn chạy v1.
+- Ô đủ nút dựng từ ô P512 do công ty sinh (TLC công khai qua script của công ty), chưa dựng lại bằng bộ chuyển riêng từ TLC.
+- Shadow mới có bộ chấm điểm. Chưa làm: tệp dữ liệu mạng đầy đủ cho Runner, λ của ô (prior giờ trước, phi), ngưỡng θ, lớp
+  khách lưu trong trạng thái cam kết, nối vào SHF/SHHZ/SHRC, so từng khách với bộ mô phỏng. Dự báo vòng kín (legF, prev4,
+  clipPickup) chưa làm; nó đổi phép chiếu giờ và kiểm khả thi, nên phải bật bằng cờ và có cổng riêng.
+- Chưa commit, chưa push; cây chính `E:/Code/RideBound` không đổi.
+
 ## Cập nhật khóa luận — 2026-10-16T00:09:00.907016+07:00
 
 Người dùng yêu cầu cập nhật toàn bộ nội dung theo cách đọc tự nhiên, bổ sung

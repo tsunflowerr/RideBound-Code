@@ -106,7 +106,13 @@ public static class RunnerHost
                 return 3;
             }
 
-            if (result.Response is not null)
+            if (result.Streamed is not null)
+            {
+                // Never read result.Response here: for a streamed result it decodes a copy.
+                await writer.WriteAsync(result.Streamed, cancellationToken)
+                    .ConfigureAwait(false);
+            }
+            else if (result.Response is not null)
             {
                 if (result.Response.MessageType.Value == "error")
                 {

@@ -140,6 +140,14 @@ public static class OnlineStateCanonicalWriter
         glue.Byte((byte)']');
         root.Member("runId"u8).String(state.Run.Id.Value);
         root.Member("scenarioId"u8).String(state.Run.ScenarioId.Value);
+
+        // ADR-089 GĐ4: only under Shadow Control, so every other state keeps its bytes.
+        if (state.Commitments.ShadowAllocations.Count != 0)
+        {
+            root.Member("shadowAllocations"u8);
+            WriteShadowAllocations(glue, state.Commitments);
+        }
+
         root.Member("simulationTimeMs"u8).Integer(state.Run.SimulationTime.Milliseconds);
 
         if (state.TravelTimes is not null)
@@ -755,6 +763,48 @@ public static class OnlineStateCanonicalWriter
 
             first = false;
             buffer.String(value);
+        }
+
+        buffer.Byte((byte)']');
+    }
+
+    internal static string ShadowClassText(ShadowAllocationClass value) =>
+        value switch
+        {
+            ShadowAllocationClass.Guaranteed => "guaranteed",
+            ShadowAllocationClass.Allowed => "allowed",
+            _ => throw new ArgumentOutOfRangeException(nameof(value)),
+        };
+
+    internal static ShadowAllocationClass ShadowClassFrom(string? value) =>
+        value switch
+        {
+            "guaranteed" => ShadowAllocationClass.Guaranteed,
+            "allowed" => ShadowAllocationClass.Allowed,
+            _ => throw new ArgumentException("Unknown shadow allocation class.", nameof(value)),
+        };
+
+    /// <summary>ADR-089 GĐ4: the shadowAllocations array, sorted by request identifier.</summary>
+    internal static void WriteShadowAllocations(CanonicalBuffer buffer, CommitmentLedger ledger)
+    {
+        buffer.Byte((byte)'[');
+        var first = true;
+
+        foreach (var (requestId, allocation) in ledger.ShadowAllocations.OrderBy(
+                     pair => pair.Key.Value,
+                     StringComparer.Ordinal))
+        {
+            if (!first)
+            {
+                buffer.Byte((byte)',');
+            }
+
+            first = false;
+            var item = new CanonicalObject(buffer);
+            item.Member("class"u8).String(ShadowClassText(allocation.Class));
+            item.Member("requestId"u8).String(requestId.Value);
+            item.Member("score"u8).String(allocation.Score);
+            item.End();
         }
 
         buffer.Byte((byte)']');

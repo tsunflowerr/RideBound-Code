@@ -32,7 +32,8 @@ public sealed class CommitmentPolicyConfiguration :
         "dropEtaRevisionLimitMs",
         "dropEtaBudgetSlackPermille",
         "dropEtaDeadlineSlackPermille",
-        "waitingRiderRelocation");
+        "waitingRiderRelocation",
+        "dropEtaShadowAllocation");
     private static readonly IReadOnlySet<string> LimitFields = Fields(
         "dimension",
         "hardLimit",
@@ -182,6 +183,17 @@ public sealed class CommitmentPolicyConfiguration :
         var deadlinePermille = OptionalPermille(element, "dropEtaDeadlineSlackPermille");
         var relocation = OptionalBoolean(element, "waitingRiderRelocation");
 
+        // ADR-089 GĐ4 (exploratory): Shadow Control. Optional; omitted keeps every configuration
+        // written before it, with its content hash.
+        var shadowAllocation = OptionalBoolean(element, "dropEtaShadowAllocation");
+
+        if (shadowAllocation && budgetPermille != 1000 && deadlinePermille != 1000)
+        {
+            throw new InvalidDataException(
+                "'dropEtaShadowAllocation' requires 'dropEtaBudgetSlackPermille' or "
+                + "'dropEtaDeadlineSlackPermille' of 1000.");
+        }
+
         if (deadlineSlack is not null && deadlinePermille is not null)
         {
             throw new InvalidDataException(
@@ -257,7 +269,8 @@ public sealed class CommitmentPolicyConfiguration :
             revisionLimit is long limit ? new Duration(limit) : null,
             budgetPermille,
             deadlinePermille,
-            relocation);
+            relocation,
+            shadowAllocation);
     }
 
     private static int? OptionalPermille(JsonElement element, string propertyName)

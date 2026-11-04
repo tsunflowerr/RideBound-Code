@@ -20,10 +20,10 @@ if (runnerArguments.Length >= 2
             System.Globalization.CultureInfo.InvariantCulture,
             out maximumLineBytes)
         || maximumLineBytes < NdjsonReader.DefaultMaximumLineBytes
-        || maximumLineBytes > 64 * 1024 * 1024)
+        || maximumLineBytes > NdjsonReader.MaximumConfigurableLineBytes)
     {
         await Console.Error.WriteLineAsync(
-            "--maximum-line-bytes must be an integer from 1048576 through 67108864.");
+            "--maximum-line-bytes must be an integer from 1048576 through 1073741824.");
         return 64;
     }
 
@@ -58,7 +58,7 @@ if (runnerArguments.Length > 0)
             "--mode commitment --policy-config <path> " +
             "[--wp4-config <path> " +
             "[--solver-seed-source manifest-master-seed]] " +
-            "[--maximum-line-bytes <1048576..67108864>]");
+            "[--maximum-line-bytes <1048576..1073741824>]");
         return 64;
     }
 

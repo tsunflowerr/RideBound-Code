@@ -141,7 +141,8 @@ public sealed class CommitmentPolicy
         Duration? dropEtaRevisionLimit = null,
         int? dropEtaBudgetSlackPermille = null,
         int? dropEtaDeadlineSlackPermille = null,
-        bool waitingRiderRelocation = false)
+        bool waitingRiderRelocation = false,
+        bool dropEtaShadowAllocation = false)
     {
         ArgumentNullException.ThrowIfNull(limits);
         ArgumentNullException.ThrowIfNull(materialRevisionRule);
@@ -284,6 +285,17 @@ public sealed class CommitmentPolicy
                 nameof(waitingRiderRelocation));
         }
 
+        // Shadow Control (ADR-089 GĐ4): an allowed rider gets its whole slack and a guaranteed rider
+        // none, so the class scales a slack-proportional budget or deadline of exactly 1000 permille.
+        if (dropEtaShadowAllocation
+            && dropEtaBudgetSlackPermille != 1000
+            && dropEtaDeadlineSlackPermille != 1000)
+        {
+            throw new ArgumentException(
+                "Shadow allocation scales a 1000-permille slack-proportional budget or deadline.",
+                nameof(dropEtaShadowAllocation));
+        }
+
         BudgetBasis = budgetBasis;
         _limits = materialized.ToFrozenDictionary(value => value.Dimension);
         MaterialRevisionRule = materialRevisionRule;
@@ -298,6 +310,7 @@ public sealed class CommitmentPolicy
         DropEtaBudgetSlackPermille = dropEtaBudgetSlackPermille;
         DropEtaDeadlineSlackPermille = dropEtaDeadlineSlackPermille;
         WaitingRiderRelocation = waitingRiderRelocation;
+        DropEtaShadowAllocation = dropEtaShadowAllocation;
     }
 
     /// <summary>
@@ -338,7 +351,10 @@ public sealed class CommitmentPolicy
     /// Effective drop deadline slack of one rider: the fixed slack, or the slack-proportional
     /// share of the rider's first promise; null when the policy has no deadline.
     /// </summary>
-    public Duration? DeadlineSlackFor(PromiseProjection? initialPromise, Duration maximumRideTime)
+    public Duration? DeadlineSlackFor(
+        PromiseProjection? initialPromise,
+        Duration maximumRideTime,
+        ShadowAllocation? shadowAllocation = null)
     {
         if (DropEtaDeadlineSlack is Duration fixedSlack)
         {
@@ -357,14 +373,19 @@ public sealed class CommitmentPolicy
                 nameof(initialPromise));
         }
 
-        return new Duration(SlackProportionalLimit(initialPromise, maximumRideTime, permille));
+        return IsGuaranteed(shadowAllocation)
+            ? new Duration(0)
+            : new Duration(SlackProportionalLimit(initialPromise, maximumRideTime, permille));
     }
 
     /// <summary>
     /// Per-rider drop_eta_total_ms hard limit of a slack-proportional budget; null when the
     /// policy uses the dimension's fixed limit (or none).
     /// </summary>
-    public long? DropEtaTotalLimitFor(PromiseProjection? initialPromise, Duration maximumRideTime)
+    public long? DropEtaTotalLimitFor(
+        PromiseProjection? initialPromise,
+        Duration maximumRideTime,
+        ShadowAllocation? shadowAllocation = null)
     {
         if (DropEtaBudgetSlackPermille is not int permille)
         {
@@ -378,8 +399,37 @@ public sealed class CommitmentPolicy
                 nameof(initialPromise));
         }
 
-        return SlackProportionalLimit(initialPromise, maximumRideTime, permille);
+        return IsGuaranteed(shadowAllocation)
+            ? 0
+            : SlackProportionalLimit(initialPromise, maximumRideTime, permille);
     }
+
+    /// <summary>
+    /// Shadow Control: bSH = round(aSH * slack), so a guaranteed rider (aSH = 0) has a zero
+    /// allowance and an allowed rider (aSH = 1) the 1000-permille limit. Under Shadow every rider
+    /// with a promise has a class; a missing one is a broken invariant.
+    /// </summary>
+    private bool IsGuaranteed(ShadowAllocation? shadowAllocation)
+    {
+        if (!DropEtaShadowAllocation)
+        {
+            return false;
+        }
+
+        return shadowAllocation?.Class switch
+        {
+            ShadowAllocationClass.Guaranteed => true,
+            ShadowAllocationClass.Allowed => false,
+            _ => throw new InvalidOperationException(
+                "A shadow-allocated policy needs the rider's class."),
+        };
+    }
+
+    /// <summary>
+    /// ADR-089 GĐ4: Shadow Control (Elmi et al. 2026). The rider's class, frozen at its first
+    /// promise, scales the 1000-permille slack-proportional budget (SHRC) or deadline (SHHZ).
+    /// </summary>
+    public bool DropEtaShadowAllocation { get; }
 
     /// <summary>True when a rule of this policy reads the rider's initial promise.</summary>
     public bool ReadsInitialPromise =>
