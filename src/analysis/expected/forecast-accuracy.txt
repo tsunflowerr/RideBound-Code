@@ -1,0 +1,47 @@
+# Validation: wf7 pickup-bin TLC-MP15 (Yellow 2018-11) vs FleetPy Manhattan tt_factors, bins 06:00-22:00
+  2018-11-12: corr(log level)=0.994 corr(2-h change)=0.996
+  2018-11-13: corr(log level)=0.995 corr(2-h change)=0.996
+  2018-11-14: corr(log level)=0.996 corr(2-h change)=0.996
+  2018-11-15: corr(log level)=0.991 corr(2-h change)=0.984
+  2018-11-16: corr(log level)=0.996 corr(2-h change)=0.994
+  POOLED: corr(log level)=0.994 corr(2-h change)=0.986  (wf5 survey pickup-bin: 0.992-0.997 / 0.978-0.990)
+
+# 2019 index: 153 days (Aug-Dec), bins 06-22 with < 30 trips: 0
+
+# Forecast accuracy of the 15-min factor (PREREG s.4): MAE15 = mean |log error| over 8 origins x horizons 15 min..2 h (%),
+#   MAE2h = mean |predicted - true 2-h growth| (percentage points). naive = current factor held flat. Days = weekdays with an active rule.
+# group                      rule   days  MAE15 fc  naive | MAE2h fc  naive | days fc better (15 / 2h)  sign-test p (15 / 2h)
+w08 DEV Sep-Oct school days    prev4   27    2.64   4.98 |   3.41   6.92 |  25/27  25/27   0.0000056 / 0.0000056
+w08 DEV Sep-Oct school days    prev8   27    2.52   4.98 |   3.26   6.92 |  25/27  26/27   0.0000056 / 4.2e-7
+w08 TEST Nov school days       prev4   17    2.12   4.71 |   2.95   6.38 |  17/17  15/17   0.000015 / 0.0023
+w08 TEST Nov school days       prev8   17    1.88   4.71 |   2.47   6.38 |  17/17  16/17   0.000015 / 0.00027
+w08 TEST Dec school days       prev4   16    3.31   6.82 |   5.70  11.48 |  16/16  16/16   0.000031 / 0.000031
+w08 TEST Dec school days       prev8   16    3.22   6.82 |   5.57  11.48 |  16/16  16/16   0.000031 / 0.000031
+w08 TEST Nov-Dec school days   prev4   33    2.69   5.73 |   4.28   8.86 |  33/33  31/33   2.3e-10 / 1.3e-7
+w08 TEST Nov-Dec school days   prev8   33    2.53   5.73 |   3.97   8.86 |  33/33  32/33   2.3e-10 / 7.9e-9
+w08 TEST Nov-Dec all weekdays  prev4   43    2.81   5.84 |   4.35   9.28 |  42/43  41/43   1.0e-11 / 2.2e-10
+w08 TEST Nov-Dec all weekdays  prev8   43    2.77   5.84 |   4.24   9.28 |  42/43  42/43   1.0e-11 / 1.0e-11
+w08 Via test days (18)         prev4   18    2.10   4.68 |   2.89   6.36 |  18/18  16/18   0.0000076 / 0.0013
+w08 Via test days (18)         prev8   18    1.88   4.68 |   2.43   6.36 |  18/18  17/18   0.0000076 / 0.00014
+w17 DEV Sep-Oct school days    prev4   27    3.09   9.34 |   3.74  15.84 |  27/27  27/27   1.5e-8 / 1.5e-8
+w17 DEV Sep-Oct school days    prev8   27    2.95   9.34 |   3.48  15.84 |  27/27  27/27   1.5e-8 / 1.5e-8
+w17 TEST Nov school days       prev4   17    2.40   9.74 |   2.63  16.18 |  17/17  17/17   0.000015 / 0.000015
+w17 TEST Nov school days       prev8   17    2.44   9.74 |   2.58  16.18 |  17/17  17/17   0.000015 / 0.000015
+w17 TEST Dec school days       prev4   16    2.39   8.90 |   2.64  15.59 |  16/16  16/16   0.000031 / 0.000031
+w17 TEST Dec school days       prev8   16    2.41   8.90 |   2.55  15.59 |  16/16  16/16   0.000031 / 0.000031
+w17 TEST Nov-Dec school days   prev4   33    2.40   9.33 |   2.64  15.89 |  33/33  33/33   2.3e-10 / 2.3e-10
+w17 TEST Nov-Dec school days   prev8   33    2.43   9.33 |   2.57  15.89 |  33/33  33/33   2.3e-10 / 2.3e-10
+w17 TEST Nov-Dec all weekdays  prev4   43    3.10   8.38 |   3.93  14.25 |  37/43  38/43   0.0000016 / 2.5e-7
+w17 TEST Nov-Dec all weekdays  prev8   43    3.21   8.38 |   4.01  14.25 |  37/43  37/43   0.0000016 / 0.0000016
+w17 Via test days (18)         prev4   18    2.36   9.80 |   2.56  16.31 |  18/18  18/18   0.0000076 / 0.0000076
+w17 Via test days (18)         prev8   18    2.39   9.80 |   2.51  16.31 |  18/18  18/18   0.0000076 / 0.0000076
+
+# Largest prev4 errors (MAE2h, Nov-Dec):
+  2019-12-31 w17 MAE2h 21.8 pp (naive 2.8), true 2-h growth from window start 0.1% (non-school day)
+  2019-12-24 w17 MAE2h 12.9 pp (naive 5.6), true 2-h growth from window start -3.1% (non-school day)
+  2019-11-28 w17 MAE2h 12.4 pp (naive 2.3), true 2-h growth from window start -4.7% (non-school day)
+  2019-12-25 w17 MAE2h 11.9 pp (naive 5.2), true 2-h growth from window start 1.0% (non-school day)
+  2019-12-19 w08 MAE2h 10.7 pp (naive 21.8), true 2-h growth from window start 22.8%
+  2019-11-28 w08 MAE2h 10.2 pp (naive 10.2), true 2-h growth from window start -2.1% (non-school day)
+  2019-12-17 w08 MAE2h 10.1 pp (naive 16.1), true 2-h growth from window start 21.4%
+  2019-12-12 w08 MAE2h 10.1 pp (naive 17.8), true 2-h growth from window start 30.1%
