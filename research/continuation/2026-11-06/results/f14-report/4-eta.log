@@ -1,0 +1,1669 @@
+returncode=1
+{
+ "cellArms": 168,
+ "exact": 141,
+ "rows": [
+  {
+   "role": "FS-G2-SHHZ71-N",
+   "cell": "d20190919-vf-r0-w08",
+   "servedEmulator": 335,
+   "servedReal": 335,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHHZ71-N",
+   "cell": "d20190919-vf-r0-w17",
+   "servedEmulator": 379,
+   "servedReal": 379,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHHZ71-N",
+   "cell": "d20190919-vf-r1-w08",
+   "servedEmulator": 358,
+   "servedReal": 358,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHHZ71-N",
+   "cell": "d20190919-vf-r1-w17",
+   "servedEmulator": 378,
+   "servedReal": 378,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHHZ71-N",
+   "cell": "d20190919-vf-r2-w08",
+   "servedEmulator": 338,
+   "servedReal": 338,
+   "differing": 4,
+   "first": [
+    "rq-07612701f17950cd37d1f87b234b57f4c5d0dfa464d88cd916917316c935d369",
+    "rq-72a7361f4822bec976fec5f08aaf5aa5f44615ee034dd0d4a0e32cb9f702d7d3",
+    "rq-ddc5ee5a929733c0533cfca334ab350df9ed9a1d7532c7db3eb5ad42dd3872e9"
+   ],
+   "exact": false
+  },
+  {
+   "role": "FS-G2-SHHZ71-N",
+   "cell": "d20190919-vf-r2-w17",
+   "servedEmulator": 378,
+   "servedReal": 378,
+   "differing": 1,
+   "first": [
+    "rq-947645b9c9e1adf0b9945c1512bdd4e525b3863ec0678ff9c48de412dd7e6253"
+   ],
+   "exact": false
+  },
+  {
+   "role": "FS-G2-SHHZ71-N",
+   "cell": "d20190924-vf-r0-w08",
+   "servedEmulator": 291,
+   "servedReal": 291,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHHZ71-N",
+   "cell": "d20190924-vf-r0-w17",
+   "servedEmulator": 353,
+   "servedReal": 353,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHHZ71-N",
+   "cell": "d20190924-vf-r1-w08",
+   "servedEmulator": 313,
+   "servedReal": 313,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHHZ71-N",
+   "cell": "d20190924-vf-r1-w17",
+   "servedEmulator": 356,
+   "servedReal": 356,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHHZ71-N",
+   "cell": "d20190924-vf-r2-w08",
+   "servedEmulator": 303,
+   "servedReal": 303,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHHZ71-N",
+   "cell": "d20190924-vf-r2-w17",
+   "servedEmulator": 343,
+   "servedReal": 343,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHHZ71-N",
+   "cell": "d20191003-vf-r0-w08",
+   "servedEmulator": 342,
+   "servedReal": 342,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHHZ71-N",
+   "cell": "d20191003-vf-r0-w17",
+   "servedEmulator": 344,
+   "servedReal": 344,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHHZ71-N",
+   "cell": "d20191003-vf-r1-w08",
+   "servedEmulator": 335,
+   "servedReal": 335,
+   "differing": 3,
+   "first": [
+    "rq-33db100142be3835f29b32ca91f1318c9f9ac86e904eff2e390574b2de9d8d92",
+    "rq-4fff2bfd220eeef764bf7c931e6f73c900364bf06e5e228160b1f764a74d1426",
+    "rq-b4f94a4f218a2e3cc1bd2b85fe7741f917ebf7aadc93ca9bda70b942ca6de197"
+   ],
+   "exact": false
+  },
+  {
+   "role": "FS-G2-SHHZ71-N",
+   "cell": "d20191003-vf-r1-w17",
+   "servedEmulator": 339,
+   "servedReal": 339,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHHZ71-N",
+   "cell": "d20191003-vf-r2-w08",
+   "servedEmulator": 301,
+   "servedReal": 301,
+   "differing": 4,
+   "first": [
+    "rq-58f06e169edb31c507386623339d034256d79c84e48fc2a8d26da635ed46dc28",
+    "rq-9681b665d937b30ae817c45a7d32529a9ab64794e25eb70634c82aeaf3baeaf8",
+    "rq-a28e705cdff57350d972cf86ec238912982a040a27086046ac19d4a1aabaaefc"
+   ],
+   "exact": false
+  },
+  {
+   "role": "FS-G2-SHHZ71-N",
+   "cell": "d20191003-vf-r2-w17",
+   "servedEmulator": 334,
+   "servedReal": 334,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHHZ71-N",
+   "cell": "d20191007-vf-r0-w08",
+   "servedEmulator": 355,
+   "servedReal": 355,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHHZ71-N",
+   "cell": "d20191007-vf-r0-w17",
+   "servedEmulator": 392,
+   "servedReal": 392,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHHZ71-N",
+   "cell": "d20191007-vf-r1-w08",
+   "servedEmulator": 367,
+   "servedReal": 367,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHHZ71-N",
+   "cell": "d20191007-vf-r1-w17",
+   "servedEmulator": 395,
+   "servedReal": 395,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHHZ71-N",
+   "cell": "d20191007-vf-r2-w08",
+   "servedEmulator": 364,
+   "servedReal": 364,
+   "differing": 2,
+   "first": [
+    "rq-5d92ef0a002b2dc4337ed384cb8fd28c362f9f7f08af6998c978fc86aad16979",
+    "rq-dd3c974730cafb52da93e5471cd65bd1ba6a1d5c329f0f6aac38d874a84155ca"
+   ],
+   "exact": false
+  },
+  {
+   "role": "FS-G2-SHHZ71-N",
+   "cell": "d20191007-vf-r2-w17",
+   "servedEmulator": 386,
+   "servedReal": 386,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHHZ71-N",
+   "cell": "d20191009-vf-r0-w08",
+   "servedEmulator": 364,
+   "servedReal": 364,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHHZ71-N",
+   "cell": "d20191009-vf-r0-w17",
+   "servedEmulator": 415,
+   "servedReal": 415,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHHZ71-N",
+   "cell": "d20191009-vf-r1-w08",
+   "servedEmulator": 375,
+   "servedReal": 375,
+   "differing": 1,
+   "first": [
+    "rq-b4249b1433106524cb7cd1c0afac975ad226835a13baa17c9ead96ce97b370ec"
+   ],
+   "exact": false
+  },
+  {
+   "role": "FS-G2-SHHZ71-N",
+   "cell": "d20191009-vf-r1-w17",
+   "servedEmulator": 399,
+   "servedReal": 399,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHHZ71-N",
+   "cell": "d20191009-vf-r2-w08",
+   "servedEmulator": 375,
+   "servedReal": 375,
+   "differing": 1,
+   "first": [
+    "rq-deccaa37c8e36d421d4dc10a23f5a5a2bb246aa1e6dbdc4ee9edd232425f94e4"
+   ],
+   "exact": false
+  },
+  {
+   "role": "FS-G2-SHHZ71-N",
+   "cell": "d20191009-vf-r2-w17",
+   "servedEmulator": 405,
+   "servedReal": 405,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHHZ71-N",
+   "cell": "d20191015-vf-r0-w08",
+   "servedEmulator": 338,
+   "servedReal": 338,
+   "differing": 2,
+   "first": [
+    "rq-179ff9af873b3746733e37f5dc0a8b036a4f53d582eac68633033991ca868936",
+    "rq-53952efe104cb0d0bbc3ff5fe4c1ec6d5558c35155a8c97a8b063af5f96ba705"
+   ],
+   "exact": false
+  },
+  {
+   "role": "FS-G2-SHHZ71-N",
+   "cell": "d20191015-vf-r0-w17",
+   "servedEmulator": 394,
+   "servedReal": 394,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHHZ71-N",
+   "cell": "d20191015-vf-r1-w08",
+   "servedEmulator": 348,
+   "servedReal": 347,
+   "differing": 275,
+   "first": [
+    "rq-008f47677e5f81bac70be085aa0b1e0b497050d3b40ad2c905e68f131fe39c0b",
+    "rq-020673a4fb53ce19773c3b9224f8c4df8fc92bd5d803f01b5f59c5259e860ca7",
+    "rq-02e1ff12a1d196842a619c7a55f909751927a66442989cfd60d5c41dfa695207"
+   ],
+   "exact": false
+  },
+  {
+   "role": "FS-G2-SHHZ71-N",
+   "cell": "d20191015-vf-r1-w17",
+   "servedEmulator": 405,
+   "servedReal": 405,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHHZ71-N",
+   "cell": "d20191015-vf-r2-w08",
+   "servedEmulator": 331,
+   "servedReal": 331,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHHZ71-N",
+   "cell": "d20191015-vf-r2-w17",
+   "servedEmulator": 400,
+   "servedReal": 400,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHHZ71-N",
+   "cell": "d20191018-vf-r0-w08",
+   "servedEmulator": 361,
+   "servedReal": 361,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHHZ71-N",
+   "cell": "d20191018-vf-r0-w17",
+   "servedEmulator": 379,
+   "servedReal": 379,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHHZ71-N",
+   "cell": "d20191018-vf-r1-w08",
+   "servedEmulator": 356,
+   "servedReal": 356,
+   "differing": 1,
+   "first": [
+    "rq-61112299db4667bb3e5e48364f9873f0a5dd08f3bf91d38471ab47e93bf27763"
+   ],
+   "exact": false
+  },
+  {
+   "role": "FS-G2-SHHZ71-N",
+   "cell": "d20191018-vf-r1-w17",
+   "servedEmulator": 340,
+   "servedReal": 340,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHHZ71-N",
+   "cell": "d20191018-vf-r2-w08",
+   "servedEmulator": 365,
+   "servedReal": 365,
+   "differing": 2,
+   "first": [
+    "rq-2e0302c2645e953c955019f5e376b55365e71bc69a51199edb30e68a2413f9b0",
+    "rq-d126dee6321989cb893159f5179fb5ec8834a4e02b7e8a72e9657927eb8a71cf"
+   ],
+   "exact": false
+  },
+  {
+   "role": "FS-G2-SHHZ71-N",
+   "cell": "d20191018-vf-r2-w17",
+   "servedEmulator": 383,
+   "servedReal": 383,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHHZ71-N",
+   "cell": "d20191024-vf-r0-w08",
+   "servedEmulator": 330,
+   "servedReal": 330,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHHZ71-N",
+   "cell": "d20191024-vf-r0-w17",
+   "servedEmulator": 345,
+   "servedReal": 345,
+   "differing": 1,
+   "first": [
+    "rq-91323fb5c51471773464c14bc72209c6b1a863a387a26413c6ae34b33ee53b40"
+   ],
+   "exact": false
+  },
+  {
+   "role": "FS-G2-SHHZ71-N",
+   "cell": "d20191024-vf-r1-w08",
+   "servedEmulator": 323,
+   "servedReal": 323,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHHZ71-N",
+   "cell": "d20191024-vf-r1-w17",
+   "servedEmulator": 324,
+   "servedReal": 324,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHHZ71-N",
+   "cell": "d20191024-vf-r2-w08",
+   "servedEmulator": 333,
+   "servedReal": 333,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHHZ71-N",
+   "cell": "d20191024-vf-r2-w17",
+   "servedEmulator": 336,
+   "servedReal": 336,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHHZ71-N",
+   "cell": "d20191205-vf-r0-w08",
+   "servedEmulator": 335,
+   "servedReal": 335,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHHZ71-N",
+   "cell": "d20191205-vf-r0-w17",
+   "servedEmulator": 322,
+   "servedReal": 322,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHHZ71-N",
+   "cell": "d20191205-vf-r1-w08",
+   "servedEmulator": 345,
+   "servedReal": 345,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHHZ71-N",
+   "cell": "d20191205-vf-r1-w17",
+   "servedEmulator": 348,
+   "servedReal": 348,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHHZ71-N",
+   "cell": "d20191205-vf-r2-w08",
+   "servedEmulator": 330,
+   "servedReal": 330,
+   "differing": 2,
+   "first": [
+    "rq-24d7bdc781e3b109276ea55cf6699cbd4acf3da473767028bf1a82f2f5728ee5",
+    "rq-881a4ce02380e3e3c796d100955fd4fbf5ec38756023a39a13caab5cec12ce54"
+   ],
+   "exact": false
+  },
+  {
+   "role": "FS-G2-SHHZ71-N",
+   "cell": "d20191205-vf-r2-w17",
+   "servedEmulator": 329,
+   "servedReal": 329,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHHZ71-N",
+   "cell": "d20191209-vf-r0-w08",
+   "servedEmulator": 329,
+   "servedReal": 329,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHHZ71-N",
+   "cell": "d20191209-vf-r0-w17",
+   "servedEmulator": 329,
+   "servedReal": 329,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHHZ71-N",
+   "cell": "d20191209-vf-r1-w08",
+   "servedEmulator": 320,
+   "servedReal": 320,
+   "differing": 1,
+   "first": [
+    "rq-8dfcadbcb75bd53724288a3e065a3434ed777e4d21b8d6b79595674da3c07c90"
+   ],
+   "exact": false
+  },
+  {
+   "role": "FS-G2-SHHZ71-N",
+   "cell": "d20191209-vf-r1-w17",
+   "servedEmulator": 324,
+   "servedReal": 324,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHHZ71-N",
+   "cell": "d20191209-vf-r2-w08",
+   "servedEmulator": 347,
+   "servedReal": 347,
+   "differing": 1,
+   "first": [
+    "rq-44d5cdb1e2bf433ce5f946afa5381db5f1da54f81dff860c5df8dff54fef5d27"
+   ],
+   "exact": false
+  },
+  {
+   "role": "FS-G2-SHHZ71-N",
+   "cell": "d20191209-vf-r2-w17",
+   "servedEmulator": 332,
+   "servedReal": 332,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHHZ71-N",
+   "cell": "d20191210-vf-r0-w08",
+   "servedEmulator": 334,
+   "servedReal": 334,
+   "differing": 2,
+   "first": [
+    "rq-0465b0ad64402b1a70c5a1a4f3ffc9aa18158df874f09815ab942d120c645771",
+    "rq-212506af76040fb45553d798559a3f3218e1db630aa700a44cce8a56cbb2a1d1"
+   ],
+   "exact": false
+  },
+  {
+   "role": "FS-G2-SHHZ71-N",
+   "cell": "d20191210-vf-r0-w17",
+   "servedEmulator": 314,
+   "servedReal": 314,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHHZ71-N",
+   "cell": "d20191210-vf-r1-w08",
+   "servedEmulator": 328,
+   "servedReal": 328,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHHZ71-N",
+   "cell": "d20191210-vf-r1-w17",
+   "servedEmulator": 294,
+   "servedReal": 294,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHHZ71-N",
+   "cell": "d20191210-vf-r2-w08",
+   "servedEmulator": 318,
+   "servedReal": 318,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHHZ71-N",
+   "cell": "d20191210-vf-r2-w17",
+   "servedEmulator": 317,
+   "servedReal": 317,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHHZ71-N",
+   "cell": "d20191213-vf-r0-w08",
+   "servedEmulator": 313,
+   "servedReal": 313,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHHZ71-N",
+   "cell": "d20191213-vf-r0-w17",
+   "servedEmulator": 323,
+   "servedReal": 323,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHHZ71-N",
+   "cell": "d20191213-vf-r1-w08",
+   "servedEmulator": 335,
+   "servedReal": 335,
+   "differing": 2,
+   "first": [
+    "rq-325668e8ec5d525430cbe94b6ff7458688c3f3f14396c02657124774c1108c57",
+    "rq-efafd2216b56072a5850bcce2dff85cbdc26ad7f591a323d8bb3ff1600742ee6"
+   ],
+   "exact": false
+  },
+  {
+   "role": "FS-G2-SHHZ71-N",
+   "cell": "d20191213-vf-r1-w17",
+   "servedEmulator": 284,
+   "servedReal": 284,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHHZ71-N",
+   "cell": "d20191213-vf-r2-w08",
+   "servedEmulator": 353,
+   "servedReal": 353,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHHZ71-N",
+   "cell": "d20191213-vf-r2-w17",
+   "servedEmulator": 324,
+   "servedReal": 324,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHHZ71-N",
+   "cell": "d20191216-vf-r0-w08",
+   "servedEmulator": 345,
+   "servedReal": 345,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHHZ71-N",
+   "cell": "d20191216-vf-r0-w17",
+   "servedEmulator": 388,
+   "servedReal": 388,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHHZ71-N",
+   "cell": "d20191216-vf-r1-w08",
+   "servedEmulator": 361,
+   "servedReal": 361,
+   "differing": 1,
+   "first": [
+    "rq-283ba10043934a6bf1d7d807c6dc806dd515e2f8bdc420f1a8d33f43a3d28608"
+   ],
+   "exact": false
+  },
+  {
+   "role": "FS-G2-SHHZ71-N",
+   "cell": "d20191216-vf-r1-w17",
+   "servedEmulator": 376,
+   "servedReal": 376,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHHZ71-N",
+   "cell": "d20191216-vf-r2-w08",
+   "servedEmulator": 345,
+   "servedReal": 345,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHHZ71-N",
+   "cell": "d20191216-vf-r2-w17",
+   "servedEmulator": 367,
+   "servedReal": 367,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHHZ71-N",
+   "cell": "d20191218-vf-r0-w08",
+   "servedEmulator": 368,
+   "servedReal": 368,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHHZ71-N",
+   "cell": "d20191218-vf-r0-w17",
+   "servedEmulator": 340,
+   "servedReal": 340,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHHZ71-N",
+   "cell": "d20191218-vf-r1-w08",
+   "servedEmulator": 356,
+   "servedReal": 356,
+   "differing": 5,
+   "first": [
+    "rq-1bf22c08eaf38358df13ad1e4f1fb65cbd9bb10b4de364529ce262b556f6db37",
+    "rq-395153ef03a8319a2bcb1c6a61a5cbb32f71945e3227add6f1bc8ceeb95f869a",
+    "rq-7693286b85a7aa5dfd2f630a8339d81b9355cf6f0ede3af3c71173333a8507c1"
+   ],
+   "exact": false
+  },
+  {
+   "role": "FS-G2-SHHZ71-N",
+   "cell": "d20191218-vf-r1-w17",
+   "servedEmulator": 341,
+   "servedReal": 341,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHHZ71-N",
+   "cell": "d20191218-vf-r2-w08",
+   "servedEmulator": 366,
+   "servedReal": 366,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHHZ71-N",
+   "cell": "d20191218-vf-r2-w17",
+   "servedEmulator": 331,
+   "servedReal": 331,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHRC71-CL",
+   "cell": "d20190919-vf-r0-w08",
+   "servedEmulator": 339,
+   "servedReal": 339,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHRC71-CL",
+   "cell": "d20190919-vf-r0-w17",
+   "servedEmulator": 371,
+   "servedReal": 371,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHRC71-CL",
+   "cell": "d20190919-vf-r1-w08",
+   "servedEmulator": 356,
+   "servedReal": 356,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHRC71-CL",
+   "cell": "d20190919-vf-r1-w17",
+   "servedEmulator": 358,
+   "servedReal": 358,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHRC71-CL",
+   "cell": "d20190919-vf-r2-w08",
+   "servedEmulator": 333,
+   "servedReal": 333,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHRC71-CL",
+   "cell": "d20190919-vf-r2-w17",
+   "servedEmulator": 375,
+   "servedReal": 375,
+   "differing": 1,
+   "first": [
+    "rq-947645b9c9e1adf0b9945c1512bdd4e525b3863ec0678ff9c48de412dd7e6253"
+   ],
+   "exact": false
+  },
+  {
+   "role": "FS-G2-SHRC71-CL",
+   "cell": "d20190924-vf-r0-w08",
+   "servedEmulator": 286,
+   "servedReal": 286,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHRC71-CL",
+   "cell": "d20190924-vf-r0-w17",
+   "servedEmulator": 342,
+   "servedReal": 342,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHRC71-CL",
+   "cell": "d20190924-vf-r1-w08",
+   "servedEmulator": 308,
+   "servedReal": 308,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHRC71-CL",
+   "cell": "d20190924-vf-r1-w17",
+   "servedEmulator": 365,
+   "servedReal": 365,
+   "differing": 1,
+   "first": [
+    "rq-8bcef54a86e837d1186211c13bdde78f459cb3e02807c074436025be1146abf3"
+   ],
+   "exact": false
+  },
+  {
+   "role": "FS-G2-SHRC71-CL",
+   "cell": "d20190924-vf-r2-w08",
+   "servedEmulator": 308,
+   "servedReal": 308,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHRC71-CL",
+   "cell": "d20190924-vf-r2-w17",
+   "servedEmulator": 345,
+   "servedReal": 345,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHRC71-CL",
+   "cell": "d20191003-vf-r0-w08",
+   "servedEmulator": 335,
+   "servedReal": 335,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHRC71-CL",
+   "cell": "d20191003-vf-r0-w17",
+   "servedEmulator": 335,
+   "servedReal": 335,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHRC71-CL",
+   "cell": "d20191003-vf-r1-w08",
+   "servedEmulator": 332,
+   "servedReal": 332,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHRC71-CL",
+   "cell": "d20191003-vf-r1-w17",
+   "servedEmulator": 336,
+   "servedReal": 336,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHRC71-CL",
+   "cell": "d20191003-vf-r2-w08",
+   "servedEmulator": 304,
+   "servedReal": 304,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHRC71-CL",
+   "cell": "d20191003-vf-r2-w17",
+   "servedEmulator": 327,
+   "servedReal": 327,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHRC71-CL",
+   "cell": "d20191007-vf-r0-w08",
+   "servedEmulator": 347,
+   "servedReal": 347,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHRC71-CL",
+   "cell": "d20191007-vf-r0-w17",
+   "servedEmulator": 377,
+   "servedReal": 377,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHRC71-CL",
+   "cell": "d20191007-vf-r1-w08",
+   "servedEmulator": 352,
+   "servedReal": 352,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHRC71-CL",
+   "cell": "d20191007-vf-r1-w17",
+   "servedEmulator": 404,
+   "servedReal": 404,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHRC71-CL",
+   "cell": "d20191007-vf-r2-w08",
+   "servedEmulator": 346,
+   "servedReal": 346,
+   "differing": 1,
+   "first": [
+    "rq-5d92ef0a002b2dc4337ed384cb8fd28c362f9f7f08af6998c978fc86aad16979"
+   ],
+   "exact": false
+  },
+  {
+   "role": "FS-G2-SHRC71-CL",
+   "cell": "d20191007-vf-r2-w17",
+   "servedEmulator": 382,
+   "servedReal": 382,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHRC71-CL",
+   "cell": "d20191009-vf-r0-w08",
+   "servedEmulator": 355,
+   "servedReal": 355,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHRC71-CL",
+   "cell": "d20191009-vf-r0-w17",
+   "servedEmulator": 404,
+   "servedReal": 404,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHRC71-CL",
+   "cell": "d20191009-vf-r1-w08",
+   "servedEmulator": 377,
+   "servedReal": 377,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHRC71-CL",
+   "cell": "d20191009-vf-r1-w17",
+   "servedEmulator": 395,
+   "servedReal": 395,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHRC71-CL",
+   "cell": "d20191009-vf-r2-w08",
+   "servedEmulator": 367,
+   "servedReal": 367,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHRC71-CL",
+   "cell": "d20191009-vf-r2-w17",
+   "servedEmulator": 408,
+   "servedReal": 408,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHRC71-CL",
+   "cell": "d20191015-vf-r0-w08",
+   "servedEmulator": 341,
+   "servedReal": 341,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHRC71-CL",
+   "cell": "d20191015-vf-r0-w17",
+   "servedEmulator": 392,
+   "servedReal": 392,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHRC71-CL",
+   "cell": "d20191015-vf-r1-w08",
+   "servedEmulator": 340,
+   "servedReal": 340,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHRC71-CL",
+   "cell": "d20191015-vf-r1-w17",
+   "servedEmulator": 394,
+   "servedReal": 394,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHRC71-CL",
+   "cell": "d20191015-vf-r2-w08",
+   "servedEmulator": 316,
+   "servedReal": 316,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHRC71-CL",
+   "cell": "d20191015-vf-r2-w17",
+   "servedEmulator": 389,
+   "servedReal": 389,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHRC71-CL",
+   "cell": "d20191018-vf-r0-w08",
+   "servedEmulator": 345,
+   "servedReal": 345,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHRC71-CL",
+   "cell": "d20191018-vf-r0-w17",
+   "servedEmulator": 371,
+   "servedReal": 371,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHRC71-CL",
+   "cell": "d20191018-vf-r1-w08",
+   "servedEmulator": 358,
+   "servedReal": 358,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHRC71-CL",
+   "cell": "d20191018-vf-r1-w17",
+   "servedEmulator": 333,
+   "servedReal": 333,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHRC71-CL",
+   "cell": "d20191018-vf-r2-w08",
+   "servedEmulator": 364,
+   "servedReal": 364,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHRC71-CL",
+   "cell": "d20191018-vf-r2-w17",
+   "servedEmulator": 366,
+   "servedReal": 366,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHRC71-CL",
+   "cell": "d20191024-vf-r0-w08",
+   "servedEmulator": 335,
+   "servedReal": 335,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHRC71-CL",
+   "cell": "d20191024-vf-r0-w17",
+   "servedEmulator": 340,
+   "servedReal": 340,
+   "differing": 1,
+   "first": [
+    "rq-91323fb5c51471773464c14bc72209c6b1a863a387a26413c6ae34b33ee53b40"
+   ],
+   "exact": false
+  },
+  {
+   "role": "FS-G2-SHRC71-CL",
+   "cell": "d20191024-vf-r1-w08",
+   "servedEmulator": 315,
+   "servedReal": 315,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHRC71-CL",
+   "cell": "d20191024-vf-r1-w17",
+   "servedEmulator": 325,
+   "servedReal": 325,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHRC71-CL",
+   "cell": "d20191024-vf-r2-w08",
+   "servedEmulator": 329,
+   "servedReal": 329,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHRC71-CL",
+   "cell": "d20191024-vf-r2-w17",
+   "servedEmulator": 338,
+   "servedReal": 338,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHRC71-CL",
+   "cell": "d20191205-vf-r0-w08",
+   "servedEmulator": 327,
+   "servedReal": 327,
+   "differing": 3,
+   "first": [
+    "rq-405b1da568c594365a68bc769bb2b5c68bc0d7cbdf416a9b6c67ff2eb5e04221",
+    "rq-57b449ff3a605f148d2e9606480774fbeccf18ba7fa5f81fb76a27cdc4e7cc3f",
+    "rq-96b8112ebdd3259ad82cebe78738fe84dcc724dffa742ba87fc0ebb586296eb9"
+   ],
+   "exact": false
+  },
+  {
+   "role": "FS-G2-SHRC71-CL",
+   "cell": "d20191205-vf-r0-w17",
+   "servedEmulator": 310,
+   "servedReal": 310,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHRC71-CL",
+   "cell": "d20191205-vf-r1-w08",
+   "servedEmulator": 331,
+   "servedReal": 331,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHRC71-CL",
+   "cell": "d20191205-vf-r1-w17",
+   "servedEmulator": 351,
+   "servedReal": 351,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHRC71-CL",
+   "cell": "d20191205-vf-r2-w08",
+   "servedEmulator": 325,
+   "servedReal": 325,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHRC71-CL",
+   "cell": "d20191205-vf-r2-w17",
+   "servedEmulator": 343,
+   "servedReal": 343,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHRC71-CL",
+   "cell": "d20191209-vf-r0-w08",
+   "servedEmulator": 319,
+   "servedReal": 319,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHRC71-CL",
+   "cell": "d20191209-vf-r0-w17",
+   "servedEmulator": 329,
+   "servedReal": 329,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHRC71-CL",
+   "cell": "d20191209-vf-r1-w08",
+   "servedEmulator": 316,
+   "servedReal": 316,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHRC71-CL",
+   "cell": "d20191209-vf-r1-w17",
+   "servedEmulator": 320,
+   "servedReal": 320,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHRC71-CL",
+   "cell": "d20191209-vf-r2-w08",
+   "servedEmulator": 340,
+   "servedReal": 340,
+   "differing": 1,
+   "first": [
+    "rq-44d5cdb1e2bf433ce5f946afa5381db5f1da54f81dff860c5df8dff54fef5d27"
+   ],
+   "exact": false
+  },
+  {
+   "role": "FS-G2-SHRC71-CL",
+   "cell": "d20191209-vf-r2-w17",
+   "servedEmulator": 335,
+   "servedReal": 335,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHRC71-CL",
+   "cell": "d20191210-vf-r0-w08",
+   "servedEmulator": 340,
+   "servedReal": 340,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHRC71-CL",
+   "cell": "d20191210-vf-r0-w17",
+   "servedEmulator": 302,
+   "servedReal": 302,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHRC71-CL",
+   "cell": "d20191210-vf-r1-w08",
+   "servedEmulator": 317,
+   "servedReal": 317,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHRC71-CL",
+   "cell": "d20191210-vf-r1-w17",
+   "servedEmulator": 287,
+   "servedReal": 287,
+   "differing": 77,
+   "first": [
+    "rq-00d43a3886b4192bfffb1b2abab04d4cf9ce7425d2c68b38b5b577e520ffbe2b",
+    "rq-04b1a197d3e69d271f03bb2d93b623b71abda5965981e6c71ea4459c20e81b0d",
+    "rq-05012d6094636c852f0ec94c63165518e6a9a1584d10e9e93d8ac5f2b2c77161"
+   ],
+   "exact": false
+  },
+  {
+   "role": "FS-G2-SHRC71-CL",
+   "cell": "d20191210-vf-r2-w08",
+   "servedEmulator": 312,
+   "servedReal": 312,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHRC71-CL",
+   "cell": "d20191210-vf-r2-w17",
+   "servedEmulator": 322,
+   "servedReal": 322,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHRC71-CL",
+   "cell": "d20191213-vf-r0-w08",
+   "servedEmulator": 308,
+   "servedReal": 308,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHRC71-CL",
+   "cell": "d20191213-vf-r0-w17",
+   "servedEmulator": 321,
+   "servedReal": 321,
+   "differing": 1,
+   "first": [
+    "rq-dcaa3b6f0ae6ce8613cf1f51d82286c423721f4f1d8b4e35924747fded99183f"
+   ],
+   "exact": false
+  },
+  {
+   "role": "FS-G2-SHRC71-CL",
+   "cell": "d20191213-vf-r1-w08",
+   "servedEmulator": 327,
+   "servedReal": 327,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHRC71-CL",
+   "cell": "d20191213-vf-r1-w17",
+   "servedEmulator": 288,
+   "servedReal": 288,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHRC71-CL",
+   "cell": "d20191213-vf-r2-w08",
+   "servedEmulator": 344,
+   "servedReal": 344,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHRC71-CL",
+   "cell": "d20191213-vf-r2-w17",
+   "servedEmulator": 318,
+   "servedReal": 318,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHRC71-CL",
+   "cell": "d20191216-vf-r0-w08",
+   "servedEmulator": 322,
+   "servedReal": 322,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHRC71-CL",
+   "cell": "d20191216-vf-r0-w17",
+   "servedEmulator": 368,
+   "servedReal": 368,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHRC71-CL",
+   "cell": "d20191216-vf-r1-w08",
+   "servedEmulator": 351,
+   "servedReal": 351,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHRC71-CL",
+   "cell": "d20191216-vf-r1-w17",
+   "servedEmulator": 368,
+   "servedReal": 368,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHRC71-CL",
+   "cell": "d20191216-vf-r2-w08",
+   "servedEmulator": 361,
+   "servedReal": 361,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHRC71-CL",
+   "cell": "d20191216-vf-r2-w17",
+   "servedEmulator": 372,
+   "servedReal": 372,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHRC71-CL",
+   "cell": "d20191218-vf-r0-w08",
+   "servedEmulator": 360,
+   "servedReal": 360,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHRC71-CL",
+   "cell": "d20191218-vf-r0-w17",
+   "servedEmulator": 340,
+   "servedReal": 340,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHRC71-CL",
+   "cell": "d20191218-vf-r1-w08",
+   "servedEmulator": 348,
+   "servedReal": 348,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHRC71-CL",
+   "cell": "d20191218-vf-r1-w17",
+   "servedEmulator": 345,
+   "servedReal": 345,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHRC71-CL",
+   "cell": "d20191218-vf-r2-w08",
+   "servedEmulator": 353,
+   "servedReal": 353,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHRC71-CL",
+   "cell": "d20191218-vf-r2-w17",
+   "servedEmulator": 340,
+   "servedReal": 340,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  }
+ ],
+ "emulator": {
+  "FS-G2-SHHZ71-N": {
+   "cells": 84,
+   "servedRiders": 29214,
+   "etaErrorMeanMin": 0.673,
+   "etaErrorMedianMin": 0.148,
+   "etaErrorP90Min": 1.958,
+   "shareEtaError2Min": 0.0981,
+   "shareEtaError5Min": 0.0278,
+   "initialErrorMeanMin": 3.063,
+   "visRev60": 1921,
+   "reversalCount60": 2964,
+   "tv5Hours": 1871.29,
+   "perDay": {
+    "visRev60": 45.74,
+    "reversalCount60": 70.57,
+    "tv5Hours": 44.55
+   }
+  },
+  "FS-G2-SHRC71-CL": {
+   "cells": 84,
+   "servedRiders": 28820,
+   "etaErrorMeanMin": 0.604,
+   "etaErrorMedianMin": 0.09,
+   "etaErrorP90Min": 1.755,
+   "shareEtaError2Min": 0.0917,
+   "shareEtaError5Min": 0.0297,
+   "initialErrorMeanMin": 2.908,
+   "visRev60": 774,
+   "reversalCount60": 1072,
+   "tv5Hours": 1557.55,
+   "perDay": {
+    "visRev60": 18.43,
+    "reversalCount60": 25.52,
+    "tv5Hours": 37.08
+   }
+  }
+ },
+ "real": {
+  "FS-G2-SHHZ71-N": {
+   "cells": 84,
+   "servedRiders": 29213,
+   "etaErrorMeanMin": 0.673,
+   "etaErrorMedianMin": 0.148,
+   "etaErrorP90Min": 1.958,
+   "shareEtaError2Min": 0.098,
+   "shareEtaError5Min": 0.0278,
+   "initialErrorMeanMin": 3.062,
+   "visRev60": 1920,
+   "reversalCount60": 2962,
+   "tv5Hours": 1869.91,
+   "perDay": {
+    "visRev60": 45.71,
+    "reversalCount60": 70.52,
+    "tv5Hours": 44.52
+   }
+  },
+  "FS-G2-SHRC71-CL": {
+   "cells": 84,
+   "servedRiders": 28820,
+   "etaErrorMeanMin": 0.604,
+   "etaErrorMedianMin": 0.09,
+   "etaErrorP90Min": 1.755,
+   "shareEtaError2Min": 0.0917,
+   "shareEtaError5Min": 0.0297,
+   "initialErrorMeanMin": 2.908,
+   "visRev60": 774,
+   "reversalCount60": 1072,
+   "tv5Hours": 1557.55,
+   "perDay": {
+    "visRev60": 18.43,
+    "reversalCount60": 25.52,
+    "tv5Hours": 37.08
+   }
+  }
+ }
+}

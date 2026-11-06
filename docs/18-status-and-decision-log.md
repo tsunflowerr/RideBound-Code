@@ -6134,6 +6134,260 @@ rút gọn.
     mỗi job cho thấy là có: bộ đọc cũ cần 10–20 phút chỉ để đọc bản chốt cuối.
 - Kế hoạch dọn mã (kiểm kê thành phần, đề xuất giữ/đơn giản hóa/bỏ) làm riêng, chờ chủ duyệt; chưa xóa thành phần nào.
 
+### Máy nhà, tối 04/11: bước A2, A3, B4 của `KE-HOACH-MAY-NHA.md` (chỉ kiểm, không chạy job)
+
+Biên bản: `research/continuation/2026-11-04/home-records/` (README và các danh sách sha256).
+- **A2 — gói và Runner.**
+  - Gói `ridebound-final-v2.zip` `467c735b…`: CRC đạt; 66.545 mục = `MANIFEST.tsv` = tệp gốc.
+  - Commit xuất `0eb9a6ca` (không có trên GitHub) = `9ba5568` ở `src`, `simulators`, `tests` (498/498 blob). Toàn cây chỉ
+    khác `company-emulator/`, một manifest luận văn (loại theo thiết kế) và docs/18–19.
+  - Runner build từ chính repo xuất: đường dẫn PDB trong DLL là `E:\RideBoundData\final-v2\repo\src\...`. Cây Runner 429
+    tệp, digest `ae770252…`. SDK không ghi lúc build; suy ra 10.0.301 (`global.json`, SDK duy nhất trên máy).
+  - .NET khi chạy: bản đi kèm gói, chỉ có 10.0.9. Môi trường job: chờ 900 s, đọc có đệm, giới hạn dòng hai chiều 1 GiB,
+    heap 6 GiB, không đặt `RIDEBOUND_STATE_HASH`.
+- **A3 — ngoài repo.** 450 tệp đầu vào cuối có sha256 trong `FINAL-INPUTS-from-MANIFEST.sha256`. Trong 2.940 tệp JSON ngoài
+  repo không cấu hình chạy nào dùng các khóa mà kế hoạch refactor định bỏ; `stopDistances` không rỗng 0; `origin-hold` 0.
+  Mọi cấu hình Shadow đúng các ràng buộc mới của ADR-090 (một khóa 1000‰; `earliest-feasible`; khoảng ≥ 60 s; 336/336 WP4).
+  Bộ sinh dự đoán adapter-mode lưu nguyên ở `E:/RideBoundData/research/fullsys-f14-v2/emulator-archive-2026-11-04/` (50 tệp,
+  `SHA256SUMS`); mã công ty mà nó cần chỉ được ghi sha256.
+- **B4 — 168 job đạt.** Đủ tệp, 758 tệp đầu vào đúng sha256 của manifest, Runner của gói nạp 168/168 cặp cấu hình (bản hỏng
+  thoát 64), `networkNodes` khớp nút fixture ở 84 ô (811–879 nút; kế hoạch ghi "824 hoặc 830" là sai), tham số Shadow và hồ
+  sơ dự báo trùng đầu vào đã khóa. Thứ tự đánh số nút của FleetPy mới được chứng minh trên 2 ô cổng.
+- **Đối chiếu kế hoạch:** dự đoán adapter-mode cho `SHHZ71-CL` và `SHRC71-N` hiện chỉ có trên 2 ô cổng; trên 84 ô chỉ có bản
+  plain (D1 cần chạy bộ mô phỏng nếu muốn so adapter). Không tìm thấy zip F16 trên máy nhà (D2 bị chặn). Trên máy thuê,
+  `run_cloud.ps1` đặt sàn đĩa 4 GiB nên chỉ cần ~12 GB + 0,8 GB × số job song song.
+
+### Máy nhà, tối 04/11: gói chạy bản Linux (thuê Windows quá đắt; chưa chạy job nào trên Linux)
+
+- **Gói.** Gói Windows giữ nguyên. Thêm overlay `E:/RideBoundData/final-v2-linux-pack/ridebound-final-v2-linux.tar.gz`
+  (`2512c3d2…`; 244 tệp, khớp `MANIFEST-linux.tsv` `ce35878c…`; không trùng tệp nào của gói gốc). Các bản trước được đổi
+  tên, không xóa:
+  - v1 `93d378f6…` (`final-v2-linux-pack.v1-superseded/`);
+  - v2 `ebb18e54…` (`.v2-superseded/`): thêm điều kiện trong container script dừng nếu không đặt `WORKERS`, vì offer
+    container của vast chỉ cho một phần máy và host có thể không khóa cứng cgroup;
+  - v3 (bản hiện tại): đọc `dotnet-runtime.sha512` (ghi trên Windows, CRLF) sau khi bỏ `\r`. Lỗi này lần chạy đầu trên máy
+    thuê bắt được ở bước 2, trước mọi job. `grep` của Git Bash không thấy CR, nên trước đó tưởng đã kiểm.
+  Overlay gồm:
+  - Python 3.10.22 Linux và 46 wheel cho 45 pin (ở nhà là 3.10.20; pin trùng môi trường nhà; numpy là bản pip, ở nhà là
+    conda);
+  - .NET 10.0.9 Linux (sha512 khớp trang phát hành);
+  - bản sao Linux của công cụ chạy job; danh sách job với gốc `/rb`;
+  - 168 cấu hình WP4 chỉ đổi `networkDirectory` (đã so JSON);
+  - các script `final-linux/`.
+  Chạy bằng `run_linux.sh`, hướng dẫn trong `RUN-LINUX.md`.
+- **Cổng.** Bỏ cổng A (khung giống nhà từng byte): manifest ghi đường dẫn Linux nên khung khác theo cấu trúc. Giữ B (4 job
+  nhánh chính = dự đoán khóa trên 4 mặt) và C (4 job quy công). Thêm kiểm máy: git HEAD `0eb9a6ca`; kiểm kê repository
+  phải bằng giá trị đo ở nhà `271166f4…`.
+- **Đã soát mã: không có nguồn lệch theo nền tảng.**
+  - Runner chỉ dùng Max, Min, Floor, Ceiling, Round, Clamp, Abs.
+  - CP-SAT chạy 1 luồng, seed cố định, `max_deterministic_time`.
+  - World full-node buộc sigma = 0 và shockRate = 0, nên hệ số = base[b] từng bit.
+  - Hàm mục tiêu log10 của FleetPy không chạy, vì `fleet_control.py:105` đặt nó bằng 0.
+  - Seed lấy từ cấu hình, không lấy từ mã băm cấu hình.
+  - Không có giờ địa phương trong đường quyết định.
+  - Đầu vào job không còn đường dẫn Windows. Hằng `E:/` còn lại trong 18 module của chuỗi so sánh chỉ là mục `sys.path`,
+    giá trị mặc định bị ghi đè, hoặc hàm không được gọi.
+- **Chưa kiểm được:** OR-Tools Linux (khác trình biên dịch) và numpy pip có cho đúng từng quyết định như ở nhà không. Cổng B/C
+  trên máy thuê là phép thử; đỏ thì dừng trước 168 job. Không thử được ở nhà: chỉ có WSL của Docker, và ổ C còn 38,3 GB,
+  đã dưới sàn 50 GB.
+- **Cổng trên máy thuê ĐẠT (05/11 00:06).**
+  - Máy: vast VM, 11 vCPU EPYC 7K62, 49 GiB, Ubuntu 22.04.5, glibc 2.35, libicu 70.
+  - Kiểm máy đạt: kiểm kê repository = `271166f4…`, đúng giá trị đo trên Windows ở nhà.
+  - Cổng B: 4/4 ô-nhánh, 1.424/1.424 khách trùng; chuỗi ETA trả khách 4/4 (0 khách lệch); Shadow 4/4; chuỗi
+    (công bố, ETA) 4/4; dời G2 4/4.
+  - Cổng C: 4/4, 1.410/1.410 khách; Shadow 4/4; ETA 4/4.
+  - Vậy trên các ô cổng, OR-Tools Linux và numpy pip không làm lệch quyết định nào.
+  - Mỗi job 17–18,5 phút (ở nhà ~25). 168 job cuối bắt đầu 00:06:30, 6 job song song.
+  - Khi đọc `ldd --version | head -1`, script in nhầm "STOPPED at line 51" (SIGPIPE trong thay thế lệnh), nhưng vẫn chạy
+    tiếp. Không sửa giữa đợt, để giữ đúng bản v3 đã chạy.
+- **Sửa phát hiện khi đọc lại `run_cloud.ps1`:** nếu `GATES-REPORT.json` đã có, bản Windows bỏ qua cổng mà không xem `pass`.
+  Bản Linux đọc `pass` và dừng nếu cổng từng đỏ.
+
+### Máy nhà, sáng 05/11: bước D2, chạy nốt F16 của gói bộ mô phỏng (đã có ô F16)
+
+Đây là tái lập phép tính trong bộ mô phỏng JS, chế độ plain. Nó không phải kiểm chứng trên hệ thật, và không đổi ADR nào.
+Phần F14 của cùng gói đã trùng từ 26/10 (ADR-087).
+
+- **Đầu vào.**
+  - Chủ mang về zip wf17 ngày 24/10 (sha256 `cc549c88…`). Chỉ lấy hai phần từ zip:
+    - `cells/f16`: 292 tệp, trùng 292/292 với `company-emulator/expected/wf17-f16-cells.sha256`;
+    - `results/r3.ndjson`: trùng sha256 trong manifest của zip, và trùng 3.060/3.060 dòng với
+      `expected/wf17__…__r3.tsv`.
+  - Cần `r3.ndjson` vì `gcheck.js:25` đọc tệp này mà không kiểm tồn tại; ghi ở sửa đổi A1.
+  - Kế hoạch và sửa đổi được niêm phong trước khi chạy. Các tệp sẽ bị ghi nối hoặc ghi đè được chép lưu trước (19 tệp, có
+    băm).
+  - Hồ sơ ở `E:/RideBoundData/company-intake/2026-10-23/sp/wf23-home-f16/`, gồm `PLAN.md`, `AMEND-A1.md`, `RESULT.md`,
+    `BEFORE.sha256`, `AFTER.sha256` và `logs/`.
+- **Kết quả:** chạy 21 phút, Node v24.17.0.
+  - `confirm_digest.js`: wf20/fullsys **3.600/3.600** dòng, wf21/n7 **3.600/3.600** dòng trùng hoàn toàn, kể cả dấu vân tay
+    từng khách. Không có dòng lệch, thiếu hay thừa.
+  - `OURS-VS-THEIRS.home.md` và hai `tables.txt` dựng lại trùng từng byte với bản của máy công ty.
+  - Cổng của fullsys (g1–g5, có g2 so với R3 trên 1.440 dòng) và cổng của n7 (G1–G5, G8) đều PASS. Bỏ `check` của n7 vì
+    thiếu `calib.ndjson`.
+- **Hệ quả.** Mọi số "30 ngày" của hai báo cáo và của bảng hệ mình so với đối thủ nay đã được máy nhà tính lại, ra đúng từng
+  khách. Ví dụ: G2, luật C so với hàng rào nới, phục vụ −8,90/ngày và đảo hứa −13,81 (−42,5%).
+- **Còn mở:**
+  - Ô F16 chưa được sinh lại từ dữ liệu gốc, vì vẫn thiếu gói P0.
+  - Chỉ mục dự báo là bản dựng lại A1, không phải tệp gốc.
+  - 168 job hệ thật chỉ chạy trên F14. F16 vẫn chưa có kiểm chứng trên hệ thật.
+
+### Máy thuê, 05/11: F14 hệ thật xong, KHÔNG khớp tuyệt đối với dự đoán đã khóa; F16 hệ thật đã khởi động
+
+- **Hoàn tất 168 job.** Job cuối xong lúc 10:24:27. 168/168 `status-pass`, không job nào hỏng.
+- **Bước 8 (so sánh) xong lúc 13:39, `allExact` = false.** `run_linux.sh` dừng ở `die "final report"`, nên bước 9 (nén)
+  không chạy. Đã nén tay bằng đúng các lệnh của bước 9, stamp `20261105T064554Z`: kết quả 1,9 GB, transcript 3,0 GB. Đang
+  tải về `E:/RideBoundData/research/fullsys-f14-v2/runs-linux-2026-11-05/`.
+- **So với dự đoán adapter đã khóa** (168 cặp ô-nhánh, `/rb/runs/report/FINAL-REPORT.json`):
+
+  | Mặt | Cặp trùng | Khách lệch |
+  |---|---|---|
+  | Khách (t0, p0, A, phục vụ, c, dời G2) | 166/168 (ta 84/84, Elmi 82/84) | 88/58.042 |
+  | Chuỗi ETA trả khách | 143/168 | 393/58.034 (Elmi 310 ở 18 cặp, ta 83 ở 7 cặp) |
+  | Shadow | 167/168 | — |
+  | ETA theo thời gian | 141/168 | — |
+
+  - Lệch lớn duy nhất: Elmi `d20191015-vf-r1-w08`. Rẽ ngay ở quyết định t0 = 418 s: hệ thật dời cam kết
+    (`sumAbsC` 1.256.894, 2 cam kết khác 0), dự đoán thì không. Cặp này chiếm 87 khách lệch và 275/393 khách lệch chuỗi.
+  - Lệch nhỏ: Elmi `d20191218-vf-r1-w08`, 1 khách (`sumAbsC` 28.357 so với 28.134). Còn lại là các chuỗi lệch 1–5 khách,
+    trừ cặp ta `d20191210-vf-r1-w17` lệch 75 khách chuỗi.
+  - `1-riders` trả mã 0 dù 2 cặp lệch: đúng thiết kế, vì `compare_via_full.py:213` luôn `return 0`. `allExact` do
+    `final_report_linux.py:83` tính từ các JSON.
+- **Tổng 14 ngày gần như không đổi** (mỗi ngày = tổng/42):
+
+  | | Elmi, dự đoán | Elmi, hệ thật | Ta, dự đoán | Ta, hệ thật |
+  |---|---|---|---|---|
+  | visRev60 | 45,74 | 45,71 | 18,43 | 18,43 |
+  | Số đảo hứa (60 s) | 70,57 | 70,52 | 25,52 | 25,52 |
+  | Khách phục vụ (tổng) | 29.214 | 29.213 | 28.820 | 28.820 |
+  | Sai số ETA trung bình (phút) | 0,673 | 0,673 | 0,604 | 0,604 |
+
+  Hiệu "ta − Elmi" của hệ thật đổi nhiều nhất 0,05/ngày so với dự đoán. Tiêu chí "trùng từng khách trên mọi cặp" thì
+  **không đạt**, và phải ghi đúng như vậy.
+- **Chẩn đoán: hệ thật tự lặp lại.** Chạy lại đúng job lệch trong `/rb/runs-diag` (cùng đầu vào, giữ transcript):
+  - trùng `audit.table` 185.900/185.900 dòng, `moves` (25 lần dời / 2.903 quyết định), `events`, `shadowAllocations`,
+    8.716 khung transcript;
+  - chỉ khác `runId` và các mã sinh từ nó.
+
+  Vậy chỗ lệch là khác biệt có thật giữa adapter của bộ mô phỏng và hệ thật, không phải ngẫu nhiên.
+- **Nguyên nhân (đã tìm ra 05/11 chiều, đọc transcript của lần chạy chẩn đoán).** Chỗ rẽ đầu tiên không phải t0 = 418 s:
+  đó chỉ là t0 của khách lệch đầu tiên khi xếp theo t0. Hai bên rẽ ở 2.224,046 s.
+  - Hệ thật có 5 vòng quyết định ở cùng thời điểm (epoch 961–965):
+    - 961: `veh-4a17` tới nút và đón `rq-fd9f`. Hai bên ra cùng một lộ trình.
+    - 962: FleetPy gửi thêm một lô chỉ có `vehicleAdvanced` của chính `veh-4a17`, báo xe đang đứng tại nút. Runner chuyển
+      `rq-954a`, khách đang chờ ở đúng nút đó, từ `veh-7b6d` sang `veh-4a17` (`vehicleSwitchCount` 1).
+    - 963: `veh-4a17` đón `rq-954a` trong cùng mili giây.
+  - Bộ mô phỏng chỉ quyết định một lần mỗi thời điểm, trừ khi vừa nhận khách mới
+    (`engine_wf15_clint.js:783-794`; chú thích dòng 785: "re-triggers while confirmations exist"). Nước chuyển này nó
+    chỉ tìm ra ở sự kiện sau, 2.226,935 s, khi xe đã rời nút: `rq-954a` sớm 39 s thay vì 142 s, hai khách kia muộn thêm
+    113 s thay vì 10 s. Từ đó hai bên đi hai đường.
+  - Đây là giới hạn trong mô hình lô sự kiện của bộ mô phỏng, không phải lỗi của RideBound. Không sửa gì, vì dự đoán đã
+    khóa.
+  - Mới chứng minh cho 1 ô này. 24 cặp lệch nhỏ ở chuỗi ETA chưa kiểm được, vì transcript của chúng đã bị bỏ.
+  - Gói chẩn đoán (`ridebound-diag-20261105.tar`, `8aab583e…`) đã tải về và đúng băm.
+- **F16 hệ thật** (`PLAN-F16.md` `7c9f251e…`, khóa 03:52:19Z):
+  - Ở nhà: 96 ô F16 đã đổi thành fixture, world và driver. Cổng plain 192/192 trùng với hàng của máy công ty.
+  - Dự đoán adapter 67.922 khách được khóa 04:49Z; chuỗi ETA khóa 05:16Z; dự đoán theo thời gian (4 nhánh, 135.747 khách)
+    khóa 06:49Z. Gói bổ sung 741 MiB, 1.168 tệp.
+  - `run_f16_linux.sh` được sửa TRƯỚC khi khóa: báo cáo không khớp thì vẫn nén và ghi rõ; chỉ dừng nếu không có
+    `FINAL-REPORT.json`. Cổng 4 job vẫn đòi khớp tuyệt đối.
+  - Máy thuê: 14:01 kiểm 1.168 tệp, 0 lỗi; cùng HEAD `0eb9a6ca` và kiểm kê `271166f4…` như F14.
+  - **Cổng F16 ĐẠT (15:02).** 4/4 cặp, 1.412/1.412 khách trùng trên cả 4 mặt.
+  - 192 job bắt đầu 15:02, 6 worker. 18:04: 47/192 job xong, tất cả `status-pass`.
+- **D1: bộ mô phỏng plain so với adapter, tách luật C và dự báo (05/11 18:03, chỉ đọc, không chạy hệ thật).**
+  - Đầu vào:
+    - plain: hàng của máy công ty `wf20/fullsys/results/rows.ndjson`.
+    - adapter: dự đoán có giờ công bố cho đủ 4 nhánh G2. F14 sinh mới vào
+      `E:/RideBoundData/research/fullsys-f14-v2/predictions-timed-attr-d1/`: 116.027 khách, rc 0. Bước này tự kiểm: trùng
+      58.034 hàng và chuỗi đã khóa, nhánh N mới trùng engine gốc ở 84 cặp. F16 dùng tệp đã khóa
+      `fullsys-f16-v2/predictions-timed/`.
+  - Script `ridebound-scratchpad/fastrun-2026-11-02/final/d1_split.py`, đọc thống kê từ `synth_real_30d.py` (luật fsan.js).
+    Kết quả ở `E:/RideBoundData/research/d1-plain-vs-adapter-2026-11-05/` (`d1-split.md/.json`, `d1-gap.stdout.txt`).
+  - Kiểm:
+    - rev60/tv5 tính lại từ chuỗi có giờ trùng tệp chuỗi đã khóa ở 125.956/125.956 khách của 2 nhánh chính;
+    - phần plain 30 ngày trùng từng số với bảng tách phần của công ty (phục vụ −8,84 = −8,90 + 0,06; đảo hứa
+      −13,81/−13,64; trễ +4,00/−38,04; TV5 −18,22/−19,89).
+  - 30 ngày, ta − Elmi theo ngày (tổng = luật C + dự báo):
+
+    | Chỉ số | plain | adapter |
+    |---|---|---|
+    | Phục vụ | −8,84 = −8,90 + 0,06 (2/28) | −6,67 = −7,56 + 0,89 (4/26) |
+    | Khách bị đảo hứa | −27,46 = −13,81 − 13,64 | −27,36 = −13,99 − 13,37 |
+    | Trễ > 60 s so với hứa đầu /1000 | −34,04 = +4,00 − 38,04 | −34,26 = +4,08 − 38,34 |
+    | TV5 | −38,11 = −18,22 − 19,89 | −37,78 = −17,61 − 20,17 |
+
+  - Khoảng cách adapter − plain theo ngày (`d1-gap.stdout.txt`):
+    - Đảo hứa, trễ, TV5: không khác, mọi KTC chứa 0, cả ở tổng lẫn ở từng phần.
+    - Phục vụ: +2,18 [0,22; 4,14], dấu 20/10, p = 0,10. Biên giới: KTC t vừa không chứa 0, kiểm định dấu thì không đạt.
+      - Hầu hết đến từ F16: +3,67 [0,91; 6,43]. F14 chỉ +0,48 [−2,39; 3,34].
+      - Tách phần: luật C +1,34 [−0,55; 3,24], dự báo +0,83 [−0,78; 2,45]. Không phần nào tự nó có ý nghĩa, nên
+        **không quy được khoảng cách cho một cơ chế**.
+      - Theo nhánh: chỉ nhánh ta đổi, adapter phục vụ nhiều hơn plain +1,73 [0,27; 3,20] khách/ngày. Elmi −0,44
+        [−1,89; 1,00].
+  - Kết luận:
+    - Chế độ plain hay adapter không đổi dấu, độ lớn hay ý nghĩa của bất kỳ kết luận nào về đảo hứa, trễ và TV5.
+    - Với phục vụ, plain cho cái giá phục vụ của ta lớn hơn khoảng 2 khách/ngày. Một ngày mỗi nhánh phục vụ khoảng 696
+      khách (F14 Elmi 29.214/42), nên khoảng cách này chừng 0,3 %: cái giá là 1,3 % theo plain, 1,0 % theo adapter.
+    - Trên F14, hệ thật ra −9,36, adapter −9,38, plain −9,86: con số đúng là con số của adapter.
+    - Cơ chế gây lệch trong code bộ mô phỏng (dừng 0 s, làm tròn mốc thời gian, lưới đủ nút, thứ tự yêu cầu) chưa được
+      chứng minh; chỉ mới là các ứng viên.
+
+### Máy thuê, 06/11: F16 hệ thật xong; bảng 30 ngày hệ thật
+
+- **Hoàn tất 192 job:** 192/192 `status-pass`, job cuối 03:07.
+- **So sánh và nén:** so sánh 03:07–06:35, `allExact` = false; theo `run_f16_linux.sh` sửa trước khi khóa, vẫn nén.
+  Stamp `20261105T233511Z`: kết quả 2.179.000.962 B, transcript 2.908.887.040 B.
+- **Tải về và lưu trữ:**
+  - Tải về `E:/RideBoundData/research/fullsys-f16-v2/runs-linux-2026-11-06/`, sha256 OK cả hai.
+  - `runs/report-f16` giải nén vào `extracted/`; 12 tệp trùng từng byte với bản lấy thẳng bằng scp.
+  - Log console của máy thuê (`run_linux.log`, `run_f16_linux.log`, nén tay F14, chạy chẩn đoán) không nằm trong gói nào,
+    nên đã chép riêng vào `vast-console/`, sha256 so với máy thuê OK.
+  - Mọi thư mục trong `/rb/runs` và `/rb/runs-diag` đều có trong các gói đã tải.
+- **So với dự đoán adapter đã khóa** (`report-f16/FINAL-REPORT.json`):
+
+  | Mặt | Cặp trùng | Khách lệch |
+  |---|---|---|
+  | Khách | 187/192 (ta 94/96, Elmi 93/96) | 5/67.922 |
+  | Chuỗi ETA trả khách | 158/192 | 225 |
+  | Shadow | 190/192 | — |
+  | ETA theo thời gian | 158/192 | — |
+
+  - 5 khách lệch nằm ở 5 cặp khác nhau, mỗi cặp 1 khách, đều ở mức mili giây: p0 lệch 139 ms (Elmi
+    `d20191025-vf-r0-w17`) và 198 ms (ta `d20191008-vf-r0-w17`); A lệch 1 ms (Elmi `d20191028-vf-r1-w08`, ta
+    `d20191025-vf-r0-w17`); `sumAbsC` 898.213 so với 898.837 (Elmi `d20191010-vf-r2-w17`).
+  - Lần dời G2 trùng 192/192. Tổng visRev60 3.097 = 3.097. Tổng TV5 lệch 673 ms trên 67.922 khách. Chỉ số ETA trùng tới 3
+    chữ số (Elmi 0,679, ta 0,591 phút).
+  - Không có cặp lệch lớn như Elmi `d20191015-vf-r1-w08` của F14. Nguyên nhân các lệch mili giây chưa kiểm, vì transcript
+    của các job này đã bị bỏ.
+- **Bảng 30 ngày hệ thật** (`synth_real_30d.py`, cả hai đợt đều là hệ thật; `fullsys-f16-v2/synth-real-30d-2026-11-06/`).
+  Ta − Elmi theo ngày, quy tắc fsan.js:
+
+  | Chỉ số | plain | adapter | hệ thật |
+  |---|---|---|---|
+  | Phục vụ | −8,84 | −6,67 | −6,66 [−8,75; −4,56], 4/26 |
+  | Khách bị đảo hứa | −27,46 | −27,36 | −27,34 [−31,38; −23,31], 0/30 |
+  | Trễ > 60 s so với hứa đầu /1000 | −34,04 | −34,26 | −34,23 [−40,15; −28,32], 1/29 |
+  | TV5 (giây/khách) | −38,11 | −37,78 | −37,70 [−41,39; −34,01], 0/30 |
+  | Trễ khung w17 /1000 | +20,56 | +21,83 | +21,83 [13,64; 30,03], 30/0 |
+
+  - Trên F16, hệ thật trùng adapter ở mọi chỉ số, tới 2 chữ số thập phân.
+  - Cái giá phục vụ của ta là khoảng 0,95 % (6,66 trên khoảng 703 khách/ngày).
+  - Ở khung 17 giờ, ta trễ so với hứa đầu nhiều hơn Elmi trong cả 30/30 ngày. Đây là bất lợi có thật, phải ghi đúng như vậy.
+- **Đĩa:** E còn 24,2 GB. C còn 39,2 GB, dưới mức 50 GB; tối 05/11 C còn 44,5 GB. Chưa tìm ra nguyên nhân: các tệp
+  tải về đều nằm trên E, scratchpad trên C khoảng 2,5 GB. Không xóa gì.
+- **Máy thuê** không còn gì cần lấy về. Chủ đề tài tự Destroy.
+- **Đưa lên GitHub (06/11, theo lệnh chủ: "push hết các file code hay file báo cáo lên 1 nhánh"):** nhánh
+  `research/final-real-runs-2026-11-06`, tách từ `research/fixes-perf-2026-11-04` `bf0a512`. Thư mục
+  `research/continuation/2026-11-06/` gồm:
+  - báo cáo tổng hợp `BAO-CAO-CHAY-THAT-F14-F16.md`;
+  - báo cáo so sánh F14/F16, bảng 30 ngày, D1, log console máy thuê;
+  - 70 tệp của bộ công cụ `fastrun-2026-11-02` và script của phiên; băm ở `RESULTS.sha256` và `SCRIPTS.sha256`.
+
+  Kèm theo biên bản máy nhà 04/11 (`research/continuation/2026-11-04/home-records/`).
+
+  Repo công khai nên **không đưa lên** 7 tệp, ghi băm và lý do trong `scripts/HELD-BACK.tsv`. 5 tệp chép mã bộ mô phỏng
+  wf15 của công ty, vốn chưa công khai. 2 tệp chứa tên công ty. Các tệp `riders-real-riders.tsv` và gói nén ở ngoài repo,
+  chỉ ghi băm. Không đổi `src/` hay `tests/`.
+
 ## Cập nhật khóa luận — 2026-10-16T00:09:00.907016+07:00
 
 Người dùng yêu cầu cập nhật toàn bộ nội dung theo cách đọc tự nhiên, bổ sung

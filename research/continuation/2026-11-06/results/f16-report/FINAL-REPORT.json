@@ -1,0 +1,132 @@
+{
+  "returnCodes": {
+    "1-riders": 0,
+    "2-sequences": 1,
+    "3-shadow": 1,
+    "4-eta": 1,
+    "5-reversals": 0
+  },
+  "riders": {
+    "finishedJobs": 192,
+    "cellArmsCompared": 192,
+    "cellArmsExact": 187,
+    "riders": 67922,
+    "ridersIdentical": 67917,
+    "movesEqual": 192,
+    "g2CellArms": 192,
+    "byArm": {
+      "FS-G2-SHRC71-CL": {
+        "cellArms": 96,
+        "exact": 94
+      },
+      "FS-G2-SHHZ71-N": {
+        "cellArms": 96,
+        "exact": 93
+      }
+    }
+  },
+  "sequences": {
+    "cellArms": 192,
+    "exact": 158,
+    "riders": 67922,
+    "differing": 225,
+    "visRev60Emulator": 3097,
+    "visRev60Real": 3097,
+    "tv5Emulator": 14318747082,
+    "tv5Real": 14318746409
+  },
+  "shadow": {
+    "cellArms": 192,
+    "exact": 190,
+    "riders": 67922
+  },
+  "eta": {
+    "cellArms": 192,
+    "exact": 158,
+    "real": {
+      "FS-G2-SHHZ71-N": {
+        "cells": 96,
+        "servedRiders": 34064,
+        "etaErrorMeanMin": 0.679,
+        "etaErrorMedianMin": 0.152,
+        "etaErrorP90Min": 1.972,
+        "shareEtaError2Min": 0.0988,
+        "shareEtaError5Min": 0.0285,
+        "initialErrorMeanMin": 3.04,
+        "visRev60": 2206,
+        "reversalCount60": 3389,
+        "tv5Hours": 2179.19
+      },
+      "FS-G2-SHRC71-CL": {
+        "cells": 96,
+        "servedRiders": 33858,
+        "etaErrorMeanMin": 0.591,
+        "etaErrorMedianMin": 0.092,
+        "etaErrorP90Min": 1.717,
+        "shareEtaError2Min": 0.0884,
+        "shareEtaError5Min": 0.0286,
+        "initialErrorMeanMin": 2.865,
+        "visRev60": 891,
+        "reversalCount60": 1228,
+        "tv5Hours": 1798.24
+      }
+    },
+    "emulator": {
+      "FS-G2-SHHZ71-N": {
+        "cells": 96,
+        "servedRiders": 34064,
+        "etaErrorMeanMin": 0.679,
+        "etaErrorMedianMin": 0.152,
+        "etaErrorP90Min": 1.972,
+        "shareEtaError2Min": 0.0988,
+        "shareEtaError5Min": 0.0285,
+        "initialErrorMeanMin": 3.04,
+        "visRev60": 2206,
+        "reversalCount60": 3389,
+        "tv5Hours": 2179.19
+      },
+      "FS-G2-SHRC71-CL": {
+        "cells": 96,
+        "servedRiders": 33858,
+        "etaErrorMeanMin": 0.591,
+        "etaErrorMedianMin": 0.092,
+        "etaErrorP90Min": 1.717,
+        "shareEtaError2Min": 0.0884,
+        "shareEtaError5Min": 0.0286,
+        "initialErrorMeanMin": 2.865,
+        "visRev60": 891,
+        "reversalCount60": 1228,
+        "tv5Hours": 1798.24
+      }
+    }
+  },
+  "reversals": {
+    "FS-G2-SHHZ71-N": {
+      "servedRiders": 34064,
+      "visRev60": 2206,
+      "reversalCount60": 3389,
+      "ridersWith": {
+        "0": 31858,
+        "1": 1310,
+        "2": 696,
+        "3+": 200
+      },
+      "maxPerRider": 7,
+      "cells": 96
+    },
+    "FS-G2-SHRC71-CL": {
+      "servedRiders": 33858,
+      "visRev60": 891,
+      "reversalCount60": 1228,
+      "ridersWith": {
+        "0": 32967,
+        "1": 596,
+        "2": 264,
+        "3+": 31
+      },
+      "maxPerRider": 5,
+      "cells": 96
+    }
+  },
+  "allExact": false
+}

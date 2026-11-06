@@ -1,0 +1,8 @@
+path	sha256	reason
+fullsys/engine_wf15_clint.js	26d6a886e30083de15b955f0ffaceb3d70055b5b0ed3aef9802b7df957c24411	chép mã bộ mô phỏng wf15 của công ty (chưa công khai)
+fullsys/gen_forecast_golden.js	4313ddd87c0aee4162da9a9ff8299b938633b5a37f9f384be80573616950b1da	chép mã bộ mô phỏng wf15 của công ty (chưa công khai)
+emulate_via_full.js	a9a1dad2ad1a6d86ff4983ee117aa49474a00f0ad7f434cb39f099d9c9bb9d04	chép mã bộ mô phỏng wf15 của công ty (chưa công khai)
+fullsys/emulate_fullsys.js	07ae0cde4d078746971016e681c75d42f67179c5018808a249a4d530717fdf55	chép mã bộ mô phỏng wf15 của công ty (chưa công khai)
+fullsys/emulate_fullsys_f16.js	c7eb9962457b330075c8d529605503e8b6ceda245489f1deface44bdb80707b0	chép mã bộ mô phỏng wf15 của công ty (chưa công khai)
+final/assemble_final.py	45ae380b95b34a3caf871dc7c95fe7c4e621eb8ab0a020a6677cd0cc49eff408	chứa tên công ty (biểu thức lọc DLP)
+final/pack_final.py	67558cccb006840b72f3c05b914c4d59b1af5ab1120a5544c12519c632d8b3d9	chứa tên công ty (biểu thức lọc DLP)

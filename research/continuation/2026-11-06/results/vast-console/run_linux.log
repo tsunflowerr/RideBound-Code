@@ -1,0 +1,401 @@
+[2026-11-04T23:08:44] 0 prerequisites
+[2026-11-04T23:08:44]   ldd (Ubuntu GLIBC 2.35-0ubuntu3.9) 2.35; git version 2.34.1; CPUs 11; RAM 49.4 GiB
+[2026-11-04T23:08:44] 1 upload checksums
+ridebound-final-v2.zip: OK
+MANIFEST.tsv: OK
+ridebound-final-v2-linux.tar.gz: OK
+MANIFEST-linux.tsv: OK
+run_linux.sh: OK
+[2026-11-04T23:08:51] 2 unpack to /rb
+cpython-3.10.22+20261009-x86_64-unknown-linux-gnu-install_only.tar.gz: OK
+sha512sum: 'dotnet-runtime-10.0.9-linux-x64.tar.gz'$'\r': No such file or directory
+dotnet-runtime-10.0.9-linux-x64.tar.gz: FAILED open or read
+sha512sum: WARNING: 1 listed file could not be read
+STOP: .NET archive checksum
+[2026-11-04T23:11:18] 0 prerequisites
+STOPPED at line 51 (exit 141). Nothing is deleted; fix the cause and rerun the same command.
+[2026-11-04T23:11:18]   ldd (Ubuntu GLIBC 2.35-0ubuntu3.9) 2.35; git version 2.34.1; CPUs 11; RAM 49.4 GiB
+[2026-11-04T23:11:18] 1 upload checksums
+ridebound-final-v2.zip: OK
+MANIFEST.tsv: OK
+ridebound-final-v2-linux.tar.gz: OK
+MANIFEST-linux.tsv: OK
+run_linux.sh: OK
+[2026-11-04T23:11:25] 2 unpack to /rb
+cpython-3.10.22+20261009-x86_64-unknown-linux-gnu-install_only.tar.gz: OK
+dotnet-runtime-10.0.9-linux-x64.tar.gz: OK
+[2026-11-04T23:11:29]   extracting ridebound-final-v2.zip (66,545 files, 6.8 GiB)
+[2026-11-04T23:12:01] 3 Python packages (offline wheels) and .NET
+WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
+Microsoft.NETCore.App 10.0.9 [/rb/RideBoundData/final-v2-linux/dotnet/runtime/shared/Microsoft.NETCore.App]
+[2026-11-04T23:12:25] 4 verify every file (SHA-256)
+66545 files, 6.75 GiB checked; 0 problems
+244 files, 0.26 GiB checked; 0 problems
+[2026-11-04T23:12:34] 5 machine checks
+{"pass": true, "python": "3.10.22", "head": "0eb9a6ca7b61bb1ade653bdc178fae5a1f102681", "inventory": "271166f4101b98ca0d4366502122eea62072a06ce51cc2358a7d5bb335ae2316", "libicu": "libicuuc.so.70", "cpus": 11, "memTotalGiB": 49.4}
+[2026-11-04T23:12:36]   workers 6 (RAM limit 49 GiB, CPUs 11, disk free 109 GiB)
+[2026-11-04T23:12:36] 6 gates (8 jobs; a difference means STOP and report, do not run the final jobs)
+2026-11-04T23:12:37 4 jobs; HEAD 0eb9a6ca7b61bb1ade653bdc178fae5a1f102681; repository inventory 271166f4101b98ca0d4366502122eea62072a06ce51cc2358a7d5bb335ae2316
+2026-11-04T23:12:37 start FS-G2-SHRC71-CL-d20190919-vf-r0-w08
+2026-11-04T23:12:42 start FS-G2-SHHZ71-N-d20190919-vf-r0-w08
+2026-11-04T23:12:47 start FS-G2-SHRC71-CL-d20190919-vf-r0-w17
+2026-11-04T23:12:52 start FS-G2-SHHZ71-N-d20190919-vf-r0-w17
+2026-11-04T23:34:38 end   FS-G2-SHRC71-CL-d20190919-vf-r0-w08 17.3 min -> status-pass+evidence-keep
+2026-11-04T23:35:12 end   FS-G2-SHHZ71-N-d20190919-vf-r0-w08 17.7 min -> status-pass+evidence-keep
+2026-11-04T23:35:19 end   FS-G2-SHRC71-CL-d20190919-vf-r0-w17 17.7 min -> status-pass+evidence-keep
+2026-11-04T23:36:16 end   FS-G2-SHHZ71-N-d20190919-vf-r0-w17 18.5 min -> status-pass+evidence-keep
+2026-11-04T23:36:16 finished: {"FS-G2-SHRC71-CL-d20190919-vf-r0-w08": "status-pass+evidence-keep", "FS-G2-SHHZ71-N-d20190919-vf-r0-w08": "status-pass+evidence-keep", "FS-G2-SHRC71-CL-d20190919-vf-r0-w17": "status-pass+evidence-keep", "FS-G2-SHHZ71-N-d20190919-vf-r0-w17": "status-pass+evidence-keep"}
+2026-11-04T23:36:17 4 jobs; HEAD 0eb9a6ca7b61bb1ade653bdc178fae5a1f102681; repository inventory 271166f4101b98ca0d4366502122eea62072a06ce51cc2358a7d5bb335ae2316
+2026-11-04T23:36:17 start FS-G2-SHHZ71-CL-d20190919-vf-r0-w08
+2026-11-04T23:36:22 start FS-G2-SHHZ71-CL-d20190919-vf-r0-w17
+2026-11-04T23:36:27 start FS-G2-SHRC71-N-d20190919-vf-r0-w08
+2026-11-04T23:36:32 start FS-G2-SHRC71-N-d20190919-vf-r0-w17
+2026-11-04T23:58:13 end   FS-G2-SHRC71-N-d20190919-vf-r0-w08 17.0 min -> status-pass+evidence-drop
+2026-11-04T23:58:26 end   FS-G2-SHHZ71-CL-d20190919-vf-r0-w08 17.4 min -> status-pass+evidence-drop
+2026-11-04T23:58:32 end   FS-G2-SHRC71-N-d20190919-vf-r0-w17 17.7 min -> status-pass+evidence-drop
+2026-11-04T23:59:41 end   FS-G2-SHHZ71-CL-d20190919-vf-r0-w17 18.4 min -> status-pass+evidence-drop
+2026-11-04T23:59:41 finished: {"FS-G2-SHHZ71-CL-d20190919-vf-r0-w08": "status-pass+evidence-drop", "FS-G2-SHHZ71-CL-d20190919-vf-r0-w17": "status-pass+evidence-drop", "FS-G2-SHRC71-N-d20190919-vf-r0-w08": "status-pass+evidence-drop", "FS-G2-SHRC71-N-d20190919-vf-r0-w17": "status-pass+evidence-drop"}
+B-main-arms: returncode 0
+C1-attr-riders: returncode 0
+C2-attr-shadow: returncode 0
+C3-attr-eta: returncode 0
+{"pass": true, "returnCodes": {"B-main-arms": 0, "C1-attr-riders": 0, "C2-attr-shadow": 0, "C3-attr-eta": 0}}
+[2026-11-05T00:06:30] 7 final jobs (168; finished ones are skipped)
+2026-11-05T00:06:32 168 jobs; HEAD 0eb9a6ca7b61bb1ade653bdc178fae5a1f102681; repository inventory 271166f4101b98ca0d4366502122eea62072a06ce51cc2358a7d5bb335ae2316
+2026-11-05T00:06:32 start FS-G2-SHRC71-CL-d20190919-vf-r1-w08
+2026-11-05T00:06:37 start FS-G2-SHHZ71-N-d20190919-vf-r1-w08
+2026-11-05T00:06:42 start FS-G2-SHRC71-CL-d20190919-vf-r1-w17
+2026-11-05T00:06:47 start FS-G2-SHHZ71-N-d20190919-vf-r1-w17
+2026-11-05T00:06:52 start FS-G2-SHRC71-CL-d20190919-vf-r2-w08
+2026-11-05T00:06:57 start FS-G2-SHHZ71-N-d20190919-vf-r2-w08
+2026-11-05T00:27:19 end   FS-G2-SHRC71-CL-d20190919-vf-r1-w08 16.3 min -> status-pass+evidence-drop
+2026-11-05T00:27:19 start FS-G2-SHRC71-CL-d20190919-vf-r2-w17
+2026-11-05T00:27:35 end   FS-G2-SHRC71-CL-d20190919-vf-r2-w08 16.3 min -> status-pass+evidence-drop
+2026-11-05T00:27:35 start FS-G2-SHHZ71-N-d20190919-vf-r2-w17
+2026-11-05T00:27:44 end   FS-G2-SHHZ71-N-d20190919-vf-r1-w08 16.7 min -> status-pass+evidence-drop
+2026-11-05T00:27:44 start FS-G2-SHRC71-CL-d20190924-vf-r0-w08
+2026-11-05T00:28:12 end   FS-G2-SHHZ71-N-d20190919-vf-r2-w08 16.7 min -> status-pass+evidence-drop
+2026-11-05T00:28:12 start FS-G2-SHHZ71-N-d20190924-vf-r0-w08
+2026-11-05T00:28:57 end   FS-G2-SHRC71-CL-d20190919-vf-r1-w17 17.5 min -> status-pass+evidence-drop
+2026-11-05T00:28:57 start FS-G2-SHRC71-CL-d20190924-vf-r0-w17
+2026-11-05T00:31:05 end   FS-G2-SHHZ71-N-d20190919-vf-r1-w17 19.1 min -> status-pass+evidence-drop
+2026-11-05T00:31:05 start FS-G2-SHHZ71-N-d20190924-vf-r0-w17
+2026-11-05T00:48:17 end   FS-G2-SHRC71-CL-d20190924-vf-r0-w08 16.0 min -> status-pass+evidence-drop
+2026-11-05T00:48:17 start FS-G2-SHRC71-CL-d20190924-vf-r1-w08
+2026-11-05T00:49:19 end   FS-G2-SHHZ71-N-d20190924-vf-r0-w08 16.5 min -> status-pass+evidence-drop
+2026-11-05T00:49:19 start FS-G2-SHHZ71-N-d20190924-vf-r1-w08
+2026-11-05T00:50:53 end   FS-G2-SHRC71-CL-d20190924-vf-r0-w17 17.4 min -> status-pass+evidence-drop
+2026-11-05T00:50:53 start FS-G2-SHRC71-CL-d20190924-vf-r1-w17
+2026-11-05T00:51:00 end   FS-G2-SHRC71-CL-d20190919-vf-r2-w17 18.7 min -> status-pass+evidence-drop
+2026-11-05T00:51:00 start FS-G2-SHHZ71-N-d20190924-vf-r1-w17
+2026-11-05T00:51:37 end   FS-G2-SHHZ71-N-d20190919-vf-r2-w17 19.0 min -> status-pass+evidence-drop
+2026-11-05T00:51:37 start FS-G2-SHRC71-CL-d20190924-vf-r2-w08
+2026-11-05T00:52:59 end   FS-G2-SHHZ71-N-d20190924-vf-r0-w17 17.3 min -> status-pass+evidence-drop
+2026-11-05T00:52:59 start FS-G2-SHHZ71-N-d20190924-vf-r2-w08
+2026-11-05T01:10:52 end   FS-G2-SHRC71-CL-d20190924-vf-r1-w08 17.6 min -> status-pass+evidence-drop
+2026-11-05T01:10:52 start FS-G2-SHRC71-CL-d20190924-vf-r2-w17
+2026-11-05T01:12:25 end   FS-G2-SHHZ71-N-d20190924-vf-r1-w08 18.0 min -> status-pass+evidence-drop
+2026-11-05T01:12:25 start FS-G2-SHHZ71-N-d20190924-vf-r2-w17
+2026-11-05T01:14:09 end   FS-G2-SHHZ71-N-d20190924-vf-r1-w17 18.2 min -> status-pass+evidence-drop
+2026-11-05T01:14:09 start FS-G2-SHRC71-CL-d20191003-vf-r0-w08
+2026-11-05T01:14:32 end   FS-G2-SHRC71-CL-d20190924-vf-r1-w17 18.5 min -> status-pass+evidence-drop
+2026-11-05T01:14:32 start FS-G2-SHHZ71-N-d20191003-vf-r0-w08
+2026-11-05T01:14:45 end   FS-G2-SHRC71-CL-d20190924-vf-r2-w08 18.0 min -> status-pass+evidence-drop
+2026-11-05T01:14:45 start FS-G2-SHRC71-CL-d20191003-vf-r0-w17
+2026-11-05T01:16:03 end   FS-G2-SHHZ71-N-d20190924-vf-r2-w08 17.9 min -> status-pass+evidence-drop
+2026-11-05T01:16:03 start FS-G2-SHHZ71-N-d20191003-vf-r0-w17
+2026-11-05T01:33:47 end   FS-G2-SHRC71-CL-d20190924-vf-r2-w17 17.9 min -> status-pass+evidence-drop
+2026-11-05T01:33:47 start FS-G2-SHRC71-CL-d20191003-vf-r1-w08
+2026-11-05T01:35:01 end   FS-G2-SHHZ71-N-d20190924-vf-r2-w17 17.9 min -> status-pass+evidence-drop
+2026-11-05T01:35:01 start FS-G2-SHHZ71-N-d20191003-vf-r1-w08
+2026-11-05T01:35:18 end   FS-G2-SHRC71-CL-d20191003-vf-r0-w08 16.6 min -> status-pass+evidence-drop
+2026-11-05T01:35:18 start FS-G2-SHRC71-CL-d20191003-vf-r1-w17
+2026-11-05T01:35:51 end   FS-G2-SHRC71-CL-d20191003-vf-r0-w17 16.5 min -> status-pass+evidence-drop
+2026-11-05T01:35:51 start FS-G2-SHHZ71-N-d20191003-vf-r1-w17
+2026-11-05T01:36:16 end   FS-G2-SHHZ71-N-d20191003-vf-r0-w08 17.2 min -> status-pass+evidence-drop
+2026-11-05T01:36:16 start FS-G2-SHRC71-CL-d20191003-vf-r2-w08
+2026-11-05T01:40:56 end   FS-G2-SHHZ71-N-d20191003-vf-r0-w17 19.5 min -> status-pass+evidence-drop
+2026-11-05T01:40:56 start FS-G2-SHHZ71-N-d20191003-vf-r2-w08
+2026-11-05T01:54:53 end   FS-G2-SHRC71-CL-d20191003-vf-r1-w08 16.6 min -> status-pass+evidence-drop
+2026-11-05T01:54:53 start FS-G2-SHRC71-CL-d20191003-vf-r2-w17
+2026-11-05T01:55:51 end   FS-G2-SHRC71-CL-d20191003-vf-r2-w08 15.3 min -> status-pass+evidence-drop
+2026-11-05T01:55:51 start FS-G2-SHHZ71-N-d20191003-vf-r2-w17
+2026-11-05T01:56:46 end   FS-G2-SHRC71-CL-d20191003-vf-r1-w17 16.8 min -> status-pass+evidence-drop
+2026-11-05T01:56:46 start FS-G2-SHRC71-CL-d20191007-vf-r0-w08
+2026-11-05T01:57:10 end   FS-G2-SHHZ71-N-d20191003-vf-r1-w08 17.7 min -> status-pass+evidence-drop
+2026-11-05T01:57:10 start FS-G2-SHHZ71-N-d20191007-vf-r0-w08
+2026-11-05T01:57:39 end   FS-G2-SHHZ71-N-d20191003-vf-r1-w17 17.1 min -> status-pass+evidence-drop
+2026-11-05T01:57:39 start FS-G2-SHRC71-CL-d20191007-vf-r0-w17
+2026-11-05T02:00:56 end   FS-G2-SHHZ71-N-d20191003-vf-r2-w08 15.7 min -> status-pass+evidence-drop
+2026-11-05T02:00:56 start FS-G2-SHHZ71-N-d20191007-vf-r0-w17
+2026-11-05T02:17:15 end   FS-G2-SHRC71-CL-d20191003-vf-r2-w17 17.5 min -> status-pass+evidence-drop
+2026-11-05T02:17:15 start FS-G2-SHRC71-CL-d20191007-vf-r1-w08
+2026-11-05T02:18:48 end   FS-G2-SHRC71-CL-d20191007-vf-r0-w08 17.3 min -> status-pass+evidence-drop
+2026-11-05T02:18:48 start FS-G2-SHHZ71-N-d20191007-vf-r1-w08
+2026-11-05T02:19:10 end   FS-G2-SHRC71-CL-d20191007-vf-r0-w17 17.0 min -> status-pass+evidence-drop
+2026-11-05T02:19:10 start FS-G2-SHRC71-CL-d20191007-vf-r1-w17
+2026-11-05T02:19:13 end   FS-G2-SHHZ71-N-d20191003-vf-r2-w17 18.3 min -> status-pass+evidence-drop
+2026-11-05T02:19:15 start FS-G2-SHHZ71-N-d20191007-vf-r1-w17
+2026-11-05T02:20:12 end   FS-G2-SHHZ71-N-d20191007-vf-r0-w08 18.1 min -> status-pass+evidence-drop
+2026-11-05T02:20:12 start FS-G2-SHRC71-CL-d20191007-vf-r2-w08
+2026-11-05T02:23:28 end   FS-G2-SHHZ71-N-d20191007-vf-r0-w17 18.0 min -> status-pass+evidence-drop
+2026-11-05T02:23:28 start FS-G2-SHHZ71-N-d20191007-vf-r2-w08
+2026-11-05T02:39:14 end   FS-G2-SHRC71-CL-d20191007-vf-r1-w08 17.4 min -> status-pass+evidence-drop
+2026-11-05T02:39:14 start FS-G2-SHRC71-CL-d20191007-vf-r2-w17
+2026-11-05T02:41:16 end   FS-G2-SHRC71-CL-d20191007-vf-r2-w08 16.6 min -> status-pass+evidence-drop
+2026-11-05T02:41:16 start FS-G2-SHHZ71-N-d20191007-vf-r2-w17
+2026-11-05T02:41:54 end   FS-G2-SHHZ71-N-d20191007-vf-r1-w08 18.3 min -> status-pass+evidence-drop
+2026-11-05T02:41:54 start FS-G2-SHRC71-CL-d20191009-vf-r0-w08
+2026-11-05T02:42:12 end   FS-G2-SHRC71-CL-d20191007-vf-r1-w17 18.3 min -> status-pass+evidence-drop
+2026-11-05T02:42:12 start FS-G2-SHHZ71-N-d20191009-vf-r0-w08
+2026-11-05T02:42:19 end   FS-G2-SHHZ71-N-d20191007-vf-r1-w17 18.5 min -> status-pass+evidence-drop
+2026-11-05T02:42:19 start FS-G2-SHRC71-CL-d20191009-vf-r0-w17
+2026-11-05T02:44:47 end   FS-G2-SHHZ71-N-d20191007-vf-r2-w08 17.0 min -> status-pass+evidence-drop
+2026-11-05T02:44:47 start FS-G2-SHHZ71-N-d20191009-vf-r0-w17
+2026-11-05T03:02:04 end   FS-G2-SHRC71-CL-d20191007-vf-r2-w17 18.1 min -> status-pass+evidence-drop
+2026-11-05T03:02:04 start FS-G2-SHRC71-CL-d20191009-vf-r1-w08
+2026-11-05T03:03:14 end   FS-G2-SHRC71-CL-d20191009-vf-r0-w08 16.8 min -> status-pass+evidence-drop
+2026-11-05T03:03:14 start FS-G2-SHHZ71-N-d20191009-vf-r1-w08
+2026-11-05T03:03:59 end   FS-G2-SHHZ71-N-d20191009-vf-r0-w08 17.3 min -> status-pass+evidence-drop
+2026-11-05T03:03:59 start FS-G2-SHRC71-CL-d20191009-vf-r1-w17
+2026-11-05T03:04:42 end   FS-G2-SHHZ71-N-d20191007-vf-r2-w17 18.6 min -> status-pass+evidence-drop
+2026-11-05T03:04:42 start FS-G2-SHHZ71-N-d20191009-vf-r1-w17
+2026-11-05T03:07:18 end   FS-G2-SHRC71-CL-d20191009-vf-r0-w17 19.8 min -> status-pass+evidence-drop
+2026-11-05T03:07:18 start FS-G2-SHRC71-CL-d20191009-vf-r2-w08
+2026-11-05T03:10:52 end   FS-G2-SHHZ71-N-d20191009-vf-r0-w17 20.7 min -> status-pass+evidence-drop
+2026-11-05T03:10:52 start FS-G2-SHHZ71-N-d20191009-vf-r2-w08
+2026-11-05T03:26:23 end   FS-G2-SHRC71-CL-d20191009-vf-r1-w08 19.2 min -> status-pass+evidence-drop
+2026-11-05T03:26:23 start FS-G2-SHRC71-CL-d20191009-vf-r2-w17
+2026-11-05T03:26:53 end   FS-G2-SHHZ71-N-d20191009-vf-r1-w08 18.8 min -> status-pass+evidence-drop
+2026-11-05T03:26:53 start FS-G2-SHHZ71-N-d20191009-vf-r2-w17
+2026-11-05T03:28:19 end   FS-G2-SHRC71-CL-d20191009-vf-r1-w17 19.3 min -> status-pass+evidence-drop
+2026-11-05T03:28:19 start FS-G2-SHRC71-CL-d20191015-vf-r0-w08
+2026-11-05T03:29:34 end   FS-G2-SHHZ71-N-d20191009-vf-r1-w17 19.8 min -> status-pass+evidence-drop
+2026-11-05T03:29:34 start FS-G2-SHHZ71-N-d20191015-vf-r0-w08
+2026-11-05T03:29:57 end   FS-G2-SHRC71-CL-d20191009-vf-r2-w08 17.9 min -> status-pass+evidence-drop
+2026-11-05T03:29:57 start FS-G2-SHRC71-CL-d20191015-vf-r0-w17
+2026-11-05T03:34:35 end   FS-G2-SHHZ71-N-d20191009-vf-r2-w08 18.9 min -> status-pass+evidence-drop
+2026-11-05T03:34:35 start FS-G2-SHHZ71-N-d20191015-vf-r0-w17
+2026-11-05T03:50:08 end   FS-G2-SHRC71-CL-d20191015-vf-r0-w08 17.1 min -> status-pass+evidence-drop
+2026-11-05T03:50:08 start FS-G2-SHRC71-CL-d20191015-vf-r1-w08
+2026-11-05T03:50:40 end   FS-G2-SHHZ71-N-d20191009-vf-r2-w17 18.9 min -> status-pass+evidence-drop
+2026-11-05T03:50:40 start FS-G2-SHHZ71-N-d20191015-vf-r1-w08
+2026-11-05T03:51:00 end   FS-G2-SHRC71-CL-d20191009-vf-r2-w17 19.5 min -> status-pass+evidence-drop
+2026-11-05T03:51:00 start FS-G2-SHRC71-CL-d20191015-vf-r1-w17
+2026-11-05T03:52:18 end   FS-G2-SHHZ71-N-d20191015-vf-r0-w08 17.9 min -> status-pass+evidence-drop
+2026-11-05T03:52:18 start FS-G2-SHHZ71-N-d20191015-vf-r1-w17
+2026-11-05T03:53:27 end   FS-G2-SHRC71-CL-d20191015-vf-r0-w17 18.6 min -> status-pass+evidence-drop
+2026-11-05T03:53:27 start FS-G2-SHRC71-CL-d20191015-vf-r2-w08
+2026-11-05T03:58:19 end   FS-G2-SHHZ71-N-d20191015-vf-r0-w17 18.9 min -> status-pass+evidence-drop
+2026-11-05T03:58:19 start FS-G2-SHHZ71-N-d20191015-vf-r2-w08
+2026-11-05T04:12:09 end   FS-G2-SHRC71-CL-d20191015-vf-r1-w08 17.3 min -> status-pass+evidence-drop
+2026-11-05T04:12:09 start FS-G2-SHRC71-CL-d20191015-vf-r2-w17
+2026-11-05T04:12:25 end   FS-G2-SHHZ71-N-d20191015-vf-r1-w08 17.5 min -> status-pass+evidence-drop
+2026-11-05T04:12:25 start FS-G2-SHHZ71-N-d20191015-vf-r2-w17
+2026-11-05T04:13:11 end   FS-G2-SHRC71-CL-d20191015-vf-r2-w08 15.5 min -> status-pass+evidence-drop
+2026-11-05T04:13:11 start FS-G2-SHRC71-CL-d20191018-vf-r0-w08
+2026-11-05T04:15:44 end   FS-G2-SHRC71-CL-d20191015-vf-r1-w17 19.4 min -> status-pass+evidence-drop
+2026-11-05T04:15:44 start FS-G2-SHHZ71-N-d20191018-vf-r0-w08
+2026-11-05T04:17:31 end   FS-G2-SHHZ71-N-d20191015-vf-r1-w17 19.9 min -> status-pass+evidence-drop
+2026-11-05T04:17:31 start FS-G2-SHRC71-CL-d20191018-vf-r0-w17
+2026-11-05T04:20:47 end   FS-G2-SHHZ71-N-d20191015-vf-r2-w08 17.6 min -> status-pass+evidence-drop
+2026-11-05T04:20:47 start FS-G2-SHHZ71-N-d20191018-vf-r0-w17
+2026-11-05T04:34:46 end   FS-G2-SHRC71-CL-d20191018-vf-r0-w08 17.0 min -> status-pass+evidence-drop
+2026-11-05T04:34:46 start FS-G2-SHRC71-CL-d20191018-vf-r1-w08
+2026-11-05T04:35:22 end   FS-G2-SHRC71-CL-d20191015-vf-r2-w17 18.7 min -> status-pass+evidence-drop
+2026-11-05T04:35:22 start FS-G2-SHHZ71-N-d20191018-vf-r1-w08
+2026-11-05T04:37:19 end   FS-G2-SHHZ71-N-d20191015-vf-r2-w17 19.9 min -> status-pass+evidence-drop
+2026-11-05T04:37:19 start FS-G2-SHRC71-CL-d20191018-vf-r1-w17
+2026-11-05T04:37:36 end   FS-G2-SHHZ71-N-d20191018-vf-r0-w08 17.5 min -> status-pass+evidence-drop
+2026-11-05T04:37:36 start FS-G2-SHHZ71-N-d20191018-vf-r1-w17
+2026-11-05T04:40:33 end   FS-G2-SHRC71-CL-d20191018-vf-r0-w17 18.2 min -> status-pass+evidence-drop
+2026-11-05T04:40:33 start FS-G2-SHRC71-CL-d20191018-vf-r2-w08
+2026-11-05T04:46:13 end   FS-G2-SHHZ71-N-d20191018-vf-r0-w17 20.1 min -> status-pass+evidence-drop
+2026-11-05T04:46:13 start FS-G2-SHHZ71-N-d20191018-vf-r2-w08
+2026-11-05T04:56:24 end   FS-G2-SHRC71-CL-d20191018-vf-r1-w08 17.0 min -> status-pass+evidence-drop
+2026-11-05T04:56:24 start FS-G2-SHRC71-CL-d20191018-vf-r2-w17
+2026-11-05T04:57:55 end   FS-G2-SHHZ71-N-d20191018-vf-r1-w08 17.7 min -> status-pass+evidence-drop
+2026-11-05T04:57:55 start FS-G2-SHHZ71-N-d20191018-vf-r2-w17
+2026-11-05T04:59:20 end   FS-G2-SHHZ71-N-d20191018-vf-r1-w17 17.1 min -> status-pass+evidence-drop
+2026-11-05T04:59:20 start FS-G2-SHRC71-CL-d20191024-vf-r0-w08
+2026-11-05T04:59:22 end   FS-G2-SHRC71-CL-d20191018-vf-r1-w17 17.3 min -> status-pass+evidence-drop
+2026-11-05T04:59:25 start FS-G2-SHHZ71-N-d20191024-vf-r0-w08
+2026-11-05T05:03:00 end   FS-G2-SHRC71-CL-d20191018-vf-r2-w08 17.7 min -> status-pass+evidence-drop
+2026-11-05T05:03:00 start FS-G2-SHRC71-CL-d20191024-vf-r0-w17
+2026-11-05T05:10:29 end   FS-G2-SHHZ71-N-d20191018-vf-r2-w08 19.1 min -> status-pass+evidence-drop
+2026-11-05T05:10:29 start FS-G2-SHHZ71-N-d20191024-vf-r0-w17
+2026-11-05T05:20:37 end   FS-G2-SHRC71-CL-d20191024-vf-r0-w08 16.7 min -> status-pass+evidence-drop
+2026-11-05T05:20:37 start FS-G2-SHRC71-CL-d20191024-vf-r1-w08
+2026-11-05T05:21:37 end   FS-G2-SHHZ71-N-d20191024-vf-r0-w08 17.5 min -> status-pass+evidence-drop
+2026-11-05T05:21:37 start FS-G2-SHHZ71-N-d20191024-vf-r1-w08
+2026-11-05T05:22:02 end   FS-G2-SHRC71-CL-d20191018-vf-r2-w17 20.6 min -> status-pass+evidence-drop
+2026-11-05T05:22:02 start FS-G2-SHRC71-CL-d20191024-vf-r1-w17
+2026-11-05T05:23:12 end   FS-G2-SHHZ71-N-d20191018-vf-r2-w17 20.0 min -> status-pass+evidence-drop
+2026-11-05T05:23:12 start FS-G2-SHHZ71-N-d20191024-vf-r1-w17
+2026-11-05T05:25:22 end   FS-G2-SHRC71-CL-d20191024-vf-r0-w17 17.5 min -> status-pass+evidence-drop
+2026-11-05T05:25:22 start FS-G2-SHRC71-CL-d20191024-vf-r2-w08
+2026-11-05T05:33:21 end   FS-G2-SHHZ71-N-d20191024-vf-r0-w17 17.9 min -> status-pass+evidence-drop
+2026-11-05T05:33:21 start FS-G2-SHHZ71-N-d20191024-vf-r2-w08
+2026-11-05T05:41:30 end   FS-G2-SHRC71-CL-d20191024-vf-r1-w08 16.4 min -> status-pass+evidence-drop
+2026-11-05T05:41:30 start FS-G2-SHRC71-CL-d20191024-vf-r2-w17
+2026-11-05T05:43:05 end   FS-G2-SHHZ71-N-d20191024-vf-r1-w08 16.8 min -> status-pass+evidence-drop
+2026-11-05T05:43:05 start FS-G2-SHHZ71-N-d20191024-vf-r2-w17
+2026-11-05T05:43:19 end   FS-G2-SHRC71-CL-d20191024-vf-r1-w17 16.7 min -> status-pass+evidence-drop
+2026-11-05T05:43:19 start FS-G2-SHRC71-CL-d20191205-vf-r0-w08
+2026-11-05T05:44:34 end   FS-G2-SHHZ71-N-d20191024-vf-r1-w17 16.8 min -> status-pass+evidence-drop
+2026-11-05T05:44:34 start FS-G2-SHHZ71-N-d20191205-vf-r0-w08
+2026-11-05T05:45:06 end   FS-G2-SHRC71-CL-d20191024-vf-r2-w08 15.6 min -> status-pass+evidence-drop
+2026-11-05T05:45:06 start FS-G2-SHRC71-CL-d20191205-vf-r0-w17
+2026-11-05T05:53:46 end   FS-G2-SHHZ71-N-d20191024-vf-r2-w08 16.1 min -> status-pass+evidence-drop
+2026-11-05T05:53:46 start FS-G2-SHHZ71-N-d20191205-vf-r0-w17
+2026-11-05T06:02:45 end   FS-G2-SHRC71-CL-d20191024-vf-r2-w17 16.7 min -> status-pass+evidence-drop
+2026-11-05T06:02:45 start FS-G2-SHRC71-CL-d20191205-vf-r1-w08
+2026-11-05T06:05:31 end   FS-G2-SHRC71-CL-d20191205-vf-r0-w08 17.4 min -> status-pass+evidence-drop
+2026-11-05T06:05:31 start FS-G2-SHHZ71-N-d20191205-vf-r1-w08
+2026-11-05T06:05:41 end   FS-G2-SHRC71-CL-d20191205-vf-r0-w17 16.1 min -> status-pass+evidence-drop
+2026-11-05T06:05:41 start FS-G2-SHRC71-CL-d20191205-vf-r1-w17
+2026-11-05T06:06:24 end   FS-G2-SHHZ71-N-d20191024-vf-r2-w17 18.3 min -> status-pass+evidence-drop
+2026-11-05T06:06:24 start FS-G2-SHHZ71-N-d20191205-vf-r1-w17
+2026-11-05T06:06:46 end   FS-G2-SHHZ71-N-d20191205-vf-r0-w08 17.4 min -> status-pass+evidence-drop
+2026-11-05T06:06:46 start FS-G2-SHRC71-CL-d20191205-vf-r2-w08
+2026-11-05T06:14:50 end   FS-G2-SHHZ71-N-d20191205-vf-r0-w17 16.5 min -> status-pass+evidence-drop
+2026-11-05T06:14:50 start FS-G2-SHHZ71-N-d20191205-vf-r2-w08
+2026-11-05T06:23:11 end   FS-G2-SHRC71-CL-d20191205-vf-r1-w08 16.1 min -> status-pass+evidence-drop
+2026-11-05T06:23:11 start FS-G2-SHRC71-CL-d20191205-vf-r2-w17
+2026-11-05T06:27:14 end   FS-G2-SHHZ71-N-d20191205-vf-r1-w08 17.1 min -> status-pass+evidence-drop
+2026-11-05T06:27:14 start FS-G2-SHHZ71-N-d20191205-vf-r2-w17
+2026-11-05T06:27:19 end   FS-G2-SHRC71-CL-d20191205-vf-r1-w17 17.0 min -> status-pass+evidence-drop
+2026-11-05T06:27:19 start FS-G2-SHRC71-CL-d20191209-vf-r0-w08
+2026-11-05T06:28:19 end   FS-G2-SHHZ71-N-d20191205-vf-r1-w17 17.4 min -> status-pass+evidence-drop
+2026-11-05T06:28:19 start FS-G2-SHHZ71-N-d20191209-vf-r0-w08
+2026-11-05T06:28:21 end   FS-G2-SHRC71-CL-d20191205-vf-r2-w08 16.9 min -> status-pass+evidence-drop
+2026-11-05T06:28:24 start FS-G2-SHRC71-CL-d20191209-vf-r0-w17
+2026-11-05T06:36:47 end   FS-G2-SHHZ71-N-d20191205-vf-r2-w08 17.4 min -> status-pass+evidence-drop
+2026-11-05T06:36:47 start FS-G2-SHHZ71-N-d20191209-vf-r0-w17
+2026-11-05T06:46:33 end   FS-G2-SHRC71-CL-d20191209-vf-r0-w08 15.2 min -> status-pass+evidence-drop
+2026-11-05T06:46:33 start FS-G2-SHRC71-CL-d20191209-vf-r1-w08
+2026-11-05T06:47:02 end   FS-G2-SHRC71-CL-d20191205-vf-r2-w17 18.7 min -> status-pass+evidence-drop
+2026-11-05T06:47:02 start FS-G2-SHHZ71-N-d20191209-vf-r1-w08
+2026-11-05T06:48:44 end   FS-G2-SHRC71-CL-d20191209-vf-r0-w17 16.0 min -> status-pass+evidence-drop
+2026-11-05T06:48:44 start FS-G2-SHRC71-CL-d20191209-vf-r1-w17
+2026-11-05T06:49:17 end   FS-G2-SHHZ71-N-d20191209-vf-r0-w08 16.5 min -> status-pass+evidence-drop
+2026-11-05T06:49:17 start FS-G2-SHHZ71-N-d20191209-vf-r1-w17
+2026-11-05T06:50:53 end   FS-G2-SHHZ71-N-d20191205-vf-r2-w17 18.5 min -> status-pass+evidence-drop
+2026-11-05T06:50:53 start FS-G2-SHRC71-CL-d20191209-vf-r2-w08
+2026-11-05T06:57:56 end   FS-G2-SHHZ71-N-d20191209-vf-r0-w17 16.6 min -> status-pass+evidence-drop
+2026-11-05T06:57:56 start FS-G2-SHHZ71-N-d20191209-vf-r2-w08
+2026-11-05T07:06:10 end   FS-G2-SHRC71-CL-d20191209-vf-r1-w08 15.4 min -> status-pass+evidence-drop
+2026-11-05T07:06:10 start FS-G2-SHRC71-CL-d20191209-vf-r2-w17
+2026-11-05T07:07:01 end   FS-G2-SHHZ71-N-d20191209-vf-r1-w08 15.7 min -> status-pass+evidence-drop
+2026-11-05T07:07:01 start FS-G2-SHHZ71-N-d20191209-vf-r2-w17
+2026-11-05T07:09:14 end   FS-G2-SHRC71-CL-d20191209-vf-r1-w17 16.0 min -> status-pass+evidence-drop
+2026-11-05T07:09:14 start FS-G2-SHRC71-CL-d20191210-vf-r0-w08
+2026-11-05T07:10:08 end   FS-G2-SHHZ71-N-d20191209-vf-r1-w17 16.4 min -> status-pass+evidence-drop
+2026-11-05T07:10:08 start FS-G2-SHHZ71-N-d20191210-vf-r0-w08
+2026-11-05T07:11:28 end   FS-G2-SHRC71-CL-d20191209-vf-r2-w08 16.2 min -> status-pass+evidence-drop
+2026-11-05T07:11:28 start FS-G2-SHRC71-CL-d20191210-vf-r0-w17
+2026-11-05T07:19:25 end   FS-G2-SHHZ71-N-d20191209-vf-r2-w08 17.0 min -> status-pass+evidence-drop
+2026-11-05T07:19:25 start FS-G2-SHHZ71-N-d20191210-vf-r0-w17
+2026-11-05T07:28:23 end   FS-G2-SHRC71-CL-d20191209-vf-r2-w17 17.4 min -> status-pass+evidence-drop
+2026-11-05T07:28:23 start FS-G2-SHRC71-CL-d20191210-vf-r1-w08
+2026-11-05T07:29:05 end   FS-G2-SHHZ71-N-d20191209-vf-r2-w17 17.3 min -> status-pass+evidence-drop
+2026-11-05T07:29:05 start FS-G2-SHHZ71-N-d20191210-vf-r1-w08
+2026-11-05T07:30:26 end   FS-G2-SHRC71-CL-d20191210-vf-r0-w08 16.6 min -> status-pass+evidence-drop
+2026-11-05T07:30:26 start FS-G2-SHRC71-CL-d20191210-vf-r1-w17
+2026-11-05T07:31:29 end   FS-G2-SHHZ71-N-d20191210-vf-r0-w08 16.8 min -> status-pass+evidence-drop
+2026-11-05T07:31:29 start FS-G2-SHHZ71-N-d20191210-vf-r1-w17
+2026-11-05T07:32:51 end   FS-G2-SHRC71-CL-d20191210-vf-r0-w17 16.7 min -> status-pass+evidence-drop
+2026-11-05T07:32:51 start FS-G2-SHRC71-CL-d20191210-vf-r2-w08
+2026-11-05T07:40:33 end   FS-G2-SHHZ71-N-d20191210-vf-r0-w17 16.5 min -> status-pass+evidence-drop
+2026-11-05T07:40:33 start FS-G2-SHHZ71-N-d20191210-vf-r2-w08
+2026-11-05T07:48:50 end   FS-G2-SHRC71-CL-d20191210-vf-r1-w08 16.0 min -> status-pass+evidence-drop
+2026-11-05T07:48:50 start FS-G2-SHRC71-CL-d20191210-vf-r2-w17
+2026-11-05T07:49:26 end   FS-G2-SHHZ71-N-d20191210-vf-r1-w08 16.0 min -> status-pass+evidence-drop
+2026-11-05T07:49:26 start FS-G2-SHHZ71-N-d20191210-vf-r2-w17
+2026-11-05T07:49:38 end   FS-G2-SHRC71-CL-d20191210-vf-r1-w17 15.0 min -> status-pass+evidence-drop
+2026-11-05T07:49:38 start FS-G2-SHRC71-CL-d20191213-vf-r0-w08
+2026-11-05T07:51:07 end   FS-G2-SHHZ71-N-d20191210-vf-r1-w17 15.4 min -> status-pass+evidence-drop
+2026-11-05T07:51:07 start FS-G2-SHHZ71-N-d20191213-vf-r0-w08
+2026-11-05T07:55:05 end   FS-G2-SHRC71-CL-d20191210-vf-r2-w08 17.4 min -> status-pass+evidence-drop
+2026-11-05T07:55:05 start FS-G2-SHRC71-CL-d20191213-vf-r0-w17
+2026-11-05T08:01:54 end   FS-G2-SHHZ71-N-d20191210-vf-r2-w08 16.8 min -> status-pass+evidence-drop
+2026-11-05T08:01:54 start FS-G2-SHHZ71-N-d20191213-vf-r0-w17
+2026-11-05T08:09:02 end   FS-G2-SHRC71-CL-d20191210-vf-r2-w17 16.0 min -> status-pass+evidence-drop
+2026-11-05T08:09:02 start FS-G2-SHRC71-CL-d20191213-vf-r1-w08
+2026-11-05T08:09:36 end   FS-G2-SHRC71-CL-d20191213-vf-r0-w08 15.7 min -> status-pass+evidence-drop
+2026-11-05T08:09:36 start FS-G2-SHHZ71-N-d20191213-vf-r1-w08
+2026-11-05T08:09:53 end   FS-G2-SHHZ71-N-d20191210-vf-r2-w17 16.1 min -> status-pass+evidence-drop
+2026-11-05T08:09:53 start FS-G2-SHRC71-CL-d20191213-vf-r1-w17
+2026-11-05T08:12:07 end   FS-G2-SHHZ71-N-d20191213-vf-r0-w08 16.5 min -> status-pass+evidence-drop
+2026-11-05T08:12:07 start FS-G2-SHHZ71-N-d20191213-vf-r1-w17
+2026-11-05T08:17:19 end   FS-G2-SHRC71-CL-d20191213-vf-r0-w17 17.4 min -> status-pass+evidence-drop
+2026-11-05T08:17:19 start FS-G2-SHRC71-CL-d20191213-vf-r2-w08
+2026-11-05T08:24:24 end   FS-G2-SHHZ71-N-d20191213-vf-r0-w17 17.7 min -> status-pass+evidence-drop
+2026-11-05T08:24:24 start FS-G2-SHHZ71-N-d20191213-vf-r2-w08
+2026-11-05T08:31:17 end   FS-G2-SHRC71-CL-d20191213-vf-r1-w08 17.4 min -> status-pass+evidence-drop
+2026-11-05T08:31:17 start FS-G2-SHRC71-CL-d20191213-vf-r2-w17
+2026-11-05T08:31:40 end   FS-G2-SHRC71-CL-d20191213-vf-r1-w17 16.9 min -> status-pass+evidence-drop
+2026-11-05T08:31:40 start FS-G2-SHHZ71-N-d20191213-vf-r2-w17
+2026-11-05T08:32:40 end   FS-G2-SHHZ71-N-d20191213-vf-r1-w08 18.1 min -> status-pass+evidence-drop
+2026-11-05T08:32:40 start FS-G2-SHRC71-CL-d20191216-vf-r0-w08
+2026-11-05T08:33:45 end   FS-G2-SHHZ71-N-d20191213-vf-r1-w17 16.9 min -> status-pass+evidence-drop
+2026-11-05T08:33:45 start FS-G2-SHHZ71-N-d20191216-vf-r0-w08
+2026-11-05T08:39:15 end   FS-G2-SHRC71-CL-d20191213-vf-r2-w08 17.2 min -> status-pass+evidence-drop
+2026-11-05T08:39:15 start FS-G2-SHRC71-CL-d20191216-vf-r0-w17
+2026-11-05T08:46:47 end   FS-G2-SHHZ71-N-d20191213-vf-r2-w08 17.8 min -> status-pass+evidence-drop
+2026-11-05T08:46:47 start FS-G2-SHHZ71-N-d20191216-vf-r0-w17
+2026-11-05T08:53:25 end   FS-G2-SHRC71-CL-d20191216-vf-r0-w08 16.3 min -> status-pass+evidence-drop
+2026-11-05T08:53:25 start FS-G2-SHRC71-CL-d20191216-vf-r1-w08
+2026-11-05T08:54:01 end   FS-G2-SHRC71-CL-d20191213-vf-r2-w17 17.7 min -> status-pass+evidence-drop
+2026-11-05T08:54:01 start FS-G2-SHHZ71-N-d20191216-vf-r1-w08
+2026-11-05T08:54:49 end   FS-G2-SHHZ71-N-d20191213-vf-r2-w17 18.0 min -> status-pass+evidence-drop
+2026-11-05T08:54:49 start FS-G2-SHRC71-CL-d20191216-vf-r1-w17
+2026-11-05T08:55:21 end   FS-G2-SHHZ71-N-d20191216-vf-r0-w08 17.0 min -> status-pass+evidence-drop
+2026-11-05T08:55:21 start FS-G2-SHHZ71-N-d20191216-vf-r1-w17
+2026-11-05T09:02:22 end   FS-G2-SHRC71-CL-d20191216-vf-r0-w17 18.2 min -> status-pass+evidence-drop
+2026-11-05T09:02:22 start FS-G2-SHRC71-CL-d20191216-vf-r2-w08
+2026-11-05T09:11:01 end   FS-G2-SHHZ71-N-d20191216-vf-r0-w17 19.3 min -> status-pass+evidence-drop
+2026-11-05T09:11:01 start FS-G2-SHHZ71-N-d20191216-vf-r2-w08
+2026-11-05T09:15:35 end   FS-G2-SHRC71-CL-d20191216-vf-r1-w08 17.4 min -> status-pass+evidence-drop
+2026-11-05T09:15:35 start FS-G2-SHRC71-CL-d20191216-vf-r2-w17
+2026-11-05T09:17:19 end   FS-G2-SHHZ71-N-d20191216-vf-r1-w08 18.3 min -> status-pass+evidence-drop
+2026-11-05T09:17:19 start FS-G2-SHHZ71-N-d20191216-vf-r2-w17
+2026-11-05T09:19:10 end   FS-G2-SHHZ71-N-d20191216-vf-r1-w17 18.8 min -> status-pass+evidence-drop
+2026-11-05T09:19:10 start FS-G2-SHRC71-CL-d20191218-vf-r0-w08
+2026-11-05T09:19:44 end   FS-G2-SHRC71-CL-d20191216-vf-r1-w17 19.8 min -> status-pass+evidence-drop
+2026-11-05T09:19:44 start FS-G2-SHHZ71-N-d20191218-vf-r0-w08
+2026-11-05T09:23:34 end   FS-G2-SHRC71-CL-d20191216-vf-r2-w08 16.8 min -> status-pass+evidence-drop
+2026-11-05T09:23:34 start FS-G2-SHRC71-CL-d20191218-vf-r0-w17
+2026-11-05T09:32:11 end   FS-G2-SHHZ71-N-d20191216-vf-r2-w08 16.8 min -> status-pass+evidence-drop
+2026-11-05T09:32:11 start FS-G2-SHHZ71-N-d20191218-vf-r0-w17
+2026-11-05T09:39:23 end   FS-G2-SHRC71-CL-d20191216-vf-r2-w17 18.7 min -> status-pass+evidence-drop
+2026-11-05T09:39:23 start FS-G2-SHRC71-CL-d20191218-vf-r1-w08
+2026-11-05T09:40:12 end   FS-G2-SHHZ71-N-d20191216-vf-r2-w17 18.0 min -> status-pass+evidence-drop
+2026-11-05T09:40:12 start FS-G2-SHHZ71-N-d20191218-vf-r1-w08
+2026-11-05T09:40:18 end   FS-G2-SHRC71-CL-d20191218-vf-r0-w08 16.7 min -> status-pass+evidence-drop
+2026-11-05T09:40:18 start FS-G2-SHRC71-CL-d20191218-vf-r1-w17
+2026-11-05T09:41:37 end   FS-G2-SHHZ71-N-d20191218-vf-r0-w08 17.6 min -> status-pass+evidence-drop
+2026-11-05T09:41:37 start FS-G2-SHHZ71-N-d20191218-vf-r1-w17
+2026-11-05T09:46:15 end   FS-G2-SHRC71-CL-d20191218-vf-r0-w17 17.8 min -> status-pass+evidence-drop
+2026-11-05T09:46:15 start FS-G2-SHRC71-CL-d20191218-vf-r2-w08
+2026-11-05T09:53:50 end   FS-G2-SHHZ71-N-d20191218-vf-r0-w17 17.1 min -> status-pass+evidence-drop
+2026-11-05T09:53:50 start FS-G2-SHHZ71-N-d20191218-vf-r2-w08
+2026-11-05T10:01:06 end   FS-G2-SHRC71-CL-d20191218-vf-r1-w08 17.3 min -> status-pass+evidence-drop
+2026-11-05T10:01:06 start FS-G2-SHRC71-CL-d20191218-vf-r2-w17
+2026-11-05T10:02:10 end   FS-G2-SHHZ71-N-d20191218-vf-r1-w08 17.4 min -> status-pass+evidence-drop
+2026-11-05T10:02:10 start FS-G2-SHHZ71-N-d20191218-vf-r2-w17
+2026-11-05T10:03:55 end   FS-G2-SHHZ71-N-d20191218-vf-r1-w17 17.6 min -> status-pass+evidence-drop
+2026-11-05T10:04:04 end   FS-G2-SHRC71-CL-d20191218-vf-r1-w17 18.6 min -> status-pass+evidence-drop
+2026-11-05T10:08:25 end   FS-G2-SHRC71-CL-d20191218-vf-r2-w08 17.5 min -> status-pass+evidence-drop
+2026-11-05T10:17:02 end   FS-G2-SHHZ71-N-d20191218-vf-r2-w08 18.3 min -> status-pass+evidence-drop
+2026-11-05T10:23:31 end   FS-G2-SHRC71-CL-d20191218-vf-r2-w17 17.5 min -> status-pass+evidence-drop
+2026-11-05T10:24:27 end   FS-G2-SHHZ71-N-d20191218-vf-r2-w17 17.4 min -> status-pass+evidence-drop
+2026-11-05T10:24:27 finished: {"FS-G2-SHRC71-CL-d20190919-vf-r0-w08": "done-before+evidence-present", "FS-G2-SHHZ71-N-d20190919-vf-r0-w08": "done-before+evidence-present", "FS-G2-SHRC71-CL-d20190919-vf-r0-w17": "done-before+evidence-present", "FS-G2-SHHZ71-N-d20190919-vf-r0-w17": "done-before+evidence-present", "FS-G2-SHRC71-CL-d20190919-vf-r1-w08": "status-pass+evidence-drop", "FS-G2-SHHZ71-N-d20190919-vf-r1-w08": "status-pass+evidence-drop", "FS-G2-SHRC71-CL-d20190919-vf-r1-w17": "status-pass+evidence-drop", "FS-G2-SHHZ71-N-d20190919-vf-r1-w17": "status-pass+evidence-drop", "FS-G2-SHRC71-CL-d20190919-vf-r2-w08": "status-pass+evidence-drop", "FS-G2-SHHZ71-N-d20190919-vf-r2-w08": "status-pass+evidence-drop", "FS-G2-SHRC71-CL-d20190919-vf-r2-w17": "status-pass+evidence-drop", "FS-G2-SHHZ71-N-d20190919-vf-r2-w17": "status-pass+evidence-drop", "FS-G2-SHRC71-CL-d20190924-vf-r0-w08": "status-pass+evidence-drop", "FS-G2-SHHZ71-N-d20190924-vf-r0-w08": "status-pass+evidence-drop", "FS-G2-SHRC71-CL-d20190924-vf-r0-w17": "status-pass+evidence-drop", "FS-G2-SHHZ71-N-d20190924-vf-r0-w17": "status-pass+evidence-drop", "FS-G2-SHRC71-CL-d20190924-vf-r1-w08": "status-pass+evidence-drop", "FS-G2-SHHZ71-N-d20190924-vf-r1-w08": "status-pass+evidence-drop", "FS-G2-SHRC71-CL-d20190924-vf-r1-w17": "status-pass+evidence-drop", "FS-G2-SHHZ71-N-d20190924-vf-r1-w17": "status-pass+evidence-drop", "FS-G2-SHRC71-CL-d20190924-vf-r2-w08": "status-pass+evidence-drop", "FS-G2-SHHZ71-N-d20190924-vf-r2-w08": "status-pass+evidence-drop", "FS-G2-SHRC71-CL-d20190924-vf-r2-w17": "status-pass+evidence-drop", "FS-G2-SHHZ71-N-d20190924-vf-r2-w17": "status-pass+evidence-drop", "FS-G2-SHRC71-CL-d20191003-vf-r0-w08": "status-pass+evidence-drop", "FS-G2-SHHZ71-N-d20191003-vf-r0-w08": "status-pass+evidence-drop", "FS-G2-SHRC71-CL-d20191003-vf-r0-w17": "status-pass+evidence-drop", "FS-G2-SHHZ71-N-d20191003-vf-r0-w17": "status-pass+evidence-drop", "FS-G2-SHRC71-CL-d20191003-vf-r1-w08": "status-pass+evidence-drop", "FS-G2-SHHZ71-N-d20191003-vf-r1-w08": "status-pass+evidence-drop", "FS-G2-SHRC71-CL-d20191003-vf-r1-w17": "status-pass+evidence-drop", "FS-G2-SHHZ71-N-d20191003-vf-r1-w17": "status-pass+evidence-drop", "FS-G2-SHRC71-CL-d20191003-vf-r2-w08": "status-pass+evidence-drop", "FS-G2-SHHZ71-N-d20191003-vf-r2-w08": "status-pass+evidence-drop", "FS-G2-SHRC71-CL-d20191003-vf-r2-w17": "status-pass+evidence-drop", "FS-G2-SHHZ71-N-d20191003-vf-r2-w17": "status-pass+evidence-drop", "FS-G2-SHRC71-CL-d20191007-vf-r0-w08": "status-pass+evidence-drop", "FS-G2-SHHZ71-N-d20191007-vf-r0-w08": "status-pass+evidence-drop", "FS-G2-SHRC71-CL-d20191007-vf-r0-w17": "status-pass+evidence-drop", "FS-G2-SHHZ71-N-d20191007-vf-r0-w17": "status-pass+evidence-drop", "FS-G2-SHRC71-CL-d20191007-vf-r1-w08": "status-pass+evidence-drop", "FS-G2-SHHZ71-N-d20191007-vf-r1-w08": "status-pass+evidence-drop", "FS-G2-SHRC71-CL-d20191007-vf-r1-w17": "status-pass+evidence-drop", "FS-G2-SHHZ71-N-d20191007-vf-r1-w17": "status-pass+evidence-drop", "FS-G2-SHRC71-CL-d20191007-vf-r2-w08": "status-pass+evidence-drop", "FS-G2-SHHZ71-N-d20191007-vf-r2-w08": "status-pass+evidence-drop", "FS-G2-SHRC71-CL-d20191007-vf-r2-w17": "status-pass+evidence-drop", "FS-G2-SHHZ71-N-d20191007-vf-r2-w17": "status-pass+evidence-drop", "FS-G2-SHRC71-CL-d20191009-vf-r0-w08": "status-pass+evidence-drop", "FS-G2-SHHZ71-N-d20191009-vf-r0-w08": "status-pass+evidence-drop", "FS-G2-SHRC71-CL-d20191009-vf-r0-w17": "status-pass+evidence-drop", "FS-G2-SHHZ71-N-d20191009-vf-r0-w17": "status-pass+evidence-drop", "FS-G2-SHRC71-CL-d20191009-vf-r1-w08": "status-pass+evidence-drop", "FS-G2-SHHZ71-N-d20191009-vf-r1-w08": "status-pass+evidence-drop", "FS-G2-SHRC71-CL-d20191009-vf-r1-w17": "status-pass+evidence-drop", "FS-G2-SHHZ71-N-d20191009-vf-r1-w17": "status-pass+evidence-drop", "FS-G2-SHRC71-CL-d20191009-vf-r2-w08": "status-pass+evidence-drop", "FS-G2-SHHZ71-N-d20191009-vf-r2-w08": "status-pass+evidence-drop", "FS-G2-SHRC71-CL-d20191009-vf-r2-w17": "status-pass+evidence-drop", "FS-G2-SHHZ71-N-d20191009-vf-r2-w17": "status-pass+evidence-drop", "FS-G2-SHRC71-CL-d20191015-vf-r0-w08": "status-pass+evidence-drop", "FS-G2-SHHZ71-N-d20191015-vf-r0-w08": "status-pass+evidence-drop", "FS-G2-SHRC71-CL-d20191015-vf-r0-w17": "status-pass+evidence-drop", "FS-G2-SHHZ71-N-d20191015-vf-r0-w17": "status-pass+evidence-drop", "FS-G2-SHRC71-CL-d20191015-vf-r1-w08": "status-pass+evidence-drop", "FS-G2-SHHZ71-N-d20191015-vf-r1-w08": "status-pass+evidence-drop", "FS-G2-SHRC71-CL-d20191015-vf-r1-w17": "status-pass+evidence-drop", "FS-G2-SHHZ71-N-d20191015-vf-r1-w17": "status-pass+evidence-drop", "FS-G2-SHRC71-CL-d20191015-vf-r2-w08": "status-pass+evidence-drop", "FS-G2-SHHZ71-N-d20191015-vf-r2-w08": "status-pass+evidence-drop", "FS-G2-SHRC71-CL-d20191015-vf-r2-w17": "status-pass+evidence-drop", "FS-G2-SHHZ71-N-d20191015-vf-r2-w17": "status-pass+evidence-drop", "FS-G2-SHRC71-CL-d20191018-vf-r0-w08": "status-pass+evidence-drop", "FS-G2-SHHZ71-N-d20191018-vf-r0-w08": "status-pass+evidence-drop", "FS-G2-SHRC71-CL-d20191018-vf-r0-w17": "status-pass+evidence-drop", "FS-G2-SHHZ71-N-d20191018-vf-r0-w17": "status-pass+evidence-drop", "FS-G2-SHRC71-CL-d20191018-vf-r1-w08": "status-pass+evidence-drop", "FS-G2-SHHZ71-N-d20191018-vf-r1-w08": "status-pass+evidence-drop", "FS-G2-SHRC71-CL-d20191018-vf-r1-w17": "status-pass+evidence-drop", "FS-G2-SHHZ71-N-d20191018-vf-r1-w17": "status-pass+evidence-drop", "FS-G2-SHRC71-CL-d20191018-vf-r2-w08": "status-pass+evidence-drop", "FS-G2-SHHZ71-N-d20191018-vf-r2-w08": "status-pass+evidence-drop", "FS-G2-SHRC71-CL-d20191018-vf-r2-w17": "status-pass+evidence-drop", "FS-G2-SHHZ71-N-d20191018-vf-r2-w17": "status-pass+evidence-drop", "FS-G2-SHRC71-CL-d20191024-vf-r0-w08": "status-pass+evidence-drop", "FS-G2-SHHZ71-N-d20191024-vf-r0-w08": "status-pass+evidence-drop", "FS-G2-SHRC71-CL-d20191024-vf-r0-w17": "status-pass+evidence-drop", "FS-G2-SHHZ71-N-d20191024-vf-r0-w17": "status-pass+evidence-drop", "FS-G2-SHRC71-CL-d20191024-vf-r1-w08": "status-pass+evidence-drop", "FS-G2-SHHZ71-N-d20191024-vf-r1-w08": "status-pass+evidence-drop", "FS-G2-SHRC71-CL-d20191024-vf-r1-w17": "status-pass+evidence-drop", "FS-G2-SHHZ71-N-d20191024-vf-r1-w17": "status-pass+evidence-drop", "FS-G2-SHRC71-CL-d20191024-vf-r2-w08": "status-pass+evidence-drop", "FS-G2-SHHZ71-N-d20191024-vf-r2-w08": "status-pass+evidence-drop", "FS-G2-SHRC71-CL-d20191024-vf-r2-w17": "status-pass+evidence-drop", "FS-G2-SHHZ71-N-d20191024-vf-r2-w17": "status-pass+evidence-drop", "FS-G2-SHRC71-CL-d20191205-vf-r0-w08": "status-pass+evidence-drop", "FS-G2-SHHZ71-N-d20191205-vf-r0-w08": "status-pass+evidence-drop", "FS-G2-SHRC71-CL-d20191205-vf-r0-w17": "status-pass+evidence-drop", "FS-G2-SHHZ71-N-d20191205-vf-r0-w17": "status-pass+evidence-drop", "FS-G2-SHRC71-CL-d20191205-vf-r1-w08": "status-pass+evidence-drop", "FS-G2-SHHZ71-N-d20191205-vf-r1-w08": "status-pass+evidence-drop", "FS-G2-SHRC71-CL-d20191205-vf-r1-w17": "status-pass+evidence-drop", "FS-G2-SHHZ71-N-d20191205-vf-r1-w17": "status-pass+evidence-drop", "FS-G2-SHRC71-CL-d20191205-vf-r2-w08": "status-pass+evidence-drop", "FS-G2-SHHZ71-N-d20191205-vf-r2-w08": "status-pass+evidence-drop", "FS-G2-SHRC71-CL-d20191205-vf-r2-w17": "status-pass+evidence-drop", "FS-G2-SHHZ71-N-d20191205-vf-r2-w17": "status-pass+evidence-drop", "FS-G2-SHRC71-CL-d20191209-vf-r0-w08": "status-pass+evidence-drop", "FS-G2-SHHZ71-N-d20191209-vf-r0-w08": "status-pass+evidence-drop", "FS-G2-SHRC71-CL-d20191209-vf-r0-w17": "status-pass+evidence-drop", "FS-G2-SHHZ71-N-d20191209-vf-r0-w17": "status-pass+evidence-drop", "FS-G2-SHRC71-CL-d20191209-vf-r1-w08": "status-pass+evidence-drop", "FS-G2-SHHZ71-N-d20191209-vf-r1-w08": "status-pass+evidence-drop", "FS-G2-SHRC71-CL-d20191209-vf-r1-w17": "status-pass+evidence-drop", "FS-G2-SHHZ71-N-d20191209-vf-r1-w17": "status-pass+evidence-drop", "FS-G2-SHRC71-CL-d20191209-vf-r2-w08": "status-pass+evidence-drop", "FS-G2-SHHZ71-N-d20191209-vf-r2-w08": "status-pass+evidence-drop", "FS-G2-SHRC71-CL-d20191209-vf-r2-w17": "status-pass+evidence-drop", "FS-G2-SHHZ71-N-d20191209-vf-r2-w17": "status-pass+evidence-drop", "FS-G2-SHRC71-CL-d20191210-vf-r0-w08": "status-pass+evidence-drop", "FS-G2-SHHZ71-N-d20191210-vf-r0-w08": "status-pass+evidence-drop", "FS-G2-SHRC71-CL-d20191210-vf-r0-w17": "status-pass+evidence-drop", "FS-G2-SHHZ71-N-d20191210-vf-r0-w17": "status-pass+evidence-drop", "FS-G2-SHRC71-CL-d20191210-vf-r1-w08": "status-pass+evidence-drop", "FS-G2-SHHZ71-N-d20191210-vf-r1-w08": "status-pass+evidence-drop", "FS-G2-SHRC71-CL-d20191210-vf-r1-w17": "status-pass+evidence-drop", "FS-G2-SHHZ71-N-d20191210-vf-r1-w17": "status-pass+evidence-drop", "FS-G2-SHRC71-CL-d20191210-vf-r2-w08": "status-pass+evidence-drop", "FS-G2-SHHZ71-N-d20191210-vf-r2-w08": "status-pass+evidence-drop", "FS-G2-SHRC71-CL-d20191210-vf-r2-w17": "status-pass+evidence-drop", "FS-G2-SHHZ71-N-d20191210-vf-r2-w17": "status-pass+evidence-drop", "FS-G2-SHRC71-CL-d20191213-vf-r0-w08": "status-pass+evidence-drop", "FS-G2-SHHZ71-N-d20191213-vf-r0-w08": "status-pass+evidence-drop", "FS-G2-SHRC71-CL-d20191213-vf-r0-w17": "status-pass+evidence-drop", "FS-G2-SHHZ71-N-d20191213-vf-r0-w17": "status-pass+evidence-drop", "FS-G2-SHRC71-CL-d20191213-vf-r1-w08": "status-pass+evidence-drop", "FS-G2-SHHZ71-N-d20191213-vf-r1-w08": "status-pass+evidence-drop", "FS-G2-SHRC71-CL-d20191213-vf-r1-w17": "status-pass+evidence-drop", "FS-G2-SHHZ71-N-d20191213-vf-r1-w17": "status-pass+evidence-drop", "FS-G2-SHRC71-CL-d20191213-vf-r2-w08": "status-pass+evidence-drop", "FS-G2-SHHZ71-N-d20191213-vf-r2-w08": "status-pass+evidence-drop", "FS-G2-SHRC71-CL-d20191213-vf-r2-w17": "status-pass+evidence-drop", "FS-G2-SHHZ71-N-d20191213-vf-r2-w17": "status-pass+evidence-drop", "FS-G2-SHRC71-CL-d20191216-vf-r0-w08": "status-pass+evidence-drop", "FS-G2-SHHZ71-N-d20191216-vf-r0-w08": "status-pass+evidence-drop", "FS-G2-SHRC71-CL-d20191216-vf-r0-w17": "status-pass+evidence-drop", "FS-G2-SHHZ71-N-d20191216-vf-r0-w17": "status-pass+evidence-drop", "FS-G2-SHRC71-CL-d20191216-vf-r1-w08": "status-pass+evidence-drop", "FS-G2-SHHZ71-N-d20191216-vf-r1-w08": "status-pass+evidence-drop", "FS-G2-SHRC71-CL-d20191216-vf-r1-w17": "status-pass+evidence-drop", "FS-G2-SHHZ71-N-d20191216-vf-r1-w17": "status-pass+evidence-drop", "FS-G2-SHRC71-CL-d20191216-vf-r2-w08": "status-pass+evidence-drop", "FS-G2-SHHZ71-N-d20191216-vf-r2-w08": "status-pass+evidence-drop", "FS-G2-SHRC71-CL-d20191216-vf-r2-w17": "status-pass+evidence-drop", "FS-G2-SHHZ71-N-d20191216-vf-r2-w17": "status-pass+evidence-drop", "FS-G2-SHRC71-CL-d20191218-vf-r0-w08": "status-pass+evidence-drop", "FS-G2-SHHZ71-N-d20191218-vf-r0-w08": "status-pass+evidence-drop", "FS-G2-SHRC71-CL-d20191218-vf-r0-w17": "status-pass+evidence-drop", "FS-G2-SHHZ71-N-d20191218-vf-r0-w17": "status-pass+evidence-drop", "FS-G2-SHRC71-CL-d20191218-vf-r1-w08": "status-pass+evidence-drop", "FS-G2-SHHZ71-N-d20191218-vf-r1-w08": "status-pass+evidence-drop", "FS-G2-SHRC71-CL-d20191218-vf-r1-w17": "status-pass+evidence-drop", "FS-G2-SHHZ71-N-d20191218-vf-r1-w17": "status-pass+evidence-drop", "FS-G2-SHRC71-CL-d20191218-vf-r2-w08": "status-pass+evidence-drop", "FS-G2-SHHZ71-N-d20191218-vf-r2-w08": "status-pass+evidence-drop", "FS-G2-SHRC71-CL-d20191218-vf-r2-w17": "status-pass+evidence-drop", "FS-G2-SHHZ71-N-d20191218-vf-r2-w17": "status-pass+evidence-drop"}
+[2026-11-05T10:24:27] 8 comparisons and metrics
+1-riders: returncode 0
+2-sequences: returncode 1
+3-shadow: returncode 1
+4-eta: returncode 1
+5-reversals: returncode 0
+{"allExact": false, "returnCodes": {"1-riders": 0, "2-sequences": 1, "3-shadow": 1, "4-eta": 1, "5-reversals": 0}}
+STOP: final report (see /rb/runs/report/*.log)

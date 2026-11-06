@@ -1,0 +1,36 @@
+{
+ "FS-G2-SHHZ71-N": {
+  "servedRiders": 29205,
+  "visRev60": 1920,
+  "reversalCount60": 2962,
+  "ridersWith": {
+   "0": 27285,
+   "1": 1151,
+   "2": 574,
+   "3+": 195
+  },
+  "maxPerRider": 7,
+  "cells": 84,
+  "perDay": {
+   "visRev60": 45.71,
+   "reversalCount60": 70.52
+  }
+ },
+ "FS-G2-SHRC71-CL": {
+  "servedRiders": 28820,
+  "visRev60": 774,
+  "reversalCount60": 1072,
+  "ridersWith": {
+   "0": 28046,
+   "1": 524,
+   "2": 215,
+   "3+": 35
+  },
+  "maxPerRider": 5,
+  "cells": 84,
+  "perDay": {
+   "visRev60": 18.43,
+   "reversalCount60": 25.52
+  }
+ }
+}

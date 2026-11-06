@@ -9,6 +9,8 @@ ADR-090; nhánh `research/fixes-perf-2026-11-04` (đã push 04/11). Đo đạc: 
 | Không đổi kết quả đã ghi | Harness Runner thật (`research/continuation/2026-11-04/byte-harness/`): 564/564 lượt WP4, 25/26 ca cơ bản (ca khác là khôi phục bản chốt chèn `shadowAllocations`, nay như trước khi có Shadow), 14/14 dòng lớn, 11/11 định danh; .NET 1.261/1.265 (4 lỗi môi trường có ở HEAD) | Đạt trên máy công ty với cấu hình trong repo. Cấu hình Shadow/dự báo/light-v1 của đợt cuối nằm ngoài repo: chưa so byte, chỉ lập luận (ADR-090). Chưa chạy cổng G1/G2 trên transcript thật |
 | Sửa 8 lỗi đã xác nhận | Test mới đỏ trên HEAD, xanh trên nhánh; cấu hình hỏng nay bị từ chối khi đọc hoặc khi khởi tạo | Đạt |
 | Chạy ô Via đủ nút từ repo | Thiết lập `ridebound_maximum_line_bytes` (64 MiB..1 GiB, chỉ nâng); test adapter cho thiết lập, dòng lệnh, launcher vá hằng số và client tạo lại | Chưa chạy job đủ nút với thiết lập này |
+| Gói chạy cuối đúng mã đã công bố và đủ đầu vào (A2, A3, B4 máy nhà 04/11) | `research/continuation/2026-11-04/home-records/`: commit xuất = `9ba5568` ở `src/simulators/tests` (498/498); Runner build từ repo xuất (đường dẫn PDB); 168/168 job nạp được cấu hình, 758 tệp đầu vào khớp manifest, `networkNodes` khớp fixture 84 ô | Đạt. Chưa chạy job nào trên máy thuê; thứ tự nút FleetPy mới chứng minh trên 2 ô cổng |
+| Chạy cuối trên Linux cho đúng từng khách như Windows (gói Linux 04/11) | Overlay `ridebound-final-v2-linux.tar.gz` `2512c3d2…` + `MANIFEST-linux.tsv` `ce35878c…` (`home-records/LINUX-PACK.SHA256SUMS`). Cùng Runner, adapter và dự đoán; chỉ đổi đường dẫn. Đã soát mã: không có nguồn lệch theo nền tảng (docs/18, mục gói Linux) | Cổng đạt trên máy thuê Linux (05/11 00:06): B 1.424/1.424 khách, 4/4 ô-nhánh trên cả 4 mặt; C 1.410/1.410 khách, 4/4. Chỉ chứng minh trên 2 ô cổng; 164 job còn lại so ở báo cáo cuối |
 | Đọc stdout nhanh, giữ đúng byte | `RunnerClient` thật, cùng đầu vào: 64 MiB 99,8 → 0,81 s; sha256 trùng; bộ nhớ đỉnh với dòng lớn như cũ | Job chạy qua launcher (mọi kit trong repo đặt `RB_REALJOB_BUFFERED_READ=1`) đã có sẵn bộ đọc này, nên gần như không nhanh hơn. Chỉ có lợi ở các lần chạy không qua launcher |
 | Băm song song ở chế độ đầy đủ | Không làm; lý do ở ADR-090 | Chờ chủ quyết nếu cần job đầy đủ cỡ Via |
 
@@ -28,7 +30,7 @@ ADR-089; nhánh `research/fast-runner-2026-11-02`, commit `9ba5568` (đã push 0
 | Dự báo vòng kín trong C# | `TravelTimeForecast` chép `legF`, test vàng; cổng dự báo lần 1 hỏng vì adapter (FleetPy kiểm giờ đón bằng thời gian hiện tại), đã sửa adapter có cờ, test adapter 467 (6 lỗi có sẵn từ trước); chạy lại 2/2 cặp chính xác, 704/704 khách | Đạt (1 ngày × 2 ca) |
 | Chạy trên máy thuê | Dockerfile, hàng đợi chạy lại được, export không có `company-emulator/`, commit export cố định `6240da33`; 04/11: gói Windows `final-v1` (commit xuất `9b22349f`, Runner build từ chính repo xuất, .NET đi kèm), `run_cloud.ps1`, kiểm "máy thuê = máy nhà" theo biên nhận từng khung | Tham chiếu Windows từ commit export xong: 6/6 job, transcript khớp với main16 sau khi bỏ commit và trường băm (55.635 dòng). Image Linux chưa dựng (ổ C); hướng chính đổi sang máy thuê Windows; chưa chạy trên máy thuê |
 | Giữ dữ liệu gọn (≤ 20 GB mỗi ổ) | `finalize_job.py` + `evidence_reader.py`: bằng chứng trích đọc lại qua đúng các hàm cũ phải trùng, rồi mới bỏ transcript; bản ghi nhớ ra tệp trùng từng byte bản đầu, 293 s thay 719 s; so từ bằng chứng 704/704 dòng trùng so từ transcript; chạy lại hàng đợi 0 byte mới | Đạt ở nhà; trên máy thuê ước 18 GB với 8 job song song (đã tính trên giấy, chưa đo ở máy thuê) |
-| Chạy thật lần cuối (168 job) | Gói `final-v2` + `run_cloud.ps1` + `cloud_gates.py`; dự đoán có giờ công bố khóa trước mọi job | Chưa chạy; chờ chủ thuê máy Windows |
+| Chạy thật lần cuối (168 job F14 + 192 job F16) | Gói `final-v2` + overlay Linux, `run_linux.sh`; F16: `PLAN-F16.md` `7c9f251e…`, gói bổ sung `run_f16_linux.sh`; mọi dự đoán (khách, chuỗi ETA, ETA theo thời gian) khóa trước job đầu tiên | F14 xong 05/11 trên máy thuê Linux: 168/168 job `status-pass`; `allExact` **false**. Khách 166/168 cặp, 57.954/58.042; chuỗi ETA 143/168, 393 khách lệch; Shadow 167/168; ETA 141/168. Lệch tập trung ở Elmi `d20191015-vf-r1-w08`; chạy lại job này cho đúng kết quả cũ, nên đây là khác biệt có thật giữa adapter và hệ thật. Tổng/ngày lệch ≤ 0,05. F16 xong 06/11: 192/192 `status-pass`; `allExact` **false**. Khách 187/192 cặp, 67.917/67.922: 5 khách lệch, mỗi khách một cặp, ở mức mili giây. Chuỗi ETA 158/192, 225 khách lệch, nhưng visRev60 3.097 = 3.097. Shadow 190/192; ETA 158/192. Gói tải về, sha256 OK. 30 ngày hệ thật, ta − Elmi: phục vụ −6,66 [−8,75; −4,56]; đảo hứa −27,34; trễ −34,23/1000; TV5 −37,70; trễ khung 17 giờ +21,83 (30/0). Trùng adapter (−6,67/−27,36/−34,26/−37,78), không trùng plain (−8,84). Kết quả ở `fullsys-f16-v2/synth-real-30d-2026-11-06/`. Báo cáo và script: `research/continuation/2026-11-06/` (nhánh `research/final-real-runs-2026-11-06`) |
 
 ## Sửa khóa luận theo bản rà soát lại — 2026-10-26, 22:40
 
@@ -39,7 +41,7 @@ ADR-088; không đổi mã RideBound, không chạy mô phỏng mới.
 | Đơn vị và định nghĩa chỉ số khớp mã (W01–W03) | `metrics_sh.js:9-12, 37, 48, 53-59, 65-66`; phụ lục mới của khóa luận (bảng định nghĩa) | Xong ở commit `7f93ee6` |
 | Nói đúng phạm vi RideBound và bộ mô phỏng (W04–W06) | Bảng thành phần ở phụ lục; 6/12 lần chạy cỡ Via; 6 lần chạy thử với dwell 24 s hỏng | Xong phần chữ; chưa thêm chặn dwell trong mã |
 | Đối thủ, phép so và cách diễn giải (W07, W09–W11, W13, W15–W19, W24, W27, W28) | `SPEC.md:1380-1390`; `be_run.js:57`; `wf6 T.txt:187-189`; khóa luận `7f93ee6` | Xong |
-| Hồ sơ chạy lại và bản nộp (W21, W29) | `HOME-RERUN-README.md` cạnh hai tệp `rows.ndjson`; `MANIFEST-BAN-NOP-KHOA-LUAN.md` | Xong; F16 vẫn chờ đầu vào |
+| Hồ sơ chạy lại và bản nộp (W21, W29) | `HOME-RERUN-README.md` cạnh hai tệp `rows.ndjson`; `MANIFEST-BAN-NOP-KHOA-LUAN.md` | Xong; F16 đã chạy ngày 05/11 (cập nhật README) |
 
 ## Rà soát lại sau báo cáo tổng hợp 26/10 — chỉ audit cục bộ
 
@@ -58,10 +60,10 @@ ADR-087; không đổi mã RideBound. Hồ sơ: `research/continuation/2026-10-2
 
 | Yêu cầu | Chứng cứ | Trạng thái/giới hạn |
 |---|---|---|
-| Số của wf20/fullsys tái lập được ở máy khác | `confirm_digest.js`, panel F14: 1.680/1.680 dòng trùng kể cả từng khách (Node 24 so với 20) | Xong cho F14 (14/30 ngày); F16 chờ đầu vào |
-| Số của wf21/n7 (dự báo so với đệm) tái lập được | `confirm_digest.js`, panel F14: 1.680/1.680; bảng tổng §5 khớp 7/7 | Xong cho F14; chỉ mục CL/PAD là bản dựng lại A1, đúng nhờ phép so từng khách |
+| Số của wf20/fullsys tái lập được ở máy khác | `confirm_digest.js`: panel F14 1.680/1.680 dòng trùng kể cả từng khách (Node 24 so với 20); đủ 30 ngày 3.600/3.600 (05/11, `wf23-home-f16/RESULT.md`); `tables.txt` và `OURS-VS-THEIRS` trùng từng byte | Xong cả 30 ngày; chỉ là tái lập phép tính trong bộ mô phỏng, chế độ plain |
+| Số của wf21/n7 (dự báo so với đệm) tái lập được | `confirm_digest.js`: panel F14 1.680/1.680, bảng tổng §5 khớp 7/7; đủ 30 ngày 3.600/3.600 (05/11) | Xong cả 30 ngày; chỉ mục CL/PAD là bản dựng lại A1, đúng nhờ phép so từng khách; bỏ `check` vì thiếu `calib.ndjson` |
 | Đầu vào lấy từ nơi khác có nguồn gốc rõ | A0: 7 tệp mạng FleetPy trùng băm công ty ghi (`wf15/PREREG-SHADOW-HASH.txt:65-67`, `wf15/DEVIATIONS.md:81-84`) | Xong |
-| Đủ 30 ngày | Thiếu `factors.json` 2019, `via_mn_2019-09/12.parquet`, template trích, DuckDB 1.5.5 | Bị chặn; cần gói P0 hoặc 96 ô F16 |
+| Đủ 30 ngày | 05/11: 96 ô F16 lấy từ zip wf17 ngày 24/10, trùng 292/292 băm `expected/wf17-f16-cells.sha256`; `r3.ndjson` trùng 3.060/3.060 | Xong bằng ô có sẵn; sinh lại ô từ dữ liệu gốc vẫn cần gói P0 (`factors.json` 2019, parquet, DuckDB 1.5.5) |
 | Khóa luận theo danh sách 24 điểm của máy công ty | Commit `20ed69a` (92 trang, build sạch): điểm 3, 10, 16, 20–24 mới; 15 điểm khác đã ở `91ad6f4` | Điểm 19 bỏ theo chủ; hai số phụ của điểm 2 không đưa vì không kiểm được |
 
 ## Phản hồi của máy công ty — 2026-10-26 chiều

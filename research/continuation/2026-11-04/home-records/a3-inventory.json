@@ -1,0 +1,125 @@
+{
+ "roots": [
+  "E:\\RideBoundData\\research\\fullsys-f14-v2",
+  "E:\\Code\\Report_INT3508\\ridebound-scratchpad\\fastrun-2026-11-02",
+  "E:\\RideBoundData\\final-v2\\tools",
+  "E:\\RideBoundData\\research\\via-full-v1\\gate-g3a\\tools",
+  "E:\\RideBoundData\\research\\via-full-v1\\shadow-gate"
+ ],
+ "jsonFiles": 2940,
+ "unreadableJson": [],
+ "keys": {
+  "fixedFreeze": [],
+  "repair": [],
+  "multiplePlan": [],
+  "maximumRidersPerVehicle": [],
+  "stopServiceDurationMs": [],
+  "freezeHorizon": [],
+  "dropEtaDeadlineTwoSided": [],
+  "solverExecutionEvidenceProfile": [
+   "E:\\Code\\Report_INT3508\\ridebound-scratchpad\\fastrun-2026-11-02\\docker\\context.failed-maxpath-1\\repo\\benchmarks\\configurations\\wp13-e1-fleetpy-ridebound-hard-vector-retained-v1.json: $.solverExecutionEvidenceProfile",
+   "E:\\Code\\Report_INT3508\\ridebound-scratchpad\\fastrun-2026-11-02\\docker\\context.failed-maxpath-1\\repo\\benchmarks\\configurations\\wp13-e1-fleetpy-rolling-cost-retained-v1.json: $.solverExecutionEvidenceProfile",
+   "E:\\Code\\Report_INT3508\\ridebound-scratchpad\\fastrun-2026-11-02\\docker\\context.failed-maxpath-1\\repo\\benchmarks\\configurations\\wp14-development-ridebound-hard-vector-v1.json: $.solverExecutionEvidenceProfile",
+   "E:\\Code\\Report_INT3508\\ridebound-scratchpad\\fastrun-2026-11-02\\docker\\context.failed-maxpath-1\\repo\\benchmarks\\configurations\\wp14-development-rolling-cost-v1.json: $.solverExecutionEvidenceProfile"
+  ]
+ },
+ "stopDistancesNonEmpty": [],
+ "originHold": [],
+ "policyId": {
+  "ridebound-hard-vector": 2095,
+  "wp6-synthetic-policy-overlay-v1": 21,
+  "rolling-cost": 9,
+  "uniform-v1": 1,
+  "commit-soft-hard-hybrid": 1,
+  "b1-earliest-feasible": 1
+ },
+ "shadowCommitmentChecks": [
+  {
+   "file": "E:\\RideBoundData\\research\\fullsys-f14-v2\\job-configs\\commitment\\SHHZ71.json",
+   "slackKeys": {
+    "dropEtaDeadlineSlackPermille": 1000
+   },
+   "ok": true
+  },
+  {
+   "file": "E:\\RideBoundData\\research\\fullsys-f14-v2\\job-configs\\commitment\\SHRC71.json",
+   "slackKeys": {
+    "dropEtaBudgetSlackPermille": 1000
+   },
+   "ok": true
+  },
+  {
+   "file": "E:\\RideBoundData\\research\\fullsys-f14-v2\\job-configs-v2\\commitment\\SHHZ71.json",
+   "slackKeys": {
+    "dropEtaDeadlineSlackPermille": 1000
+   },
+   "ok": true
+  },
+  {
+   "file": "E:\\RideBoundData\\research\\fullsys-f14-v2\\job-configs-v2\\commitment\\SHRC71.json",
+   "slackKeys": {
+    "dropEtaBudgetSlackPermille": 1000
+   },
+   "ok": true
+  }
+ ],
+ "shadowWp4Checks": {
+  "files": 336,
+  "problems": []
+ },
+ "symbols": {
+  "ridebound_fleetpy": [
+   "E:\\Code\\Report_INT3508\\ridebound-scratchpad\\fastrun-2026-11-02\\bridge_launcher_via_full.py:59",
+   "E:\\Code\\Report_INT3508\\ridebound-scratchpad\\fastrun-2026-11-02\\bridge_launcher_via_full.py:60",
+   "E:\\Code\\Report_INT3508\\ridebound-scratchpad\\fastrun-2026-11-02\\docker\\context.failed-maxpath-1\\repo\\research\\continuation\\2026-10-15\\analysis-r46\\compare_equivalence_stage1b-v7.py:23",
+   "E:\\Code\\Report_INT3508\\ridebound-scratchpad\\fastrun-2026-11-02\\docker\\context.failed-maxpath-1\\repo\\research\\continuation\\2026-10-15\\analysis-r46\\run_stage1b-v7.py:52",
+   "E:\\Code\\Report_INT3508\\ridebound-scratchpad\\fastrun-2026-11-02\\docker\\context.failed-maxpath-1\\repo\\research\\continuation\\2026-10-15\\analysis-r46\\run_stage1b-v7.py:54",
+   "E:\\Code\\Report_INT3508\\ridebound-scratchpad\\fastrun-2026-11-02\\docker\\context.failed-maxpath-1\\repo\\research\\continuation\\2026-10-15\\analysis-r46\\run_stage1b-v7.py:214",
+   "E:\\Code\\Report_INT3508\\ridebound-scratchpad\\fastrun-2026-11-02\\final\\a3_inventory.py:20",
+   "E:\\Code\\Report_INT3508\\ridebound-scratchpad\\fastrun-2026-11-02\\fullsys\\make_job_configs_v2.py:5",
+   "E:\\Code\\Report_INT3508\\ridebound-scratchpad\\fastrun-2026-11-02\\fullsys\\make_job_configs_v2.py:22",
+   "E:\\RideBoundData\\final-v2\\tools\\bridge_launcher_via_full.py:59",
+   "E:\\RideBoundData\\final-v2\\tools\\bridge_launcher_via_full.py:60",
+   "E:\\RideBoundData\\research\\via-full-v1\\gate-g3a\\tools\\bridge_launcher_via_full.py:59",
+   "E:\\RideBoundData\\research\\via-full-v1\\gate-g3a\\tools\\bridge_launcher_via_full.py:60"
+  ],
+  "restore(": [
+   "E:\\Code\\Report_INT3508\\ridebound-scratchpad\\fastrun-2026-11-02\\final\\a3_inventory.py:20"
+  ],
+  "restart": [
+   "E:\\Code\\Report_INT3508\\ridebound-scratchpad\\fastrun-2026-11-02\\docker\\context.failed-maxpath-1\\repo\\research\\continuation\\2026-10-15\\analysis-r46\\run_stage1b-v7.py:16",
+   "E:\\Code\\Report_INT3508\\ridebound-scratchpad\\fastrun-2026-11-02\\final\\a3_inventory.py:20"
+  ],
+  "_repository_inventory_sha256": [
+   "E:\\Code\\Report_INT3508\\ridebound-scratchpad\\fastrun-2026-11-02\\final\\a3_inventory.py:20",
+   "E:\\RideBoundData\\final-v2\\tools\\inventory.py:4",
+   "E:\\RideBoundData\\research\\via-full-v1\\gate-g3a\\tools\\inventory.py:4"
+  ],
+  "wp14r_": [
+   "E:\\Code\\Report_INT3508\\ridebound-scratchpad\\fastrun-2026-11-02\\docker\\context.failed-maxpath-1\\repo\\research\\continuation\\2026-10-15\\analysis-r46\\analysis-selftest-2026-10-15-v2\\a5-harness\\extract_stage1b.py:67",
+   "E:\\Code\\Report_INT3508\\ridebound-scratchpad\\fastrun-2026-11-02\\docker\\context.failed-maxpath-1\\repo\\research\\continuation\\2026-10-15\\analysis-r46\\analysis-selftest-2026-10-15-v2\\a8-harness\\extract_stage1b.py:67",
+   "E:\\Code\\Report_INT3508\\ridebound-scratchpad\\fastrun-2026-11-02\\docker\\context.failed-maxpath-1\\repo\\research\\continuation\\2026-10-15\\analysis-r46\\analysis-selftest-2026-10-15-v3\\a5-harness\\extract_stage1b.py:67",
+   "E:\\Code\\Report_INT3508\\ridebound-scratchpad\\fastrun-2026-11-02\\docker\\context.failed-maxpath-1\\repo\\research\\continuation\\2026-10-15\\analysis-r46\\analysis-selftest-2026-10-15-v3\\a8-harness\\extract_stage1b.py:67",
+   "E:\\Code\\Report_INT3508\\ridebound-scratchpad\\fastrun-2026-11-02\\docker\\context.failed-maxpath-1\\repo\\research\\continuation\\2026-10-15\\analysis-r46\\extract_stage1b.py:67",
+   "E:\\Code\\Report_INT3508\\ridebound-scratchpad\\fastrun-2026-11-02\\docker\\context.failed-maxpath-1\\repo\\research\\continuation\\2026-10-15\\evidence\\original-analysis-before-install\\extract_stage1b.py:61",
+   "E:\\Code\\Report_INT3508\\ridebound-scratchpad\\fastrun-2026-11-02\\final\\a3_inventory.py:20"
+  ],
+  "RIDEBOUND_STATE_HASH": [
+   "E:\\Code\\Report_INT3508\\ridebound-scratchpad\\fastrun-2026-11-02\\final\\a3_inventory.py:20"
+  ],
+  "RB_REALJOB_BUFFERED_READ": [
+   "E:\\Code\\Report_INT3508\\ridebound-scratchpad\\fastrun-2026-11-02\\bridge_launcher_via_full.py:7",
+   "E:\\Code\\Report_INT3508\\ridebound-scratchpad\\fastrun-2026-11-02\\bridge_launcher_via_full.py:52",
+   "E:\\Code\\Report_INT3508\\ridebound-scratchpad\\fastrun-2026-11-02\\docker\\run_queue.py:32",
+   "E:\\Code\\Report_INT3508\\ridebound-scratchpad\\fastrun-2026-11-02\\final\\a3_inventory.py:21",
+   "E:\\Code\\Report_INT3508\\ridebound-scratchpad\\fastrun-2026-11-02\\final\\run_queue_final.py:41",
+   "E:\\Code\\Report_INT3508\\ridebound-scratchpad\\fastrun-2026-11-02\\run_via_full.py:69",
+   "E:\\RideBoundData\\final-v2\\tools\\bridge_launcher_via_full.py:7",
+   "E:\\RideBoundData\\final-v2\\tools\\bridge_launcher_via_full.py:52",
+   "E:\\RideBoundData\\final-v2\\tools\\run_queue_final.py:41",
+   "E:\\RideBoundData\\research\\via-full-v1\\gate-g3a\\tools\\bridge_launcher_via_full.py:7",
+   "E:\\RideBoundData\\research\\via-full-v1\\gate-g3a\\tools\\bridge_launcher_via_full.py:52",
+   "E:\\RideBoundData\\research\\via-full-v1\\gate-g3a\\tools\\run_queue.py:32"
+  ]
+ }
+}
