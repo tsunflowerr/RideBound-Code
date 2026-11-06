@@ -2,11 +2,8 @@
   <Folder Name="/src/">
     <Project Path="src/RideBound.Algorithms/RideBound.Algorithms.csproj" />
     <Project Path="src/RideBound.Application/RideBound.Application.csproj" />
-    <Project Path="src/RideBound.Benchmarking.Contracts/RideBound.Benchmarking.Contracts.csproj" />
-    <Project Path="src/RideBound.Benchmarking/RideBound.Benchmarking.csproj" />
     <Project Path="src/RideBound.Contracts/RideBound.Contracts.csproj" />
     <Project Path="src/RideBound.Domain/RideBound.Domain.csproj" />
-    <Project Path="src/RideBound.Infrastructure/RideBound.Infrastructure.csproj" />
     <Project Path="src/RideBound.Runner/RideBound.Runner.csproj" />
     <Project Path="src/RideBound.Solvers.OrTools/RideBound.Solvers.OrTools.csproj" />
   </Folder>
@@ -14,23 +11,9 @@
     <Project Path="tests/RideBound.Algorithms.Tests/RideBound.Algorithms.Tests.csproj" />
     <Project Path="tests/RideBound.ArchitectureTests/RideBound.ArchitectureTests.csproj" />
     <Project Path="tests/RideBound.Application.Tests/RideBound.Application.Tests.csproj" />
-    <Project Path="tests/RideBound.Benchmarking.Contracts.Tests/RideBound.Benchmarking.Contracts.Tests.csproj" />
-    <Project Path="tests/RideBound.Benchmarking.Tests/RideBound.Benchmarking.Tests.csproj" />
     <Project Path="tests/RideBound.Contracts.Tests/RideBound.Contracts.Tests.csproj" />
     <Project Path="tests/RideBound.Domain.Tests/RideBound.Domain.Tests.csproj" />
     <Project Path="tests/RideBound.Runner.Tests/RideBound.Runner.Tests.csproj" />
     <Project Path="tests/RideBound.Solvers.OrTools.Tests/RideBound.Solvers.OrTools.Tests.csproj" />
-  </Folder>
-  <Folder Name="/tools/">
-    <Project Path="tools/RideBound.CandidateHotPathBenchmark/RideBound.CandidateHotPathBenchmark.csproj" />
-    <Project Path="tools/RideBound.Wp6Dataset/RideBound.Wp6Dataset.csproj" />
-    <Project Path="tools/RideBound.Wp6FakeChild/RideBound.Wp6FakeChild.csproj" />
-    <Project Path="tools/RideBound.Wp6MetricOracle/RideBound.Wp6MetricOracle.csproj" />
-    <Project Path="tools/RideBound.Wp6MediumHarness/RideBound.Wp6MediumHarness.csproj" />
-    <Project Path="tools/RideBound.Wp6BundleVerify/RideBound.Wp6BundleVerify.csproj" />
-    <Project Path="tools/RideBound.Wp6ContractVectors/RideBound.Wp6ContractVectors.csproj" />
-    <Project Path="tools/RideBound.Wp6Normalize/RideBound.Wp6Normalize.csproj" />
-    <Project Path="tools/RideBound.Wp6SeedVectors/RideBound.Wp6SeedVectors.csproj" />
-    <Project Path="tools/RideBound.Wp6TinyHarness/RideBound.Wp6TinyHarness.csproj" />
   </Folder>
 </Solution>
