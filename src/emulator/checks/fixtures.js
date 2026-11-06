@@ -1,13 +1,11 @@
-// Shared helpers: fixture loading, traffic profile, id mapping, statistics. No built-in data paths: the fixture helpers take
-// their folder or file as an argument.
+// Section 9 re-checks: loader for the RideBound/FleetPy Manhattan fixture cells (<panel>/<cell>/scenario-content.json
+// and normalizer-configuration.json) and their traffic profile from the FleetPy day factors (factors.json: 96 bin
+// factors per day). No built-in data paths: every loader takes its folder or file as an argument.
 'use strict';
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
-
-const DAYS = ['20181114', '20181115', '20181116', '20181117', '20181118'];
-const CELLS = [];
-for (const d of DAYS) for (const r of [1, 2, 3, 4]) CELLS.push(`d${d}-s10-r${r}`);
+const { rqId, maxRideFromPermille } = require('../scenario.js');
 
 const BIN_MS = 900000;
 const WINDOW_START_BIN = 32; // 08:00 = 28800 s = bin 32 of the day
@@ -69,32 +67,7 @@ function loadCell(cell, panelRoot) {
   return { cell, N, T0, requests, fleet, norm, timeWindow: j.timeWindow, nodeIds, sourceArtifactSha256: j.sourceArtifactSha256, scenarioId: j.scenarioId };
 }
 
-// Adapter request id: "rq-" + sha256(typed frame of the FleetPy raw id) (mapping.py:20-77, namespace "rq").
-function rqId(raw) {
-  const enc = Buffer.from(raw, 'utf8');
-  const len = Buffer.alloc(8);
-  len.writeBigUInt64BE(BigInt(enc.length));
-  const framed = Buffer.concat([Buffer.from('s'), len, enc]);
-  return 'rq-' + crypto.createHash('sha256').update(framed).digest('hex');
-}
-
-// Round half to even (Python Decimal ROUND_HALF_EVEN / C# banker's rounding used by the mapper).
-function roundHalfEven(x) {
-  const f = Math.floor(x);
-  const d = x - f;
-  if (d > 0.5) return f + 1;
-  if (d < 0.5) return f;
-  return f % 2 === 0 ? f : f + 1;
-}
-
-function quantile(arr, p) {
-  if (!arr.length) return NaN;
-  const s = Float64Array.from(arr).sort();
-  const i = (s.length - 1) * p;
-  const lo = Math.floor(i), hi = Math.ceil(i);
-  return s[lo] + (s[hi] - s[lo]) * (i - lo);
-}
-
+// per-rider rows of the archived real runs (riders.tsv)
 function readRidersTsv(file) {
   const lines = fs.readFileSync(file, 'utf8').split(/\r?\n/).filter(Boolean);
   const hdr = lines[0].split('\t');
@@ -110,12 +83,4 @@ function readRidersTsv(file) {
   });
 }
 
-// Fresh cells (not part of panel A, no archived runs): wp14 development panel (wp14-development-panel-v1), days 12/13 Nov,
-// windows 08:00 and 17:00.
-const FRESH_CELLS = [];
-for (const d of ['20181112', '20181113']) for (const r of [1, 2, 3, 4]) for (const w of ['w08', 'w17']) FRESH_CELLS.push(`d${d}-s10-r${r}-${w}`);
-
-module.exports = {
-  FRESH_CELLS, CELLS, DAYS, BIN_MS, HOLD_BIN,
-  trafficProfile, loadCell, rqId, roundHalfEven, quantile, readRidersTsv, loadFactors,
-};
+module.exports = { BIN_MS, HOLD_BIN, loadFactors, trafficProfile, loadCell, readRidersTsv, maxRideFromPermille };
