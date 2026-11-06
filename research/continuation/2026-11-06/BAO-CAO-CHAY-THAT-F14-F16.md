@@ -213,24 +213,27 @@ lớn hơn khoảng 2 khách/ngày. Cơ chế gây ra khoảng cách này trong 
 
 | Đường dẫn | Nội dung |
 |---|---|
-| `results/f14-report/`, `results/f16-report/` | Báo cáo so sánh của máy thuê: `FINAL-REPORT.json`, `riders-compare.json`, `sequences.json`, `shadow.json`, `eta.json`, `reversals.json`, các log. Bỏ `riders-real-riders.tsv` (10 MB mỗi tệp, băm ở dưới) |
+| `results/f14-report/`, `results/f16-report/` | Báo cáo so sánh của máy thuê: `FINAL-REPORT.json`, `riders-compare.json`, `sequences.json`, `shadow.json`, `eta.json`, `reversals.json`, các log. Tệp `riders-real-riders.tsv` nằm ở `data/` |
+| `data/` | Dữ liệu từng khách, nén gzip (24 MB): dự đoán adapter của 2 nhánh chính và 2 nhánh tách phần (F14, F16), kết quả từng khách của hệ thật (F14, F16). Bản gốc trước khi nén có băm trong `ORIGINALS.tsv`; đã thử giải nén, cả 6 tệp ra đúng băm. `GZ.sha256` là băm của tệp nén |
 | `results/synth-real-30d.{md,json}` | Bảng 30 ngày plain / adapter / hệ thật |
 | `results/d1-split.{md,json}`, `results/d1-gap.txt` | D1 |
 | `results/vast-console/` | Log console của máy thuê: `run_linux.log`, `run_f16_linux.log`, nén tay F14, chạy chẩn đoán; `VAST.sha256` lấy trên máy thuê |
 | `plan/` | `PLAN-F16.md` và băm |
-| `scripts/fastrun-2026-11-02/` | 70 tệp (script và hướng dẫn) của bộ công cụ chạy lần cuối, chép nguyên từ `ridebound-scratchpad/fastrun-2026-11-02` (bỏ `docker/` và các thư mục đầu ra `replay-*`) |
+| `scripts/fastrun-2026-11-02/` | 72 tệp (script và hướng dẫn) của bộ công cụ chạy lần cuối. 70 tệp chép nguyên; 2 tệp che tên công ty (xem dưới). Nguồn: từ `ridebound-scratchpad/fastrun-2026-11-02` (bỏ `docker/` và các thư mục đầu ra `replay-*`) |
 | `scripts/session/` | Script của phiên 05–06/11: theo dõi, tải, `post_f16.sh`, `d1_gap.py`, tìm chỗ rẽ, chạy chẩn đoán |
-| `scripts/HELD-BACK.tsv` | 7 tệp **không đưa lên** vì repo công khai, kèm băm và lý do |
+| `scripts/HELD-BACK.tsv` | 5 tệp **không đưa lên** và 2 tệp đưa bản che tên, kèm băm bản gốc và lý do |
 | `TIEN-DO-2026-11-03.md` | Nhật ký tiến độ 03–06/11 |
 
-**Tệp không đưa lên (`scripts/HELD-BACK.tsv`):**
+**Tệp giữ lại hoặc đã che (`scripts/HELD-BACK.tsv`):**
 
-- 5 tệp chép mã bộ mô phỏng wf15 của công ty, vốn chưa công khai: `engine_wf15_clint.js`, `gen_forecast_golden.js`,
-  `emulate_via_full.js`, `emulate_fullsys.js`, `emulate_fullsys_f16.js`.
-- 2 tệp chứa tên công ty trong biểu thức lọc: `assemble_final.py`, `pack_final.py`.
-
-Thiếu các tệp này thì các script `emulate_*` còn lại không chạy được trên máy khác. Bản gốc vẫn nằm trong
-`ridebound-scratchpad`.
+- **Không đưa lên:** 5 tệp chép mã bộ mô phỏng wf15 của công ty, vốn chưa công khai: `engine_wf15_clint.js`,
+  `gen_forecast_golden.js`, `emulate_via_full.js`, `emulate_fullsys.js`, `emulate_fullsys_f16.js`.
+  - Ngày 06/11 hệ thống chặn bước chép các tệp này vào repo. Việc công khai chúng chờ chủ đề tài quyết.
+  - Thiếu các tệp này thì các script `emulate_*` còn lại không chạy được trên máy khác. Bản gốc vẫn nằm trong
+    `ridebound-scratchpad`.
+- **Đưa bản che tên:** `assemble_final.py` và `pack_final.py`.
+  - Bản gốc chứa tên công ty trong biểu thức lọc. Bản trên repo đọc biểu thức đó từ biến môi trường
+    `RB_COMPANY_NAMES_REGEX`; ngoài dòng này thì giữ nguyên.
 
 ### Ngoài repo (`E:/RideBoundData/research/`)
 
@@ -241,14 +244,23 @@ Thiếu các tệp này thì các script `emulate_*` còn lại không chạy đ
 | `fullsys-f14-v2/runs-linux-2026-11-05/ridebound-diag-20261105.tar` | 708.372.480 | `8aab583e26f224915b85aaa72ffa4fb99fd589c9e03f510b2a78056f1a27ffdf` |
 | `fullsys-f16-v2/runs-linux-2026-11-06/ridebound-f16-results-20261105T233511Z.tar.gz` | 2.179.000.962 | `b25fae51e81130c5fe90c548496bd1718f46c1ba4b91c16ce27b5fcef5193a62` |
 | `fullsys-f16-v2/runs-linux-2026-11-06/ridebound-f16-transcripts-20261105T233511Z.tar` | 2.908.887.040 | `9b83fee388b7b3914f7ba50bec804ae09b535d2ed74c18bac18ecdf914d35c45` |
-| F14 `report/riders-real-riders.tsv` | — | `786048fb931a66a6f3c3e55bf12bd358203615013c5bc04ea6c510f45bf0a28a` |
-| F16 `report-f16/riders-real-riders.tsv` | — | `fa785fde16310ddbc99723dd4839f156abcc6e7d43df1ee51cb916316ef1e87e` |
+| `fullsys-f14-v2/predictions/fullsys-f14-drop-sequences.tsv` | 124.728.491 | `cac61e69b77fcc6f36a815dbdc024b6301b3ab3af67f5e5ead25b00a8593dcd7` |
+| `fullsys-f16-v2/predictions/fullsys-f16-drop-sequences.tsv` | 146.558.871 | `d6d604fd663de191b2aa2ac022e549fe4b03a48c7f96ead103427362c9ca1aae` |
+| `fullsys-f14-v2/predictions-timed/timed-adapter.tsv.gz` | 82.962.058 | `cc095075cf647744155f0dab503b48637c42cbdb2bb30d9ec9323bb2eacd1fe0` |
+| `fullsys-f14-v2/predictions-timed-attr-d1/timed-adapter.tsv.gz` | 165.745.204 | `95f91fe9d66b159ae745a567015b0c5b05a5bf3103854982fd341277c9fe1867` |
+| `fullsys-f16-v2/predictions-timed/timed-adapter.tsv.gz` | 194.705.314 | `e3cf7bb5dac6eaa192c72c182e7b9b9452e0a259e51df5747f5d134ebbb52e41` |
+
+Lý do các tệp này nằm ngoài repo:
+
+- Gói nén và tệp ETA theo thời gian đều vượt giới hạn 100 MB mỗi tệp của GitHub.
+- Chuỗi giờ trả nén gzip vẫn còn 41 và 49 MB.
 
 Mọi gói đều đã kiểm sha256 sau khi tải về. Thư mục `/rb/runs` và `/rb/runs-diag` trên máy thuê đều nằm trong các gói này.
 
 ## 9. Chạy lại phân tích
 
-Cần dữ liệu ở `E:/RideBoundData` và các hàng của máy công ty (đường dẫn ghi trong `synth_real_30d.py`). Dùng Python
+Cần dữ liệu ở `E:/RideBoundData` và các hàng của máy công ty (đường dẫn ghi trong `synth_real_30d.py`). Các tệp trong
+`data/` là bản nén của một phần dữ liệu đó; giải nén bằng `gzip -dc` rồi trỏ script vào bản giải nén. Dùng Python
 `E:/RideBoundData/wp7/envs/fleetpy-1.0.2/python.exe`:
 
 ```bash

@@ -1,0 +1,7 @@
+sha256	file	source (E:/RideBoundData/research/...)
+7caaacf0c53e92d4e670f680acdaa5594f1d2a36dffbaff3421e8586fdd4b826	f14-adapter-predictions.tsv.gz	fullsys-f14-v2/predictions/fullsys-f14-predictions.tsv
+c9bab6a7c2de82f58943147cd5e357e6946e013e4e379bde9211dd6977c84d74	f16-adapter-predictions.tsv.gz	fullsys-f16-v2/predictions/fullsys-f16-predictions.tsv
+54bb149b764149eb5b8de135a63163ca85c3ce1b980b147d5e2ee08023f10f77	f14-adapter-attr-predictions.tsv.gz	fullsys-f14-v2/predictions-timed-attr-d1/attr-predictions.tsv
+82243e31f2f7e3dab5ad25943fb541eb2dfef82b3c2295e475614ed7a4e7e60c	f16-adapter-attr-predictions.tsv.gz	fullsys-f16-v2/predictions-timed/attr-predictions.tsv
+786048fb931a66a6f3c3e55bf12bd358203615013c5bc04ea6c510f45bf0a28a	f14-real-riders.tsv.gz	fullsys-f14-v2/runs-linux-2026-11-05/extracted/runs/report/riders-real-riders.tsv
+fa785fde16310ddbc99723dd4839f156abcc6e7d43df1ee51cb916316ef1e87e	f16-real-riders.tsv.gz	fullsys-f16-v2/runs-linux-2026-11-06/extracted/runs/report-f16/riders-real-riders.tsv

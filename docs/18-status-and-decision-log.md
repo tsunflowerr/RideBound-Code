@@ -6387,6 +6387,14 @@ Phần F14 của cùng gói đã trùng từ 26/10 (ADR-087).
   Repo công khai nên **không đưa lên** 7 tệp, ghi băm và lý do trong `scripts/HELD-BACK.tsv`. 5 tệp chép mã bộ mô phỏng
   wf15 của công ty, vốn chưa công khai. 2 tệp chứa tên công ty. Các tệp `riders-real-riders.tsv` và gói nén ở ngoài repo,
   chỉ ghi băm. Không đổi `src/` hay `tests/`.
+- **Bổ sung cùng ngày (chủ: "nếu không quá nặng thì cứ gửi"):**
+  - `data/`: 6 tệp dữ liệu từng khách nén gzip, 24 MB. Gồm dự đoán adapter của 4 nhánh trên F14 và F16, và kết quả từng
+    khách của hệ thật F14 và F16. Giải nén thử, cả 6 tệp ra đúng băm bản gốc.
+  - `assemble_final.py` và `pack_final.py` đưa lên bản che tên: biểu thức lọc tên công ty đọc từ biến môi trường
+    `RB_COMPANY_NAMES_REGEX`.
+  - 5 tệp chép mã wf15 vẫn chưa đưa lên: hệ thống chặn bước chép vào repo công khai, chờ chủ quyết.
+  - Không đưa lên vì quá nặng: chuỗi giờ trả (125 và 147 MB; nén vẫn 41 và 49 MB) và tệp ETA theo thời gian (83–195 MB
+    dù đã nén). Băm ghi trong báo cáo.
 
 ## Cập nhật khóa luận — 2026-10-16T00:09:00.907016+07:00
 

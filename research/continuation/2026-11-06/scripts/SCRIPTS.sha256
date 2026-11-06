@@ -21,6 +21,7 @@ bc6c557828727f59b7f25686d13511087885ed3a80a138dd56b0111e6916af38 *./fastrun-2026
 5afa95ceac457d1a84ef095728db30522ecc79fdabb04cc23a9112c3634c0860 *./fastrun-2026-11-02/final-linux/with_evidence_linux.py
 15a70d2ae79f53bc0b7f55125735bdbdadb1f5803b5cb11e0b9e3681882add30 *./fastrun-2026-11-02/final/RUN-ON-RENTED-MACHINE.md
 e19b04c11a30beb4d517fdc141aa38a35eb391aebbd240f9052d2f6151fe1f0d *./fastrun-2026-11-02/final/a3_inventory.py
+f2d605f0b7f5d6563c78337607122599acaf4fe0c104ecb1900b96dc2aa25bac *./fastrun-2026-11-02/final/assemble_final.py
 e6223b204a5d709ba1c732bde499f973498cfec7bc0552aa942267c79ff44544 *./fastrun-2026-11-02/final/b4_dry_check.py
 772e4a6f2a94177bde721664a9f704ce3571b0c07915501d5334a6aa267c7087 *./fastrun-2026-11-02/final/cloud_check.py
 510a1154c2453ada97e9e954c9b3b4add075386a036910fb97ba16828f59579f *./fastrun-2026-11-02/final/cloud_gates.py
@@ -28,6 +29,7 @@ c59c92d7d3ccecc80abe3bbfb5d0f226881bd7592e2d1599d64052f572d1dd5a *./fastrun-2026
 c4144715500887da8c56b3fa6c799463226f4aa5dd80b9f5b5fb5b484415507d *./fastrun-2026-11-02/final/final_report.py
 c3e2e01f0dde8ab4f5e22358d523e029de7b7ef8ff606512cef2e26d86a93119 *./fastrun-2026-11-02/final/make_f16_jobs_linux.py
 5c2f4828a56bcf49c6c38629edded56c197ca5b9e760f1591c11dc11222c94c3 *./fastrun-2026-11-02/final/make_final_jobs.py
+f14cc8a125549e187027afef23bc44cbe5654dede5bc03b349f3c8e1dbb2ca48 *./fastrun-2026-11-02/final/pack_final.py
 48078349c7ba748ce6dda0b0a3e5e1590e4433b59011985845846fdd5f218db6 *./fastrun-2026-11-02/final/run_cloud.ps1
 b879d2bfa2b4436f3e32c63719840515138db4c24d4b45e21b43aece08b0de6f *./fastrun-2026-11-02/final/run_queue_final.py
 3ae28eef514128efb4397895213868218979867cf0e7163d548c2280883a75cf *./fastrun-2026-11-02/final/synth_real_30d.py
