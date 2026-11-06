@@ -1,0 +1,72 @@
+{
+  "cellArms": 4,
+  "exact": 4,
+  "riders": 1424,
+  "differing": 0,
+  "visRev60Emulator": 84,
+  "visRev60Real": 84,
+  "tv5Emulator": 315446669,
+  "tv5Real": 315446669,
+  "results": [
+    {
+      "role": "FS-G2-SHHZ71-N",
+      "cell": "d20190919-vf-r0-w08",
+      "riders": 335,
+      "ridersReal": 335,
+      "sequencesIdentical": 335,
+      "differing": 0,
+      "firstDifferences": [],
+      "atDropRevisionsLeftOut": 335,
+      "visRev60Emulator": 16,
+      "visRev60Real": 16,
+      "tv5Emulator": 78684740,
+      "tv5Real": 78684740,
+      "exact": true
+    },
+    {
+      "role": "FS-G2-SHHZ71-N",
+      "cell": "d20190919-vf-r0-w17",
+      "riders": 379,
+      "ridersReal": 379,
+      "sequencesIdentical": 379,
+      "differing": 0,
+      "firstDifferences": [],
+      "atDropRevisionsLeftOut": 378,
+      "visRev60Emulator": 41,
+      "visRev60Real": 41,
+      "tv5Emulator": 100822916,
+      "tv5Real": 100822916,
+      "exact": true
+    },
+    {
+      "role": "FS-G2-SHRC71-CL",
+      "cell": "d20190919-vf-r0-w08",
+      "riders": 339,
+      "ridersReal": 339,
+      "sequencesIdentical": 339,
+      "differing": 0,
+      "firstDifferences": [],
+      "atDropRevisionsLeftOut": 339,
+      "visRev60Emulator": 6,
+      "visRev60Real": 6,
+      "tv5Emulator": 56885677,
+      "tv5Real": 56885677,
+      "exact": true
+    },
+    {
+      "role": "FS-G2-SHRC71-CL",
+      "cell": "d20190919-vf-r0-w17",
+      "riders": 371,
+      "ridersReal": 371,
+      "sequencesIdentical": 371,
+      "differing": 0,
+      "firstDifferences": [],
+      "atDropRevisionsLeftOut": 370,
+      "visRev60Emulator": 21,
+      "visRev60Real": 21,
+      "tv5Emulator": 79053336,
+      "tv5Real": 79053336,
+      "exact": true
+    }
+  ]
+}

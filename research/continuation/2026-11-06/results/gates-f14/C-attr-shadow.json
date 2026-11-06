@@ -1,0 +1,59 @@
+{
+  "cellArms": 4,
+  "exact": 4,
+  "riders": 1410,
+  "results": [
+    {
+      "role": "FS-G2-SHHZ71-CL",
+      "cell": "d20190919-vf-r0-w08",
+      "ridersEmulator": 331,
+      "ridersReal": 331,
+      "notOnBothSides": 0,
+      "classDiffers": 0,
+      "scoreDiffers": 0,
+      "guaranteedReal": 216,
+      "guaranteedEmulator": 216,
+      "first": [],
+      "exact": true
+    },
+    {
+      "role": "FS-G2-SHHZ71-CL",
+      "cell": "d20190919-vf-r0-w17",
+      "ridersEmulator": 381,
+      "ridersReal": 381,
+      "notOnBothSides": 0,
+      "classDiffers": 0,
+      "scoreDiffers": 0,
+      "guaranteedReal": 249,
+      "guaranteedEmulator": 249,
+      "first": [],
+      "exact": true
+    },
+    {
+      "role": "FS-G2-SHRC71-N",
+      "cell": "d20190919-vf-r0-w08",
+      "ridersEmulator": 332,
+      "ridersReal": 332,
+      "notOnBothSides": 0,
+      "classDiffers": 0,
+      "scoreDiffers": 0,
+      "guaranteedReal": 216,
+      "guaranteedEmulator": 216,
+      "first": [],
+      "exact": true
+    },
+    {
+      "role": "FS-G2-SHRC71-N",
+      "cell": "d20190919-vf-r0-w17",
+      "ridersEmulator": 366,
+      "ridersReal": 366,
+      "notOnBothSides": 0,
+      "classDiffers": 0,
+      "scoreDiffers": 0,
+      "guaranteedReal": 243,
+      "guaranteedEmulator": 243,
+      "first": [],
+      "exact": true
+    }
+  ]
+}

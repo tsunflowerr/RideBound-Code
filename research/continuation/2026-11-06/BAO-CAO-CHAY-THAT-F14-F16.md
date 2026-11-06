@@ -7,7 +7,8 @@ mục này. Danh sách băm ở `results/RESULTS.sha256`.
 
 - **Đã chạy:** 360 job RideBound thật trên máy thuê Linux, 168 job F14 và 192 job F16. Cả 360 job đều `status-pass`.
 - **Không trùng tuyệt đối với dự đoán đã khóa trước** (`allExact` = false ở cả hai đợt):
-  - F14: lệch dồn vào một cặp ô-nhánh. Nguyên nhân là giới hạn của bộ mô phỏng (mục 3.1).
+  - F14: lệch lớn dồn vào một cặp ô-nhánh, ngoài ra có một cặp lệch 1 khách. Cả hai cùng một nguyên nhân: giới hạn của
+    bộ mô phỏng (mục 3.1).
   - F16: chỉ 5/67.922 khách lệch, và lệch ở mức mili giây.
 - **Hệ thật cho đúng con số của dự đoán adapter**, không phải con số của bộ mô phỏng plain.
 - 30 ngày hệ thật, ta − Elmi mỗi ngày:
@@ -65,7 +66,9 @@ mục này. Danh sách băm ở `results/RESULTS.sha256`.
 
 Nguồn: `results/f14-report/FINAL-REPORT.json`, `results/f16-report/FINAL-REPORT.json`.
 
-### 3.1 F14: một cặp lệch lớn, nguyên nhân nằm ở bộ mô phỏng
+### 3.1 F14: hai cặp lệch, cùng một nguyên nhân nằm ở bộ mô phỏng
+
+Sửa ngày 06/11: bản đầu chỉ nêu cặp lớn. Cặp thứ hai ở cuối mục này.
 
 - **Cặp lệch:** Elmi `d20191015-vf-r1-w08`, chiếm 87 khách lệch và 275/393 khách lệch chuỗi.
 - **Hệ thật tự lặp lại.** Chạy lại đúng job này với cùng đầu vào (`ridebound-diag-20261105.tar`) cho kết quả trùng
@@ -90,6 +93,14 @@ Nguồn: `results/f14-report/FINAL-REPORT.json`, `results/f16-report/FINAL-REPOR
   - phục vụ 29.214 → 29.213 (tổng 14 ngày).
 
   Phía ta trùng hoàn toàn.
+- **Thời điểm rẽ là 2.224,046 s, không phải 418 s.** 418 s là t0 của khách `rq-33085454…`, khách lệch đầu tiên khi
+  `riders-compare.json` xếp theo t0. Lời hứa đầu của khách này trùng ở hai bên. Nó chỉ lệch vì hai lần dời cam kết sau chỗ
+  rẽ, lúc 2.906 s và 3.122 s.
+- **Cặp thứ hai:** Elmi `d20191218-vf-r1-w08`, 1 khách (`rq-88620aac…`).
+  - t0, p0 và A trùng. Lần dời cam kết duy nhất của khách: hệ thật −28.357 ms, dự đoán −28.134 ms.
+  - Lúc 2.584,122 s, hệ thật công bố hai giờ trả trong cùng mili giây; lần thứ hai đi kèm lần dời. Bộ mô phỏng dời ở sự
+    kiện kế tiếp, 869 ms sau.
+  - Đây là cùng cơ chế với cặp lớn, nhưng ảnh hưởng dừng lại ở 1 khách. Suy từ bằng chứng; transcript đã bỏ.
 
 ### 3.2 F16: năm khách lệch ở mức mili giây
 
@@ -105,7 +116,43 @@ Mỗi cặp dưới đây lệch đúng 1 khách. Lấy từ `results/f16-report
 
 - Tổng TV5 lệch 673 ms trên 67.922 khách.
 - Không có cặp lệch lớn như ở F14.
-- Chưa tìm nguyên nhân các lệch mili giây, vì transcript của các job này đã bị bỏ.
+- Nguyên nhân chính xác của các lệch mili giây chưa chứng minh được, vì transcript đã bỏ. Mục 3.3 tả hình dạng của chúng.
+
+### 3.3 Các lệch nhỏ của chuỗi giờ trả, Shadow và ETA (bổ sung 06/11)
+
+Nguồn: `results/q34-details.json` (`scripts/session/q34_details.py`, `q4_same_instant.py`), đọc `evidence.json.gz` của 61
+ô-nhánh có ít nhất một mặt lệch. Chi tiết từng khách nằm trong tệp đó.
+
+- **Chuỗi giờ trả:** F14 bỏ cặp lớn có 118 khách ở 24 cặp; F16 có 225 khách ở 34 cặp. Có hai kiểu:
+  - **Số lần công bố khác nhau** (F14 29 khách, F16 34 khách). Mọi chỗ lệch đầu tiên đều ở một thời điểm mà một bên công
+    bố hai giờ trả trong cùng mili giây, như cặp thứ hai của mục 3.1.
+  - **Một giá trị khác, rồi trùng lại ngay** (F14 89 khách, F16 191 khách). Độ lệch:
+    - F14: 75 giá trị ≤ 1 ms, 13 giá trị 2–999 ms, 3 giá trị 1–5 s; lớn nhất 1.723 ms.
+    - F16: 152 / 22 / 15 giá trị theo cùng các mức, và 2 giá trị > 5 s.
+    - Hai giá trị > 5 s là lần công bố đầu trong hai lần cùng mili giây, đúng lúc một khách mới được chèn. Hệ thật công bố
+      giờ theo kế hoạch cũ, bộ mô phỏng công bố giờ đã chèn.
+  - **Ảnh hưởng:** không đổi visRev60 hay số lần đảo (F14 bỏ cặp lớn: 341 và 528; F16: 577 và 867). TV5 tổng giảm 1.008 ms
+    ở F14 và 673 ms ở F16.
+- **Shadow:** không khách nào đổi lớp, trừ 4 khách trong cặp lớn của F14. Hai cặp lệch của F16 mỗi cặp chỉ lệch 1 điểm,
+  khoảng 0,01 %, ở chính khách có p0 lệch mili giây.
+- **ETA theo thời gian:**
+  - Ngoài cặp lớn, sai số ETA từng khách lệch nhiều nhất 0,3 s. Trung bình từng cặp lệch nhiều nhất 0,00002 phút.
+  - 3 cặp bị `eta.json` đếm thừa 1 khách. Đó là lỗi đếm: dự đoán còn một mục công bố đúng lúc trả (pub = A), bộ đọc hệ thật
+    bỏ mục này. Sai số ETA của các khách đó trùng hoàn toàn.
+
+### 3.4 Cổng trên máy thuê, và so Linux với Windows
+
+- **Cổng trên máy thuê** (`results/gates-f14/`, `results/gate-f16/`):
+  - Cổng B (2 nhánh chính) và cổng C (2 nhánh tách phần `SHHZ71-CL`, `SHRC71-N`): mỗi cổng 4 job trên
+    `d20190919-vf-r0-w08` và `-w17`.
+  - Cổng F16: 2 nhánh chính trên `d20190920-vf-r0-w08` và `-w17`.
+  - Kết quả: cổng B 1.424/1.424 khách trùng, cổng C 1.410/1.410, cổng F16 1.412/1.412. Mọi mặt đã so đều 4/4.
+- **So Linux với Windows:** 3 job cùng commit `0eb9a6ca` có chạy ở cả hai nơi (Windows ở nhà ngày 04/11, Linux trên máy
+  thuê). Kết quả ở `results/linux-vs-windows.json` và `results/linux-vs-windows-evidence-only.json`; script
+  `scripts/session/os_compare.py` và `os_compare_evidence_only.py`.
+  - Bằng chứng trùng ở mọi trường (`audit.table`, sự kiện, lần dời, lớp Shadow), trừ đường dẫn và các băm của transcript.
+  - Với 2 job còn transcript ở cả hai nơi: mọi khung trùng sau khi bỏ các khóa `*Hash`/`*Sha256`. Các băm khác nhau chỉ
+    vì đường dẫn `networkDirectory` trong cấu hình.
 
 ## 4. ETA và đảo hứa theo nhánh (hệ thật)
 
@@ -120,7 +167,11 @@ Mỗi cặp dưới đây lệch đúng 1 khách. Lấy từ `results/f16-report
 | Khách đảo 1 / 2 / ≥ 3 lần | 1.151 / 574 / 195 | 524 / 215 / 35 | 1.310 / 696 / 200 | 596 / 264 / 31 |
 | Tối đa số lần đảo của một khách | 7 | 5 | 7 | 5 |
 
-Nguồn: `eta.json` và `reversals.json` trong `results/f14-report/` và `results/f16-report/`. Ở F16, phía dự đoán trùng hệ thật tới 3 chữ số thập phân. Ở F14,
+Nguồn: `eta.json` và `reversals.json` trong `results/f14-report/` và `results/f16-report/`.
+
+**Mẫu số.** `reversals.json` chỉ đếm khách được phục vụ trong dự đoán và có mặt ở hệ thật. Vì thế F14 Elmi là 29.205, bằng
+29.214 trừ 9 khách chỉ có ở dự đoán, cả 9 đều ở cặp lớn. Tính trên đủ 29.213 khách được phục vụ thật thì visRev60 và số lần
+đảo vẫn như cũ. Ở F16, phía dự đoán trùng hệ thật tới 3 chữ số thập phân. Ở F14,
 dự đoán của Elmi khác hệ thật ở chữ số thứ ba (ví dụ visRev60 1.921 so với 1.920).
 
 ## 5. Bảng 30 ngày: ta − Elmi mỗi ngày
@@ -162,8 +213,11 @@ hơn / ta thấp hơn).
 
 Nguồn: `results/d1-split.md` và `results/d1-gap.txt` (`d1_split.py`, `scripts/session/d1_gap.py`).
 
-- **Hai nhánh tách phần:** `FS-G2-SHHZ71-CL` (hàng rào Elmi + dự báo) và `FS-G2-SHRC71-N` (luật C, không dự báo). Hai
-  nhánh này chỉ có trong bộ mô phỏng, không chạy trên hệ thật.
+- **Hai nhánh tách phần:** `FS-G2-SHHZ71-CL` (hàng rào Elmi + dự báo) và `FS-G2-SHRC71-N` (luật C, không dự báo).
+  - Trên hệ thật, hai nhánh này chỉ chạy ở cổng C: 4 job trên `d20190919-vf-r0-w08` và `-w17`. Cả 1.410/1.410 khách trùng
+    dự đoán (mục 3.4).
+  - Số 30 ngày của chúng là dự đoán adapter.
+  - Sửa ngày 06/11: bản đầu ghi sai rằng hai nhánh này "không chạy trên hệ thật".
 - **Nguồn dự đoán adapter của hai nhánh này:**
   - F16: nằm trong tệp đã khóa trước khi chạy.
   - F14: sinh ngày 05/11 lúc 16:39–18:01, sau khi F14 đã chạy thật, vào
@@ -202,8 +256,11 @@ lớn hơn khoảng 2 khách/ngày. Cơ chế gây ra khoảng cách này trong 
 ## 7. Giới hạn
 
 - Tiêu chí "trùng từng khách trên mọi cặp" không đạt ở cả hai đợt. Phải báo đúng như vậy.
-- Chỉ chứng minh được nguyên nhân cho cặp lệch lớn của F14. Các lệch nhỏ còn lại chưa kiểm.
-- Hai nhánh tách phần của D1 chỉ có trong bộ mô phỏng, không chạy trên hệ thật.
+- Chỉ cặp lệch lớn của F14 được chứng minh bằng transcript. Cặp thứ hai và các lệch nhỏ (mục 3.3) được tả bằng bằng chứng;
+  dấu vết khớp cùng cơ chế quyết định thêm ở cùng thời điểm, nhưng chưa chứng minh từng ca.
+- Hai nhánh tách phần chỉ được kiểm trên hệ thật ở 4 job cổng C. Số 30 ngày của chúng là dự đoán adapter.
+- Các chỉ số khác của báo cáo plain (khách đến sớm, vi phạm hạn chót, khách bảo đảm bị trễ, khách bị dời giờ, vượt sổ) chưa
+  tính cho adapter hay hệ thật.
 - Không dùng các kết quả này để nhận là mới các ý: chèn động, giới hạn ETA, gán lại, độ giống tuyến, cam kết muộn, nhất
   quán thời gian hay sự hài lòng của khách (xem `docs/03-related-work-and-claim-boundary.md`).
 

@@ -1,0 +1,7 @@
+returncode=0
+1-riders: returncode 0
+2-sequences: returncode 0
+3-shadow: returncode 0
+4-eta: returncode 0
+5-reversals: returncode 0
+{"allExact": true, "returnCodes": {"1-riders": 0, "2-sequences": 0, "3-shadow": 0, "4-eta": 0, "5-reversals": 0}}

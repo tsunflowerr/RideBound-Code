@@ -1,0 +1,20 @@
+{
+ "FS-G2-SHRC71-CL-d20190919-vf-r0-w17": {
+  "evidenceDifferingPaths": [
+   "/audit/summary/transcript",
+   "/transcript/fileBytes",
+   "/transcript/fileSha256",
+   "/transcript/frames",
+   "/transcript/uncompressedSha256"
+  ],
+  "auditTableRows": [
+   186878,
+   186878
+  ],
+  "auditTableEqual": true,
+  "eventsEqual": true,
+  "movesEqual": true,
+  "shadowAllocationsEqual": true,
+  "finalOnlineStateEqual": true
+ }
+}

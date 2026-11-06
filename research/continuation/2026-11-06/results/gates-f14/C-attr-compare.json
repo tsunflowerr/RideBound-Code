@@ -1,0 +1,74 @@
+{
+  "finishedJobs": 4,
+  "cellArmsCompared": 4,
+  "cellArmsExact": 4,
+  "riders": 1410,
+  "ridersIdentical": 1410,
+  "movesEqual": 4,
+  "g2CellArms": 4,
+  "byArm": {
+    "FS-G2-SHHZ71-CL": {
+      "cellArms": 2,
+      "exact": 2
+    },
+    "FS-G2-SHRC71-N": {
+      "cellArms": 2,
+      "exact": 2
+    }
+  },
+  "realRidersTsv": "/rb/runs/gates-report/C-attr-real-riders.tsv",
+  "results": [
+    {
+      "arm": "FS-G2-SHHZ71-CL",
+      "cell": "d20190919-vf-r0-w08",
+      "riders": 331,
+      "identical": 331,
+      "exact": true,
+      "onlyReal": 0,
+      "onlyEmulator": 0,
+      "firstDifference": null,
+      "movesReal": 20,
+      "movesEmulator": 20,
+      "maxMovesPerDecision": 1
+    },
+    {
+      "arm": "FS-G2-SHHZ71-CL",
+      "cell": "d20190919-vf-r0-w17",
+      "riders": 381,
+      "identical": 381,
+      "exact": true,
+      "onlyReal": 0,
+      "onlyEmulator": 0,
+      "firstDifference": null,
+      "movesReal": 16,
+      "movesEmulator": 16,
+      "maxMovesPerDecision": 1
+    },
+    {
+      "arm": "FS-G2-SHRC71-N",
+      "cell": "d20190919-vf-r0-w08",
+      "riders": 332,
+      "identical": 332,
+      "exact": true,
+      "onlyReal": 0,
+      "onlyEmulator": 0,
+      "firstDifference": null,
+      "movesReal": 6,
+      "movesEmulator": 6,
+      "maxMovesPerDecision": 1
+    },
+    {
+      "arm": "FS-G2-SHRC71-N",
+      "cell": "d20190919-vf-r0-w17",
+      "riders": 366,
+      "identical": 366,
+      "exact": true,
+      "onlyReal": 0,
+      "onlyEmulator": 0,
+      "firstDifference": null,
+      "movesReal": 6,
+      "movesEmulator": 6,
+      "maxMovesPerDecision": 1
+    }
+  ]
+}

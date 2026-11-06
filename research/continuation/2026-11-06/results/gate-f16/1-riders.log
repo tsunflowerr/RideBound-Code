@@ -1,0 +1,6 @@
+returncode=0
+read FS-G2-SHHZ71-N-d20190920-vf-r0-w08
+read FS-G2-SHHZ71-N-d20190920-vf-r0-w17
+read FS-G2-SHRC71-CL-d20190920-vf-r0-w08
+read FS-G2-SHRC71-CL-d20190920-vf-r0-w17
+jobs 4; cell-arms exact 4/4; riders identical 1412/1412; G2 moves equal 4/4

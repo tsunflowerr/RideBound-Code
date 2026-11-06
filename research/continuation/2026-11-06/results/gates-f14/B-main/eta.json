@@ -1,0 +1,98 @@
+{
+ "cellArms": 4,
+ "exact": 4,
+ "rows": [
+  {
+   "role": "FS-G2-SHHZ71-N",
+   "cell": "d20190919-vf-r0-w08",
+   "servedEmulator": 335,
+   "servedReal": 335,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHHZ71-N",
+   "cell": "d20190919-vf-r0-w17",
+   "servedEmulator": 379,
+   "servedReal": 379,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHRC71-CL",
+   "cell": "d20190919-vf-r0-w08",
+   "servedEmulator": 339,
+   "servedReal": 339,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  },
+  {
+   "role": "FS-G2-SHRC71-CL",
+   "cell": "d20190919-vf-r0-w17",
+   "servedEmulator": 371,
+   "servedReal": 371,
+   "differing": 0,
+   "first": [],
+   "exact": true
+  }
+ ],
+ "emulator": {
+  "FS-G2-SHHZ71-N": {
+   "cells": 2,
+   "servedRiders": 714,
+   "etaErrorMeanMin": 0.731,
+   "etaErrorMedianMin": 0.191,
+   "etaErrorP90Min": 1.962,
+   "shareEtaError2Min": 0.098,
+   "shareEtaError5Min": 0.0322,
+   "initialErrorMeanMin": 3.206,
+   "visRev60": 57,
+   "reversalCount60": 85,
+   "tv5Hours": 49.86
+  },
+  "FS-G2-SHRC71-CL": {
+   "cells": 2,
+   "servedRiders": 710,
+   "etaErrorMeanMin": 0.594,
+   "etaErrorMedianMin": 0.115,
+   "etaErrorP90Min": 1.793,
+   "shareEtaError2Min": 0.0915,
+   "shareEtaError5Min": 0.0268,
+   "initialErrorMeanMin": 2.71,
+   "visRev60": 27,
+   "reversalCount60": 41,
+   "tv5Hours": 37.76
+  }
+ },
+ "real": {
+  "FS-G2-SHHZ71-N": {
+   "cells": 2,
+   "servedRiders": 714,
+   "etaErrorMeanMin": 0.731,
+   "etaErrorMedianMin": 0.191,
+   "etaErrorP90Min": 1.962,
+   "shareEtaError2Min": 0.098,
+   "shareEtaError5Min": 0.0322,
+   "initialErrorMeanMin": 3.206,
+   "visRev60": 57,
+   "reversalCount60": 85,
+   "tv5Hours": 49.86
+  },
+  "FS-G2-SHRC71-CL": {
+   "cells": 2,
+   "servedRiders": 710,
+   "etaErrorMeanMin": 0.594,
+   "etaErrorMedianMin": 0.115,
+   "etaErrorP90Min": 1.793,
+   "shareEtaError2Min": 0.0915,
+   "shareEtaError5Min": 0.0268,
+   "initialErrorMeanMin": 2.71,
+   "visRev60": 27,
+   "reversalCount60": 41,
+   "tv5Hours": 37.76
+  }
+ }
+}

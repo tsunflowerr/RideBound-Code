@@ -1,0 +1,29 @@
+returncode=0
+{
+ "FS-G2-SHHZ71-N": {
+  "servedRiders": 714,
+  "visRev60": 57,
+  "reversalCount60": 85,
+  "ridersWith": {
+   "0": 657,
+   "1": 39,
+   "2": 11,
+   "3+": 7
+  },
+  "maxPerRider": 5,
+  "cells": 2
+ },
+ "FS-G2-SHRC71-CL": {
+  "servedRiders": 710,
+  "visRev60": 27,
+  "reversalCount60": 41,
+  "ridersWith": {
+   "0": 683,
+   "1": 16,
+   "2": 8,
+   "3+": 3
+  },
+  "maxPerRider": 3,
+  "cells": 2
+ }
+}

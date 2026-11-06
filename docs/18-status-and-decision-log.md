@@ -6395,6 +6395,27 @@ Phần F14 của cùng gói đã trùng từ 26/10 (ADR-087).
   - 5 tệp chép mã wf15 vẫn chưa đưa lên: hệ thống chặn bước chép vào repo công khai, chờ chủ quyết.
   - Không đưa lên vì quá nặng: chuỗi giờ trả (125 và 147 MB; nén vẫn 41 và 49 MB) và tệp ETA theo thời gian (83–195 MB
     dù đã nén). Băm ghi trong báo cáo.
+- **Máy công ty hỏi 6 câu (nhánh `company/questions-2026-11-06`); máy nhà đã trả lời trong `HOI-DAP.md` (06/11).**
+  - **Sửa báo cáo:**
+    - F14 có **hai** cặp lệch. Cặp thứ hai là Elmi `d20191218-vf-r1-w08`, 1 khách lệch 223 ms ở lần dời cam kết, do hệ
+      thật công bố hai lần cùng mili giây.
+    - Hai nhánh tách phần **có** chạy trên hệ thật ở cổng C: 4 job, 1.410/1.410 khách trùng. Bản đầu ghi sai là "không
+      chạy".
+  - **Lệch nhỏ** (F14 118 khách, F16 225 khách):
+    - hoặc một giá trị đổi rồi trùng lại ngay, phần lớn lệch ≤ 1 ms;
+    - hoặc thêm hay thiếu lần công bố, luôn ở thời điểm có hai lần công bố cùng mili giây.
+
+    Không đổi visRev60 hay số lần đảo. Ngoài cặp lớn, không khách nào đổi lớp Shadow.
+  - **Lỗi đếm của `eta_metrics.py compare`:** 3 cặp bị đếm thừa 1 khách. Dự đoán còn mục công bố đúng lúc trả (pub = A),
+    bộ đọc hệ thật bỏ mục này. Sai số ETA không đổi.
+  - **Linux so với Windows:** 3 job cùng commit `0eb9a6ca` có bằng chứng trùng mọi trường. Với 2 job còn transcript ở cả
+    hai nơi, mọi khung trùng sau khi bỏ các khóa băm. Các băm khác chỉ vì `networkDirectory`.
+  - **Chờ chủ quyết:**
+    - Q1: 5 chỉ số plain còn lại (đến sớm, vi phạm hạn chót, khách bảo đảm trễ, khách bị dời giờ, vượt sổ) cho adapter và
+      hệ thật.
+    - Q2: tách khoảng cách plain/adapter theo từng công tắc, và N7 ở chế độ adapter.
+  - **Máy thuê:** ssh bị từ chối lúc 12:15 ngày 06/11. Chủ cần xác nhận trạng thái Destroyed. Địa chỉ máy vẫn nằm trong
+    nhật ký và các script `watch_*.sh` trên nhánh công khai.
 
 ## Cập nhật khóa luận — 2026-10-16T00:09:00.907016+07:00
 

@@ -1,0 +1,6 @@
+returncode=0
+{"role": "FS-G2-SHHZ71-N", "cell": "d20190919-vf-r0-w08", "ridersEmulator": 335, "ridersReal": 335, "notOnBothSides": 0, "classDiffers": 0, "scoreDiffers": 0, "guaranteedReal": 214, "guaranteedEmulator": 214, "first": [], "exact": true}
+{"role": "FS-G2-SHHZ71-N", "cell": "d20190919-vf-r0-w17", "ridersEmulator": 379, "ridersReal": 379, "notOnBothSides": 0, "classDiffers": 0, "scoreDiffers": 0, "guaranteedReal": 248, "guaranteedEmulator": 248, "first": [], "exact": true}
+{"role": "FS-G2-SHRC71-CL", "cell": "d20190919-vf-r0-w08", "ridersEmulator": 339, "ridersReal": 339, "notOnBothSides": 0, "classDiffers": 0, "scoreDiffers": 0, "guaranteedReal": 219, "guaranteedEmulator": 219, "first": [], "exact": true}
+{"role": "FS-G2-SHRC71-CL", "cell": "d20190919-vf-r0-w17", "ridersEmulator": 371, "ridersReal": 371, "notOnBothSides": 0, "classDiffers": 0, "scoreDiffers": 0, "guaranteedReal": 244, "guaranteedEmulator": 244, "first": [], "exact": true}
+{"cellArms": 4, "exact": 4, "riders": 1424}

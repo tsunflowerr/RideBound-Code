@@ -1,0 +1,6 @@
+returncode=0
+{"role": "FS-G2-SHHZ71-N", "cell": "d20190920-vf-r0-w08", "riders": 336, "ridersReal": 336, "sequencesIdentical": 336, "differing": 0, "firstDifferences": [], "atDropRevisionsLeftOut": 336, "visRev60Emulator": 9, "visRev60Real": 9, "tv5Emulator": 71587361, "tv5Real": 71587361, "exact": true}
+{"role": "FS-G2-SHHZ71-N", "cell": "d20190920-vf-r0-w17", "riders": 380, "ridersReal": 380, "sequencesIdentical": 380, "differing": 0, "firstDifferences": [], "atDropRevisionsLeftOut": 379, "visRev60Emulator": 42, "visRev60Real": 42, "tv5Emulator": 102062320, "tv5Real": 102062320, "exact": true}
+{"role": "FS-G2-SHRC71-CL", "cell": "d20190920-vf-r0-w08", "riders": 326, "ridersReal": 326, "sequencesIdentical": 326, "differing": 0, "firstDifferences": [], "atDropRevisionsLeftOut": 325, "visRev60Emulator": 4, "visRev60Real": 4, "tv5Emulator": 55557606, "tv5Real": 55557606, "exact": true}
+{"role": "FS-G2-SHRC71-CL", "cell": "d20190920-vf-r0-w17", "riders": 370, "ridersReal": 370, "sequencesIdentical": 370, "differing": 0, "firstDifferences": [], "atDropRevisionsLeftOut": 370, "visRev60Emulator": 26, "visRev60Real": 26, "tv5Emulator": 86585453, "tv5Real": 86585453, "exact": true}
+{"cellArms": 4, "exact": 4, "riders": 1412, "differing": 0, "visRev60Emulator": 81, "visRev60Real": 81, "tv5Emulator": 315792740, "tv5Real": 315792740}
