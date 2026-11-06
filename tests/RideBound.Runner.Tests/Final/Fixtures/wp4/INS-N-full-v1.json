@@ -1,0 +1,58 @@
+{
+  "configurationVersion": "1.0.0",
+  "policyId": "ridebound-hard-vector",
+  "policyVersion": "tier3-exploratory-v1",
+  "initialPromiseTrigger": "booking-confirmation",
+  "emitSolverExecutionEvidence": false,
+  "commitmentRecovery": "no-worse-than-reference-v1",
+  "lateBoarding": "record-v1",
+  "selectionObjectiveOrder": "cost-first",
+  "candidateGeneration": {
+    "maximumCandidatesPerVehicle": 100,
+    "maximumNewRequestsPerVehicle": 2,
+    "exactSmallMode": false,
+    "scheduleStrategy": "earliest-feasible",
+    "maximumExplorationWorkUnits": 10000,
+    "retentionStrategy": "service-set-stability-portfolio-v1"
+  },
+  "solverExecution": {
+    "adapterVersion": "google-ortools-9.15.6755",
+    "maximumGenerationWorkUnits": 5000000,
+    "maximumValidationWorkUnits": 5000000,
+    "maximumSolverWorkUnits": 10000000,
+    "maximumSolverDeterministicTimeMicros": 30000000,
+    "randomSeed": 7
+  },
+  "shadowAllocation": {
+    "networkDirectory": "network",
+    "distancesSha256": "063c1ff4e2114b5f6bc32b7b1e225c8a0a30929ba8327cbc4ac242f7b712111a",
+    "graphSha256": "aa16dc6bbb8d5835feaf630468067bfd0e4bd3120a8cfe4124e2dab406f46dbc",
+    "kappa": "3.0742501276388534",
+    "factors": [
+      "1",
+      "1.063821"
+    ],
+    "pickupWindowMs": 600000,
+    "strideMs": 60000,
+    "intervalMs": 600000,
+    "alpha": "0.15",
+    "phi": "0.11772821338238676",
+    "sampled": 512,
+    "priorOrigin": [
+      3,
+      1
+    ],
+    "priorDestination": [
+      2,
+      4
+    ],
+    "threshold": "0.01",
+    "binMs": 900000,
+    "networkNodes": {
+      "n-0": 0,
+      "n-1": 1,
+      "n-2": 2,
+      "n-3": 3
+    }
+  }
+}
