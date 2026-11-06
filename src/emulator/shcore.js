@@ -81,7 +81,7 @@ function makeCellCtx(rc, NET, task) {
 
 // T3 invariants for Shadow runs (+ T3a recording for every scored run)
 function checkInvariants(res, A, rec) {
-  const SH = MET.isShadow(A);
+  const SH = E.isShadow(A);
   const bad = [];
   for (const r of res.riders) {
     const e = rec.get(r.rq);
@@ -138,10 +138,10 @@ function runTask(task, NET) {
   }
   for (const key of task.arms) {
     const arm = E.parseArm(key), A = E.armOf(arm);
-    const SH = MET.isShadow(A);
+    const SH = E.isShadow(A);
     if (SH && mode === 'off') throw new Error('Shadow arm without scores');
     const o = { ...JSON.parse(JSON.stringify(LIB.CONFIGS[task.config])), arm, wallBudgetMs: 900000 };
-    const STRICT = A.code === 4 || A.code === 8 || A.code === 13;   // wf17: strict-fence arms (row field fenceTolMs = 0)
+    const STRICT = E.isStrictFence(A);   // wf17: strict-fence arms DLS EO SHF (row field fenceTolMs = 0)
     if (fc === 'CL' || fc === 'CLc') o.forecast = { prof, clipPickup: true };   // wf20: as r3drive.js mode CL (wf21: CLc = same, causal prof)
     let flatRatio = null;
     if (fc === 'PAD') {                                                     // wf21: flat pad through dispatch (wf17 CLF semantics)

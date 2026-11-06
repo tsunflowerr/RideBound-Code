@@ -5,6 +5,7 @@
 // in the micro-step before the promise (no class, budget, lock or admission yet) are counted in X_switchedPre. The old field
 // switchedRiders (any relocation) is unchanged.
 'use strict';
+const { isShadow } = require('./engine.js');   // SHF SHHZ SHRC
 
 function hasReversal(zs, th) {
   let last = 0;
@@ -12,7 +13,6 @@ function hasReversal(zs, th) {
   return false;
 }
 const median = a => { if (!a.length) return NaN; const s = a.slice().sort((x, y) => x - y); return s[Math.floor(s.length / 2)]; };
-const isShadow = A => A.code >= 13 && A.code <= 15;
 const budgetOfFor = A => r => (isShadow(A) ? r.bSH : A.alpha !== undefined ? Math.round(A.alpha * r.slk) : (A.name === 'U' ? null : A.B));
 
 // per-rider change statistics (SPEC 8.1 per-rider definitions); B = null means unlimited (U)
@@ -118,4 +118,4 @@ function metrics(res, A) {
   return m;
 }
 
-module.exports = { metrics, riderStats, hasReversal, isShadow, budgetOfFor };
+module.exports = { metrics, riderStats, hasReversal, budgetOfFor };
