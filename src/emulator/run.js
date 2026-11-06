@@ -6,8 +6,8 @@
 //   --fc N|CL (forecast mode, see shcore.js; row field mode; part of the resume key), --panel <label> (row field; part of the resume
 //   key), --prior <csv> (lambda prior file; default wf15/work/prior_prevhour.csv, needed for F16 days that wf15 never exported),
 //   at most 4 workers (default 4), forecast.js in the manifest code hashes, and the wf20 label.
-// wf17 COPY (r1-identity-fence-pad) of wf15/scripts/run_sh.js, extended only by --fence-tol <ms> (EO*/SHF*/DLS* arms; part of the
-// resume key and the row), --audit (exceedance histogram of the strict-fence arms), --variant <label> (part of the resume key and the
+// wf17 COPY (r1-identity-fence-pad) of wf15/scripts/run_sh.js, extended only by --fence-tol <ms> and --audit (both removed again,
+// see REMOVED; the row field fenceTolMs stays in the resume key and the row), --variant <label> (part of the resume key and the
 // row), default engine engine17, default 6 workers, code hashes of this copy in the manifest, and a job footer (wall, CPU, peak RSS,
 // largest heartbeat gap) appended to <out>.runs.ndjson.
 // wf15 driver (SPEC 6.3; derived from wf14/scripts/confirm.js): worker pool over (cell, dispatcher config) tasks, each running
@@ -22,21 +22,22 @@
 //             [--first-days n] [--cells cellA,cellB]
 //   configs   --configs INS,G2 (default both)
 //   arms      --arms U,EOHZ35,SHHZ50 (both configs) | --arms-INS ... --arms-G2 ...
-//             --x 0,10,...,100 | --x star   expands bare Shadow names (SHF, SHHZ, SHRC, SHNC) to SHHZ<x>; 'star' = frozen x*
+//             --x 0,10,...,100 | --x star   expands bare Shadow names (SHF, SHHZ, SHRC) to SHHZ<x>; 'star' = frozen x*
 //   scores    --score causal|off (default causal when any Shadow arm or --log is given, else off)
 //             --log  score logging also for non-Shadow arms (U-log runs)
 //   threshold --frozen frozen/shadow-params.json (x*, theta*, alphaS, strideMs); x = 0 and x = 100 need no threshold source
 //   params    --alphaS a (default: frozen, else results/alpha_calibration.json) --stride ms (default: frozen, else 0)
 //   output    --part label  --workers n (at most 4)
-// The research options --ref, --cmp-ref, --hashes, --truncate, --repeat, --order, --engine, --dump, --dump-arms, --pi and the
-// oracle and random score modes are removed (see REMOVED below), and the run manifest no longer lists code hashes.
+// The research options --ref, --cmp-ref, --hashes, --truncate, --repeat, --order, --engine, --dump, --dump-arms, --pi, --fence-tol,
+// --audit and the oracle and random score modes are removed (see REMOVED below), and the run manifest no longer lists code hashes.
+// The removed engine arms (NC OC RR FZ NCE OCE SHNC) fail in engine.parseArm with the same note.
 'use strict';
 const fs = require('fs'), path = require('path');
 const LIB = require('./shlib.js');
 const POOL = require('./pool.js');
 
-const SHADOW = ['SHF', 'SHHZ', 'SHRC', 'SHNC'];
-const isShadowKey = k => /^(SHF|SHHZ|SHRC|SHNC)\d+$/.test(k);
+const SHADOW = ['SHF', 'SHHZ', 'SHRC'];
+const isShadowKey = k => /^(SHF|SHHZ|SHRC)\d+$/.test(k);
 
 function parseArgs(argv) {
   const a = {};
@@ -51,7 +52,7 @@ const list = s => (s === undefined || s === true ? null : String(s).split(',').m
 const abs = p => path.resolve(LIB.WF, p);
 
 // options of the research driver that this copy no longer has: rejected, never silently ignored
-const REMOVED = ['ref', 'cmp-ref', 'hashes', 'truncate', 'repeat', 'order', 'engine', 'dump', 'dump-arms', 'pi'];
+const REMOVED = ['ref', 'cmp-ref', 'hashes', 'truncate', 'repeat', 'order', 'engine', 'dump', 'dump-arms', 'pi', 'fence-tol', 'audit'];
 const REMOVED_NOTE = 'removed; see commit ebca912 (branch research/final-real-runs-2026-11-06)';
 function rejectRemoved(args) {
   for (const k of REMOVED) if (k in args) throw new Error(`--${k}: ${REMOVED_NOTE}`);
@@ -119,7 +120,7 @@ function buildTasks(args) {
     const fcIndex = fcMode === 'CLc' ? (args['fc-index'] && args['fc-index'] !== true ? path.resolve(String(args['fc-index'])) : null) : null;
     if (fcMode === 'CLc' && !fcIndex) throw new Error('--fc CLc needs --fc-index <json>');
     tasks.push({ ...c, fc: fcMode, flat, fcIndex, panel: args.panel && args.panel !== true ? String(args.panel) : null, part: args.part || null, config, arms, scoreMode, thetas, alphaS, strideMs,
-      prior: pr, variant: args.variant && args.variant !== true ? String(args.variant) : null, fenceTolMs: args['fence-tol'] !== undefined ? Number(args['fence-tol']) : 0, audit: !!args.audit });
+      prior: pr, variant: args.variant && args.variant !== true ? String(args.variant) : null });
   }
   return { tasks, meta: { configs, scoreMode, alphaS, strideMs, frozen: args.frozen || null, cells: cells.length } };
 }
@@ -134,7 +135,7 @@ const isStrictKey = k => /^(EO|SHF|DLS)\d+$/.test(k);
 function rowParams(t, arm) {
   const SH = isShadowKey(arm), off = t.scoreMode === 'off';
   return { theta: SH ? t.thetas[arm] : null,
-    alphaS: off ? null : t.alphaS, strideMs: off ? null : (t.strideMs || 0), variant: t.variant || null, fenceTolMs: isStrictKey(arm) ? (t.fenceTolMs || 0) : null };
+    alphaS: off ? null : t.alphaS, strideMs: off ? null : (t.strideMs || 0), variant: t.variant || null, fenceTolMs: isStrictKey(arm) ? 0 : null };
 }
 const taskKey = (t, arm) => rowKey({ flatRatio: t.fc === 'PAD' ? t.flat[arm] : null, fcIndex: t.fc === 'CLc' ? path.basename(t.fcIndex) : null, mode: t.fc, panel: t.panel, cell: t.cell, config: t.config, scoreMode: t.scoreMode, arm, ...rowParams(t, arm) });
 

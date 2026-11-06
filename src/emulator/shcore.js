@@ -11,9 +11,10 @@
 //   prof = forecast.profile(day, w08 ? 32 : 68, 'prev4', wf7 accuracy-index-2019.json, 15)), set on the SAME opts object that carries
 //   opts.sscore, so Shadow scoring/classification and the forecast run together in one engine17 simulation. Row fields mode (= fc),
 //   panel, and sigR3 (r3drive.sigOf: rider fingerprint without the clipped shown pickup ETA) for the g2 gate. Nothing else changed.
-// wf17 COPY (r1-identity-fence-pad) of wf15/scripts/shcore.js: engine17.js; opt-in fence tolerance / audit for the strict-fence arms
-// (EO*, SHF*, DLS*: task.fenceTolMs, task.audit); row fields variant, fenceTolMs, audit, sig (rider fingerprint, same identity) and
-// sigX (identity-free rider fingerprint keyed by the scenario request id). Every metric is metrics_sh.metrics() unchanged.
+// wf17 COPY (r1-identity-fence-pad) of wf15/scripts/shcore.js: engine17.js; row fields variant, fenceTolMs, audit, sig (rider
+// fingerprint, same identity) and sigX (identity-free rider fingerprint keyed by the scenario request id). Every metric is
+// metrics_sh.metrics() unchanged. The opt-in fence tolerance and audit of the strict-fence arms (EO*, SHF*, DLS*) are removed (see
+// engine.js); their row fields stay so the row layout is unchanged: fenceTolMs = 0 for those arms (else null), audit = null.
 // wf15 worker-side core: one task = (cell, dispatcher config) x arms. Builds the cell's shareability-score context
 // (full-network scale kappa*f_b, local->global node map, causal lambda tables), wires opts.sscore per arm, runs the engine,
 // asserts the SPEC 9 T3/T7 invariants, and returns the metric rows.
@@ -79,7 +80,7 @@ function makeCellCtx(rc, NET, task) {
 }
 
 // T3 invariants for Shadow runs (+ T3a recording for every scored run)
-function checkInvariants(res, A, rec, tol = 0) {   // wf17: tol = the P1 fence tolerance of a strict-fence run (0 otherwise)
+function checkInvariants(res, A, rec) {
   const SH = MET.isShadow(A);
   const bad = [];
   for (const r of res.riders) {
@@ -95,16 +96,15 @@ function checkInvariants(res, A, rec, tol = 0) {   // wf17: tol = the P1 fence t
     for (const v of r.revs) {
       const p = v[7], e2 = v[8], c = v[2];
       if (A.code === 14 && !(p <= Math.max(r.p0 + r.bSH, e2))) bad.push('SHHZ admission violated ' + r.rq);
-      if (A.code === 13 && !(p <= r.p0 + r.bSH + tol || c === 0)) bad.push('SHF admission violated ' + r.rq);   // wf17: tolerance-aware (P1)
+      if (A.code === 13 && !(p <= r.p0 + r.bSH || c === 0)) bad.push('SHF admission violated ' + r.rq);
     }
-    if (A.code === 16 && r.net > r.bSH) bad.push('SHNC net above budget ' + r.rq);
   }
   for (const [rq, e] of rec) if (e.dup) bad.push('scored twice ' + rq);
   return bad;
 }
 
 // task: { file, cell, day, win, rs, set, part, config, arms, scoreMode ('off'|'causal'), thetas {armKey: theta}, alphaS, strideMs,
-//         prior {O, D}, fc, flat, fcIndex, panel, variant, fenceTolMs, audit }
+//         prior {O, D}, fc, flat, fcIndex, panel, variant }
 function runTask(task, NET) {
   const t0 = Date.now();
   const rc = readCell(task.file);
@@ -141,9 +141,7 @@ function runTask(task, NET) {
     const SH = MET.isShadow(A);
     if (SH && mode === 'off') throw new Error('Shadow arm without scores');
     const o = { ...JSON.parse(JSON.stringify(LIB.CONFIGS[task.config])), arm, wallBudgetMs: 900000 };
-    const STRICT = A.code === 4 || A.code === 8 || A.code === 13;   // wf17: strict-fence arms (P1 knobs apply only to these)
-    if (STRICT && task.fenceTolMs) o.fenceTolMs = task.fenceTolMs;
-    if (STRICT && task.audit) o.audit = true;
+    const STRICT = A.code === 4 || A.code === 8 || A.code === 13;   // wf17: strict-fence arms (row field fenceTolMs = 0)
     if (fc === 'CL' || fc === 'CLc') o.forecast = { prof, clipPickup: true };   // wf20: as r3drive.js mode CL (wf21: CLc = same, causal prof)
     let flatRatio = null;
     if (fc === 'PAD') {                                                     // wf21: flat pad through dispatch (wf17 CLF semantics)
@@ -181,18 +179,18 @@ function runTask(task, NET) {
     const ms = Date.now() - ts;
     let inv = [];
     if (rec) {
-      inv = checkInvariants(res, A, rec, STRICT ? (task.fenceTolMs || 0) : 0);
+      inv = checkInvariants(res, A, rec);
       if (inv.length) throw new Error(`invariant violations ${task.cell} ${task.config} ${key}: ${inv.length} e.g. ${inv.slice(0, 3).join('; ')}`);
     }
     const msScore = scorer ? Number(scorer.stats.ns - st0.ns) / 1e6 : 0;
     const row = { panel: task.panel || null, part: task.part, set: task.set, cell: task.cell, day: task.day, win: task.win, rs: task.rs, config: task.config, mode: fc, arm: key,
       scoreMode: mode, x: SH ? A.x : null, theta: SH ? LIB.thetaToJson(theta) : null, pi: null,   // pi: share of the removed random mode
       alphaS: mode !== 'off' ? task.alphaS : null, strideMs: mode !== 'off' ? (task.strideMs || 0) : null, engine: 'engine17',
-      variant: task.variant || null, fenceTolMs: STRICT ? (task.fenceTolMs || 0) : null, label: LABEL,
+      variant: task.variant || null, fenceTolMs: STRICT ? 0 : null, label: LABEL,
       ms, msScore: Math.round(msScore), scoreCalls: scorer ? scorer.stats.calls - st0.calls : 0, scoreInstants: scorer ? scorer.stats.instants - st0.inst : 0,
       scoreArcCalls: scorer ? scorer.stats.arcCalls - st0.arcCalls : 0, scoreArcInstants: scorer ? scorer.stats.arcInstants - st0.arcInst : 0,
       ...MET.metrics(res, A) };
-    row.audit = res.audit || null;
+    row.audit = null;                                             // field of the removed fence audit (layout unchanged)
     row.sig = sha(JSON.stringify(res.riders.map(r => [r.rq, r.served, r.veh, r.p0, r.A, r.revs])));
     { const idOf = new Map(P.reqs.map(q => [q.rq, q.id]));
       row.sigX = sha(JSON.stringify(res.riders.map(r => [idOf.get(r.rq), r.served, r.veh, r.t0, r.p0, r.pk0, r.A, r.pickup, r.revs]).sort((a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0)))); }

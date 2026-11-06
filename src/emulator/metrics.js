@@ -1,5 +1,5 @@
 // wf15 (SPEC 8.1, 8.2): metrics() of wf14/scripts/confirm.js (= wf13/scripts/pilot.js), byte-identical for every old arm,
-// with ONE change: for Shadow arms (codes 13-16) budgetOf(r) = r.bSH (their per-rider budget; with A.B = 0 every rider would
+// with ONE change: for Shadow arms (codes 13-15) budgetOf(r) = r.bSH (their per-rider budget; with A.B = 0 every rider would
 // otherwise count as breached), and Shadow arms also report medBudget_s. New fields are appended after the old ones.
 // X_switched (G/A classes) counts riders relocated by G2 AFTER their first promise (r.switches - r.swP > 0); relocations chosen
 // in the micro-step before the promise (no class, budget, lock or admission yet) are counted in X_switchedPre. The old field
@@ -12,7 +12,7 @@ function hasReversal(zs, th) {
   return false;
 }
 const median = a => { if (!a.length) return NaN; const s = a.slice().sort((x, y) => x - y); return s[Math.floor(s.length / 2)]; };
-const isShadow = A => A.code >= 13 && A.code <= 16;
+const isShadow = A => A.code >= 13 && A.code <= 15;
 const budgetOfFor = A => r => (isShadow(A) ? r.bSH : A.alpha !== undefined ? Math.round(A.alpha * r.slk) : (A.name === 'U' ? null : A.B));
 
 // per-rider change statistics (SPEC 8.1 per-rider definitions); B = null means unlimited (U)

@@ -1,6 +1,8 @@
-// wf17 engine17.js = wf15/runner/engine.js + three opt-in patches (RUNPLAN 1.1): P1 fence tolerance (opts.fenceTolMs, opts.audit; ported
-// verbatim from wf16/a3 engine_tol.js), P2 G2 friction (reopt.g2PenaltyMs, reopt.g2MaxSwitches; a5 semantics), P3 closed-loop flat drift
-// (opts.forecast.flatRatio). Every knob at its default reproduces wf15.
+// wf17 engine17.js = wf15/runner/engine.js + the opt-in patch P3 closed-loop flat drift (opts.forecast.flatRatio; RUNPLAN 1.1).
+// Every option at its default reproduces wf15. The research arms and options that no kept result uses are removed and rejected
+// (see REMOVED below): arms NC OC RR FZ NCE OCE SHNC, shadowArms/pairs, trace, physMat, the G1/DR re-optimization roots, lock
+// modes ratchetFloor/none, tieMode, reoptTie, P1 fence tolerance/audit (fenceTolMs, audit) and P2 G2 friction (g2PenaltyMs,
+// g2MaxSwitches).
 // Generalized screening engine derived from the exact RideBound cost-first emulator (wf4/sim/sim.js).
 //
 // DEFAULT = exact RideBound Runner v3 semantics (insertion-only generator, exact final-confirmation pickup-ETA locks,
@@ -14,53 +16,57 @@
 //   stopP/stopD {r, kind, node, code, sid, body}), fleet [{id, node, capacity}], vehIdStr[], dwell, drainTimerMs, clockGuardMs.
 //
 // Options (opts):
-//   arm        trajectory arm {name, B (ms), rho} ; names U RC PS DLHZ DLS NC OC RR FZ (FZ = RC with B = 0)
-//   shadowArms state-matched counterfactual arms evaluated on the same candidate set at every decision
-//   pairs      [[keyA, keyB], ...] arm keys (trajectory key or shadow keys) for the discrimination counters
-//   reopt      { g1: cap (0 = off), dr: cap (0 = off), g2: cap (0 = off), g2Targets: max target vehicles (Infinity),
+//   arm        trajectory arm {name, B (ms)} ; names U RC PS DLHZ DLS (B), EO EOHZ RCE (alpha), SHF SHHZ SHRC (x)
+//   reopt      { g2: cap (0 = off), g2Targets: max target vehicles (Infinity),
 //                rootPairs: true (re-optimization roots are full alternative roots: single AND pair insertions, as B4) }
-//   lock       'exact' (RideBound) | 'ratchetFloor' (pickup in [min(v, e), e], v = published pickup ETA) | 'ratchet' (<= e) | 'none'
+//   lock       'exact' (RideBound) | 'ratchet' (pickup <= e)
 //   poolCap    per-vehicle candidate pool cap incl. no-op (RideBound 100); re-optimization modes default to Infinity
-//   tieMode    'id' (RideBound candidate-id rank) | 'index'
-//   reoptTie   'prefer-keep' (default: among exactly tied plans prefer fewer re-optimization moves, then id rank) | 'id'
+//   Ties: candidate-id rank (RideBound); with re-optimization on, exactly tied plans first prefer fewer re-optimization moves.
 //   wallBudgetMs optional wall-clock budget for one run (default none). When exceeded the run throws an Error with
 //              code 'WALL_BUDGET' (a truncated run is never returned as if complete). Only read when set, so exact mode is unaffected.
 'use strict';
 const ID = require('./identity.js');
-let TOL = 0; // wf16/a3 audit: fence tolerance (ms) for the strict-fence arms DLS/EO/SHF (admission and forced-vehicle test); 0 = original
 
 const PICK = 0, DROP = 1;
 const ST_PENDING = 0, ST_ACCEPTED = 1, ST_WAITING = 2, ST_ONBOARD = 3, ST_DONE = 4, ST_REJECTED = 5;
 const MAX_NEW_REQUESTS = 2;      // maximumNewRequestsPerVehicle
 const MAX_WORK_UNITS = 10000;    // maximumExplorationWorkUnits (diagnostic only)
-const ARM_CODES = { U: 0, RC: 1, PS: 2, DLHZ: 3, DLS: 4, NC: 5, OC: 6, RR: 7, FZ: 1, EO: 8, EOHZ: 9, RCE: 10, NCE: 11, OCE: 12, SHF: 13, SHHZ: 14, SHRC: 15, SHNC: 16 };
+const ARM_CODES = { U: 0, RC: 1, PS: 2, DLHZ: 3, DLS: 4, EO: 8, EOHZ: 9, RCE: 10, SHF: 13, SHHZ: 14, SHRC: 15 };
 // wf15: Elmi et al. 2026 Shadow Control. At the first promise every rider gets a shareability score sS (opts.sscore.score) and
 // a frozen class aSH = opts.sscore.classOf(r) (0 guaranteed | 1 allowed); budget bSH = round(aSH * slk). SHF = strict deadline
-// p <= p0 + bSH (forced vehicles as EO), SHHZ = Hoerl-Zwick floor, SHRC = Rule C ledger, SHNC = net ledger, all with bSH.
+// p <= p0 + bSH (forced vehicles as EO), SHHZ = Hoerl-Zwick floor, SHRC = Rule C ledger, all with bSH.
 // wf13: Elmi et al. 2026 per-rider allowance B_r = round(alpha * slk_r), slk_r = residual drop slack at the first promise
 // (pk0 + maxRide - p0). EO = Ordinary Control as a deadline p <= p0 + B_r (strict, forced vehicles as DLS); EOHZ adds the
-// Hoerl-Zwick keep-route floor; RCE = Rule C ledger with the same B_r; NCE = net ledger (refunds) with the same B_r.
+// Hoerl-Zwick keep-route floor; RCE = Rule C ledger with the same B_r.
 const brOf = (A, r) => Math.round(A.alpha * r.slk);
+
+// arms and options of the research engine that this copy no longer has: rejected, never silently ignored
+const REMOVED_NOTE = 'removed; see commit ebca912 (branch research/final-real-runs-2026-11-06)';
+const REMOVED_ARMS = ['NC', 'OC', 'RR', 'FZ', 'NCE', 'OCE', 'SHNC'];
+const REMOVED_OPTS = ['shadowArms', 'pairs', 'trace', 'tieMode', 'reoptTie', 'fenceTolMs', 'audit'];
+const REMOVED_REOPT = ['g1', 'dr', 'g2PenaltyMs', 'g2MaxSwitches'];
+function rejectRemoved(P, opts) {
+  for (const k of REMOVED_OPTS) if (opts[k] !== undefined) throw new Error(`opts.${k}: ${REMOVED_NOTE}`);
+  for (const k of REMOVED_REOPT) if (opts.reopt && opts.reopt[k] !== undefined) throw new Error(`opts.reopt.${k}: ${REMOVED_NOTE}`);
+  if (opts.lock === 'ratchetFloor' || opts.lock === 'none') throw new Error(`opts.lock '${opts.lock}': ${REMOVED_NOTE}`);
+  if (P.physMat) throw new Error(`P.physMat (per-bin physical matrix, scenario travel.closure other than 'none'): ${REMOVED_NOTE}`);
+}
 
 function armKey(a) {
   if (a.key) return a.key;
   if (a.name === 'U') return 'U';
-  if (a.name === 'FZ') return 'FZ';
-  if (a.name === 'RR') return `RR${a.rho}_${a.B / 1000}`;
   if (a.alpha !== undefined) return a.name + Math.round(a.alpha * 100);
   if (a.x !== undefined) return a.name + Math.round(a.x * 100);          // wf15 Shadow arms: x in integer percent
   return a.name + a.B / 1000;
 }
 function parseArm(key) {
   if (key === 'U') return { key, name: 'U', B: 0 };
-  if (key === 'FZ') return { key, name: 'FZ', B: 0 };
-  let m = /^RR([0-9.]+)_(\d+)$/.exec(key);
-  if (m) return { key, name: 'RR', rho: Number(m[1]), B: Number(m[2]) * 1000 };
-  m = /^(EOHZ|EO|RCE|NCE|OCE)([0-9]+)$/.exec(key);
+  if (/^(NCE|OCE|SHNC|NC|OC|RR|FZ)/.test(key)) throw new Error(`arm ${key}: ${REMOVED_NOTE}`);
+  let m = /^(EOHZ|EO|RCE)([0-9]+)$/.exec(key);
   if (m) return { key, name: m[1], alpha: Number(m[2]) / 100, B: 0 };
-  m = /^(SHHZ|SHRC|SHNC|SHF)([0-9]+)$/.exec(key);                       // wf15 Shadow arms (x = guaranteed share in %)
+  m = /^(SHHZ|SHRC|SHF)([0-9]+)$/.exec(key);                            // wf15 Shadow arms (x = guaranteed share in %)
   if (m) return { key, name: m[1], x: Number(m[2]) / 100, B: 0 };
-  m = /^(RC|PS|DLHZ|DLS|NC|OC)(\d+)$/.exec(key);
+  m = /^(RC|PS|DLHZ|DLS)(\d+)$/.exec(key);
   if (!m) throw new Error('bad arm key ' + key);
   return { key, name: m[1], B: Number(m[2]) * 1000 };
 }
@@ -71,28 +77,22 @@ function admits(A, r, p, e) {
   const c = p - e;
   switch (A.code) {
     case 0: return true;                                                  // U
-    case 1: return r.Labs + Math.abs(c) <= A.B;                           // RC (FZ: B = 0)
+    case 1: return r.Labs + Math.abs(c) <= A.B;                           // RC
     case 2: return Math.abs(c) <= A.B;                                    // PS
     case 3: return p <= Math.max(r.p0 + A.B, e);                          // DL-HZ
-    case 4: return p <= r.p0 + A.B + TOL;                                       // DL-strict (recovery handled per vehicle)
-    case 5: return r.net + c <= A.B;                                      // NC (refunds)
-    case 6: return r.pos + (c > 0 ? c : 0) <= A.B;                        // OC (only later moves charged)
-    case 7: return r.pos + (c > 0 ? c : 0) + A.rho * (r.neg + (c < 0 ? -c : 0)) <= A.B; // RR_rho
-    case 8: return p <= r.p0 + brOf(A, r) + TOL;                               // EO (Elmi Ordinary Control, strict deadline)
+    case 4: return p <= r.p0 + A.B;                                       // DL-strict (recovery handled per vehicle)
+    case 8: return p <= r.p0 + brOf(A, r);                               // EO (Elmi Ordinary Control, strict deadline)
     case 9: return p <= Math.max(r.p0 + brOf(A, r), e);                  // EOHZ (Elmi + Hoerl-Zwick floor)
     case 10: return r.Labs + Math.abs(c) <= brOf(A, r);                  // RCE (Rule C with Elmi's per-rider budget)
-    case 11: return r.net + c <= brOf(A, r);                             // NCE (net ledger with Elmi's budget)
-    case 12: return r.pos + (c > 0 ? c : 0) <= brOf(A, r);              // OCE (only later moves charged, Elmi's budget)
-    case 13: return p <= r.p0 + r.bSH + TOL;                                   // wf15 SHF (Shadow Control, strict deadline)
+    case 13: return p <= r.p0 + r.bSH;                                   // wf15 SHF (Shadow Control, strict deadline)
     case 14: return p <= Math.max(r.p0 + r.bSH, e);                      // wf15 SHHZ (Shadow Control + Hoerl-Zwick floor)
     case 15: return r.Labs + Math.abs(c) <= r.bSH;                       // wf15 SHRC (Shadow allocation + Rule C ledger)
-    case 16: return r.net + c <= r.bSH;                                  // wf15 SHNC (Shadow allocation + net ledger)
     default: throw new Error('arm code');
   }
 }
-// Ledger update after a published revision with dispatch change c.
-function charge(r, c) { r.Labs += Math.abs(c); r.net += c; if (c > 0) r.pos += c; else r.neg -= c; }
-function armOf(a) { return { ...a, key: armKey(a), code: ARM_CODES[a.name], B: a.name === 'FZ' ? 0 : (a.B || 0), rho: a.rho === undefined ? 1 : a.rho }; }
+// Ledger update after a published revision with dispatch change c: sum |c| (Rule C) and the net sum (reported per rider).
+function charge(r, c) { r.Labs += Math.abs(c); r.net += c; }
+function armOf(a) { return { ...a, key: armKey(a), code: ARM_CODES[a.name], B: a.B || 0 }; }
 
 function treeSize(n, q) { // exploration nodes of one root with n mutable stops and q new requests (wf4 work formula)
   const P1 = (n + 1) * (n + 2) / 2, P2 = (n + 3) * (n + 4) / 2;
@@ -102,50 +102,38 @@ function treeSize(n, q) { // exploration nodes of one root with n mutable stops 
 function simulate(P, opts = {}) {
   const { N, T0, reqs, dwell } = P;
   const BIN = P.binMs;
+  rejectRemoved(P, opts);
   const arm0 = opts.arm || { name: 'U', B: 0 };
-  const arms = [arm0, ...(opts.shadowArms || [])].map(armOf);
-  if (arms.length > 30) throw new Error('too many arms');
-  for (const a of arms) if (a.code === undefined) throw new Error('unknown arm ' + a.name);
-  // wf15: opts.sscore = { score(ctx), classOf(r) } (Elmi's shareability score; NOT opts.shadowArms = counterfactual arms)
+  const arms = [armOf(arm0)];
+  for (const a of arms) if (a.code === undefined) throw new Error(REMOVED_ARMS.includes(a.name) ? `arm ${a.name}: ${REMOVED_NOTE}` : 'unknown arm ' + a.name);
+  // wf15: opts.sscore = { score(ctx), classOf(r) } (Elmi's shareability score)
   const SSC = opts.sscore || null;
-  const HAS_SH = arms.some(a => a.code >= 13 && a.code <= 16);
-  if (HAS_SH && !SSC) throw new Error('Shadow arms (SHF/SHHZ/SHRC/SHNC) need opts.sscore');
+  const HAS_SH = arms.some(a => a.code >= 13 && a.code <= 15);
+  if (HAS_SH && !SSC) throw new Error('Shadow arms (SHF/SHHZ/SHRC) need opts.sscore');
   if (HAS_SH && typeof SSC.classOf !== 'function') throw new Error('Shadow arms need opts.sscore.classOf');
   if (SSC && typeof SSC.score !== 'function') throw new Error('opts.sscore.score must be a function');
   const TA = arms[0]; // trajectory arm: its allocation gives the co-riders' managed drop headroom in the score (DC-1)
-  const budgetForScore = j => (TA.code === 0 ? Infinity : (TA.code >= 13 && TA.code <= 16) ? j.bSH : (TA.code >= 8 && TA.code <= 12) ? brOf(TA, j) : TA.B);
-  const armIdx = new Map(arms.map((a, i) => [a.key, i]));
-  const pairs = (opts.pairs || []).map(([x, y]) => {
-    if (!armIdx.has(x) || !armIdx.has(y)) throw new Error(`pair ${x}/${y} not among arms`);
-    return { key: x + '|' + y, i: armIdx.get(x), j: armIdx.get(y), decisions: 0, pruneDiff: 0, selDiff: 0, acceptDiff: 0 };
-  });
-  TOL = opts.fenceTolMs || 0;
-  const AUD = opts.audit ? { le1s: 0, le5s: 0, le60s: 0, gt60s: 0 } : null;
-  const ro = Object.assign({ g1: 0, dr: 0, g2: 0, g2Targets: Infinity, rootPairs: true }, opts.reopt || {});
-  const reoptOn = ro.g1 > 0 || ro.dr > 0 || ro.g2 > 0;
+  const budgetForScore = j => (TA.code === 0 ? Infinity : (TA.code >= 13 && TA.code <= 15) ? j.bSH : (TA.code >= 8 && TA.code <= 10) ? brOf(TA, j) : TA.B);
+  const ro = Object.assign({ g2: 0, g2Targets: Infinity, rootPairs: true }, opts.reopt || {});
+  const reoptOn = ro.g2 > 0;
   const lockMode = opts.lock || 'exact';
-  const LOCK = { exact: 0, ratchetFloor: 1, ratchet: 2, none: 3 }[lockMode];
-  if (LOCK === undefined) throw new Error('bad lock ' + lockMode);
+  if (lockMode !== 'exact' && lockMode !== 'ratchet') throw new Error('bad lock ' + lockMode);
+  const RATCHET = lockMode === 'ratchet';
   const poolCap = opts.poolCap !== undefined ? opts.poolCap : (reoptOn ? Infinity : 100);
-  const preferKeep = (opts.reoptTie || 'prefer-keep') === 'prefer-keep';
   const nR = reqs.length;
   const R = reqs.map((q, i) => ({
     i, q, state: ST_PENDING, veh: -1,
     t0: NaN, p0: NaN, pk0: NaN, pubP: NaN, pubPk: NaN, hasPromise: false,
-    Labs: 0, net: 0, pos: 0, neg: 0, slk: NaN,    // ledgers: sum|c|, sum c, sum c+, sum c-; slk = Elmi residual drop slack
+    Labs: 0, net: 0, slk: NaN,                    // ledgers: sum|c|, sum c; slk = Elmi residual drop slack
     k: 0, S: 0, M: 0, zs: [], notif: 0, maxPost: 0, revCount: 0, cs: [], revs: [], switches: 0,
     pickup: NaN, A: NaN, latePickup: false,
     sS: NaN, sSw: NaN, sSd: NaN, sInst: 0, aSH: -1, bSH: NaN, swP: -1, // wf15: shareability score, Shadow class/budget, relocations before the first promise (set once at the first promise)
   }));
   const V = P.fleet.map((f, vi) => ({ vi, id: f.id, idStr: P.vehIdStr[vi], cap: f.capacity, pos: { node: f.node, from: -1, to: -1, phi: 0 }, route: [], load: 0, busyUntil: -Infinity, onboard: [], planVersion: 0, executed: [], moveMs: 0, loadedMoveMs: 0 }));
   const vehOrder = V.slice().sort((a, b) => (a.idStr < b.idStr ? -1 : 1));
-  const diag = { decisions: 0, genDecisions: 0, workCapHits: 0, workCapHitsBase: 0, vehDecisions: 0, poolCapHits: 0, poolOver100: 0, maxSuffix: 0, microsteps: 0, deferred: 0, forcedVehicleDecisions: 0, tieDecisions: 0, tieBreaksByIdentity: 0, relocations: 0, reoptChosen: 0, reoptChosenG1: 0, reoptChosenDR: 0, candidates: 0, roots: 0, maxPool: 0, rootOnly: 0, rootOnlyLockOk: 0, rootOnlyCheaper: 0, rootOnlyCheaperLockOk: 0 };
-  const shadowDiff = {}, shadowAcceptDiff = {};
-  const trace = opts.trace ? [] : null;
+  const diag = { decisions: 0, genDecisions: 0, workCapHits: 0, vehDecisions: 0, poolCapHits: 0, poolOver100: 0, maxSuffix: 0, microsteps: 0, deferred: 0, forcedVehicleDecisions: 0, tieDecisions: 0, tieBreaksByIdentity: 0, relocations: 0, reoptChosen: 0, candidates: 0, maxPool: 0, rootOnly: 0, rootOnlyLockOk: 0, rootOnlyCheaper: 0, rootOnlyCheaperLockOk: 0 };
+  // physical travel time = T0 x factor, evaluated in the same floating-point order as wf4/sim/sim.js (exactness)
   const physF = (bin, from) => P.physFactor(bin, from);
-  // optional per-bin physical matrix (scenario travel.closure = shortest-path); otherwise T0 x factor, evaluated in the
-  // same floating-point order as wf4/sim/sim.js (exactness)
-  const PM = P.physMat ? b => P.physMat(b) : null;
   const binOf = t => Math.floor(t / BIN);
   // wf7 closed-loop forecast: opts.forecast = { prof: absolute factor profile per sim bin (held after the last), clipPickup }.
   // The Runner integrates every projected leg along weight(b) = 1 in the bin of "now" (fb0), prof[b]/prof[fb0] after
@@ -175,11 +163,6 @@ function simulate(P, opts = {}) {
     const b = binOf(t);
     const s = v.route[0].node;
     const p = v.pos;
-    if (PM) {
-      const M = PM(b);
-      if (p.from < 0) return p.node === s ? 0 : M[p.node * N + s];
-      return (1 - p.phi) * M[p.from * N + p.to] + (p.to === s ? 0 : M[p.to * N + s]);
-    }
     if (p.from < 0) return p.node === s ? 0 : T0[p.node * N + s] * physF(b, p.node);
     const rem = (1 - p.phi) * T0[p.from * N + p.to] * physF(b, p.from);
     return rem + (p.to === s ? 0 : T0[p.to * N + s] * physF(b, p.to));
@@ -212,7 +195,7 @@ function simulate(P, opts = {}) {
       if (p.node === s) { processStops(v, tn); return; }
       p.from = p.node; p.to = s; p.phi = 0; p.node = -1;
     }
-    const full = PM ? PM(b)[p.from * N + p.to] : T0[p.from * N + p.to] * physF(b, p.from);
+    const full = T0[p.from * N + p.to] * physF(b, p.from);
     const need = (1 - p.phi) * full;
     if (dt < need - 1e-6) { p.phi += dt / full; v.moveMs += dt; if (v.load) v.loadedMoveMs += dt; return; }
     v.moveMs += need; if (v.load) v.loadedMoveMs += need;
@@ -224,7 +207,7 @@ function simulate(P, opts = {}) {
       processStops(v, tn);
       return;
     }
-    const full2 = PM ? PM(b)[at * N + s] : T0[at * N + s] * physF(b, at);
+    const full2 = T0[at * N + s] * physF(b, at);
     if (dt >= full2 - 1e-6) {
       if (dt - full2 > 1e-3) throw new Error('overshoot after pass-through');
       v.moveMs += dt; if (v.load) v.loadedMoveMs += dt;
@@ -293,9 +276,7 @@ function simulate(P, opts = {}) {
         if (wantSlack) { localSlack[k] = r.q.latest - arr; waitArr[k] = ss - arr; }
         if (lockOk && r.hasPromise && r.state === ST_WAITING) {
           const e = ePk[s.r];
-          if (LOCK === 0) { if (ss !== e) lockOk = false; }
-          else if (LOCK === 1) { if (ss > e || ss < Math.min(r.pubPk, e)) lockOk = false; }
-          else if (LOCK === 2) { if (ss > e) lockOk = false; }
+          if (RATCHET ? ss > e : ss !== e) lockOk = false;   // exact: pickup ETA unchanged; ratchet: not later
         }
       } else {
         ss = arr;
@@ -407,42 +388,6 @@ function simulate(P, opts = {}) {
     }
     return res;
   }
-  const fpOf = route => { let s = ''; for (const x of route) s += x.code + ','; return s; };
-  const sameRoute = (a, b) => a.length === b.length && a.every((x, i) => x === b[i]);
-
-  // re-optimization roots of one vehicle (B4 = G1 semantics: WaitingIncumbentRepairSeedBuilder.cs)
-  function reoptRoots(v) {
-    const roots = [];
-    const seen = new Set([fpOf(v.route)]);
-    const push = (route, rep) => { const fp = fpOf(route); if (seen.has(fp)) return; seen.add(fp); roots.push({ route, rep }); };
-    const route = v.route;
-    if (ro.g1 > 0) {
-      const elig = [];
-      route.forEach((s, idx) => { if (s.kind === PICK) { const r = R[s.r]; if ((r.state === ST_ACCEPTED || r.state === ST_WAITING) && r.veh === v.vi) elig.push({ ri: s.r, idx }); } });
-      elig.sort((a, b) => a.idx - b.idx || (R[a.ri].q.rq < R[b.ri].q.rq ? -1 : 1));
-      for (const { ri } of elig.slice(0, ro.g1)) {
-        const q = R[ri].q;
-        const without = route.filter(s => s.r !== ri);
-        for (const cand of insertionsOf(without, q.stopP, q.stopD)) if (!sameRoute(cand, route)) push(cand, { type: 'G1', ri });
-      }
-    }
-    if (ro.dr > 0) {
-      const elig = [];
-      route.forEach((s, idx) => { if (s.kind === DROP) elig.push({ ri: s.r, idx }); });
-      elig.sort((a, b) => a.idx - b.idx || (R[a.ri].q.rq < R[b.ri].q.rq ? -1 : 1));
-      for (const { ri } of elig.slice(0, ro.dr)) {
-        const sd = R[ri].q.stopD;
-        const without = route.filter(s => s !== sd);
-        const pIdx = without.indexOf(R[ri].q.stopP); // -1 when onboard
-        for (let pos = pIdx + 1; pos <= without.length; pos++) {
-          const cand = without.slice(0, pos).concat([sd], without.slice(pos));
-          if (!sameRoute(cand, route)) push(cand, { type: 'DR', ri });
-        }
-      }
-    }
-    return roots;
-  }
-
   const keyOfAdd = (add, Q) => (add.length === 0 ? '-' : add.length === 2 ? '01' : (add[0] === Q[0].i ? '0' : '1'));
   let uidCounter = 0;
 
@@ -471,14 +416,12 @@ function simulate(P, opts = {}) {
     if (Q.length || reoptOn) {
       if (Q.length) diag.genDecisions++;
       const wantSlack = poolCap !== Infinity;
-      const forced = arms.map(A => V.map(v => (A.code === 4 || A.code === 8 || A.code === 13) && v.route.some(s => s.kind === DROP && R[s.r].hasPromise && eDr[s.r] > R[s.r].p0 + TOL + (A.code === 8 ? brOf(A, R[s.r]) : A.code === 13 ? R[s.r].bSH : A.B))));
-      if (AUD && (arms[0].code === 4 || arms[0].code === 8 || arms[0].code === 13)) for (const v of V) if (forced[0][v.vi]) { let mx = -Infinity; for (const s of v.route) if (s.kind === DROP && R[s.r].hasPromise) { const A0 = arms[0]; const b = A0.code === 8 ? brOf(A0, R[s.r]) : A0.code === 13 ? R[s.r].bSH : A0.B; const ex = eDr[s.r] - R[s.r].p0 - b; if (ex > mx) mx = ex; } const k = mx <= 1000 ? 'le1s' : mx <= 5000 ? 'le5s' : mx <= 60000 ? 'le60s' : 'gt60s'; AUD[k]++; }
+      const forced = arms.map(A => V.map(v => (A.code === 4 || A.code === 8 || A.code === 13) && v.route.some(s => s.kind === DROP && R[s.r].hasPromise && eDr[s.r] > R[s.r].p0 + (A.code === 8 ? brOf(A, R[s.r]) : A.code === 13 ? R[s.r].bSH : A.B))));
       const NOOP = V.map(v => ({ uid: -1 - v.vi, vi: v.vi, noop: true, route: v.route, add: [], rep: null, cost: keepCost[v.vi], mask: -1 }));
       // ---------------- candidate generation per vehicle
       const pools = [];
-      const expandRoot = (v, root, st, out, seen, allowPairs) => {
+      const expandRoot = (v, root, st, out, allowPairs) => {
         const mk = (route, add) => {
-          if (seen) { const fp = fpOf(route); if (seen.has(fp)) return null; seen.add(fp); }
           const end = evalCand(v, route, st, snap, wantSlack);
           if (end < 0) return null;
           const c = { uid: uidCounter++, vi: v.vi, route, add, rep: root.rep, cost: end - tEval, slack: EV.slack, mask: gateMask() };
@@ -500,18 +443,11 @@ function simulate(P, opts = {}) {
         const st = starts[v.vi];
         const n = v.route.length;
         if (n > diag.maxSuffix) diag.maxSuffix = n;
-        const roots = reoptOn ? reoptRoots(v) : [];
-        diag.roots += roots.length;
         diag.vehDecisions++;
-        let work = Q.length ? treeSize(n, Q.length) : 0;
-        if (work > MAX_WORK_UNITS) diag.workCapHitsBase++;
-        for (const rt of roots) work += treeSize(rt.route.length, Q.length);
+        const work = Q.length ? treeSize(n, Q.length) : 0;
         if (work > MAX_WORK_UNITS) diag.workCapHits++;
         const pool = [];
-        const seen = roots.length ? new Set() : null;
-        if (seen) seen.add(fpOf(v.route));
-        expandRoot(v, { route: v.route, rep: null }, st, pool, seen, true);
-        for (const rt of roots) expandRoot(v, rt, st, pool, seen, ro.rootPairs);
+        expandRoot(v, { route: v.route, rep: null }, st, pool, true);
         diag.candidates += pool.length;
         if (pool.length > diag.maxPool) diag.maxPool = pool.length;
         if (pool.length + 1 > 100) diag.poolOver100++;
@@ -524,13 +460,13 @@ function simulate(P, opts = {}) {
       if (ro.g2 > 0) {
         for (const a of V) {
           const elig = [];
-          a.route.forEach((s, idx) => { if (s.kind === PICK) { const r = R[s.r]; if ((r.state === ST_ACCEPTED || r.state === ST_WAITING) && r.veh === a.vi && r.switches < (ro.g2MaxSwitches === undefined ? Infinity : ro.g2MaxSwitches)) elig.push({ ri: s.r, idx }); } });
+          a.route.forEach((s, idx) => { if (s.kind === PICK) { const r = R[s.r]; if ((r.state === ST_ACCEPTED || r.state === ST_WAITING) && r.veh === a.vi) elig.push({ ri: s.r, idx }); } });
           elig.sort((x, y) => x.idx - y.idx || (R[x.ri].q.rq < R[y.ri].q.rq ? -1 : 1));
           for (const { ri } of elig.slice(0, ro.g2)) {
             const q = R[ri].q;
             const rootA = { route: a.route.filter(s => s.r !== ri), rep: { type: 'G2from', ri } };
             const aC = [];
-            expandRoot(a, rootA, starts[a.vi], aC, null, ro.rootPairs);
+            expandRoot(a, rootA, starts[a.vi], aC, ro.rootPairs);
             if (!aC.length || aC[0].add.length !== 0) continue; // donor route itself infeasible (strict) -> no relocation
             let targets = V.filter(b => b !== a);
             if (targets.length > ro.g2Targets) {
@@ -568,8 +504,8 @@ function simulate(P, opts = {}) {
       const pickFrom = entry => {
         if (entry.pick) return entry.pick;
         let list = entry.list;
-        if (list.length > 1 && preferKeep && reoptOn) { const plain = list.filter(c => c.rep === null); if (plain.length) list = plain; }
-        if (list.length === 1 || opts.tieMode === 'index') return (entry.pick = list[0]);
+        if (list.length > 1 && reoptOn) { const plain = list.filter(c => c.rep === null); if (plain.length) list = plain; }
+        if (list.length === 1) return (entry.pick = list[0]);
         let best = null;
         for (const c of list) if (best === null || idOfCand(c) < idOfCand(best)) best = c;
         return (entry.pick = best);
@@ -612,7 +548,7 @@ function simulate(P, opts = {}) {
             for (const ka of ['-', ...keys]) {
               if (!aB[ka]) continue;
               const cnt = sz(ka);
-              const cost0 = base - bl[rl.a]['-'].cost - bl[bvi]['-'].cost + aB[ka].cost + bB['-'].cost + (ro.g2PenaltyMs || 0); // wf16-a5 patch P2: optional relocation penalty (default 0 = unchanged)
+              const cost0 = base - bl[rl.a]['-'].cost - bl[bvi]['-'].cost + aB[ka].cost + bB['-'].cost;
               const items0 = [[rl.a, aB[ka]], [bvi, bB['-']]];
               const rel = { w: rl.w, a: rl.a, b: bvi };
               consider(cnt, cost0, { items: items0, rel });
@@ -644,8 +580,7 @@ function simulate(P, opts = {}) {
           const score = ch => ch.reduce((a, c) => a + (c.rep ? 1 : 0), 0);
           for (let k = 1; k < ties.length; k++) {
             const cv = vecOf(ties[k]);
-            if (preferKeep && reoptOn) { const sa = score(cv), sb = score(wv); if (sa !== sb) { if (sa < sb) { winner = ties[k]; wv = cv; } continue; } }
-            if (opts.tieMode === 'index') continue;
+            if (reoptOn) { const sa = score(cv), sb = score(wv); if (sa !== sb) { if (sa < sb) { winner = ties[k]; wv = cv; } continue; } }
             for (const v of vehOrder) {
               const a = cv[v.vi], b = wv[v.vi];
               if (a === b) continue;
@@ -660,38 +595,12 @@ function simulate(P, opts = {}) {
       };
       const sel = arms.map((A, ai) => selectPlan(ai, ai === 0));
       const plan = sel[0];
-      // ---------------- state-matched discrimination counters
-      if (pairs.length) {
-        let any = false;
-        for (const p of pools) if (p.length) { any = true; break; }
-        if (any || relocs.length) {
-          for (const pr of pairs) {
-            pr.decisions++;
-            const bi = 1 << pr.i, bj = 1 << pr.j;
-            let diff = false;
-            for (const p of pools) { for (const c of p) if (((c.mask & bi) === 0) !== ((c.mask & bj) === 0)) { diff = true; break; } if (diff) break; }
-            if (!diff) for (const rl of relocs) {
-              for (const c of rl.aC) if (((c.mask & bi) === 0) !== ((c.mask & bj) === 0)) { diff = true; break; }
-              if (!diff) for (const l of rl.bC.values()) { for (const c of l) if (((c.mask & bi) === 0) !== ((c.mask & bj) === 0)) { diff = true; break; } if (diff) break; }
-              if (diff) break;
-            }
-            if (diff) pr.pruneDiff++;
-            if (sel[pr.i].key !== sel[pr.j].key) pr.selDiff++;
-            if (sel[pr.i].count !== sel[pr.j].count) pr.acceptDiff++;
-          }
-        }
-      }
-      for (let ai = 1; ai < arms.length; ai++) {
-        if (sel[ai].key !== plan.key) shadowDiff[arms[ai].key] = (shadowDiff[arms[ai].key] || 0) + 1;
-        if (sel[ai].count !== plan.count) shadowAcceptDiff[arms[ai].key] = (shadowAcceptDiff[arms[ai].key] || 0) + 1;
-      }
       if (forced[0].some(x => x)) diag.forcedVehicleDecisions += forced[0].filter(x => x).length;
       // ---------------- apply the trajectory arm's plan
       chosenRoutes = plan.ch.map(c => (c.noop ? null : c));
       for (const c of plan.ch) if (!c.noop) for (const ri of c.add) accepted.push(ri);
-      for (const c of plan.ch) if (!c.noop && c.rep) { diag.reoptChosen++; if (c.rep.type === 'G1') diag.reoptChosenG1++; if (c.rep.type === 'DR') diag.reoptChosenDR++; }
+      for (const c of plan.ch) if (!c.noop && c.rep) diag.reoptChosen++;
       reloc = plan.rel;
-      if (trace) trace.push({ t: tEval, before: V.map(v => v.route.map(s => (s.kind === PICK ? 'P' : 'D') + ':' + R[s.r].q.rq)), onboard: V.map(v => v.onboard.map(ri => R[ri].q.rq)), Q: Q.map(q => q.q.rq), chosen: plan.ch.map(c => (c.noop ? null : { add: c.add.map(ri => R[ri].q.rq), rep: c.rep ? { type: c.rep.type, rq: R[c.rep.ri].q.rq } : null, route: c.route.map(s => (s.kind === PICK ? 'P' : 'D') + ':' + R[s.r].q.rq) })), rel: reloc ? { rq: R[reloc.w].q.rq, from: V[reloc.a].id, to: V[reloc.b].id } : null, keys: Object.fromEntries(arms.map((A, ai) => [A.key, sel[ai].key])) });
       // outcomes (RollingCostPolicy.cs:166-221): selected -> accepted; feasible but not selected -> deferred; else rejected
       const feasible = Q.map(() => false);
       const markFeasible = c => { if (!(c.mask & 1)) return; for (const ri of c.add) { const qi = Q.findIndex(q => q.i === ri); if (qi >= 0) feasible[qi] = true; } };
@@ -832,11 +741,7 @@ function simulate(P, opts = {}) {
   for (const r of riders) if (r.served) { if (!byVeh.has(r.veh)) byVeh.set(r.veh, []); byVeh.get(r.veh).push(r); }
   for (const r of riders) r.shared = !!(r.served && byVeh.get(r.veh).some(o => o !== r && o.pickup < r.A && r.pickup < o.A));
   const fleet = { moveMs: V.reduce((a, v) => a + v.moveMs, 0), loadedMoveMs: V.reduce((a, v) => a + v.loadedMoveMs, 0) };
-  return {
-    riders, rejected: R.filter(r => r.state === ST_REJECTED).length, requests: nR, diag, fleet,
-    shadowDiff, shadowAcceptDiff, pairs: pairs.map(({ key, decisions, pruneDiff, selDiff, acceptDiff }) => ({ key, decisions, pruneDiff, selDiff, acceptDiff })),
-    arms: arms.map(a => a.key), trace, fcCount, audit: AUD,
-  };
+  return { riders, rejected: R.filter(r => r.state === ST_REJECTED).length, requests: nR, diag, fleet, fcCount };
 }
 
 module.exports = { simulate, armKey, parseArm, treeSize, admits, charge, armOf, ST: { ST_PENDING, ST_ACCEPTED, ST_WAITING, ST_ONBOARD, ST_DONE, ST_REJECTED } };
