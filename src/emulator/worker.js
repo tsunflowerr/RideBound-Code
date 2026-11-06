@@ -13,6 +13,6 @@ parentPort.on('message', ({ idx, task }) => {
     const out = CORE.runTask(task, NET);
     parentPort.postMessage({ idx, task, ...out });
   } catch (e) {
-    parentPort.postMessage({ idx, task, rows: [], dump: [], error: String(e && e.stack || e) });
+    parentPort.postMessage({ idx, task, rows: [], error: String(e && e.stack || e) });
   }
 });

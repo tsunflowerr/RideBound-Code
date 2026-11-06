@@ -15,12 +15,12 @@
 // (EO*, SHF*, DLS*: task.fenceTolMs, task.audit); row fields variant, fenceTolMs, audit, sig (rider fingerprint, same identity) and
 // sigX (identity-free rider fingerprint keyed by the scenario request id). Every metric is metrics_sh.metrics() unchanged.
 // wf15 worker-side core: one task = (cell, dispatcher config) x arms. Builds the cell's shareability-score context
-// (full-network scale kappa*f_b, local->global node map, causal/oracle lambda tables), wires opts.sscore per arm and score
-// mode, runs the engine, asserts the SPEC 9 T3/T7 invariants, and returns metric rows, per-rider dumps and (tests) hashes.
+// (full-network scale kappa*f_b, local->global node map, causal lambda tables), wires opts.sscore per arm, runs the engine,
+// asserts the SPEC 9 T3/T7 invariants, and returns the metric rows.
 'use strict';
 const fs = require('fs'), path = require('path'), crypto = require('crypto');
 const SC = require('./scenario.js');
-const E15 = require('./engine.js');
+const E = require('./engine.js');
 const SS = require('./sscore.js');
 const LAM = require('./lambda.js');
 const MET = require('./metrics.js');
@@ -35,20 +35,12 @@ const sigR3Of = res => sha(JSON.stringify(res.riders.map(r => [r.rq, r.served, r
   r.revs.map(v => v.filter((x, i) => i !== 9))])));
 
 const OMEGA_P = 600000;
-const NEW_FIELDS = ['sS', 'sSw', 'sSd', 'sInst', 'aSH', 'bSH', 'swP'];   // rider fields added by the wf15 patch (only with opts.sscore)
 const sha = s => crypto.createHash('sha256').update(s).digest('hex');
-let E13 = null;
-const engineOf = name => {
-  if (name === 'wf13') { if (!E13) E13 = require(path.join(LIB.SP, 'wf13', 'runner', 'engine.js')); return E13; }
-  if (name && name !== 'engine17') throw new Error('engine ' + name);
-  return E15;
-};
 
-function readCell(file, truncateMs) {
+function readCell(file) {
   const s = JSON.parse(fs.readFileSync(file, 'utf8'));
   const dir = path.dirname(file);
   const prov = JSON.parse(fs.readFileSync(path.resolve(dir, s.provenance.provenanceFile), 'utf8'));
-  if (truncateMs !== undefined && truncateMs !== null) s.requests = s.requests.filter(q => q.arrivalMs < truncateMs);
   return { s, prov, dir };
 }
 
@@ -72,7 +64,7 @@ function kappaCheck(P, globalOf, kappa, NET, seedStr) {
   }
 }
 
-function makeCellCtx(rc, NET, task, mode) {
+function makeCellCtx(rc, NET, task) {
   const { s, prov } = rc;
   if (s.service.pickupWindowMs !== OMEGA_P) throw new Error('pickup window is not 600 s');
   const globalOf = Int32Array.from(s.nodes.map(n => Number(n.id.slice(1))));
@@ -83,15 +75,8 @@ function makeCellCtx(rc, NET, task, mode) {
   const lam = LAM.makeLambda({ nZones: NET.nZones, zoneSize: NET.zoneSize, N: NET.N, arrivals: li.arrivals, zO: li.zO, zD: li.zD,
     priorO: task.prior.O, priorD: task.prior.D, phi: prov.sampling.sampled / prov.sampling.eligible, sampled: prov.sampling.sampled,
     alpha: task.alphaS, intervalMs: SS.IV_MS });
-  return { kappa, factors, globalOf, omegaP: OMEGA_P, strideMs: task.strideMs || 0, lam, mode };
+  return { kappa, factors, globalOf, omegaP: OMEGA_P, strideMs: task.strideMs || 0, lam, mode: 'causal' };
 }
-
-function stripNew(res) {
-  return { ...res, riders: res.riders.map(r => { const o = { ...r }; for (const k of NEW_FIELDS) delete o[k]; return o; }) };
-}
-
-// random allocation control (SPEC 6.4): u = first 8 hex digits of sha256(cellKey + '|' + rq) / 2^32
-const uRandom = (cellKey, rq) => parseInt(sha(cellKey + '|' + rq).slice(0, 8), 16) / 4294967296;
 
 // T3 invariants for Shadow runs (+ T3a recording for every scored run)
 function checkInvariants(res, A, rec, tol = 0) {   // wf17: tol = the P1 fence tolerance of a strict-fence run (0 otherwise)
@@ -118,24 +103,21 @@ function checkInvariants(res, A, rec, tol = 0) {   // wf17: tol = the P1 fence t
   return bad;
 }
 
-// task: { file, cell, day, win, rs, set, part, config, arms, scoreMode ('off'|'causal'|'oracle'|'random'), thetas {armKey: theta},
-//         pi, alphaS, strideMs, prior {O, D}, dump (true | [armKeys]), engine ('wf15'|'wf13'), hashes, cmpRef, truncateMs, repeat }
+// task: { file, cell, day, win, rs, set, part, config, arms, scoreMode ('off'|'causal'), thetas {armKey: theta}, alphaS, strideMs,
+//         prior {O, D}, fc, flat, fcIndex, panel, variant, fenceTolMs, audit }
 function runTask(task, NET) {
   const t0 = Date.now();
-  const rc = readCell(task.file, task.truncateMs);
+  const rc = readCell(task.file);
   const P = SC.prepareScenario(rc.s, LIB.RUN_OVERRIDES, rc.dir);
-  const E = engineOf(task.engine);
   const mode = task.scoreMode || 'off';
-  if (!['off', 'causal', 'oracle', 'random'].includes(mode)) throw new Error('scoreMode ' + mode);
-  if (mode !== 'off' && task.engine === 'wf13') throw new Error('wf13 engine has no score hook');
-  let cellCtx = null, scorer = null, refScorer = null;
+  if (!['off', 'causal'].includes(mode)) throw new Error('scoreMode ' + mode);
+  let cellCtx = null, scorer = null;
   if (mode !== 'off') {
-    cellCtx = makeCellCtx(rc, NET, task, mode === 'oracle' ? 'oracle' : 'causal');
+    cellCtx = makeCellCtx(rc, NET, task);
     kappaCheck(P, cellCtx.globalOf, cellCtx.kappa, NET, task.cell);
     scorer = SS.makeScorer(NET, cellCtx);
-    if (task.cmpRef) refScorer = SS.makeRefScorer(NET, cellCtx);
   }
-  const rows = [], dump = [], hashes = {}, cmp = { n: 0, maxRel: 0, maxAbs: 0, instMismatch: 0, kMismatch: 0, arcCtx: 0 };
+  const rows = [];
   // wf20: forecast mode (r3drive.js semantics); 'N' = no forecast (exact RideBound projection time + w)
   const fc = task.fc || 'N';
   if (!['N', 'CL', 'PAD', 'CLc'].includes(fc)) throw new Error('fc ' + fc);   // wf21: PAD and CLc added
@@ -154,8 +136,7 @@ function runTask(task, NET) {
     prof = FC.profile(task.day, task.win === 'w08' ? 32 : 68, 'prev4', T.F, 15);
     if (!prof) throw new Error('no causal forecast sources for ' + task.day);
   }
-  const reps = task.repeat || 1;
-  for (let rep = 0; rep < reps; rep++) for (const key of task.arms) {
+  for (const key of task.arms) {
     const arm = E.parseArm(key), A = E.armOf(arm);
     const SH = MET.isShadow(A);
     if (SH && mode === 'off') throw new Error('Shadow arm without scores');
@@ -177,33 +158,15 @@ function runTask(task, NET) {
       const sscore = {
         score: ctx => {
           const res = scorer.score(ctx);
-          if (refScorer) {
-            const q = refScorer.score(ctx);
-            cmp.n++;
-            const d = Math.abs(q.S - res.S), rel = d / Math.max(1e-300, Math.abs(q.S));
-            if (d > cmp.maxAbs) cmp.maxAbs = d;
-            if (q.S !== 0 && rel > cmp.maxRel) cmp.maxRel = rel;
-            if (Math.abs(q.Sw - res.Sw) > 1e-9 * Math.max(1, Math.abs(q.Sw)) || Math.abs(q.Sd - res.Sd) > 1e-9 * Math.max(1, Math.abs(q.Sd))) cmp.maxRel = Math.max(cmp.maxRel, 1);
-            if (q.n !== res.n || q.nArc !== res.nArc) cmp.instMismatch++;
-            if (ctx.arc) cmp.arcCtx++;
-            if (q.kP !== res.kP || q.kK !== res.kK) cmp.kMismatch++;
-          }
           const prev = rec.get(ctx.rq);
           if (prev) prev.dup = true; else rec.set(ctx.rq, { S: res.S });
           return res;
         },
       };
       if (SH) {
-        let classOf;
-        if (mode === 'random') {
-          const pi = task.pi;
-          if (!(pi >= 0 && pi <= 1)) throw new Error('random mode needs pi');
-          classOf = r => (uRandom(task.cell, r.q.rq) < pi ? 0 : 1);
-        } else {
-          theta = LIB.thetaFromJson(task.thetas ? task.thetas[key] : undefined);
-          if (typeof theta !== 'number' || Number.isNaN(theta)) throw new Error(`no theta for ${key} (${task.config} ${task.win})`);
-          classOf = r => (r.sS <= theta ? 0 : 1);
-        }
+        theta = LIB.thetaFromJson(task.thetas ? task.thetas[key] : undefined);
+        if (typeof theta !== 'number' || Number.isNaN(theta)) throw new Error(`no theta for ${key} (${task.config} ${task.win})`);
+        const classOf = r => (r.sS <= theta ? 0 : 1);
         sscore.classOf = r => {
           const a = classOf(r), e = rec.get(r.q.rq);
           if (!e || e.a !== undefined) throw new Error('classOf before score or twice');
@@ -223,14 +186,12 @@ function runTask(task, NET) {
     }
     const msScore = scorer ? Number(scorer.stats.ns - st0.ns) / 1e6 : 0;
     const row = { panel: task.panel || null, part: task.part, set: task.set, cell: task.cell, day: task.day, win: task.win, rs: task.rs, config: task.config, mode: fc, arm: key,
-      scoreMode: mode, x: SH ? A.x : null, theta: SH && mode !== 'random' ? LIB.thetaToJson(theta) : null, pi: SH && mode === 'random' ? task.pi : null,
-      alphaS: mode !== 'off' ? task.alphaS : null, strideMs: mode !== 'off' ? (task.strideMs || 0) : null, engine: task.engine || 'engine17',
+      scoreMode: mode, x: SH ? A.x : null, theta: SH ? LIB.thetaToJson(theta) : null, pi: null,   // pi: share of the removed random mode
+      alphaS: mode !== 'off' ? task.alphaS : null, strideMs: mode !== 'off' ? (task.strideMs || 0) : null, engine: 'engine17',
       variant: task.variant || null, fenceTolMs: STRICT ? (task.fenceTolMs || 0) : null, label: LABEL,
       ms, msScore: Math.round(msScore), scoreCalls: scorer ? scorer.stats.calls - st0.calls : 0, scoreInstants: scorer ? scorer.stats.instants - st0.inst : 0,
       scoreArcCalls: scorer ? scorer.stats.arcCalls - st0.arcCalls : 0, scoreArcInstants: scorer ? scorer.stats.arcInstants - st0.arcInst : 0,
       ...MET.metrics(res, A) };
-    if (task.truncateMs !== undefined && task.truncateMs !== null) row.truncateMs = task.truncateMs;
-    if (rep > 0) row.repeat = rep;
     row.audit = res.audit || null;
     row.sig = sha(JSON.stringify(res.riders.map(r => [r.rq, r.served, r.veh, r.p0, r.A, r.revs])));
     { const idOf = new Map(P.reqs.map(q => [q.rq, q.id]));
@@ -248,23 +209,9 @@ function runTask(task, NET) {
       row.plN = res.riders.length; row.plSumArr_ms = plSumArr; row.plSumT0_ms = plSumT0; row.plServedN = sN; row.plServedSumArr_ms = sSum;
       row.early60First = e60; row.early60FirstG = SH ? e60G : null; }
     rows.push(row);
-    const wantDump = task.dump === true || (Array.isArray(task.dump) && task.dump.includes(key));
-    if (wantDump && mode !== 'off') {
-      // run parameters on every dump row (with them, run_sh.rowKey of a dump row equals that of its metric row)
-      const meta = { cell: task.cell, day: task.day, win: task.win, rs: task.rs, set: task.set, config: task.config, arm: key, scoreMode: mode,
-        theta: row.theta, alphaS: row.alphaS, strideMs: row.strideMs, pi: row.pi };
-      if (rep > 0) meta.repeat = rep;
-      if (task.truncateMs !== undefined && task.truncateMs !== null) meta.truncateMs = task.truncateMs;
-      for (const d of MET.dumpRows(res, A, meta)) dump.push(d);
-    }
-    if (task.hashes) {
-      const strip = stripNew(res);
-      hashes[key + (rep ? '#' + rep : '')] = { full: sha(JSON.stringify(res)), strip: sha(JSON.stringify(strip)),
-        core: sha(JSON.stringify({ riders: strip.riders, rejected: strip.rejected, diag: strip.diag })) };
-    }
   }
-  return { rows, dump, hashes, cmp: refScorer ? cmp : null, ms: Date.now() - t0,
+  return { rows, ms: Date.now() - t0,
     lam: cellCtx ? { fallbacks: cellCtx.lam.fallbacks } : null, paths: NET.pathStats ? { ...NET.pathStats, size: NET.paths.size } : null };
 }
 
-module.exports = { runTask, readCell, lambdaInputs, makeCellCtx, kappaCheck, stripNew, uRandom, NEW_FIELDS, OMEGA_P };
+module.exports = { runTask, readCell, lambdaInputs, makeCellCtx, kappaCheck, OMEGA_P };

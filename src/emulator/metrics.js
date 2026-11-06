@@ -118,16 +118,4 @@ function metrics(res, A) {
   return m;
 }
 
-// SPEC 8.2 per-rider dump row (one per promised rider)
-function dumpRows(res, A, meta) {
-  const budgetOf = budgetOfFor(A);
-  return res.riders.map((r, i) => {
-    const B = budgetOf(r), st = riderStats(r, B);
-    return { ...meta, i, rq8: r.rq.replace(/^rq-/, '').slice(0, 8), t0: r.t0, S: r.sS, Sw: r.sSw, Sd: r.sSd, nInst: r.sInst,
-      cls: r.aSH === undefined ? null : r.aSH, slk: r.slk, B, nDisp5: st.nDisp5, nDispAny1: st.nDispAny1, sumCpos5: st.sumCpos5,
-      vis60: st.vis60, visUp60: st.visUp60, rev60: st.rev60, dA_p0: r.served ? r.A - r.p0 : null, switches: r.switches, served: r.served,
-      nPk5: st.nPk5, Labs: r.Labs, swP: r.swP === undefined ? null : r.swP, direct: r.direct };
-  });
-}
-
-module.exports = { metrics, dumpRows, riderStats, hasReversal, isShadow, budgetOfFor };
+module.exports = { metrics, riderStats, hasReversal, isShadow, budgetOfFor };

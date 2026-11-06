@@ -1,9 +1,9 @@
-// wf15 shared helpers for the main thread: cell sets, day lists, prior table, theta from a reference distribution, hashing.
+// wf15 shared helpers for the main thread: cell sets, prior table, theta to and from JSON, hashing.
 'use strict';
 const fs = require('fs'), path = require('path'), crypto = require('crypto');
 
 // Data root SP: the folder given as run.js --data <dir>. Every input the driver finds by itself lies under it: the cells
-// (wf14/, wf6/), the network (wf5/, wf6/), the forecast index (wf7/) and WF = SP/wf15 (prior, frozen, ref, day lists; read-only).
+// (wf14/, wf6/), the network (wf5/, wf6/), the forecast index (wf7/) and WF = SP/wf15 (prior, frozen, alpha calibration; read-only).
 // setData() fills SP, WF and SETS: run.js calls it in the main thread, worker.js in every worker thread (pool.js passes the dir).
 let SP = null, WF = null, SETS = null;
 function setData(dir) {
@@ -69,27 +69,9 @@ function loadPrior(file, zoneIds) {
   return M;
 }
 
-// SPEC 5.2: theta_{c,w}(x) = s_(ceil(x * M)) (type-1 empirical quantile of the sorted reference scores, 1-indexed);
-// x = 0 -> -Infinity (everyone allowed), x = 100 -> +Infinity (everyone guaranteed). pct is the integer percent of the key.
-function thetaFromSorted(sorted, pct) {
-  if (!Number.isInteger(pct) || pct < 0 || pct > 100) throw new Error('theta: pct must be an integer 0..100');
-  if (pct === 0) return -Infinity;
-  if (pct === 100) return Infinity;
-  const M = sorted.length;
-  if (!M) throw new Error('theta: empty reference');
-  const k = Math.ceil(pct * M / 100);
-  return sorted[k - 1];
-}
+// theta in JSON: x = 0 -> '-Infinity' (everyone allowed), x = 100 -> '+Infinity' (everyone guaranteed), else the number
 const thetaToJson = t => (t === Infinity ? '+Infinity' : t === -Infinity ? '-Infinity' : t);
 const thetaFromJson = t => (t === '+Infinity' ? Infinity : t === '-Infinity' ? -Infinity : t);
-
-// day lists written by prep_data.js (work/days_discovery.csv, work/days_confirm.csv): Set of 'YYYY-MM-DD'
-function dayList(name) {
-  const f = path.join(WF, 'work', 'days_' + name + '.csv');
-  const days = new Set(fs.readFileSync(f, 'utf8').split('\n').map(s => s.trim()).filter(s => /^\d{4}-\d\d-\d\d$/.test(s)));
-  if (!days.size) throw new Error('empty day list ' + f);
-  return days;
-}
 
 function readNdjson(file) {
   const rows = [];
@@ -98,4 +80,4 @@ function readNdjson(file) {
   return rows;
 }
 
-module.exports = { SP, WF, SETS, setData, CONFIGS, RUN_OVERRIDES, sha256, sha256File, listCells, loadPrior, thetaFromSorted, thetaToJson, thetaFromJson, readNdjson, dayList };
+module.exports = { SP, WF, SETS, setData, CONFIGS, RUN_OVERRIDES, sha256, sha256File, listCells, loadPrior, thetaToJson, thetaFromJson, readNdjson };
