@@ -19,14 +19,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Shareability\shareability-golden-toy.json"
-                      LogicalName="RideBound.Algorithms.Tests.Shareability.shareability-golden-toy.json" />
+    <ProjectReference Include="..\..\RideBound.Contracts\RideBound.Contracts.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\RideBound.Algorithms\RideBound.Algorithms.csproj" />
-    <ProjectReference Include="..\..\src\RideBound.Application\RideBound.Application.csproj" />
-    <ProjectReference Include="..\..\src\RideBound.Domain\RideBound.Domain.csproj" />
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>RideBoundRepositoryRoot</_Parameter1>
+      <_Parameter2>$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)\..\..'))</_Parameter2>
+    </AssemblyAttribute>
   </ItemGroup>
 
 </Project>

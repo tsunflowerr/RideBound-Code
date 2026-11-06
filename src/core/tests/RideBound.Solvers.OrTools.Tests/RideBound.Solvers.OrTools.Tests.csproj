@@ -1,10 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\RideBound.Application\RideBound.Application.csproj" />
-    <ProjectReference Include="..\..\src\RideBound.Algorithms\RideBound.Algorithms.csproj" />
-    <ProjectReference Include="..\..\src\RideBound.Domain\RideBound.Domain.csproj" />
-    <ProjectReference Include="..\..\src\RideBound.Solvers.OrTools\RideBound.Solvers.OrTools.csproj" />
+    <ProjectReference Include="..\..\RideBound.Application\RideBound.Application.csproj" />
+    <ProjectReference Include="..\..\RideBound.Algorithms\RideBound.Algorithms.csproj" />
+    <ProjectReference Include="..\..\RideBound.Domain\RideBound.Domain.csproj" />
+    <ProjectReference Include="..\..\RideBound.Solvers.OrTools\RideBound.Solvers.OrTools.csproj" />
   </ItemGroup>
 
   <ItemGroup>

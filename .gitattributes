@@ -13,10 +13,10 @@
 *.slnx text eol=lf
 
 # Test assets compared byte for byte (golden vectors, transcripts, recorded stdout): never convert line endings.
-benchmarks/schemas/fixtures/** -text
+src/core/benchmarks/schemas/fixtures/** -text
 *.ndjson -text
 *.hex -text
-tests/RideBound.Runner.Tests/Final/Fixtures/** -text
+src/core/tests/RideBound.Runner.Tests/Final/Fixtures/** -text
 
 # Preserve exact evidence/configuration bytes and their recorded SHA-256 values.
 research/continuation/** -text

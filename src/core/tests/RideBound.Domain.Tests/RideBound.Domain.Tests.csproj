@@ -19,14 +19,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\RideBound.Contracts\RideBound.Contracts.csproj" />
+    <EmbeddedResource Include="Validation\travel-forecast-golden.json"
+                      LogicalName="RideBound.Domain.Tests.Validation.travel-forecast-golden.json" />
   </ItemGroup>
 
   <ItemGroup>
-    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
-      <_Parameter1>RideBoundRepositoryRoot</_Parameter1>
-      <_Parameter2>$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)\..\..'))</_Parameter2>
-    </AssemblyAttribute>
+    <ProjectReference Include="..\..\RideBound.Domain\RideBound.Domain.csproj" />
   </ItemGroup>
 
 </Project>

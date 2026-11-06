@@ -115,8 +115,8 @@ class CanonicalUnitTests(unittest.TestCase):
 
     def test_cross_language_configuration_hash_and_binding_are_stable(self) -> None:
         repository = ADAPTER_ROOT.parents[1]
-        commitment = repository / "benchmarks" / "configurations" / "wp3-boundary-test-v1.json"
-        wp4 = repository / "benchmarks" / "configurations" / "wp7-fleetpy-rolling-cost-v1.json"
+        commitment = repository / "src" / "core" / "benchmarks" / "configurations" / "wp3-boundary-test-v1.json"
+        wp4 = repository / "src" / "core" / "benchmarks" / "configurations" / "wp7-fleetpy-rolling-cost-v1.json"
         self.assertEqual(
             "d1be06163dd38de567e4489100acd05b74c41cc454300f7b7286b459355e928f",
             canonical_json_file_hash(commitment),

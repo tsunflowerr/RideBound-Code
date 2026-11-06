@@ -19,8 +19,21 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\RideBound.Application\RideBound.Application.csproj" />
-    <ProjectReference Include="..\..\src\RideBound.Domain\RideBound.Domain.csproj" />
+    <ProjectReference Include="..\..\RideBound.Contracts\RideBound.Contracts.csproj" />
+    <ProjectReference Include="..\..\RideBound.Runner\RideBound.Runner.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile
+      Include="..\RideBound.Contracts.Tests\Fixtures\FixtureLoader.cs"
+      Link="Fixtures\FixtureLoader.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>RideBoundRepositoryRoot</_Parameter1>
+      <_Parameter2>$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)\..\..'))</_Parameter2>
+    </AssemblyAttribute>
   </ItemGroup>
 
 </Project>

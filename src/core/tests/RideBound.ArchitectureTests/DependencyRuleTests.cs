@@ -28,10 +28,7 @@ public sealed class DependencyRuleTests
     public void Project_references_follow_clean_architecture()
     {
         var repositoryRoot = FindRepositoryRoot();
-        var projectFiles = Directory.GetFiles(
-            Path.Combine(repositoryRoot, "src"),
-            "*.csproj",
-            SearchOption.AllDirectories);
+        var projectFiles = FindSourceProjectFiles(repositoryRoot);
 
         var failures = new List<string>();
 
@@ -102,7 +99,7 @@ public sealed class DependencyRuleTests
 
         foreach (var projectName in new[] { "RideBound.Domain", "RideBound.Application" })
         {
-            var projectDirectory = Path.Combine(repositoryRoot, "src", projectName);
+            var projectDirectory = Path.Combine(repositoryRoot, projectName);
 
             var sourceFiles = Directory
                 .GetFiles(projectDirectory, "*.cs", SearchOption.AllDirectories)
@@ -131,10 +128,7 @@ public sealed class DependencyRuleTests
     public void OrTools_package_is_pinned_only_in_the_solver_adapter()
     {
         var repositoryRoot = FindRepositoryRoot();
-        var projects = Directory.GetFiles(
-            Path.Combine(repositoryRoot, "src"),
-            "*.csproj",
-            SearchOption.AllDirectories);
+        var projects = FindSourceProjectFiles(repositoryRoot);
         var references = projects
             .Select(
                 path => new
@@ -167,7 +161,6 @@ public sealed class DependencyRuleTests
         var repositoryRoot = FindRepositoryRoot();
         var portFile = Path.Combine(
             repositoryRoot,
-            "src",
             "RideBound.Application",
             "Optimization",
             "CandidateSelectionSolver.cs");
@@ -183,9 +176,19 @@ public sealed class DependencyRuleTests
     {
         return Path.Combine(
             FindRepositoryRoot(),
-            "src",
             projectName,
             $"{projectName}.csproj");
+    }
+
+    // The source projects sit next to tests/ in the solution folder; the test projects are not checked.
+    private static string[] FindSourceProjectFiles(string repositoryRoot)
+    {
+        var testsDirectory = Path.Combine(repositoryRoot, "tests") + Path.DirectorySeparatorChar;
+
+        return Directory
+            .GetFiles(repositoryRoot, "*.csproj", SearchOption.AllDirectories)
+            .Where(path => !path.StartsWith(testsDirectory, StringComparison.Ordinal))
+            .ToArray();
     }
 
     private static bool IsBuildOutput(string path)
