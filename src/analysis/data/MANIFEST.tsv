@@ -8,3 +8,8 @@ f16-adapter-attr-predictions.tsv.gz	82243e31f2f7e3dab5ad25943fb541eb2dfef82b3c22
 f14-sequences.json.gz	e1948f245350b5ec806cded4d321ca85a927b4d61d88ed0b4022eea836b11cf8	F14 per cell-arm promise reversals (visRev60) and TV5, real side and emulator side
 f16-sequences.json.gz	1141f6497c44334142be0df9fb575f2ab84a6e41204cc98787e30f8417910571	F16 per cell-arm promise reversals and TV5, same layout
 wf20-fullsys-rows.ndjson.gz	eff7c1e3db3aaedc07a86f70a15e36bf8e47f71a75b365a78feda630944899b4	plain emulator rows (wf20 fullsys): one row per cell x config x mode x arm, 3,600 rows over the same 30 days
+wf21-n7-rows.ndjson.gz	1edefe9bf20e4706c3b4733e63b9da02dec1d88742cf9019c7a35e585518af58	forecast experiment emulator rows (wf21 n7): one row per cell x config (INS, G2) x promise mode (N, CL, PAD, CLc, PADc) x arm (SHRC, SHHZ), 3,600 rows over the same 30 days
+panels.json	13d9d9cda683bfd60223ab4f7b8f89fd3c753ca2c81c4048d478e2f175e41ed7	day lists: F14 and F16 (the 30 days above), D60 (the 60-day Shadow experiment) with its subsets D30 and D10, and the unused days
+flat_final.json	0b5c37874ddb96dfaf4ae85e8cd6b6b6f7410c3420aaa3c9db4a2a62823a3341	PAD flat ratios per config x window x arm, calibrated so that the mean promise length equals CL's
+flatc_final.json	a0eac581b6a470d51c50f39a864862fc1aade83de486066283dd9890ad35b37d	PADc flat ratios, calibrated the same way to CLc's mean promise length
+forecast-predictions.json	a8cdd34c4b38e7ece14c6c613246225673bcb4ddc180a0d16873c0fcde139725	the forecast experiment's predictions, written before its runs: contrast, metric, band and the labelling rules
