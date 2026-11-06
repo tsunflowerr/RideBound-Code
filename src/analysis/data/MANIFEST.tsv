@@ -13,3 +13,4 @@ panels.json	13d9d9cda683bfd60223ab4f7b8f89fd3c753ca2c81c4048d478e2f175e41ed7	day
 flat_final.json	0b5c37874ddb96dfaf4ae85e8cd6b6b6f7410c3420aaa3c9db4a2a62823a3341	PAD flat ratios per config x window x arm, calibrated so that the mean promise length equals CL's
 flatc_final.json	a0eac581b6a470d51c50f39a864862fc1aade83de486066283dd9890ad35b37d	PADc flat ratios, calibrated the same way to CLc's mean promise length
 forecast-predictions.json	a8cdd34c4b38e7ece14c6c613246225673bcb4ddc180a0d16873c0fcde139725	the forecast experiment's predictions, written before its runs: contrast, metric, band and the labelling rules
+wf15-confirm-rows.ndjson.gz	3bce043d8b90845e4e44d35720298f7acf935020b8dd6350b35ec8ca796f761d	60-day Shadow experiment emulator rows (wf15, cell set confirm): one row per cell x config (INS, G2) x arm (U, EO35, EOHZ35, RCE35 and the Shadow arms SHF, SHHZ, SHRC), 5,040 rows over the D60 days

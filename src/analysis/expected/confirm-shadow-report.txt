@@ -1,0 +1,89 @@
+TOTALS (mean over days of the day value; P in % of served)
+G2|EO35      days 60 | served 730.6 | P(chg5) 32.5% | P(vis60) 37.8% | E(chg|chg) 3.96 min | visRev60 39.6 | TV5 1634 min | late60First 234.6 | breach 30.50 (4.17%)
+G2|EOHZ35    days 60 | served 732.1 | P(chg5) 32.5% | P(vis60) 37.6% | E(chg|chg) 3.95 min | visRev60 39.8 | TV5 1634 min | late60First 234.6 | breach 30.25 (4.13%)
+G2|RCE35     days 60 | served 729.2 | P(chg5) 32.1% | P(vis60) 36.3% | E(chg|chg) 3.76 min | visRev60 23.1 | TV5 1436 min | late60First 235.2 | breach 0.00 (0.00%)
+G2|SHF71     days 60 | served 694.4 | P(chg5) 22.5% | P(vis60) 29.2% | E(chg|chg) 11.95 min | visRev60 50.0 | TV5 2627 min | late60First 168.3 | breach 32.20 (4.64%) | guaranteed 67.8%: |c|>=1s 21.61 (4.59%), chg5 1.32%, vis60 7.26%, rev60 3.29, relocated after promise 18.67 | allowed: chg5 67.1%, E(chg|chg) 12.37 min
+G2|SHHZ71    days 60 | served 732.8 | P(chg5) 22.0% | P(vis60) 29.6% | E(chg|chg) 12.55 min | visRev60 53.6 | TV5 2826 min | late60First 179.2 | breach 40.66 (5.55%) | guaranteed 68.6%: |c|>=1s 29.62 (5.89%), chg5 1.54%, vis60 8.68%, rev60 4.56, relocated after promise 26.03 | allowed: chg5 66.5%, E(chg|chg) 13.09 min
+G2|SHRC71    days 60 | served 723.3 | P(chg5) 21.4% | P(vis60) 27.5% | E(chg|chg) 12.54 min | visRev60 36.9 | TV5 2550 min | late60First 181.9 | breach 0.00 (0.00%) | guaranteed 67.6%: |c|>=1s 0.00 (0.00%), chg5 0.00%, vis60 4.77%, rev60 0.06, relocated after promise 0.01 | allowed: chg5 66.2%, E(chg|chg) 12.54 min
+G2|U         days 60 | served 804.5 | P(chg5) 47.1% | P(vis60) 52.3% | E(chg|chg) 9.05 min | visRev60 88.2 | TV5 4558 min | late60First 372.7 | breach 0.00 (0.00%)
+INS|EO35     days 60 | served 723.2 | P(chg5) 31.5% | P(vis60) 35.5% | E(chg|chg) 3.80 min | visRev60 21.6 | TV5 1390 min | late60First 235.2 | breach 8.56 (1.18%)
+INS|EOHZ35   days 60 | served 725.2 | P(chg5) 31.6% | P(vis60) 35.5% | E(chg|chg) 3.80 min | visRev60 21.7 | TV5 1397 min | late60First 236.1 | breach 8.54 (1.18%)
+INS|RCE35    days 60 | served 726.7 | P(chg5) 31.8% | P(vis60) 35.6% | E(chg|chg) 3.77 min | visRev60 19.9 | TV5 1403 min | late60First 235.0 | breach 0.00 (0.00%)
+INS|SHF72    days 60 | served 685.5 | P(chg5) 21.3% | P(vis60) 26.2% | E(chg|chg) 11.70 min | visRev60 30.3 | TV5 2225 min | late60First 166.4 | breach 4.92 (0.72%) | guaranteed 68.6%: |c|>=1s 2.62 (0.56%), chg5 0.45%, vis60 4.20%, rev60 0.24, relocated after promise 0.00 | allowed: chg5 66.9%, E(chg|chg) 11.86 min
+INS|SHHZ72   days 60 | served 723.9 | P(chg5) 20.7% | P(vis60) 26.4% | E(chg|chg) 12.64 min | visRev60 31.4 | TV5 2459 min | late60First 177.1 | breach 5.87 (0.81%) | guaranteed 69.1%: |c|>=1s 3.27 (0.65%), chg5 0.51%, vis60 4.98%, rev60 0.29, relocated after promise 0.00 | allowed: chg5 65.7%, E(chg|chg) 12.85 min
+INS|SHRC72   days 60 | served 719.8 | P(chg5) 20.6% | P(vis60) 26.5% | E(chg|chg) 12.82 min | visRev60 30.9 | TV5 2460 min | late60First 177.6 | breach 0.00 (0.00%) | guaranteed 68.8%: |c|>=1s 0.00 (0.00%), chg5 0.00%, vis60 4.86%, rev60 0.06, relocated after promise 0.00 | allowed: chg5 66.0%, E(chg|chg) 12.82 min
+INS|U        days 60 | served 795.6 | P(chg5) 45.8% | P(vis60) 49.6% | E(chg|chg) 8.77 min | visRev60 42.4 | TV5 3910 min | late60First 373.8 | breach 0.00 (0.00%)
+
+SECONDARY (exploratory; two-sided exact sign p and paired t p; predicted direction in brackets)
+-- INS
+S1 INS Shadow vs Ordinary, strict: SHF - EO35        pDispPct          mean   -10.098 SE   0.194 days +/- 0/60 n=60 sign p 1.73e-18 t p 4.97e-51 [pred <0]
+S1 INS SHF - EO35                                    served            mean   -37.678 SE   1.547 days +/- 0/60 n=60 sign p 1.73e-18 t p 1.79e-32 [pred <0]
+S2 INS Shadow (HZ) vs Elmi Ordinary: SHHZ - EO35     pDispPct          mean   -10.732 SE   0.203 days +/- 0/60 n=60 sign p 1.73e-18 t p 2.29e-51 [pred <0]
+S2 INS SHHZ - EO35                                   served            mean     0.689 SE   1.244 days +/- 30/29 n=60 sign p 1.00e+0 t p 5.82e-1 [pred ~0]
+S3 INS Shadow vs uniform, Rule C: SHRC - RCE35       pDispPct          mean   -11.213 SE   0.206 days +/- 0/60 n=60 sign p 1.73e-18 t p 4.24e-52 [pred <0]
+S3 INS SHRC - RCE35                                  served            mean    -6.839 SE   1.229 days +/- 11/49 n=60 sign p 7.56e-7 t p 6.73e-7 [pred <0]
+S4 INS Shadow+Rule C vs Elmi Ordinary: SHRC - EO35   pDispPct          mean   -10.843 SE   0.202 days +/- 0/60 n=60 sign p 1.73e-18 t p 8.07e-52 [pred <0]
+S4 INS SHRC - EO35                                   served            mean    -3.328 SE   1.329 days +/- 23/37 n=60 sign p 9.25e-2 t p 1.50e-2 [pred <0]
+S4 INS SHRC - EO35                                   visRev60          mean     9.289 SE   0.624 days +/- 60/0 n=60 sign p 1.73e-18 t p 1.26e-21 [pred >0]
+S4 INS SHRC - EO35                                   breach            mean    -8.561 SE   0.416 days +/- 0/60 n=60 sign p 1.73e-18 t p 1.24e-28 [pred <0]
+S5 INS SHF - SHHZ by window                          served        w08 mean   -24.133 SE   0.759 days +/- 0/60 n=60 sign p 1.73e-18 t p 7.76e-39 [pred <0 (larger)]
+S5 INS SHF - SHHZ by window                          served        w17 mean   -14.233 SE   0.892 days +/- 1/59 n=60 sign p 1.06e-16 t p 4.46e-23 [pred <0 (smaller)]
+S6 INS E(c+|changed) SHF - EO35 (min)                EchgMin           mean     7.895 SE   0.062 days +/- 60/0 n=60 sign p 1.73e-18 t p 6.77e-74 [pred >0]
+S6 INS E(c+|changed) SHHZ - EOHZ35 (min)             EchgMin           mean     8.854 SE   0.073 days +/- 60/0 n=60 sign p 1.73e-18 t p 2.22e-72 [pred >0]
+S6 INS Shadow raises reversals: SHHZ - EOHZ35        visRev60          mean     9.694 SE   0.560 days +/- 60/0 n=60 sign p 1.73e-18 t p 8.42e-25 [pred >0]
+S6 INS SHHZ - EOHZ35                                 TV5min            mean  1062.095 SE  20.810 days +/- 60/0 n=60 sign p 1.73e-18 t p 1.61e-50 [pred >0]
+S7 INS SHRC - SHF late60First by window              late60First   w08 mean     9.739 SE   0.569 days +/- 58/0 n=60 sign p 6.94e-18 t p 1.55e-24 [pred >0]
+S7 INS SHRC - SHF late60First by window              late60First   w17 mean     1.383 SE   0.546 days +/- 36/21 n=60 sign p 6.27e-2 t p 1.39e-2 [pred >=0]
+S8 INS guaranteed riders, visible change >= 60 s: SHRC - SHF G_vis60           mean     4.317 SE   0.388 days +/- 54/5 n=60 sign p 1.91e-11 t p 3.98e-16 [pred >0]
+S9 INS guaranteed riders with c >= 5 s: SHRC - SHF   G_dispUp5         mean    -2.139 SE   0.155 days +/- 0/58 n=60 sign p 6.94e-18 t p 3.46e-20 [pred <0]
+S9 INS guaranteed riders |c|>=1s: SHRC - SHF         G_dispAny1        mean    -2.622 SE   0.161 days +/- 0/59 n=60 sign p 3.47e-18 t p 1.64e-23 [pred <0]
+S10 INS HZ comparator: guaranteed |c|>=1s SHRC - SHHZ G_dispAny1        mean    -3.272 SE   0.211 days +/- 0/60 n=60 sign p 1.73e-18 t p 1.91e-22 [pred <0]
+S10 INS SHRC - SHHZ                                  served            mean    -4.017 SE   0.494 days +/- 7/52 n=60 sign p 1.36e-9 t p 3.33e-11 [pred <0]
+S10 INS served SHRC72 non-inferior to SHHZ72 (margin 7.9/day, one-sided t, unadjusted): mean -4.017 /day, p 4.76e-11 [pred: shown (discovery -5.0/day)]
+S10 INS SHRC - SHHZ                                  visRev60          mean    -0.511 SE   0.267 days +/- 23/37 n=60 sign p 9.25e-2 t p 6.09e-2 [pred ~0]
+S10 INS SHRC - SHHZ                                  pDispPct          mean    -0.111 SE   0.057 days +/- 25/35 n=60 sign p 2.45e-1 t p 5.49e-2 [pred <=0]
+S11 INS SHRC - SHF                                   pDispPct          mean    -0.744 SE   0.100 days +/- 10/50 n=60 sign p 1.62e-7 t p 5.23e-10 [pred <=0]
+S11 INS SHRC - SHF                                   TV5min            mean   234.835 SE  14.916 days +/- 58/2 n=60 sign p 3.18e-15 t p 8.61e-23 [pred >0]
+S11 INS SHRC - SHF                                   breach            mean    -4.917 SE   0.289 days +/- 0/60 n=60 sign p 1.73e-18 t p 2.12e-24 [pred <0]
+S14 INS cost of protection: U - EO35                 served            mean    72.400 SE   1.296 days +/- 60/0 n=60 sign p 1.73e-18 t p 8.60e-53 [pred >0]
+-- G2
+S1 G2 Shadow vs Ordinary, strict: SHF - EO35         pDispPct          mean   -10.022 SE   0.203 days +/- 0/60 n=60 sign p 1.73e-18 t p 1.23e-49 [pred <0]
+S1 G2 SHF - EO35                                     served            mean   -36.167 SE   1.539 days +/- 0/60 n=60 sign p 1.73e-18 t p 1.23e-31 [pred <0]
+S2 G2 Shadow (HZ) vs Elmi Ordinary: SHHZ - EO35      pDispPct          mean   -10.533 SE   0.199 days +/- 0/60 n=60 sign p 1.73e-18 t p 1.87e-51 [pred <0]
+S2 G2 SHHZ - EO35                                    served            mean     2.283 SE   1.236 days +/- 37/19 n=60 sign p 2.22e-2 t p 6.98e-2 [pred ~0]
+S2 G2 SHHZ - EOHZ35                                  pDispPct          mean   -10.491 SE   0.191 days +/- 0/60 n=60 sign p 1.73e-18 t p 2.26e-52 [pred <0]
+S2 G2 SHHZ - EOHZ35                                  served            mean     0.789 SE   1.302 days +/- 29/29 n=60 sign p 1.00e+0 t p 5.47e-1 [pred ~0]
+S3 G2 Shadow vs uniform, Rule C: SHRC - RCE35        pDispPct          mean   -10.603 SE   0.200 days +/- 0/60 n=60 sign p 1.73e-18 t p 1.70e-51 [pred <0]
+S3 G2 SHRC - RCE35                                   served            mean    -5.933 SE   1.212 days +/- 15/45 n=60 sign p 1.35e-4 t p 7.95e-6 [pred <0]
+S4 G2 Shadow+Rule C vs Elmi Ordinary: SHRC - EO35    pDispPct          mean   -11.069 SE   0.220 days +/- 0/60 n=60 sign p 1.73e-18 t p 3.68e-50 [pred <0]
+S4 G2 SHRC - EO35                                    served            mean    -7.261 SE   1.249 days +/- 13/47 n=60 sign p 1.21e-5 t p 2.63e-7 [pred <0]
+S4 G2 SHRC - EO35                                    visRev60          mean    -2.667 SE   0.906 days +/- 18/42 n=60 sign p 2.67e-3 t p 4.65e-3 [pred <=0]
+S4 G2 SHRC - EO35                                    breach            mean   -30.500 SE   0.960 days +/- 0/60 n=60 sign p 1.73e-18 t p 8.18e-39 [pred <0]
+S5 G2 SHF - SHHZ by window                           served        w08 mean   -24.100 SE   0.745 days +/- 0/60 n=60 sign p 1.73e-18 t p 3.04e-39 [pred <0 (larger)]
+S5 G2 SHF - SHHZ by window                           served        w17 mean   -14.350 SE   0.808 days +/- 1/59 n=60 sign p 1.06e-16 t p 2.44e-25 [pred <0 (smaller)]
+S6 G2 E(c+|changed) SHF - EO35 (min)                 EchgMin           mean     7.997 SE   0.072 days +/- 60/0 n=60 sign p 1.73e-18 t p 3.40e-70 [pred >0]
+S6 G2 E(c+|changed) SHHZ - EOHZ35 (min)              EchgMin           mean     8.623 SE   0.078 days +/- 60/0 n=60 sign p 1.73e-18 t p 3.64e-70 [pred >0]
+S6 G2 Shadow raises reversals: SHHZ - EOHZ35         visRev60          mean    13.822 SE   0.824 days +/- 59/1 n=60 sign p 1.06e-16 t p 4.11e-24 [pred >0]
+S6 G2 SHHZ - EOHZ35                                  TV5min            mean  1192.017 SE  19.958 days +/- 60/0 n=60 sign p 1.73e-18 t p 1.80e-54 [pred >0]
+S7 G2 SHRC - SHF late60First by window               late60First   w08 mean    10.856 SE   0.639 days +/- 59/1 n=60 sign p 1.06e-16 t p 2.16e-24 [pred >0]
+S7 G2 SHRC - SHF late60First by window               late60First   w17 mean     2.722 SE   0.573 days +/- 41/18 n=60 sign p 3.79e-3 t p 1.36e-5 [pred >=0]
+S8 G2 guaranteed riders, visible change >= 60 s: SHRC - SHF G_vis60           mean   -10.833 SE   0.735 days +/- 1/59 n=60 sign p 1.06e-16 t p 1.88e-21 [pred <0]
+S9 G2 guaranteed riders with c >= 5 s: SHRC - SHF    G_dispUp5         mean    -6.217 SE   0.309 days +/- 0/60 n=60 sign p 1.73e-18 t p 4.30e-28 [pred <0]
+S10 G2 HZ comparator: guaranteed |c|>=1s SHRC - SHHZ G_dispAny1        mean   -29.622 SE   0.889 days +/- 0/60 n=60 sign p 1.73e-18 t p 5.64e-40 [pred <0]
+S10 G2 SHRC - SHHZ                                   served            mean    -9.544 SE   0.697 days +/- 3/57 n=60 sign p 6.25e-14 t p 5.58e-20 [pred <0]
+S10 G2 served SHRC71 non-inferior to SHHZ71 (margin 8/day, one-sided t, unadjusted): mean -9.544 /day, p 9.85e-1 [pred: NOT shown (discovery -9.4/day)]
+S10 G2 SHRC - SHHZ                                   visRev60          mean   -16.644 SE   0.672 days +/- 0/60 n=60 sign p 1.73e-18 t p 7.23e-33 [pred <0]
+S10 G2 SHRC - SHHZ                                   pDispPct          mean    -0.536 SE   0.082 days +/- 11/49 n=60 sign p 7.56e-7 t p 1.90e-8 [pred <=0]
+S11 G2 SHRC - SHF                                    pDispPct          mean    -1.047 SE   0.112 days +/- 9/51 n=60 sign p 3.09e-8 t p 3.12e-13 [pred <=0]
+S11 G2 SHRC - SHF                                    TV5min            mean   -77.037 SE  17.387 days +/- 17/43 n=60 sign p 1.07e-3 t p 4.14e-5 [pred ~0]
+S11 G2 SHRC - SHF                                    breach            mean   -32.200 SE   1.077 days +/- 0/60 n=60 sign p 1.73e-18 t p 2.47e-37 [pred <0]
+S12 G2 guaranteed riders relocated after promise SHRC - SHF G_switched        mean   -18.661 SE   0.712 days +/- 0/60 n=60 sign p 1.73e-18 t p 3.30e-34 [pred <0]
+S13 G2 interaction on visRev60: (SHF - SHRC) - (EO35 - RCE35) = -3.494 /day (paired days 60/60) [pred < 0]
+S14 G2 cost of protection: U - EO35                  served            mean    73.972 SE   1.125 days +/- 60/0 n=60 sign p 1.73e-18 t p 6.85e-57 [pred >0]
+
+S16 INS SHF72: realised guaranteed share 68.59 % of served riders (84628 of 123387, 360 cells)
+S16 INS SHHZ72: realised guaranteed share 69.09 % of served riders (90025 of 130293, 360 cells)
+S16 INS SHRC72: realised guaranteed share 68.84 % of served riders (89197 of 129570, 360 cells)
+S16 G2 SHF71: realised guaranteed share 67.82 % of served riders (84772 of 124991, 360 cells)
+S16 G2 SHHZ71: realised guaranteed share 68.59 % of served riders (90483 of 131912, 360 cells)
+S16 G2 SHRC71: realised guaranteed share 67.64 % of served riders (88065 of 130194, 360 cells)
