@@ -44,11 +44,6 @@ public sealed record RouteStop
     public Duration ServiceDuration { get; }
 }
 
-public sealed record RouteLeg(
-    NodeId FromNodeId,
-    NodeId ToNodeId,
-    StopId DestinationStopId);
-
 public sealed class RoutePlan
 {
     private RoutePlan(
@@ -75,17 +70,6 @@ public sealed class RoutePlan
 
     public IEnumerable<RouteStop> RemainingStops =>
         FrozenPrefix.Skip(ExecutedStopCount).Concat(MutableSuffix);
-
-    public IEnumerable<RouteLeg> GetRemainingLegs(NodeId startNode)
-    {
-        var from = startNode;
-
-        foreach (var stop in RemainingStops)
-        {
-            yield return new RouteLeg(from, stop.NodeId, stop.StopId);
-            from = stop.NodeId;
-        }
-    }
 
     public static DomainResult<RoutePlan> Create(
         PlanVersion version,
@@ -166,8 +150,6 @@ public sealed class RoutePlan
 
         return null;
     }
-
-    public RoutePlan CreateNoOp() => this;
 
     public DomainResult<RoutePlan> ReplaceMutableSuffix(
         IEnumerable<RouteStop> mutableSuffix)

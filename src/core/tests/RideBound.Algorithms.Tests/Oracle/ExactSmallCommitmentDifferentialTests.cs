@@ -278,12 +278,12 @@ public sealed class ExactSmallCommitmentDifferentialTests
                 generated.IsSuccess,
                 $"seed={seed}; {generated.Witness?.Message}");
             var raw = Assert.Single(generated.VehicleCandidates!);
-            var legacyRetention = retainer.Retain(
-                raw.Candidates,
+            var legacyRetention = retainer.RetainRanked(
+                CandidatePortfolioRetainer.Rank(raw.Candidates).ToArray(),
                 3,
                 CandidateRetentionStrategy.LegacyAcceptedCountCostSlack);
-            var portfolioRetention = retainer.Retain(
-                raw.Candidates,
+            var portfolioRetention = retainer.RetainRanked(
+                CandidatePortfolioRetainer.Rank(raw.Candidates).ToArray(),
                 3,
                 CandidateRetentionStrategy.ServiceSetStabilityPortfolioV1);
             var legacyRaw = new[]

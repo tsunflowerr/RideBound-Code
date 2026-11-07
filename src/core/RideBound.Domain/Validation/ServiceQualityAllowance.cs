@@ -140,8 +140,6 @@ public sealed class ServiceQualityAllowance
     /// </summary>
     public IReadOnlyList<ServiceQualityBreach> Breaches { get; }
 
-    public bool HasBreaches => Breaches.Count > 0;
-
     /// <summary>
     /// Process-local identity used to keep memoized schedule artifacts from
     /// crossing two different relaxations. Not a published identity.

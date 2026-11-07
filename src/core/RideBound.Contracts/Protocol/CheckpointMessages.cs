@@ -373,9 +373,6 @@ public static class CheckpointPayloadCodec
 
 public static class RestoreAcknowledgedPayloadCodec
 {
-    private static readonly IReadOnlySet<string> Fields =
-        new HashSet<string>(["status", "checkpointHash"], StringComparer.Ordinal);
-
     public static byte[] Encode(RestoreAcknowledgedPayload payload)
     {
         ArgumentNullException.ThrowIfNull(payload);
@@ -393,42 +390,5 @@ public static class RestoreAcknowledgedPayloadCodec
                 writer.WriteString("checkpointHash", payload.CheckpointHash.Value);
                 writer.WriteEndObject();
             });
-    }
-
-    public static ProtocolPayloadDecodeResult<RestoreAcknowledgedPayload> Decode(
-        JsonElement payload)
-    {
-        var objectError = ProtocolPayloadReader.ValidateObject(
-            payload,
-            "$.payload",
-            Fields);
-        var status = ProtocolPayloadReader.ReadRequiredString(
-            payload,
-            "$.payload",
-            "status",
-            requireOpaqueValue: false);
-        var hashText = ProtocolPayloadReader.ReadRequiredString(
-            payload,
-            "$.payload",
-            "checkpointHash",
-            requireOpaqueValue: false);
-        var error = HelloPayloadCodec.FirstError(
-            objectError,
-            status.Error,
-            hashText.Error);
-
-        if (error is not null
-            || !string.Equals(status.Value, "restored", StringComparison.Ordinal)
-            || !Sha256Hex.TryCreate(hashText.Value, out var hash))
-        {
-            return ProtocolPayloadDecodeResult<RestoreAcknowledgedPayload>.Failure(
-                error ?? new ProtocolPayloadError(
-                    ProtocolPayloadErrorCode.InvalidValue,
-                    "$.payload",
-                    "Restore acknowledgement is invalid."));
-        }
-
-        return ProtocolPayloadDecodeResult<RestoreAcknowledgedPayload>.Success(
-            new RestoreAcknowledgedPayload(status.Value!, hash!));
     }
 }

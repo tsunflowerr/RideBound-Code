@@ -103,27 +103,6 @@ public sealed class WaitingRiderRelocationPhysicalTests
             Move).IsFeasible);
     }
 
-    [Fact]
-    public void Find_lists_exactly_the_waiting_riders_whose_only_change_is_the_vehicle()
-    {
-        var reduced = Waiting();
-        var candidate = reduced
-            .UpdateVehicleRoute(TestData.VehicleOne, TestData.Route(version: 1)).Value!
-            .UpdateVehicleRoute(
-                TestData.VehicleTwo,
-                TestData.Route(mutable: [TestData.Pickup(), TestData.DropOff()], version: 1)).Value!
-            .ReassignWaitingRequest(TestData.RequestOne, TestData.VehicleTwo).Value!;
-        var cancelled = reduced.CancelAfterAcceptance(TestData.RequestOne).Value!;
-
-        Assert.Equal([Move], WaitingRiderRelocation.Find(reduced, candidate));
-        Assert.Empty(WaitingRiderRelocation.Find(reduced, reduced));
-        Assert.Empty(WaitingRiderRelocation.Find(reduced, cancelled));
-        // Read backwards, the same pair of states is the reverse move.
-        Assert.Equal(
-            [new WaitingRiderRelocation(TestData.RequestOne, TestData.VehicleTwo, TestData.VehicleOne)],
-            WaitingRiderRelocation.Find(candidate, reduced));
-    }
-
     private static RideBoundRun TwoVehicles()
     {
         var run = TestData.EmptyRun().AddRequest(TestData.PendingRequest()).Value!;

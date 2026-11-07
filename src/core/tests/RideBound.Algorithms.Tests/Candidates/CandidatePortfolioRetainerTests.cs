@@ -31,11 +31,11 @@ public sealed class CandidatePortfolioRetainerTests
 
         for (var cap = 1; cap <= candidates.Length; cap++)
         {
-            var legacy = _retainer.Retain(
+            var legacy = RankAndRetain(
                 candidates,
                 cap,
                 CandidateRetentionStrategy.LegacyAcceptedCountCostSlack);
-            var portfolio = _retainer.Retain(
+            var portfolio = RankAndRetain(
                 candidates.Reverse().ToArray(),
                 cap,
                 CandidateRetentionStrategy.ServiceSetStabilityPortfolioV1);
@@ -153,11 +153,11 @@ public sealed class CandidatePortfolioRetainerTests
             [1_000, 2_000, 2_100, 2_200]);
         var candidates = new[] { noOp, cheapest, secondCheapest, stable };
 
-        var legacy = _retainer.Retain(
+        var legacy = RankAndRetain(
             candidates,
             3,
             CandidateRetentionStrategy.LegacyAcceptedCountCostSlack);
-        var portfolio = _retainer.Retain(
+        var portfolio = RankAndRetain(
             candidates,
             3,
             CandidateRetentionStrategy.ServiceSetStabilityPortfolioV1);
@@ -181,7 +181,7 @@ public sealed class CandidatePortfolioRetainerTests
             Candidate("ab-1", VehicleOne, [RequestA, RequestB], 4),
             Candidate("cd-2", VehicleOne, [RequestC, RequestD], 14),
         };
-        var expected = _retainer.Retain(
+        var expected = RankAndRetain(
             candidates,
             3,
             CandidateRetentionStrategy.ServiceSetStabilityPortfolioV1);
@@ -192,7 +192,7 @@ public sealed class CandidatePortfolioRetainerTests
                      candidates.Skip(2).Concat(candidates.Take(2)).ToArray(),
                  })
         {
-            var actual = _retainer.Retain(
+            var actual = RankAndRetain(
                 permutation,
                 3,
                 CandidateRetentionStrategy.ServiceSetStabilityPortfolioV1);
@@ -252,7 +252,7 @@ public sealed class CandidatePortfolioRetainerTests
             var legacySets = sets.Select(
                     set =>
                     {
-                        var retained = _retainer.Retain(
+                        var retained = RankAndRetain(
                             set,
                             Math.Min(cap, set.Count),
                             CandidateRetentionStrategy.LegacyAcceptedCountCostSlack);
@@ -266,7 +266,7 @@ public sealed class CandidatePortfolioRetainerTests
             var portfolioSets = sets.Select(
                     set =>
                     {
-                        var retained = _retainer.Retain(
+                        var retained = RankAndRetain(
                             set.Reverse().ToArray(),
                             Math.Min(cap, set.Count),
                             CandidateRetentionStrategy.ServiceSetStabilityPortfolioV1);
@@ -331,11 +331,11 @@ public sealed class CandidatePortfolioRetainerTests
 
                     for (var cap = 1; cap <= candidates.Count; cap++)
                     {
-                        var legacy = _retainer.Retain(
+                        var legacy = RankAndRetain(
                             candidates,
                             cap,
                             CandidateRetentionStrategy.LegacyAcceptedCountCostSlack);
-                        var portfolio = _retainer.Retain(
+                        var portfolio = RankAndRetain(
                             candidates.AsEnumerable().Reverse().ToArray(),
                             cap,
                             CandidateRetentionStrategy.ServiceSetStabilityPortfolioV1);
@@ -363,32 +363,32 @@ public sealed class CandidatePortfolioRetainerTests
         var duplicate = candidate with { Schedule = new CandidateSchedule([], 2) };
 
         Assert.Throws<ArgumentException>(
-            () => _retainer.Retain(
+            () => RankAndRetain(
                 [candidate],
                 1,
                 CandidateRetentionStrategy.ServiceSetStabilityPortfolioV1));
         Assert.Throws<ArgumentException>(
-            () => _retainer.Retain(
+            () => RankAndRetain(
                 [noOp, candidate, duplicate],
                 2,
                 CandidateRetentionStrategy.ServiceSetStabilityPortfolioV1));
         Assert.Throws<ArgumentException>(
-            () => _retainer.Retain(
+            () => RankAndRetain(
                 [noOp, Candidate("v2", VehicleTwo, [RequestA], 1)],
                 2,
                 CandidateRetentionStrategy.ServiceSetStabilityPortfolioV1));
         Assert.Throws<ArgumentException>(
-            () => _retainer.Retain(
+            () => RankAndRetain(
                 [noOp with { NewRequestIds = [RequestA] }],
                 1,
                 CandidateRetentionStrategy.ServiceSetStabilityPortfolioV1));
         Assert.Throws<ArgumentException>(
-            () => _retainer.Retain(
+            () => RankAndRetain(
                 [noOp, candidate with { NewRequestIds = [RequestA, RequestA] }],
                 2,
                 CandidateRetentionStrategy.ServiceSetStabilityPortfolioV1));
         Assert.Throws<ArgumentException>(
-            () => _retainer.Retain(
+            () => RankAndRetain(
                 [noOp, candidate with { NewRequestIds = [RequestB] }],
                 2,
                 CandidateRetentionStrategy.ServiceSetStabilityPortfolioV1));
@@ -400,12 +400,12 @@ public sealed class CandidatePortfolioRetainerTests
             Stop("hidden-c-drop", "hidden-c-destination", RouteStopKind.DropOff, RequestC),
         };
         Assert.Throws<ArgumentException>(
-            () => _retainer.Retain(
+            () => RankAndRetain(
                 [noOp, Candidate("hidden-request", VehicleOne, [RequestA], 1, hiddenRequestStops)],
                 1,
                 CandidateRetentionStrategy.ServiceSetStabilityPortfolioV1));
         Assert.Throws<ArgumentException>(
-            () => _retainer.Retain(
+            () => RankAndRetain(
                 [
                     noOp,
                     candidate with
@@ -440,7 +440,7 @@ public sealed class CandidatePortfolioRetainerTests
             Schedule = new CandidateSchedule([], 1),
         };
 
-        var retained = _retainer.Retain(
+        var retained = RankAndRetain(
             [noOp, malformedOnlyForThePortfolioProof],
             1,
             CandidateRetentionStrategy.LegacyAcceptedCountCostSlack);
@@ -451,14 +451,24 @@ public sealed class CandidatePortfolioRetainerTests
             retained.Omitted.Select(candidate => candidate.CandidateId));
     }
 
+    // Rank first, then retain: the order the candidate generator uses.
+    private CandidateRetentionResult RankAndRetain(
+        IReadOnlyCollection<InsertionCandidate> candidates,
+        int maximumCandidates,
+        CandidateRetentionStrategy strategy) =>
+        _retainer.RetainRanked(
+            CandidatePortfolioRetainer.Rank(candidates).ToArray(),
+            maximumCandidates,
+            strategy);
+
     private FleetSelection SelectFleet(
         IReadOnlyCollection<InsertionCandidate> vehicleOne,
         IReadOnlyCollection<InsertionCandidate> vehicleTwo,
         int cap,
         CandidateRetentionStrategy strategy)
     {
-        var first = _retainer.Retain(vehicleOne, cap, strategy);
-        var second = _retainer.Retain(vehicleTwo, cap, strategy);
+        var first = RankAndRetain(vehicleOne, cap, strategy);
+        var second = RankAndRetain(vehicleTwo, cap, strategy);
         var selected = new CandidateFleetSelector().Select(
         [
             new VehicleCandidateSet(VehicleOne, first.Retained, [], true),

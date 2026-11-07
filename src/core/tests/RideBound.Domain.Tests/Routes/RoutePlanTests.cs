@@ -6,20 +6,6 @@ namespace RideBound.Domain.Tests.Routes;
 public sealed class RoutePlanTests
 {
     [Fact]
-    public void No_op_preserves_exact_prefix_suffix_and_version()
-    {
-        var route = TestData.Route(
-            frozen: [TestData.Waypoint("frozen")],
-            mutable: [TestData.Pickup(), TestData.DropOff()]);
-
-        var noOp = route.CreateNoOp();
-
-        Assert.Same(route, noOp);
-        Assert.True(route.IsSemanticallyEqual(noOp));
-        Assert.Equal(0, noOp.Version.Value);
-    }
-
-    [Fact]
     public void Replacing_suffix_advances_version_and_preserves_exact_prefix()
     {
         var route = TestData.Route(
@@ -114,27 +100,5 @@ public sealed class RoutePlanTests
             Assert.True(route.HasExactFrozenPrefix(changed.Value!));
             Assert.Equal(frozen, changed.Value!.FrozenPrefix);
         }
-    }
-
-    [Fact]
-    public void Remaining_legs_follow_exact_stop_order()
-    {
-        var route = TestData.Route(
-            frozen: [TestData.Waypoint("executed", TestData.NodeOne)],
-            mutable:
-            [
-                TestData.Waypoint("next", TestData.NodeTwo),
-                TestData.Waypoint("last", TestData.NodeOne),
-            ],
-            executed: 1);
-
-        var legs = route.GetRemainingLegs(TestData.NodeOne).ToArray();
-
-        Assert.Equal(2, legs.Length);
-        Assert.Equal(TestData.NodeOne, legs[0].FromNodeId);
-        Assert.Equal(TestData.NodeTwo, legs[0].ToNodeId);
-        Assert.Equal(new StopId("next"), legs[0].DestinationStopId);
-        Assert.Equal(TestData.NodeTwo, legs[1].FromNodeId);
-        Assert.Equal(TestData.NodeOne, legs[1].ToNodeId);
     }
 }

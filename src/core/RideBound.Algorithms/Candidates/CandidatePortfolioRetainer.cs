@@ -15,18 +15,6 @@ public sealed record CandidateRetentionResult(
 /// </summary>
 public sealed class CandidatePortfolioRetainer
 {
-    public CandidateRetentionResult Retain(
-        IReadOnlyCollection<InsertionCandidate> candidates,
-        int maximumCandidates,
-        CandidateRetentionStrategy strategy)
-    {
-        ArgumentNullException.ThrowIfNull(candidates);
-        return RetainRanked(
-            Rank(candidates).ToArray(),
-            maximumCandidates,
-            strategy);
-    }
-
     /// <summary>
     /// Retains from a pool the caller has already put in <see cref="Rank"/>
     /// order. Ranking is this type's precondition, so a caller that had to rank
