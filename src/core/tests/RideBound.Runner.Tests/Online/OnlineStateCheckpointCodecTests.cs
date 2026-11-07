@@ -419,7 +419,7 @@ public sealed class OnlineStateCheckpointCodecTests
     [Fact]
     public void Shadow_allocations_round_trip_on_every_state_path_and_are_absent_by_default()
     {
-        // ADR-089 GĐ4: the fast writer, the reference canonicalizer, the v2 hash and the checkpoint codec.
+        // ADR-089 GĐ4: the fast writer, the reference canonicalizer and the checkpoint codec.
         var (run, _, promises, travel) = SingleRiderState();
         var plain = new OnlineState(run, travel, 5, travel.SnapshotHash, promises);
         var shadow = plain with
@@ -437,9 +437,8 @@ public sealed class OnlineStateCheckpointCodecTests
             "\"shadowAllocations\":[{\"class\":\"guaranteed\",\"requestId\":\"request-1\",\"score\":\"52.494082647339084\"}]",
             System.Text.Encoding.UTF8.GetString(shadowCanonical));
         Assert.Equal(shadowCanonical, OnlineStateCanonicalWriter.Write(shadow, null).ToArray());
-        Assert.NotEqual(
-            new OnlineStateHashV2(cached: false).Calculate(plain),
-            new OnlineStateHashV2(cached: false).Calculate(shadow));
+        Assert.Equal(plainCanonical, OnlineStateReferenceCanonicalizer.CanonicalizeReference(plain));
+        Assert.Equal(shadowCanonical, OnlineStateReferenceCanonicalizer.CanonicalizeReference(shadow));
 
         using var document = JsonDocument.Parse(shadowCanonical);
         var decoded = OnlineStateCheckpointCodec.Decode(document.RootElement, shadowAllocation: true);

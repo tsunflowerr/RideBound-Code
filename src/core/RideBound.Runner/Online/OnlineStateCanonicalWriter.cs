@@ -50,9 +50,10 @@ public sealed class OnlineStateCanonicalCache
 
 /// <summary>
 /// Direct writer of the canonical online state (OnlineStateHash.v1). It produces exactly the
-/// bytes of the reference path OnlineStateCanonicalizer.CanonicalizeReference
-/// (Utf8JsonWriter + CanonicalJson.Canonicalize), with member names in ordinal order as
-/// CanonicalJson sorts them. With a cache, unchanged entities are reused by reference.
+/// bytes of the reference path OnlineStateReferenceCanonicalizer.CanonicalizeReference, a test
+/// oracle in Runner.Tests (Utf8JsonWriter + CanonicalJson.Canonicalize), with member names in
+/// ordinal order as CanonicalJson sorts them. With a cache, unchanged entities are reused by
+/// reference.
 /// </summary>
 public static class OnlineStateCanonicalWriter
 {
@@ -267,7 +268,7 @@ public static class OnlineStateCanonicalWriter
         return fragment;
     }
 
-    // OnlineStateCanonicalizer.WriteRequest (OnlineStateCanonicalizer.cs:142-180), ordinal member order.
+    // OnlineStateReferenceCanonicalizer.WriteRequest, ordinal member order.
     internal static void WriteRequest(CanonicalBuffer buffer, RideRequest request)
     {
         var item = new CanonicalObject(buffer);
@@ -297,7 +298,7 @@ public static class OnlineStateCanonicalWriter
         item.End();
     }
 
-    // OnlineStateCanonicalizer.cs:54-78.
+    // OnlineStateReferenceCanonicalizer.CanonicalizeReference, the vehicles array.
     internal static void WriteVehicle(CanonicalBuffer buffer, VehicleState vehicle)
     {
         var item = new CanonicalObject(buffer);
@@ -312,7 +313,7 @@ public static class OnlineStateCanonicalWriter
         item.End();
     }
 
-    // OnlineStateCanonicalizer.cs:81-112 (arcs sorted by from, then to node id, ordinal).
+    // OnlineStateReferenceCanonicalizer.CanonicalizeReference, travelTimes (arcs by from, then to node id, ordinal).
     internal static void WriteTravelTimes(CanonicalBuffer buffer, TravelTimeSnapshot travel)
     {
         var item = new CanonicalObject(buffer);
@@ -345,7 +346,7 @@ public static class OnlineStateCanonicalWriter
         item.End();
     }
 
-    // OnlineStateCanonicalizer.WritePosition (182-208).
+    // OnlineStateReferenceCanonicalizer.WritePosition.
     private static void WritePosition(CanonicalBuffer buffer, VehiclePosition position)
     {
         var item = new CanonicalObject(buffer);
@@ -370,7 +371,7 @@ public static class OnlineStateCanonicalWriter
         item.End();
     }
 
-    // OnlineStateCanonicalizer.WriteRequestSet (210-226).
+    // OnlineStateReferenceCanonicalizer.WriteRequestSet.
     private static void WriteRequestSet(CanonicalBuffer buffer, IEnumerable<RequestId> values)
     {
         buffer.Byte((byte)'[');
@@ -390,7 +391,7 @@ public static class OnlineStateCanonicalWriter
         buffer.Byte((byte)']');
     }
 
-    // OnlineStateCanonicalizer.WriteRoute / WriteStops (228-276).
+    // OnlineStateReferenceCanonicalizer.WriteRoute / WriteStops.
     private static void WriteRoute(CanonicalBuffer buffer, RoutePlan route)
     {
         var item = new CanonicalObject(buffer);
@@ -431,7 +432,7 @@ public static class OnlineStateCanonicalWriter
         buffer.Byte((byte)']');
     }
 
-    // OnlineStateCanonicalizer.WritePlanPool (278-316). Not cached: absent unless multiple-plan mode.
+    // OnlineStateReferenceCanonicalizer.WritePlanPool. Not cached: absent unless multiple-plan mode.
     internal static void WritePlanPool(CanonicalBuffer buffer, VersionedPlanPool pool)
     {
         var item = new CanonicalObject(buffer);
@@ -479,7 +480,7 @@ public static class OnlineStateCanonicalWriter
         item.End();
     }
 
-    // OnlineStateCanonicalizer.WriteCommitmentLedger entry body (349-396).
+    // OnlineStateReferenceCanonicalizer.WriteCommitmentLedger entry body.
     internal static void WriteLedgerEntry(CanonicalBuffer buffer, CommitmentLedgerEntry entry)
     {
         var item = new CanonicalObject(buffer);
@@ -522,7 +523,7 @@ public static class OnlineStateCanonicalWriter
         item.End();
     }
 
-    // OnlineStateCanonicalizer.WriteIncidentLedger (406-553).
+    // OnlineStateReferenceCanonicalizer.WriteIncidentLedger.
     private static void WriteIncidentLedger(
         CanonicalSegmentBuilder builder,
         OperationalIncidentLedger ledger,
@@ -680,7 +681,7 @@ public static class OnlineStateCanonicalWriter
         item.End();
     }
 
-    // OnlineStateCanonicalizer.WritePublishedPromise (555-566).
+    // OnlineStateReferenceCanonicalizer.WritePublishedPromise.
     private static void WritePublishedPromise(CanonicalBuffer buffer, PublishedPromise promise)
     {
         var item = new CanonicalObject(buffer);
@@ -691,7 +692,7 @@ public static class OnlineStateCanonicalWriter
         item.End();
     }
 
-    // OnlineStateCanonicalizer.WritePromiseProjection (568-608).
+    // OnlineStateReferenceCanonicalizer.WritePromiseProjection.
     private static void WritePromiseProjection(CanonicalBuffer buffer, PromiseProjection promise)
     {
         var item = new CanonicalObject(buffer);
@@ -731,7 +732,7 @@ public static class OnlineStateCanonicalWriter
         item.End();
     }
 
-    // OnlineStateCanonicalizer.WriteVector (610-638).
+    // OnlineStateReferenceCanonicalizer.WriteVector.
     private static void WriteVector(CanonicalBuffer buffer, CommitmentVector value)
     {
         var item = new CanonicalObject(buffer);
@@ -748,7 +749,7 @@ public static class OnlineStateCanonicalWriter
         item.End();
     }
 
-    // OnlineStateCanonicalizer.WriteIdentifiers (640-654).
+    // OnlineStateReferenceCanonicalizer.WriteIdentifiers.
     private static void WriteIdentifiers(CanonicalBuffer buffer, IEnumerable<string> values)
     {
         buffer.Byte((byte)'[');

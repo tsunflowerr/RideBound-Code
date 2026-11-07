@@ -86,32 +86,10 @@ public static class ProtocolHash
             canonicalDecision);
 
     /// <summary>
-    /// PROTOTYPE (wf9 option b): decisionHash v2 has its own domain and a canonicalInputState
-    /// without "onlineStateBefore"; the state stays bound through stateIdentityBefore.stateHash
-    /// (OnlineStateHash.v2), which commits to every entity of the state.
-    /// </summary>
-    public static Sha256Hex CalculateDecisionHashV2(
-        Sha256Hex previousDecisionHash,
-        Sha256Hex manifestHash,
-        string policyVersion,
-        IReadOnlyList<ReadOnlyMemory<byte>> canonicalInputStateParts,
-        ReadOnlySpan<byte> canonicalDecision) =>
-        CalculateDecisionHash(
-            DecisionDomainV2,
-            previousDecisionHash,
-            manifestHash,
-            policyVersion,
-            canonicalInputStateParts,
-            canonicalDecision);
-
-    private static readonly byte[] DecisionDomainV2 =
-        "RideBound.DecisionHash.v2\0"u8.ToArray();
-
-    /// <summary>
     /// ADR-089, light audit: the decision hash chains the previous decision, the manifest, the
     /// event batch, the state identity (epoch, sequence, simulation time and the state hash field)
     /// and the decision, but not the canonical online state, which is not hashed per decision in
-    /// this mode. Its own domain keeps it from being mistaken for a v1 or v2 hash.
+    /// this mode. Its own domain keeps it from being mistaken for a v1 hash.
     /// </summary>
     public static Sha256Hex CalculateDecisionHashLight(
         Sha256Hex previousDecisionHash,
