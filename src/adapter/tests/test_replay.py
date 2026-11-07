@@ -32,8 +32,8 @@ def settings(folder, transcript, runner, commit="b" * 40):
     )
 
 
-def job(settings, last_time=2000, restart=False):
-    """A small adapter run: hello, initialize, two epochs with ACKs, a checkpoint, optionally a Runner restart."""
+def job(settings, last_time=2000):
+    """A small adapter run: hello, initialize, two epochs with ACKs and a checkpoint."""
     protocol = session.RideBoundProtocolSession(settings)
     try:
         protocol.initialize({"snapshotHash": "c" * 64}, ["n-1", "n-2"], ["r-1"], ["v-1"])
@@ -41,10 +41,7 @@ def job(settings, last_time=2000, restart=False):
             batch = {"schemaVersion": "1.0.0", "messageType": "eventBatch", "runId": "run-1",
                      "scenarioId": "scenario-1", "epochId": epoch, "simTimeMs": time_ms, "payload": {"events": []}}
             protocol.acknowledge(protocol.decide(batch))
-        checkpoint = protocol.checkpoint()
-        if restart:
-            protocol.restart(checkpoint)
-            protocol.checkpoint()
+        protocol.checkpoint()
     finally:
         protocol.close()
 
@@ -79,18 +76,17 @@ class ReplayTests(unittest.TestCase):
         self.assertIn("nodeOnly", difference["replayed"])
         self.assertEqual(result["framesCompared"], 1)
 
-    def test_adapter_mode_replays_a_restart_and_rebinds_only_the_build_identity(self):
-        recorded = self.record("restart.ndjson.gz", restart=True)
+    def test_adapter_mode_rebinds_only_the_build_identity(self):
+        recorded = self.record("base.ndjson.gz")
         again = self.folder / "again.ndjson"
-        result = replay.run_adapter(
-            recorded, lambda: job(settings(self.folder, again, self.rebuilt, "d" * 40), restart=True))
+        result = replay.run_adapter(recorded, lambda: job(settings(self.folder, again, self.rebuilt, "d" * 40)))
         self.assertTrue(result["identical"], result)
         self.assertTrue(result["initializeRunRebound"])
-        self.assertEqual((result["framesChecked"], result["job"]), (22, "returned"))
-        # The replayed run's own transcript differs from the recording only in the two initializeRun frames.
+        self.assertEqual((result["framesChecked"], result["job"]), (13, "returned"))
+        # The replayed run's own transcript differs from the recording only in the initializeRun frame.
         compared = replay.compare_transcripts(recorded, again)
         self.assertEqual((compared["lines"], compared["differing"], compared["strippedByMessageType"]),
-                         (22, 0, {"initializeRun": 2}))
+                         (13, 0, {"initializeRun": 1}))
 
     def test_adapter_mode_reports_the_first_differing_adapter_frame(self):
         recorded = self.record("base.ndjson")

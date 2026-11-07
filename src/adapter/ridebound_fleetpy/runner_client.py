@@ -35,7 +35,7 @@ class RunnerClient:
     response-bearing request (the next decision or an explicit checkpoint) proves
     that the Runner consumed the ACK.  Shutdown drains stdout, so an error emitted
     for the final ACK cannot be silently lost.  Checkpoints are therefore requested
-    only at recovery/evidence boundaries rather than serializing the complete online
+    only at evidence boundaries rather than serializing the complete online
     state after every epoch.
     """
 
@@ -185,24 +185,6 @@ class RunnerClient:
         self._state = "initialized"
         return initialized
 
-    def restore(self, checkpoint_payload: dict[str, Any]) -> dict[str, Any]:
-        self._require_state("initialized")
-        envelope = self._run_envelope("restore", checkpoint_payload)
-        self._write(envelope)
-        restored = self._read_expected("restore", self._run_id, self._scenario_id)
-        expected_hash = checkpoint_payload.get("checkpointHash")
-        actual_hash = restored["payload"].get("checkpointHash")
-        if (
-            not isinstance(expected_hash, str)
-            or _HASH.fullmatch(expected_hash) is None
-            or actual_hash != expected_hash
-        ):
-            self._fail(
-                "RBWP7_RUNNER_RESTORE_HASH_MISMATCH",
-                f"expected={expected_hash!r}; actual={actual_hash!r}",
-            )
-        return restored
-
     def decide(self, event_batch: dict[str, Any]) -> dict[str, Any]:
         self._require_state("initialized")
         self._require_outgoing_type(event_batch, "eventBatch")
@@ -243,11 +225,6 @@ class RunnerClient:
         self._write(acknowledgement)
         self._pending = None
         self._state = "initialized"
-
-    def acknowledge_and_checkpoint(self, decision_hash: str) -> dict[str, Any]:
-        self.acknowledge(decision_hash)
-        checkpoint = self.request_checkpoint()
-        return checkpoint
 
     def request_checkpoint(self) -> dict[str, Any]:
         self._require_state("initialized")

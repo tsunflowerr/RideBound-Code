@@ -142,36 +142,6 @@ class RideBoundFleetControl(FleetControlBase):
         self._rb_session.close()
         self._rb_closed = True
 
-    def restart_runner(self):
-        if (
-            self._rb_events.has_pending_events
-            or self._rb_finished_legs
-            or self._rb_passenger_markers
-            or self._rb_dirty_vehicles
-            or self._rb_semantic_vehicles
-            or self._rb_terminal_after_ack
-        ):
-            raise _fail("RBWP7_RESTART_UNSAFE", "$.adapter", "callback boundary")
-        self.checkpoint_runner()
-        assert self._rb_last_checkpoint is not None
-        assert self._rb_checkpoint_binding_hash is not None
-        before = self._checkpoint_binding_hash(self._rb_last_checkpoint)
-        if before != self._rb_checkpoint_binding_hash:
-            raise _fail(
-                "RBWP7_ADAPTER_CHECKPOINT_DRIFT",
-                "$.adapter.checkpointBindingHash",
-                f"expected={self._rb_checkpoint_binding_hash}; actual={before}",
-            )
-        restored = self._rb_session.restart(self._rb_last_checkpoint)
-        after = self._checkpoint_binding_hash(self._rb_last_checkpoint)
-        if after != before:
-            raise _fail(
-                "RBWP7_ADAPTER_RESTART_DRIFT",
-                "$.adapter.checkpointBindingHash",
-                f"before={before}; after={after}",
-            )
-        return restored
-
     def checkpoint_runner(self):
         if (
             self._rb_closed

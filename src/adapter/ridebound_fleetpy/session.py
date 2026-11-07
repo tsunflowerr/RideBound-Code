@@ -449,8 +449,6 @@ class RideBoundProtocolSession:
         self._initialized = False
         self._closed = False
         self._manifest_hash: str | None = None
-        self._initialize_envelope: dict[str, Any] | None = None
-        self._last_checkpoint: dict[str, Any] | None = None
 
     def _line_bound(self, constant: int) -> int:
         # The constant is read at call time, as before, so launchers that patch it keep working.
@@ -564,7 +562,6 @@ class RideBoundProtocolSession:
         self._client.negotiate(_hello())
         initialized = self._client.initialize(initialize)
         self._manifest_hash = initialized["payload"]["manifestHash"]
-        self._initialize_envelope = initialize
         self._initialized = True
         return initialized
 
@@ -583,48 +580,7 @@ class RideBoundProtocolSession:
     def checkpoint(self) -> dict[str, Any]:
         if not self._initialized or self._closed:
             raise _fail("RBWP7_SESSION_STATE_INVALID", "$.session", "checkpoint")
-        checkpoint = self._client.request_checkpoint()
-        self._last_checkpoint = checkpoint
-        return checkpoint
-
-    def restart(self, checkpoint: dict[str, Any]) -> dict[str, Any]:
-        if (
-            not self._initialized
-            or self._closed
-            or self._initialize_envelope is None
-            or self._client.state != "initialized"
-        ):
-            raise _fail("RBWP7_RESTART_UNSAFE", "$.session", self._client.state)
-        try:
-            payload = checkpoint["payload"]
-            expected_hash = payload["checkpointHash"]
-        except (KeyError, TypeError) as exc:
-            raise _fail("RBWP7_CHECKPOINT_INVALID", "$.checkpoint", str(exc)) from exc
-        if checkpoint is not self._last_checkpoint:
-            raise _fail(
-                "RBWP7_CHECKPOINT_NOT_LATEST",
-                "$.checkpoint.checkpointHash",
-                repr(expected_hash),
-            )
-
-        self._client.shutdown()
-        replacement = self._new_client()
-        try:
-            replacement.start()
-            replacement.negotiate(_hello())
-            initialized = replacement.initialize(self._initialize_envelope)
-            if initialized["payload"].get("manifestHash") != self._manifest_hash:
-                raise _fail(
-                    "RBWP7_RESTART_MANIFEST_MISMATCH",
-                    "$.initialized.manifestHash",
-                    repr(initialized["payload"].get("manifestHash")),
-                )
-            restored = replacement.restore(payload)
-        except BaseException:
-            replacement.shutdown()
-            raise
-        self._client = replacement
-        return restored
+        return self._client.request_checkpoint()
 
     def close(self) -> None:
         if self._closed:

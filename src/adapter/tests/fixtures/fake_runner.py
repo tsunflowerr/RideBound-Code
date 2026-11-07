@@ -95,7 +95,5 @@ for line in sys.stdin:
         pass
     elif kind == "checkpoint":
         emit(response("checkpoint", {"checkpointHash": CHECKPOINT_HASH}, incoming))
-    elif kind == "restore":
-        emit(response("restore", {"status": "restored", "checkpointHash": CHECKPOINT_HASH}, incoming))
     elif kind == "shutdown":
         raise SystemExit(0)

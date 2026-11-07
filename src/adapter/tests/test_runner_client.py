@@ -66,7 +66,8 @@ class RunnerClientTests(unittest.TestCase):
         client.negotiate(hello())
         client.initialize(initialize())
         decision = client.decide(event_batch())
-        checkpoint = client.acknowledge_and_checkpoint(decision["payload"]["decisionHash"])
+        client.acknowledge(decision["payload"]["decisionHash"])
+        checkpoint = client.request_checkpoint()
         self.assertEqual("b" * 64, checkpoint["payload"]["checkpointHash"])
         client.shutdown()
         self.assertEqual("closed", client.state)
@@ -115,7 +116,7 @@ class RunnerClientTests(unittest.TestCase):
             client.initialize(initialize())
             client.decide(event_batch())
             with self.assertRaises(AdapterFailure) as raised:
-                client.acknowledge_and_checkpoint("f" * 64)
+                client.acknowledge("f" * 64)
             self.assertEqual("RBWP7_RUNNER_ACK_HASH_LOCAL_MISMATCH", raised.exception.code)
         finally:
             client.shutdown()
@@ -203,31 +204,6 @@ class RunnerClientTests(unittest.TestCase):
 
             with self.assertRaisesRegex(RuntimeError, "bundle inventory differs"):
                 verify_bundle(root)
-
-    def test_restore_requires_initialized_state(self) -> None:
-        client = self.make_client()
-        try:
-            client.start()
-            with self.assertRaises(AdapterFailure) as raised:
-                client.restore({})
-            self.assertEqual("RBWP7_RUNNER_CLIENT_STATE_INVALID", raised.exception.code)
-        finally:
-            client.shutdown()
-
-    def test_restore_requires_exact_checkpoint_hash_echo(self) -> None:
-        client = self.make_client()
-        try:
-            client.start()
-            client.negotiate(hello())
-            client.initialize(initialize())
-            with self.assertRaises(AdapterFailure) as raised:
-                client.restore({"checkpointHash": "c" * 64})
-            self.assertEqual(
-                "RBWP7_RUNNER_RESTORE_HASH_MISMATCH",
-                raised.exception.code,
-            )
-        finally:
-            client.shutdown()
 
     def test_adversarial_stdout_and_lifecycle_fail_closed(self) -> None:
         expected = {
