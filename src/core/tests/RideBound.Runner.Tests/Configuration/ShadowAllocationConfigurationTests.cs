@@ -129,13 +129,19 @@ public sealed class ShadowAllocationConfigurationTests : IDisposable
                 StringComparison.Ordinal)));
         var plainCommitment = CommitmentPolicyConfiguration.Decode(
             Encoding.UTF8.GetBytes(Read("wp3-boundary-test-v1.json")));
-        var block = Block(new JsonObject { ["node-a"] = 0 }).ToJsonString();
-        string Wp4(string strategy, bool shadow) => Read("wp4-rolling-cost-boundary-v1.json")
-            .Replace("\"earliest-feasible\"", $"\"{strategy}\"", StringComparison.Ordinal)
-            .Replace(
-                "\"policyVersion\": \"wp4-boundary-v1\"",
-                "\"policyVersion\": \"wp4-boundary-v1\"" + (shadow ? ",\n  \"shadowAllocation\": " + block : ""),
-                StringComparison.Ordinal);
+        string Wp4(string strategy, bool shadow)
+        {
+            // The final C1 configuration with this schedule strategy and this test's Shadow block, or none.
+            var json = Final.FinalRuns.FinalC1Wp4WithoutShadow();
+            json["candidateGeneration"]!["scheduleStrategy"] = strategy;
+
+            if (shadow)
+            {
+                json["shadowAllocation"] = Block(new JsonObject { ["node-a"] = 0 });
+            }
+
+            return json.ToJsonString();
+        }
 
         Wp4RunnerConfiguration.Decode(Encoding.UTF8.GetBytes(Wp4("earliest-feasible", shadow: true)), shadowCommitment);
         Wp4RunnerConfiguration.Decode(Encoding.UTF8.GetBytes(Wp4("origin-hold-relocated-wait", shadow: false)), plainCommitment);

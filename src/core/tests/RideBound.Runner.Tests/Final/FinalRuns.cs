@@ -118,6 +118,20 @@ internal static partial class FinalRuns
             useManifestSolverSeed: true);
     }
 
+    /// <summary>
+    /// The final C1 configuration for tests that build their own small scenario: Fixtures/wp4/INS-N-full-v1.json
+    /// (policy ridebound-hard-vector with selectionObjectiveOrder cost-first, booking-confirmation promises, full-v1
+    /// audit, solver evidence off) without its shadowAllocation block. Shadow needs a commitment configuration with
+    /// dropEtaShadowAllocation and the fixture network, which those tests do not use.
+    /// </summary>
+    public static JsonObject FinalC1Wp4WithoutShadow()
+    {
+        var wp4 = JsonNode.Parse(File.ReadAllText(Path.Combine(FixtureDirectory, "wp4", "INS-N-full-v1.json")))!
+            .AsObject();
+        Assert.True(wp4.Remove("shadowAllocation"));
+        return wp4;
+    }
+
     /// <summary>The lines of Fixtures/expected/&lt;run&gt;.txt after its header (format: <see cref="AssertRecordedStdout"/>).</summary>
     public static IReadOnlyList<string> RecordedLines(FinalRun run) =>
         File.ReadAllLines(Path.Combine(FixtureDirectory, "expected", run.Name + ".txt")).Skip(1).ToArray();

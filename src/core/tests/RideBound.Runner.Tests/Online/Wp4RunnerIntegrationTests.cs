@@ -63,24 +63,20 @@ public sealed class Wp4RunnerIntegrationTests
                 .GetString());
     }
 
+    /// <summary>The final runs' argument vector and files (Final/FinalRuns.cs), run in the folder its relative paths
+    /// point into, with the run's hello, its initializeRun (bound to the shipped files) and its first event batch.
+    /// The three answers are the recorded ones (the recording has a checkpoint answer before the decision).</summary>
     [Fact]
     public async Task Wp4_cli_runs_real_child_process_with_bound_configuration()
     {
-        var commitment = CommitmentConfiguration();
-        var wp4 = PublishedWp4Configuration(commitment);
-        var lines = File.ReadAllLines(Path.Combine(
-            RepositoryRoot(),
-            "benchmarks",
-            "scenarios",
-            "wp3-commitment-tiny",
-            "commitment-demo.input.ndjson"));
-        var initialize = JsonNode.Parse(lines[1])!;
-        var manifest = initialize["payload"]!["manifest"]!;
-        manifest["policyId"] = wp4.PolicyId;
-        manifest["policyVersion"] = wp4.PolicyVersion;
-        manifest["policyConfigurationHash"] =
-            wp4.BindToCommitmentConfiguration(commitment.ContentHash).Value;
-        lines[1] = initialize.ToJsonString();
+        var run = Final.FinalRuns.Get("FS-G2-SHRC71-CL.light-v1");
+        var scenario = Final.FinalRuns.ScenarioLines(run);
+        var lines = new[]
+        {
+            scenario.Single(line => Final.RunnerProcess.MessageType(line) == "hello"),
+            scenario.Single(line => Final.RunnerProcess.MessageType(line) == "initializeRun"),
+            scenario.First(line => Final.RunnerProcess.MessageType(line) == "eventBatch"),
+        };
         var startInfo = new ProcessStartInfo("dotnet")
         {
             RedirectStandardInput = true,
@@ -88,30 +84,20 @@ public sealed class Wp4RunnerIntegrationTests
             RedirectStandardError = true,
             UseShellExecute = false,
             CreateNoWindow = true,
+            WorkingDirectory = Final.FinalRuns.FixtureDirectory,
         };
         startInfo.ArgumentList.Add(
             Path.Combine(AppContext.BaseDirectory, "RideBound.Runner.dll"));
-        startInfo.ArgumentList.Add("--mode");
-        startInfo.ArgumentList.Add("commitment");
-        startInfo.ArgumentList.Add("--policy-config");
-        startInfo.ArgumentList.Add(Path.Combine(
-            RepositoryRoot(),
-            "benchmarks",
-            "configurations",
-            "wp3-boundary-test-v1.json"));
-        startInfo.ArgumentList.Add("--wp4-config");
-        startInfo.ArgumentList.Add(Path.Combine(
-            RepositoryRoot(),
-            "benchmarks",
-            "configurations",
-            "wp4-rolling-cost-boundary-v1.json"));
-        startInfo.ArgumentList.Add("--solver-seed-source");
-        startInfo.ArgumentList.Add("manifest-master-seed");
+
+        foreach (var argument in run.Arguments)
+        {
+            startInfo.ArgumentList.Add(argument);
+        }
 
         using var process = Process.Start(startInfo);
         Assert.NotNull(process);
         await process.StandardInput.WriteAsync(
-            string.Join('\n', lines.Take(3)) + "\n");
+            string.Join('\n', lines) + "\n");
         process.StandardInput.Close();
         var stdout = await process.StandardOutput.ReadToEndAsync();
         var stderr = await process.StandardError.ReadToEndAsync();
@@ -130,12 +116,14 @@ public sealed class Wp4RunnerIntegrationTests
                 .GetProperty("solver")
                 .GetProperty("status")
                 .GetString());
+        var recorded = Final.FinalRuns.RecordedLines(run);
+        Assert.Equal(new[] { recorded[0], recorded[1], recorded[3] }, responses);
     }
 
     [Fact]
     public void OrTools_policy_is_manifest_bound_hashed_retried_and_ack_committed()
     {
-        var setup = CreateSession(PublishedWp4Configuration());
+        var setup = CreateSession(FinalWp4Configuration());
         var batch = ReadFixture("wp2/valid-bootstrap-event-batch.json");
 
         var firstResponse = setup.Session.Process(batch).Response!;
@@ -164,6 +152,23 @@ public sealed class Wp4RunnerIntegrationTests
             DecisionApplied(1, 1_000, first.Value.DecisionHash.Value));
         Assert.Null(applied.Response);
         Assert.Equal(1, setup.Session.AppliedEpoch);
+
+        // The final configuration opens the promise at booking confirmation: the accepted request enters the
+        // commitment ledger with the decision that answers the booking, and only once that decision is acknowledged.
+        Assert.Empty(setup.Session.CommittedOnlineState!.Commitments.Histories);
+        var booking = DecisionPayloadCodec.Decode(
+            setup.Session.Process(
+                Encoding.UTF8.GetBytes(
+                    """
+                    {"schemaVersion":"1.0.0","messageType":"eventBatch","runId":"wp2-run-001",
+                     "scenarioId":"wp2-two-epoch-small","epochId":2,"simTimeMs":1000,
+                     "payload":{"events":[{"eventSeq":4,"eventType":"bookingConfirmed","payload":{"requestId":"r-1"}}]}}
+                    """)).Response!.Payload);
+        Assert.True(booking.IsSuccess, booking.Error?.Message);
+        Assert.Empty(setup.Session.CommittedOnlineState!.Commitments.Histories);
+        Assert.Null(setup.Session.Process(
+            DecisionApplied(2, 1_000, booking.Value!.DecisionHash.Value)).Response);
+        Assert.Equal(2, setup.Session.AppliedEpoch);
         Assert.Single(setup.Session.CommittedOnlineState!.Commitments.Histories);
     }
 
@@ -171,7 +176,7 @@ public sealed class Wp4RunnerIntegrationTests
     public void Audited_solver_evidence_is_hash_bound_complete_and_excludes_wall_time()
     {
         var commitment = CommitmentConfiguration();
-        var wp4 = PublishedWp4Configuration(
+        var wp4 = FinalWp4Configuration(
             commitment,
             emitSolverExecutionEvidence: true);
         var setup = CreateSession(wp4, commitmentConfiguration: commitment);
@@ -223,12 +228,12 @@ public sealed class Wp4RunnerIntegrationTests
     {
         var commitment = CommitmentConfiguration();
         var legacySetup = CreateSession(
-            PublishedWp4Configuration(
+            FinalWp4Configuration(
                 commitment,
                 emitSolverExecutionEvidence: true),
             commitmentConfiguration: commitment);
         var portfolioSetup = CreateSession(
-            PublishedWp4Configuration(
+            FinalWp4Configuration(
                 commitment,
                 emitSolverExecutionEvidence: true,
                 retainCandidatePortfolio: true),
@@ -268,7 +273,7 @@ public sealed class Wp4RunnerIntegrationTests
             "runner-retained-candidate-portfolio-evidence.schema.json",
             portfolio.GetProperty("schemaId").GetString());
         Assert.Equal(
-            "rollingCost",
+            "hardVector",
             portfolio.GetProperty("objectiveProfile").GetString());
 
         var problem = portfolio.GetProperty("selectionProblem");
@@ -902,7 +907,7 @@ public sealed class Wp4RunnerIntegrationTests
     public void Light_audit_changes_only_hash_fields_and_restores()
     {
         var commitment = CommitmentConfiguration();
-        var full = CreateSession(PublishedWp4Configuration(commitment), commitmentConfiguration: commitment);
+        var full = CreateSession(FinalWp4Configuration(commitment), commitmentConfiguration: commitment);
         var lightWp4 = LightAuditConfiguration(commitment);
         var light = CreateSession(lightWp4, commitmentConfiguration: commitment);
 
@@ -1009,42 +1014,22 @@ public sealed class Wp4RunnerIntegrationTests
     public void Audit_hash_values_are_closed(string value, bool? light)
     {
         var commitment = CommitmentConfiguration();
-        var json = File.ReadAllText(Path.Combine(
-                RepositoryRoot(),
-                "benchmarks",
-                "configurations",
-                "wp4-rolling-cost-boundary-v1.json"))
-            .Replace(
-                "\"policyVersion\": \"wp4-boundary-v1\"",
-                $"\"policyVersion\": \"wp4-boundary-v1\",\n  \"auditHash\": \"{value}\"",
-                StringComparison.Ordinal);
 
         if (light is null)
         {
             Assert.Throws<InvalidDataException>(
-                () => Wp4RunnerConfiguration.Decode(Encoding.UTF8.GetBytes(json), commitment));
+                () => FinalWp4Configuration(commitment, auditHash: value));
             return;
         }
 
         Assert.Equal(
             light.Value,
-            Wp4RunnerConfiguration.Decode(Encoding.UTF8.GetBytes(json), commitment).UsesLightAuditHash);
+            FinalWp4Configuration(commitment, auditHash: value).UsesLightAuditHash);
     }
 
     private static Wp4RunnerConfiguration LightAuditConfiguration(
-        CommitmentPolicyConfiguration commitment)
-    {
-        var json = File.ReadAllText(Path.Combine(
-                RepositoryRoot(),
-                "benchmarks",
-                "configurations",
-                "wp4-rolling-cost-boundary-v1.json"))
-            .Replace(
-                "\"policyVersion\": \"wp4-boundary-v1\"",
-                "\"policyVersion\": \"wp4-boundary-v1\",\n  \"auditHash\": \"light-v1\"",
-                StringComparison.Ordinal);
-        return Wp4RunnerConfiguration.Decode(Encoding.UTF8.GetBytes(json), commitment);
-    }
+        CommitmentPolicyConfiguration commitment) =>
+        FinalWp4Configuration(commitment, auditHash: "light-v1");
 
     /// <summary>
     /// Replays the booking-confirmation scenario of the C1 ranking test up to the
@@ -1312,7 +1297,7 @@ public sealed class Wp4RunnerIntegrationTests
     public void Unknown_solver_uses_full_validator_no_op_and_reports_safe_fallback()
     {
         var setup = CreateSession(
-            PublishedWp4Configuration(),
+            FinalWp4Configuration(),
             new UnknownSolver());
 
         var response = setup.Session.Process(
@@ -1338,7 +1323,7 @@ public sealed class Wp4RunnerIntegrationTests
     {
         var solver = new CapturingUnknownSolver();
         var setup = CreateSession(
-            PublishedWp4Configuration(),
+            FinalWp4Configuration(),
             solver,
             useManifestSolverSeed: true);
 
@@ -1355,7 +1340,7 @@ public sealed class Wp4RunnerIntegrationTests
     public void Manifest_policy_identity_mismatch_fails_before_online_state_changes()
     {
         var commitment = CommitmentConfiguration();
-        var wp4 = PublishedWp4Configuration(commitment);
+        var wp4 = FinalWp4Configuration(commitment);
         var session = NewSession(commitment, wp4);
         Assert.Equal(
             "helloAck",
@@ -1363,7 +1348,7 @@ public sealed class Wp4RunnerIntegrationTests
                 .Response?.MessageType.Value);
         var initialize = InitializePayload(wp4, commitment);
         initialize["payload"]!["manifest"]!["policyId"] =
-            "ridebound-hard-vector";
+            "another-policy";
 
         var rejected = session.Process(
             Encoding.UTF8.GetBytes(initialize.ToJsonString()));
@@ -1435,33 +1420,34 @@ public sealed class Wp4RunnerIntegrationTests
         return initialize;
     }
 
-    private static Wp4RunnerConfiguration PublishedWp4Configuration(
+    /// <summary>The final C1 configuration (<see cref="Final.FinalRuns.FinalC1Wp4WithoutShadow"/>), optionally with
+    /// solver evidence on, the retained-portfolio evidence profile and an auditHash value.</summary>
+    private static Wp4RunnerConfiguration FinalWp4Configuration(
         CommitmentPolicyConfiguration? commitmentConfiguration = null,
         bool emitSolverExecutionEvidence = false,
-        bool retainCandidatePortfolio = false)
+        bool retainCandidatePortfolio = false,
+        string? auditHash = null)
     {
         var commitment = commitmentConfiguration ?? CommitmentConfiguration();
-        var json = File.ReadAllText(Path.Combine(
-            RepositoryRoot(),
-            "benchmarks",
-            "configurations",
-            "wp4-rolling-cost-boundary-v1.json"));
+        var json = Final.FinalRuns.FinalC1Wp4WithoutShadow();
 
         if (emitSolverExecutionEvidence || retainCandidatePortfolio)
         {
-            var profile = retainCandidatePortfolio
-                ? ",\n  \"solverExecutionEvidenceProfile\": " +
-                    "\"retained-portfolio-v1\""
-                : string.Empty;
-            json = json.Replace(
-                "\"policyVersion\": \"wp4-boundary-v1\"",
-                "\"policyVersion\": \"wp4-boundary-v1\",\n  " +
-                "\"emitSolverExecutionEvidence\": true" + profile,
-                StringComparison.Ordinal);
+            json["emitSolverExecutionEvidence"] = true;
+
+            if (retainCandidatePortfolio)
+            {
+                json["solverExecutionEvidenceProfile"] = "retained-portfolio-v1";
+            }
+        }
+
+        if (auditHash is not null)
+        {
+            json["auditHash"] = auditHash;
         }
 
         return Wp4RunnerConfiguration.Decode(
-            Encoding.UTF8.GetBytes(json),
+            Encoding.UTF8.GetBytes(json.ToJsonString()),
             commitment);
     }
 

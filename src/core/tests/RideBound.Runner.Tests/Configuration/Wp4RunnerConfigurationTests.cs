@@ -103,28 +103,24 @@ public sealed class Wp4RunnerConfigurationTests
     public void Published_configuration_is_strict_and_binds_both_configuration_hashes()
     {
         var commitment = CommitmentConfiguration();
-        var bytes = File.ReadAllBytes(Path.Combine(
-            RepositoryRoot(),
-            "benchmarks",
-            "configurations",
-            "wp4-rolling-cost-boundary-v1.json"));
+        var bytes = Encoding.UTF8.GetBytes(FinalJson());
 
         var first = Wp4RunnerConfiguration.Decode(bytes, commitment);
         var second = Wp4RunnerConfiguration.Decode(bytes, commitment);
         var binding = first.BindToCommitmentConfiguration(
             commitment.ContentHash);
 
-        Assert.Equal(RidePoolingPolicyRegistry.RollingCost, first.PolicyId);
-        Assert.Equal("wp4-boundary-v1", first.PolicyVersion);
+        Assert.Equal(RidePoolingPolicyRegistry.RideBoundHardVector, first.PolicyId);
+        Assert.Equal("tier3-exploratory-v1", first.PolicyVersion);
         Assert.Equal(
             OrToolsCandidateSelectionSolver.AdapterVersion,
             "google-ortools-9.15.6755");
         Assert.NotNull(first.SolverPolicyOptions);
         Assert.Equal(
-            CandidateRetentionStrategy.LegacyAcceptedCountCostSlack,
+            CandidateRetentionStrategy.ServiceSetStabilityPortfolioV1,
             first.CandidateGeneration.RetentionStrategy);
         Assert.Equal(
-            InitialPromiseTrigger.InitialAcceptance,
+            InitialPromiseTrigger.BookingConfirmation,
             first.InitialPromiseTrigger);
         Assert.False(first.EmitSolverExecutionEvidence);
         Assert.Equal(first.ContentHash, second.ContentHash);
@@ -138,13 +134,9 @@ public sealed class Wp4RunnerConfigurationTests
     {
         var commitment = CommitmentConfiguration();
         var legacy = Wp4RunnerConfiguration.Decode(
-            Encoding.UTF8.GetBytes(PublishedJson()),
+            Encoding.UTF8.GetBytes(FinalJson(json => json.Remove("emitSolverExecutionEvidence"))),
             commitment);
-        var optedInJson = PublishedJson().Replace(
-            "\"policyVersion\": \"wp4-boundary-v1\"",
-            "\"policyVersion\": \"wp4-boundary-v1\",\n  " +
-            "\"emitSolverExecutionEvidence\": true",
-            StringComparison.Ordinal);
+        var optedInJson = FinalJson(json => json["emitSolverExecutionEvidence"] = true);
         var optedIn = Wp4RunnerConfiguration.Decode(
             Encoding.UTF8.GetBytes(optedInJson),
             commitment);
@@ -153,10 +145,7 @@ public sealed class Wp4RunnerConfigurationTests
         Assert.True(optedIn.EmitSolverExecutionEvidence);
         Assert.NotEqual(legacy.ContentHash, optedIn.ContentHash);
 
-        var invalid = optedInJson.Replace(
-            "\"emitSolverExecutionEvidence\": true",
-            "\"emitSolverExecutionEvidence\": 1",
-            StringComparison.Ordinal);
+        var invalid = Edit(optedInJson, json => json["emitSolverExecutionEvidence"] = 1);
         Assert.Throws<InvalidDataException>(
             () => Wp4RunnerConfiguration.Decode(
                 Encoding.UTF8.GetBytes(invalid),
@@ -167,14 +156,8 @@ public sealed class Wp4RunnerConfigurationTests
     public void Retained_portfolio_profile_is_strict_solver_only_and_seed_preserving()
     {
         var commitment = CommitmentConfiguration();
-        var baseJson = PublishedJson();
-        var optedInJson = baseJson.Replace(
-            "\"policyVersion\": \"wp4-boundary-v1\"",
-            "\"policyVersion\": \"wp4-boundary-v1\",\n  " +
-            "\"emitSolverExecutionEvidence\": true,\n  " +
-            "\"solverExecutionEvidenceProfile\": " +
-            "\"retained-portfolio-v1\"",
-            StringComparison.Ordinal);
+        var baseJson = FinalJson();
+        var optedInJson = WithProfile(baseJson, "retained-portfolio-v1");
 
         var configuration = Wp4RunnerConfiguration.Decode(
             Encoding.UTF8.GetBytes(optedInJson),
@@ -196,10 +179,7 @@ public sealed class Wp4RunnerConfigurationTests
                 commitment).ContentHash,
             configuration.ContentHash);
 
-        var noBaseEvidence = optedInJson.Replace(
-            "\"emitSolverExecutionEvidence\": true,\n  ",
-            string.Empty,
-            StringComparison.Ordinal);
+        var noBaseEvidence = Edit(optedInJson, json => json.Remove("emitSolverExecutionEvidence"));
         Assert.Contains(
             "emitSolverExecutionEvidence=true",
             Assert.Throws<InvalidDataException>(
@@ -247,7 +227,7 @@ public sealed class Wp4RunnerConfigurationTests
     public void Full_witness_collection_needs_its_own_profile()
     {
         var commitment = CommitmentConfiguration();
-        var baseJson = PublishedJson();
+        var baseJson = FinalJson();
 
         // Off by default, so the validator keeps its fail-fast path and its cost.
         Assert.False(
@@ -316,19 +296,17 @@ public sealed class Wp4RunnerConfigurationTests
     }
 
     private static string WithProfile(string baseJson, string profile) =>
-        baseJson.Replace(
-            "\"policyVersion\": \"wp4-boundary-v1\"",
-            "\"policyVersion\": \"wp4-boundary-v1\",\n  " +
-            "\"emitSolverExecutionEvidence\": true,\n  " +
-            "\"solverExecutionEvidenceProfile\": " +
-            $"\"{profile}\"",
-            StringComparison.Ordinal);
+        Edit(baseJson, json =>
+        {
+            json["emitSolverExecutionEvidence"] = true;
+            json["solverExecutionEvidenceProfile"] = profile;
+        });
 
     [Fact]
     public void Constant_level_skip_is_optional_and_off_unless_declared()
     {
         var commitment = CommitmentConfiguration();
-        var baseJson = PublishedJson();
+        var baseJson = FinalJson();
 
         // Every configuration written before RB-WP14-002 omits the field and must
         // keep the solver work, and therefore the decision hash, it recorded.
@@ -343,10 +321,7 @@ public sealed class Wp4RunnerConfigurationTests
             published.CreateSolverPolicyOptionsForRun(19).ExecutionBudget
                 .SolverBudget.SkipConstantObjectiveLevels);
 
-        var optedInJson = baseJson.Replace(
-            "\"randomSeed\": 7",
-            "\"randomSeed\": 7,\n    \"skipConstantObjectiveLevels\": true",
-            StringComparison.Ordinal);
+        var optedInJson = Edit(baseJson, json => json["solverExecution"]!["skipConstantObjectiveLevels"] = true);
         var optedIn = Wp4RunnerConfiguration.Decode(
             Encoding.UTF8.GetBytes(optedInJson),
             commitment);
@@ -361,10 +336,7 @@ public sealed class Wp4RunnerConfigurationTests
         // Opting in is a different configuration and must not share a hash.
         Assert.NotEqual(published.ContentHash, optedIn.ContentHash);
 
-        var explicitlyOff = baseJson.Replace(
-            "\"randomSeed\": 7",
-            "\"randomSeed\": 7,\n    \"skipConstantObjectiveLevels\": false",
-            StringComparison.Ordinal);
+        var explicitlyOff = Edit(baseJson, json => json["solverExecution"]!["skipConstantObjectiveLevels"] = false);
 
         Assert.False(
             Wp4RunnerConfiguration.Decode(
@@ -373,10 +345,7 @@ public sealed class Wp4RunnerConfigurationTests
                 .SolverPolicyOptions!.ExecutionBudget.SolverBudget
                 .SkipConstantObjectiveLevels);
 
-        var wrongType = baseJson.Replace(
-            "\"randomSeed\": 7",
-            "\"randomSeed\": 7,\n    \"skipConstantObjectiveLevels\": \"yes\"",
-            StringComparison.Ordinal);
+        var wrongType = Edit(baseJson, json => json["solverExecution"]!["skipConstantObjectiveLevels"] = "yes");
 
         Assert.Throws<InvalidDataException>(
             () => Wp4RunnerConfiguration.Decode(
@@ -387,15 +356,19 @@ public sealed class Wp4RunnerConfigurationTests
     [Fact]
     public void Candidate_retention_strategy_is_explicit_for_new_configs_and_legacy_when_absent()
     {
+        // The final configuration without the two keys whose absence selects the archived defaults.
         var commitment = CommitmentConfiguration();
+        var legacyJson = FinalJson(json =>
+        {
+            json.Remove("initialPromiseTrigger");
+            json["candidateGeneration"]!.AsObject().Remove("retentionStrategy");
+        });
         var legacy = Wp4RunnerConfiguration.Decode(
-            Encoding.UTF8.GetBytes(PublishedJson()),
+            Encoding.UTF8.GetBytes(legacyJson),
             commitment);
-        var portfolioJson = PublishedJson().Replace(
-            "\"scheduleStrategy\": \"earliest-feasible\"",
-            "\"scheduleStrategy\": \"earliest-feasible\",\n    " +
-            "\"retentionStrategy\": \"service-set-stability-portfolio-v1\"",
-            StringComparison.Ordinal);
+        var portfolioJson = Edit(
+            legacyJson,
+            json => json["candidateGeneration"]!["retentionStrategy"] = "service-set-stability-portfolio-v1");
         var portfolio = Wp4RunnerConfiguration.Decode(
             Encoding.UTF8.GetBytes(portfolioJson),
             commitment);
@@ -421,11 +394,7 @@ public sealed class Wp4RunnerConfigurationTests
                     Encoding.UTF8.GetBytes(unknown),
                     commitment)).Message);
 
-        var unknownTrigger = portfolioJson.Replace(
-            "\"policyVersion\": \"wp4-boundary-v1\"",
-            "\"policyVersion\": \"wp4-boundary-v1\",\n  " +
-            "\"initialPromiseTrigger\": \"unknown-trigger\"",
-            StringComparison.Ordinal);
+        var unknownTrigger = Edit(portfolioJson, json => json["initialPromiseTrigger"] = "unknown-trigger");
         Assert.Contains(
             "initialPromiseTrigger",
             Assert.Throws<InvalidDataException>(
@@ -438,15 +407,9 @@ public sealed class Wp4RunnerConfigurationTests
     public void Policy_specific_fields_are_required_and_forbidden_exactly()
     {
         var commitment = CommitmentConfiguration();
-        var rolling = PublishedJson();
-        var missingFreeze = rolling.Replace(
-            "\"rolling-cost\"",
-            "\"fixed-freeze-horizon\"",
-            StringComparison.Ordinal);
-        var unexpectedRepair = rolling.Replace(
-            "\n  \"solverExecution\"",
-            "\n  \"repair\": {\"maximumRequestsConsideredPerVehicle\":1},\n  \"solverExecution\"",
-            StringComparison.Ordinal);
+        var missingFreeze = FinalJson(json => json["policyId"] = "fixed-freeze-horizon");
+        var unexpectedRepair = FinalJson(
+            json => json["repair"] = new JsonObject { ["maximumRequestsConsideredPerVehicle"] = 1 });
 
         Assert.Contains(
             "variant fields",
@@ -473,15 +436,13 @@ public sealed class Wp4RunnerConfigurationTests
                     $"{{\"dimension\":\"{CommitmentDimensionVocabulary.ToProtocolValue(dimension)}\"}}"));
         var warningProfiles =
             $"[{{\"policyId\":\"uniform-v1\",\"limits\":[{limits}]}}]";
-        var c2 = PublishedJson()
-            .Replace(
-                "\"rolling-cost\"",
-                "\"commit-soft-hard-hybrid\"",
-                StringComparison.Ordinal)
-            .Replace(
-                "\n  \"solverExecution\"",
-                $"\n  \"warningProfiles\":{warningProfiles},\n  \"solverExecution\"",
-                StringComparison.Ordinal);
+        // selectionObjectiveOrder is for C1 only, so the C2 file is the final configuration without it.
+        var c2 = FinalJson(json =>
+        {
+            json["policyId"] = "commit-soft-hard-hybrid";
+            json.Remove("selectionObjectiveOrder");
+            json["warningProfiles"] = JsonNode.Parse(warningProfiles);
+        });
 
         var valid = Wp4RunnerConfiguration.Decode(
             Encoding.UTF8.GetBytes(c2),
@@ -915,12 +876,9 @@ public sealed class Wp4RunnerConfigurationTests
         // ADR-089 GĐ4: omitted keeps the archived content hash; factors are decimal strings
         // because canonical JSON holds integers only.
         var commitment = CommitmentConfiguration();
-        string WithForecast(string value) => PublishedJson().Replace(
-            "\"policyVersion\": \"wp4-boundary-v1\"",
-            "\"policyVersion\": \"wp4-boundary-v1\",\n  \"planningForecast\": " + value,
-            StringComparison.Ordinal);
+        string WithForecast(string value) => FinalJson(json => json["planningForecast"] = JsonNode.Parse(value));
 
-        var off = Wp4RunnerConfiguration.Decode(Encoding.UTF8.GetBytes(PublishedJson()), commitment);
+        var off = Wp4RunnerConfiguration.Decode(Encoding.UTF8.GetBytes(FinalJson()), commitment);
         var on = Wp4RunnerConfiguration.Decode(
             Encoding.UTF8.GetBytes(WithForecast(
                 "{\"profile\": [\"1\", \"1.0638210000000001\", \"0.98\"], \"binMs\": 900000}")),
@@ -972,6 +930,23 @@ public sealed class Wp4RunnerConfigurationTests
                 "benchmarks",
                 "configurations",
                 "wp3-boundary-test-v1.json")));
+
+    /// <summary>The final C1 configuration (<see cref="Final.FinalRuns.FinalC1Wp4WithoutShadow"/>) as JSON text,
+    /// after <paramref name="edit"/>.</summary>
+    private static string FinalJson(Action<JsonObject>? edit = null)
+    {
+        var json = Final.FinalRuns.FinalC1Wp4WithoutShadow();
+        edit?.Invoke(json);
+        return json.ToJsonString();
+    }
+
+    /// <summary>JSON text after <paramref name="edit"/>.</summary>
+    private static string Edit(string json, Action<JsonObject> edit)
+    {
+        var node = JsonNode.Parse(json)!.AsObject();
+        edit(node);
+        return node.ToJsonString();
+    }
 
     private static string PublishedJson() =>
         File.ReadAllText(Path.Combine(
