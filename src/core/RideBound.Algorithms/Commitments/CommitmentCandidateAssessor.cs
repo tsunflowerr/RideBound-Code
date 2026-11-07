@@ -19,61 +19,26 @@ public sealed record CommitmentMechanismContext(
 
 /// <summary>
 /// Rebuilds a named mechanism baseline from the configured material-revision
-/// rule while deliberately removing cumulative limits. Freeze locks are added
-/// only when the caller explicitly supplies both horizon and lock fields.
+/// rule while deliberately removing cumulative limits.
 /// </summary>
 public sealed class MechanismCommitmentPolicyProvider
     : ICommitmentPolicyProvider
 {
     private readonly ICommitmentPolicyProvider _source;
-    private readonly Duration? _freezeHorizon;
-    private readonly PromiseLock _freezeLocks;
     private readonly object _gate = new();
     private readonly Dictionary<string, CommitmentPolicy> _cache =
         new(StringComparer.Ordinal);
 
-    private MechanismCommitmentPolicyProvider(
-        ICommitmentPolicyProvider source,
-        Duration? freezeHorizon,
-        PromiseLock freezeLocks)
+    private MechanismCommitmentPolicyProvider(ICommitmentPolicyProvider source)
     {
         _source = source;
-        _freezeHorizon = freezeHorizon;
-        _freezeLocks = freezeLocks;
     }
 
     public static MechanismCommitmentPolicyProvider RevisionPenalty(
         ICommitmentPolicyProvider source)
     {
         ArgumentNullException.ThrowIfNull(source);
-        return new MechanismCommitmentPolicyProvider(
-            source,
-            null,
-            PromiseLock.None);
-    }
-
-    public static MechanismCommitmentPolicyProvider FixedFreeze(
-        ICommitmentPolicyProvider source,
-        Duration freezeHorizon,
-        PromiseLock freezeLocks)
-    {
-        ArgumentNullException.ThrowIfNull(source);
-
-        if (freezeHorizon.Milliseconds == 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(freezeHorizon));
-        }
-
-        if (freezeLocks == PromiseLock.None
-            || (freezeLocks & ~AllPromiseLocks) != 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(freezeLocks));
-        }
-
-        return new MechanismCommitmentPolicyProvider(
-            source,
-            freezeHorizon,
-            freezeLocks);
+        return new MechanismCommitmentPolicyProvider(source);
     }
 
     public bool TryGetPolicy(string policyId, out CommitmentPolicy policy)
@@ -101,19 +66,11 @@ public sealed class MechanismCommitmentPolicyProvider
                         hardLimit: null,
                         CommitmentPhase.AllActive)),
                 sourcePolicy.MaterialRevisionRule,
-                _freezeHorizon,
-                _freezeLocks,
                 finalConfirmationLocks: PromiseLock.None);
             _cache.Add(policyId, policy);
             return true;
         }
     }
-
-    private const PromiseLock AllPromiseLocks = PromiseLock.Vehicle
-        | PromiseLock.PickupStop
-        | PromiseLock.DropStop
-        | PromiseLock.PickupEta
-        | PromiseLock.DropEta;
 }
 
 /// <summary>

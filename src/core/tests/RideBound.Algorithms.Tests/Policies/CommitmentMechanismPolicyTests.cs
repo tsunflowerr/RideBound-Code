@@ -15,43 +15,12 @@ public sealed class CommitmentMechanismPolicyTests
     {
         var source = new CommitmentPolicyCatalog([SourcePolicy(hardLimit: 0)]);
         var b2 = MechanismCommitmentPolicyProvider.RevisionPenalty(source);
-        var b3 = MechanismCommitmentPolicyProvider.FixedFreeze(
-            source,
-            new Duration(500),
-            PromiseLock.PickupEta | PromiseLock.DropEta);
 
         Assert.True(b2.TryGetPolicy("uniform-v1", out var penalty));
-        Assert.True(b3.TryGetPolicy("uniform-v1", out var freeze));
         Assert.All(penalty.Limits.Values, limit => Assert.Null(limit.HardLimit));
-        Assert.All(freeze.Limits.Values, limit => Assert.Null(limit.HardLimit));
         Assert.Null(penalty.FreezeHorizon);
         Assert.Equal(PromiseLock.None, penalty.FreezeHorizonLocks);
-        Assert.Equal(500, freeze.FreezeHorizon!.Value.Milliseconds);
-        Assert.Equal(
-            PromiseLock.PickupEta | PromiseLock.DropEta,
-            freeze.FreezeHorizonLocks);
-        Assert.Equal(PromiseLock.None, freeze.FinalConfirmationLocks);
-    }
-
-    [Fact]
-    public void Fixed_freeze_requires_explicit_positive_horizon_and_locks()
-    {
-        var source = new CommitmentPolicyCatalog([SourcePolicy(null)]);
-
-        Assert.Throws<ArgumentOutOfRangeException>(
-            () => MechanismCommitmentPolicyProvider.FixedFreeze(
-                source,
-                new Duration(0),
-                PromiseLock.PickupEta));
-        Assert.Throws<ArgumentOutOfRangeException>(
-            () => MechanismCommitmentPolicyProvider.FixedFreeze(
-                source,
-                new Duration(1),
-                PromiseLock.None));
-        Assert.Throws<ArgumentOutOfRangeException>(
-            () => new FixedFreezeHorizonPolicy(
-                new Duration(0),
-                PromiseLock.PickupEta));
+        Assert.Equal(PromiseLock.None, penalty.FinalConfirmationLocks);
     }
 
     [Fact]

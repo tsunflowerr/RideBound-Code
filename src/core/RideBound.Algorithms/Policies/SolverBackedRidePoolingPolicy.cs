@@ -5,7 +5,6 @@ using RideBound.Algorithms.Candidates;
 using RideBound.Algorithms.Commitments;
 using RideBound.Application.Commitments;
 using RideBound.Application.Optimization;
-using RideBound.Domain.Commitments;
 using RideBound.Domain.Common;
 using RideBound.Domain.Validation;
 
@@ -13,7 +12,6 @@ namespace RideBound.Algorithms.Policies;
 
 public enum RidePoolingPolicyKind
 {
-    FixedFreezeHorizon,
     NoReassignmentRepair,
     RideBoundHardVector,
     CommitSoftHardHybrid,
@@ -21,7 +19,6 @@ public enum RidePoolingPolicyKind
 
 public static class RidePoolingPolicyRegistry
 {
-    public const string FixedFreezeHorizon = "fixed-freeze-horizon";
     public const string NoReassignmentRepair = "no-reassignment-repair";
     public const string RideBoundHardVector = "ridebound-hard-vector";
     public const string CommitSoftHardHybrid = "commit-soft-hard-hybrid";
@@ -32,14 +29,12 @@ public static class RidePoolingPolicyRegistry
     {
         policyKind = policyId switch
         {
-            FixedFreezeHorizon => RidePoolingPolicyKind.FixedFreezeHorizon,
             NoReassignmentRepair => RidePoolingPolicyKind.NoReassignmentRepair,
             RideBoundHardVector => RidePoolingPolicyKind.RideBoundHardVector,
             CommitSoftHardHybrid => RidePoolingPolicyKind.CommitSoftHardHybrid,
             _ => default,
         };
-        return policyId is FixedFreezeHorizon
-            or NoReassignmentRepair
+        return policyId is NoReassignmentRepair
             or RideBoundHardVector
             or CommitSoftHardHybrid;
     }
@@ -47,7 +42,6 @@ public static class RidePoolingPolicyRegistry
     public static string ToPolicyId(RidePoolingPolicyKind policyKind) =>
         policyKind switch
         {
-            RidePoolingPolicyKind.FixedFreezeHorizon => FixedFreezeHorizon,
             RidePoolingPolicyKind.NoReassignmentRepair => NoReassignmentRepair,
             RidePoolingPolicyKind.RideBoundHardVector => RideBoundHardVector,
             RidePoolingPolicyKind.CommitSoftHardHybrid => CommitSoftHardHybrid,
@@ -60,8 +54,6 @@ public sealed record SolverBackedRidePoolingPolicyOptions
     public SolverBackedRidePoolingPolicyOptions(
         RidePoolingPolicyKind policyKind,
         DeterministicCandidateSelectionExecutionBudget executionBudget,
-        Duration? freezeHorizon = null,
-        PromiseLock freezeLocks = PromiseLock.None,
         int maximumRepairRequestsConsideredPerVehicle = 0,
         bool captureCandidatePortfolioEvidence = false,
         bool forcedReferenceRecovery = false,
@@ -94,29 +86,6 @@ public sealed record SolverBackedRidePoolingPolicyOptions
             throw new ArgumentOutOfRangeException(nameof(policyKind));
         }
 
-        if (policyKind == RidePoolingPolicyKind.FixedFreezeHorizon)
-        {
-            const PromiseLock allLocks = PromiseLock.Vehicle
-                | PromiseLock.PickupStop
-                | PromiseLock.DropStop
-                | PromiseLock.PickupEta
-                | PromiseLock.DropEta;
-
-            if (freezeHorizon is null
-                || freezeHorizon.Value.Milliseconds == 0
-                || freezeLocks == PromiseLock.None
-                || (freezeLocks & ~allLocks) != 0)
-            {
-                throw new ArgumentException(
-                    "B3 requires an explicit positive freeze horizon and lock mask.");
-            }
-        }
-        else if (freezeHorizon is not null || freezeLocks != PromiseLock.None)
-        {
-            throw new ArgumentException(
-                "Freeze settings are only valid for the B3 policy.");
-        }
-
         if (policyKind == RidePoolingPolicyKind.NoReassignmentRepair)
         {
             if (maximumRepairRequestsConsideredPerVehicle < 1)
@@ -141,8 +110,6 @@ public sealed record SolverBackedRidePoolingPolicyOptions
 
         PolicyKind = policyKind;
         ExecutionBudget = executionBudget;
-        FreezeHorizon = freezeHorizon;
-        FreezeLocks = freezeLocks;
         MaximumRepairRequestsConsideredPerVehicle =
             maximumRepairRequestsConsideredPerVehicle;
         CaptureCandidatePortfolioEvidence = captureCandidatePortfolioEvidence;
@@ -154,10 +121,6 @@ public sealed record SolverBackedRidePoolingPolicyOptions
     public RidePoolingPolicyKind PolicyKind { get; }
 
     public DeterministicCandidateSelectionExecutionBudget ExecutionBudget { get; }
-
-    public Duration? FreezeHorizon { get; }
-
-    public PromiseLock FreezeLocks { get; }
 
     public int MaximumRepairRequestsConsideredPerVehicle { get; }
 
@@ -214,7 +177,7 @@ public sealed record SolverBackedPolicyDecisionResult
 }
 
 /// <summary>
-/// Production policy path for B3, B4, C1 and C2. It generates the shared physical
+/// Production policy path for B4, C1 and C2. It generates the shared physical
 /// candidate set once, performs only the named mechanism gate/assessment, maps
 /// the exact hierarchy to the solver port, and independently validates every
 /// solver or fallback fleet selection before returning it to Runner.
@@ -296,20 +259,6 @@ public sealed class SolverBackedRidePoolingPolicy
 
         switch (policyOptions.PolicyKind)
         {
-            case RidePoolingPolicyKind.FixedFreezeHorizon:
-                {
-                    var filter = new CommitmentCandidateFilter(
-                        context.BeforeEventState,
-                        effectivePolicies,
-                        context.StopDistances,
-                        context.PublicationScope,
-                        context.SourceEventSequence,
-                        _commitmentValidator,
-                        context.InitialPromiseTrigger);
-                    validationWorkUnits = CountCandidates(candidates);
-                    candidates = filter.Filter(context.ReducedState, candidates);
-                    break;
-                }
             case RidePoolingPolicyKind.RideBoundHardVector:
             case RidePoolingPolicyKind.CommitSoftHardHybrid:
                 {
@@ -458,11 +407,6 @@ public sealed class SolverBackedRidePoolingPolicy
         SolverBackedRidePoolingPolicyOptions options) =>
         options.PolicyKind switch
         {
-            RidePoolingPolicyKind.FixedFreezeHorizon =>
-                MechanismCommitmentPolicyProvider.FixedFreeze(
-                    context.Policies,
-                    options.FreezeHorizon!.Value,
-                    options.FreezeLocks),
             RidePoolingPolicyKind.RideBoundHardVector
                 or RidePoolingPolicyKind.CommitSoftHardHybrid => context.Policies,
             _ => MechanismCommitmentPolicyProvider.RevisionPenalty(

@@ -37,7 +37,6 @@ public sealed class Wp4RunnerConfiguration : ICommitmentWarningProfileProvider
         "initialPromiseTrigger",
         "candidateGeneration",
         "solverExecution",
-        "fixedFreeze",
         "repair",
         "warningProfiles",
         "emitSolverExecutionEvidence",
@@ -148,9 +147,6 @@ public sealed class Wp4RunnerConfiguration : ICommitmentWarningProfileProvider
         "maximumSolverDeterministicTimeMicros",
         "randomSeed",
         "skipConstantObjectiveLevels");
-    private static readonly IReadOnlySet<string> FreezeFields = Fields(
-        "horizonMs",
-        "locks");
     private static readonly IReadOnlySet<string> RepairFields = Fields(
         "maximumRequestsConsideredPerVehicle");
     private static readonly IReadOnlySet<string> WarningProfileFields = Fields(
@@ -280,8 +276,6 @@ public sealed class Wp4RunnerConfiguration : ICommitmentWarningProfileProvider
         return new SolverBackedRidePoolingPolicyOptions(
             source.PolicyKind,
             execution.Value!,
-            source.FreezeHorizon,
-            source.FreezeLocks,
             source.MaximumRepairRequestsConsideredPerVehicle,
             source.CaptureCandidatePortfolioEvidence,
             source.ForcedReferenceRecovery,
@@ -348,7 +342,6 @@ public sealed class Wp4RunnerConfiguration : ICommitmentWarningProfileProvider
 
         var generation = ReadGeneration(root.GetProperty("candidateGeneration"));
         var hasSolver = root.TryGetProperty("solverExecution", out var solverElement);
-        var hasFreeze = root.TryGetProperty("fixedFreeze", out var freezeElement);
         var hasRepair = root.TryGetProperty("repair", out var repairElement);
         var hasWarnings = root.TryGetProperty("warningProfiles", out var warningsElement);
         var emitSolverExecutionEvidence = root.TryGetProperty(
@@ -384,7 +377,6 @@ public sealed class Wp4RunnerConfiguration : ICommitmentWarningProfileProvider
         RequireVariantFields(
             policyKind,
             hasSolver,
-            hasFreeze,
             hasRepair,
             hasWarnings);
 
@@ -578,25 +570,7 @@ public sealed class Wp4RunnerConfiguration : ICommitmentWarningProfileProvider
         if (hasSolver)
         {
             var budget = ReadSolverBudget(solverElement);
-            Duration? freezeHorizon = null;
-            var freezeLocks = PromiseLock.None;
             var repairCap = 0;
-
-            if (hasFreeze)
-            {
-                RequireObject(
-                    freezeElement,
-                    FreezeFields,
-                    FreezeFields,
-                    "$.fixedFreeze");
-                freezeHorizon = new Duration(
-                    PositiveInteger(
-                        freezeElement.GetProperty("horizonMs"),
-                        "horizonMs"));
-                freezeLocks = ReadLocks(
-                    freezeElement.GetProperty("locks"),
-                    "$.fixedFreeze.locks");
-            }
 
             if (hasRepair)
             {
@@ -614,8 +588,6 @@ public sealed class Wp4RunnerConfiguration : ICommitmentWarningProfileProvider
             solverOptions = new SolverBackedRidePoolingPolicyOptions(
                 policyKind,
                 budget,
-                freezeHorizon,
-                freezeLocks,
                 repairCap,
                 solverExecutionEvidenceProfile is not null,
                 forcedReferenceRecovery,
@@ -878,8 +850,9 @@ public sealed class Wp4RunnerConfiguration : ICommitmentWarningProfileProvider
     /// <summary>
     /// Runs before the field checks, so a file that still selects a removed feature is always refused with the
     /// pointer to the commit that has it: the multiple-plan policy (policyId 'least-commitment-consensus', B5)
-    /// and its 'multiplePlan' block, and the policies in <see cref="RemovedPolicies"/>: rolling-cost (B1) and
-    /// rolling-penalty (B2).
+    /// and its 'multiplePlan' block, the policies in <see cref="RemovedPolicies"/>: rolling-cost (B1) and
+    /// rolling-penalty (B2), and the fixed-freeze-horizon policy (B3) and its 'fixedFreeze' block. The checks run
+    /// in the order the features were removed, so a file that an earlier check refused keeps its message.
     /// </summary>
     private static void RejectRemovedFeatures(JsonElement root)
     {
@@ -902,59 +875,35 @@ public sealed class Wp4RunnerConfiguration : ICommitmentWarningProfileProvider
             throw new InvalidDataException(
                 $"WP4 policyId '{removedPolicyId.GetString()}' ({removedPolicy}): {RemovedFeature}");
         }
+
+        if (root.ValueKind == JsonValueKind.Object
+            && (root.TryGetProperty("fixedFreeze", out _)
+                || root.TryGetProperty("policyId", out var freezePolicyId)
+                    && freezePolicyId.ValueKind == JsonValueKind.String
+                    && freezePolicyId.GetString() == "fixed-freeze-horizon"))
+        {
+            throw new InvalidDataException(
+                "WP4 policyId 'fixed-freeze-horizon' and the 'fixedFreeze' block "
+                + $"(the fixed-freeze-horizon policy): {RemovedFeature}");
+        }
     }
 
     private static void RequireVariantFields(
         RidePoolingPolicyKind policy,
         bool hasSolver,
-        bool hasFreeze,
         bool hasRepair,
         bool hasWarnings)
     {
-        var isB3 = policy == RidePoolingPolicyKind.FixedFreezeHorizon;
         var isB4 = policy == RidePoolingPolicyKind.NoReassignmentRepair;
         var isC2 = policy == RidePoolingPolicyKind.CommitSoftHardHybrid;
 
         if (!hasSolver
-            || hasFreeze != isB3
             || hasRepair != isB4
             || hasWarnings != isC2)
         {
             throw new InvalidDataException(
                 "WP4 policy variant fields do not match the selected policyId.");
         }
-    }
-
-    private static PromiseLock ReadLocks(JsonElement values, string path)
-    {
-        if (values.ValueKind != JsonValueKind.Array)
-        {
-            throw new InvalidDataException($"'{path}' must be an array.");
-        }
-
-        var locks = PromiseLock.None;
-
-        foreach (var value in values.EnumerateArray())
-        {
-            var parsed = value.GetString() switch
-            {
-                "vehicle" => PromiseLock.Vehicle,
-                "pickupStop" => PromiseLock.PickupStop,
-                "dropStop" => PromiseLock.DropStop,
-                "pickupEta" => PromiseLock.PickupEta,
-                "dropEta" => PromiseLock.DropEta,
-                _ => throw new InvalidDataException("Unknown promise lock."),
-            };
-
-            if ((locks & parsed) != 0)
-            {
-                throw new InvalidDataException("Duplicate promise lock.");
-            }
-
-            locks |= parsed;
-        }
-
-        return locks;
     }
 
     private static void RequireObject(

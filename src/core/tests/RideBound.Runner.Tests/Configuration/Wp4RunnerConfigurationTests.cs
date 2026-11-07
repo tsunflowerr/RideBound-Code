@@ -404,7 +404,7 @@ public sealed class Wp4RunnerConfigurationTests
     public void Policy_specific_fields_are_required_and_forbidden_exactly()
     {
         var commitment = CommitmentConfiguration();
-        var missingFreeze = FinalJson(json => json["policyId"] = "fixed-freeze-horizon");
+        var missingRepair = RepairJson(json => Assert.True(json.Remove("repair")));
         var unexpectedRepair = FinalJson(
             json => json["repair"] = new JsonObject { ["maximumRequestsConsideredPerVehicle"] = 1 });
 
@@ -412,7 +412,7 @@ public sealed class Wp4RunnerConfigurationTests
             "variant fields",
             Assert.Throws<InvalidDataException>(
                 () => Wp4RunnerConfiguration.Decode(
-                    Encoding.UTF8.GetBytes(missingFreeze),
+                    Encoding.UTF8.GetBytes(missingRepair),
                     commitment)).Message);
         Assert.Contains(
             "variant fields",
@@ -549,6 +549,43 @@ public sealed class Wp4RunnerConfigurationTests
         // The rolling-penalty file the old tests decoded (the final C1 file without its C1-only keys), and the final
         // C1 file with policyId rolling-penalty.
         foreach (var json in new[] { decodedBefore, FinalJson(json => json["policyId"] = "rolling-penalty") })
+        {
+            Assert.Equal(
+                refusal,
+                Assert.Throws<InvalidDataException>(
+                    () => Wp4RunnerConfiguration.Decode(
+                        Encoding.UTF8.GetBytes(json),
+                        commitment)).Message);
+        }
+    }
+
+    [Fact]
+    public void The_removed_fixed_freeze_horizon_policy_is_refused_with_a_pointer_to_the_archive()
+    {
+        const string refusal =
+            "WP4 policyId 'fixed-freeze-horizon' and the 'fixedFreeze' block (the fixed-freeze-horizon policy): "
+            + "removed; see commit ebca912 (branch research/final-real-runs-2026-11-06)";
+        var commitment = CommitmentConfiguration();
+        var block = new JsonObject { ["horizonMs"] = 60_000, ["locks"] = new JsonArray("vehicle") };
+        var decodedBefore = FinalJson(json =>
+        {
+            json["policyId"] = "fixed-freeze-horizon";
+            Assert.True(json.Remove("selectionObjectiveOrder"));
+            Assert.True(json.Remove("commitmentRecovery"));
+            json["fixedFreeze"] = block.DeepClone();
+        });
+        Assert.NotNull(Wp4RunnerConfiguration.Decode(Encoding.UTF8.GetBytes(RepairJson()), commitment));
+
+        // A fixed-freeze-horizon file that was decoded before (the final C1 file without its C1-only keys, with the
+        // fixedFreeze block), the final C1 file with policyId fixed-freeze-horizon, and the block added to the final
+        // C1 file and to the B4 file.
+        foreach (var json in new[]
+                 {
+                     decodedBefore,
+                     FinalJson(json => json["policyId"] = "fixed-freeze-horizon"),
+                     FinalJson(json => json["fixedFreeze"] = block.DeepClone()),
+                     RepairJson(json => json["fixedFreeze"] = block.DeepClone()),
+                 })
         {
             Assert.Equal(
                 refusal,

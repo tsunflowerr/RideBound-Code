@@ -16,57 +16,6 @@ namespace RideBound.Algorithms.Tests.Oracle;
 public sealed class ExactSmallCommitmentDifferentialTests
 {
     [Fact]
-    public void B3_freezes_only_inside_explicit_horizon_and_never_uses_source_budgets()
-    {
-        var fixture = CreateState(seed: 0);
-        var generated = new InsertionCandidateGenerator().Generate(
-            fixture.State,
-            CandidateGenerationOptions.ExactSmall);
-        Assert.True(generated.IsSuccess, generated.Witness?.Message);
-        var raw = generated.VehicleCandidates!;
-        var context = MechanismContext(fixture, "b3-freeze");
-        var timeToPickup = fixture.BaselinePickup.Milliseconds
-            - fixture.State.Run.SimulationTime.Milliseconds;
-        Assert.True(timeToPickup > 1);
-        var outsidePolicies = MechanismCommitmentPolicyProvider.FixedFreeze(
-            context.Policies,
-            new Duration(timeToPickup - 1),
-            PromiseLock.PickupEta | PromiseLock.DropEta);
-        var insidePolicies = MechanismCommitmentPolicyProvider.FixedFreeze(
-            context.Policies,
-            new Duration(timeToPickup),
-            PromiseLock.PickupEta | PromiseLock.DropEta);
-        var outside = new CommitmentCandidateFilter(
-            fixture.BeforeEventState,
-            outsidePolicies,
-            NoDistances.Instance,
-            "b3-outside",
-            1).Filter(fixture.State, raw);
-        var inside = new CommitmentCandidateFilter(
-            fixture.BeforeEventState,
-            insidePolicies,
-            NoDistances.Instance,
-            "b3-inside",
-            1).Filter(fixture.State, raw);
-
-        Assert.Equal(
-            raw.Single().Candidates.Count,
-            outside.Single().Candidates.Count);
-        Assert.True(
-            inside.Single().Candidates.Count < raw.Single().Candidates.Count);
-        Assert.Contains(
-            inside.Single().PrunedCandidates,
-            witness => witness.Code == CommitmentFailureCodes.PhaseLock);
-
-        var decision = new FixedFreezeHorizonPolicy(
-            new Duration(timeToPickup),
-            PromiseLock.PickupEta | PromiseLock.DropEta).Decide(
-                context,
-                CandidateGenerationOptions.ExactSmall);
-        Assert.True(decision.IsSuccess, decision.Witness?.Message);
-    }
-
-    [Fact]
     public void Production_commitment_filter_matches_independent_small_oracle()
     {
         const int publishedSeedCount = 16;

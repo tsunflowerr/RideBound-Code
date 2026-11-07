@@ -26,18 +26,16 @@ public sealed class EffectivePolicyFairnessTests
     private const long DropEtaHardLimit = 30_000;
 
     /// <summary>
-    /// Every baseline arm — B3 and B4 — still publishes the common promise
+    /// The baseline arm — B4 — still publishes the common promise
     /// projection used for measurement, but its named mechanism is not scored
     /// against a cumulative burden limit. Only C1 and C2 retain those limits.
     /// </summary>
     private static readonly RidePoolingPolicyKind[] ExemptKinds =
     [
-        RidePoolingPolicyKind.FixedFreezeHorizon,
         RidePoolingPolicyKind.NoReassignmentRepair,
     ];
 
     [Theory]
-    [InlineData(RidePoolingPolicyKind.FixedFreezeHorizon)]
     [InlineData(RidePoolingPolicyKind.NoReassignmentRepair)]
     public void A_baseline_arm_is_scored_without_any_cumulative_limit(
         RidePoolingPolicyKind kind)
@@ -89,7 +87,6 @@ public sealed class EffectivePolicyFairnessTests
     /// against a deadline would silently stop being a baseline.
     /// </summary>
     [Theory]
-    [InlineData(RidePoolingPolicyKind.FixedFreezeHorizon)]
     [InlineData(RidePoolingPolicyKind.NoReassignmentRepair)]
     public void A_baseline_arm_never_inherits_a_configured_deadline(
         RidePoolingPolicyKind kind)
@@ -121,10 +118,9 @@ public sealed class EffectivePolicyFairnessTests
     /// <summary>
     /// The per-decision revision limit (P-b) and the relaxed deadline (DL-HZ) are research
     /// probes of the same kind: a baseline arm scored against either would stop being a
-    /// baseline, so B3 and B4 never receive them.
+    /// baseline, so B4 never receives them.
     /// </summary>
     [Theory]
-    [InlineData(RidePoolingPolicyKind.FixedFreezeHorizon)]
     [InlineData(RidePoolingPolicyKind.NoReassignmentRepair)]
     public void A_baseline_arm_never_inherits_a_revision_limit_or_a_relaxed_deadline(
         RidePoolingPolicyKind kind)
@@ -168,13 +164,8 @@ public sealed class EffectivePolicyFairnessTests
     }
 
     [Fact]
-    public void B3_and_b4_keep_only_their_declared_mechanism_settings()
+    public void B4_keeps_its_declared_repair_capacity()
     {
-        var b3 = EffectivePolicyFor(RidePoolingPolicyKind.FixedFreezeHorizon);
-        Assert.Equal(60_000, b3.FreezeHorizon?.Milliseconds);
-        Assert.Equal(PromiseLock.Vehicle, b3.FreezeHorizonLocks);
-        Assert.Equal(PromiseLock.None, b3.FinalConfirmationLocks);
-
         var solver = DeterministicSolverBudget.Create(1000, 1000, 1).Value!;
         var execution = DeterministicCandidateSelectionExecutionBudget.Create(
             100_000,
@@ -182,8 +173,6 @@ public sealed class EffectivePolicyFairnessTests
             solver).Value!;
         var b4 = OptionsFor(RidePoolingPolicyKind.NoReassignmentRepair, execution);
         Assert.Equal(1, b4.MaximumRepairRequestsConsideredPerVehicle);
-        Assert.Null(b4.FreezeHorizon);
-        Assert.Equal(PromiseLock.None, b4.FreezeLocks);
     }
 
     /// <summary>
@@ -315,22 +304,16 @@ public sealed class EffectivePolicyFairnessTests
             dropEtaRevisionLimit: revisionLimitMs is long limit ? new Duration(limit) : null);
 
     /// <summary>
-    /// Each arm carries its own mandatory settings — B3 needs a freeze horizon and lock
-    /// mask, B4 needs a repair capacity — and the constructor rejects the settings that
-    /// do not belong to that arm. Building them here keeps the sweep over every declared
-    /// kind honest instead of narrowing it to the arms that happen to need no arguments.
+    /// Each arm carries its own mandatory settings — B4 needs a repair capacity — and the
+    /// constructor rejects the settings that do not belong to that arm. Building them here
+    /// keeps the sweep over every declared kind honest instead of narrowing it to the arms
+    /// that happen to need no arguments.
     /// </summary>
     private static SolverBackedRidePoolingPolicyOptions OptionsFor(
         RidePoolingPolicyKind kind,
         DeterministicCandidateSelectionExecutionBudget executionBudget) =>
         kind switch
         {
-            RidePoolingPolicyKind.FixedFreezeHorizon =>
-                new SolverBackedRidePoolingPolicyOptions(
-                    kind,
-                    executionBudget,
-                    freezeHorizon: new Duration(60_000),
-                    freezeLocks: PromiseLock.Vehicle),
             RidePoolingPolicyKind.NoReassignmentRepair =>
                 new SolverBackedRidePoolingPolicyOptions(
                     kind,
