@@ -1,8 +1,13 @@
 using System.Collections.Concurrent;
+using System.Globalization;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
+using RideBound.Contracts.Protocol;
+using RideBound.Runner.Configuration;
+using RideBound.Runner.Protocol;
 
 namespace RideBound.Runner.Tests.Final;
 
@@ -78,6 +83,48 @@ internal static partial class FinalRuns
             .Value;
 
     /// <summary>
+    /// A Runner session for the run inside the test process, configured the way Program.cs configures the Runner
+    /// for the run's argument vector. The WP4 file names its network folder relative to the Runner's working
+    /// directory (Fixtures/), so here the same file is decoded with that folder as an absolute path, and the session
+    /// is bound to the shipped files (the run table's binding). It therefore answers with the bytes of the
+    /// command-line run.
+    /// </summary>
+    public static RunnerSession NewSession(FinalRun run)
+    {
+        var (commitment, wp4, binding) = InProcessConfiguration(run);
+        return new RunnerSession(
+            RunnerDefaults.CapabilityRequirements,
+            RunnerExecutionMode.OnlineCommitment,
+            commitmentPolicies: commitment,
+            stopDistances: commitment,
+            commitmentPolicyConfigurationHash: binding,
+            wp4Configuration: wp4,
+            useManifestSolverSeed: true);
+    }
+
+    /// <summary>The Runner host on in-memory streams, configured like <see cref="NewSession"/> and with the run's
+    /// line limit.</summary>
+    public static Task<int> RunHostAsync(FinalRun run, Stream input, Stream output, TextWriter diagnostics)
+    {
+        var (commitment, wp4, binding) = InProcessConfiguration(run);
+        return RunnerHost.RunAsync(
+            input,
+            output,
+            diagnostics,
+            maximumLineBytes: int.Parse(run.Arguments[^1], CultureInfo.InvariantCulture),
+            executionMode: RunnerExecutionMode.OnlineCommitment,
+            commitmentPolicies: commitment,
+            stopDistances: commitment,
+            commitmentPolicyConfigurationHash: binding,
+            wp4Configuration: wp4,
+            useManifestSolverSeed: true);
+    }
+
+    /// <summary>The lines of Fixtures/expected/&lt;run&gt;.txt after its header (format: <see cref="AssertRecordedStdout"/>).</summary>
+    public static IReadOnlyList<string> RecordedLines(FinalRun run) =>
+        File.ReadAllLines(Path.Combine(FixtureDirectory, "expected", run.Name + ".txt")).Skip(1).ToArray();
+
+    /// <summary>
     /// Compares standard output with Fixtures/expected/&lt;run&gt;.txt. A line there that starts with "{" is the exact
     /// stdout line; any other line is "&lt;messageType&gt; &lt;UTF-8 byte length&gt; &lt;sha256&gt;" of it (checkpoints, and the
     /// decisions of most runs, to keep the fixtures small). The header holds length and SHA-256 of all of stdout.
@@ -114,6 +161,18 @@ internal static partial class FinalRuns
         $"{RunnerProcess.MessageType(line)} {Encoding.UTF8.GetByteCount(line)} {Sha256(Encoding.UTF8.GetBytes(line))}";
 
     public static string Sha256(byte[] bytes) => Convert.ToHexStringLower(SHA256.HashData(bytes));
+
+    private static (CommitmentPolicyConfiguration Commitment, Wp4RunnerConfiguration Wp4, Sha256Hex Binding)
+        InProcessConfiguration(FinalRun run)
+    {
+        var commitment = CommitmentPolicyConfiguration.Decode(
+            File.ReadAllBytes(Path.Combine(FixtureDirectory, "commitment", run.Commitment + ".json")));
+        var wp4File = JsonNode.Parse(File.ReadAllText(Path.Combine(FixtureDirectory, "wp4", run.Wp4 + ".json")))!;
+        wp4File["shadowAllocation"]!["networkDirectory"] = Path.Combine(FixtureDirectory, "network");
+        var wp4 = Wp4RunnerConfiguration.Decode(Encoding.UTF8.GetBytes(wp4File.ToJsonString()), commitment);
+        Assert.True(Sha256Hex.TryCreate(run.Binding, out var binding));
+        return (commitment, wp4, binding!);
+    }
 
     private static string Shorten(string line) => line.Length <= 600 ? line : line[..600] + "...";
 

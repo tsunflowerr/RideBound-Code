@@ -1,22 +1,30 @@
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using RideBound.Contracts.Protocol;
 using RideBound.Contracts.Serialization;
 using RideBound.Contracts.Tests.Fixtures;
 using RideBound.Runner.Protocol;
+using RideBound.Runner.Tests.Final;
 
 namespace RideBound.Runner.Tests.Protocol;
 
+/// <summary>
+/// The protocol rules of a Runner session (state edges, event ordering, retried batches, the decisionApplied
+/// handshake), checked on the final experiment's configuration: the T1 session FS-G2-SHRC71-CL.light-v1 of
+/// <see cref="FinalRuns"/>, run inside the test process. Its first event batch holds events 1-4 at epoch 1.
+/// </summary>
 public sealed class RunnerSessionTests
 {
+    private static readonly FinalRun Run = FinalRuns.Get("FS-G2-SHRC71-CL.light-v1");
+
     [Fact]
     public void Session_moves_new_to_negotiated_to_initialized()
     {
         var session = CreateSession();
 
-        var hello = session.Process(ReadFixture("hello/valid-hello.json"));
-        var initialize = session.Process(
-            ReadFixture("initialize/valid-initialize-run.json"));
+        var hello = session.Process(Hello());
+        var initialize = session.Process(InitializeRun());
 
         Assert.Equal("helloAck", hello.Response?.MessageType.Value);
         Assert.Equal("initialized", initialize.Response?.MessageType.Value);
@@ -31,22 +39,22 @@ public sealed class RunnerSessionTests
     }
 
     [Fact]
-    public void Structural_event_returns_explicit_not_produced_shell()
+    public void Event_batch_returns_a_produced_decision_and_awaits_its_acknowledgement()
     {
         var session = CreateInitializedSession();
 
-        var result = session.Process(CreateEventBatch(eventSequence: 1));
+        var result = session.Process(Batch(1));
 
         Assert.Equal("decision", result.Response?.MessageType.Value);
         var decision = DecisionPayloadCodec.Decode(result.Response!.Payload);
         Assert.True(decision.IsSuccess);
-        Assert.Equal(DecisionProductionStatus.NotProduced, decision.Value?.Status);
-        Assert.Empty(decision.Value!.Actions);
-        Assert.Equal(CertificateStatus.NotProduced, decision.Value.Certificate.Status);
-        Assert.Equal(SolverStatus.NotRun, decision.Value.Solver.Status);
+        Assert.Equal(DecisionProductionStatus.Produced, decision.Value?.Status);
+        Assert.NotEmpty(decision.Value!.Actions);
+        Assert.Equal(CertificateStatus.Produced, decision.Value.Certificate.Status);
+        Assert.Equal(SolverStatus.Completed, decision.Value.Solver.Status);
         Assert.Equal(
-            DecisionPayloadCodec.StructuralOnlyReasonCode,
-            decision.Value.ReasonCode);
+            RecordedDecision(epoch: 1),
+            Encoding.UTF8.GetString(CanonicalJson.Serialize(result.Response)));
         Assert.Equal(RunnerSessionStatus.AwaitingDecisionApplied, session.Status);
         Assert.Equal(0, session.AppliedEpoch);
         Assert.Equal(1, session.NextEventSequence);
@@ -56,7 +64,7 @@ public sealed class RunnerSessionTests
     public void Exact_duplicate_returns_cached_response_without_advancing_hash()
     {
         var session = CreateInitializedSession();
-        var batch = CreateEventBatch(eventSequence: 1);
+        var batch = Batch(1);
         var first = session.Process(batch);
         var hashBeforeRetry = session.PreviousDecisionHash;
 
@@ -75,10 +83,14 @@ public sealed class RunnerSessionTests
     public void Canonically_equal_duplicate_ignores_json_formatting()
     {
         var session = CreateInitializedSession();
-        var batch = CreateEventBatch(eventSequence: 1);
+        var batch = Utf8(
+            JsonNode.Parse(BatchLine(1))!.ToJsonString(
+                new JsonSerializerOptions { WriteIndented = true }));
+        var canonical = CanonicalJson.Canonicalize(batch);
+        Assert.NotEqual(batch, canonical);
         var first = session.Process(batch);
 
-        var retry = session.Process(CanonicalJson.Canonicalize(batch));
+        var retry = session.Process(canonical);
 
         Assert.Equal(
             CanonicalJson.Serialize(first.Response!),
@@ -88,31 +100,56 @@ public sealed class RunnerSessionTests
         Assert.Equal(ProtocolHash.ZeroHash, session.PreviousDecisionHash);
     }
 
+    /// <summary>
+    /// The published duplicate fixture, sent unchanged twice to a session initialized with the fixture's run and
+    /// scenario identifiers. Its only event is a timer tick, and the first online state of a commitment session
+    /// needs a travel snapshot, so both copies get the same recoverable rejection and the session does not move.
+    /// </summary>
     [Fact]
-    public void Published_duplicate_fixture_is_runner_executable()
+    public void Published_duplicate_fixture_is_rejected_identically_twice_before_a_travel_snapshot()
     {
-        var session = CreateInitializedSession();
         var fixture = ReadFixture(
             "golden/required/09-duplicate-event-idempotent/input.json");
+        string runId, scenarioId;
+
+        using (var document = JsonDocument.Parse(fixture))
+        {
+            runId = document.RootElement.GetProperty("runId").GetString()!;
+            scenarioId = document.RootElement.GetProperty("scenarioId").GetString()!;
+        }
+
+        var session = CreateSession();
+        _ = session.Process(Hello());
+        var initialize = JsonNode.Parse(InitializeRun())!;
+        initialize["runId"] = runId;
+        initialize["scenarioId"] = scenarioId;
+        _ = session.Process(Utf8(initialize.ToJsonString()));
+        Assert.Equal(RunnerSessionStatus.Initialized, session.Status);
 
         var first = session.Process(fixture);
         var second = session.Process(fixture);
 
+        AssertError(first, "SCHEMA_VALIDATION_FAILED", "rejectMessage");
+        Assert.Equal(
+            "The first proposed online state requires a travel snapshot.",
+            first.Response!.Payload.GetProperty("message").GetString());
         Assert.Equal(
             CanonicalJson.Serialize(first.Response!),
             CanonicalJson.Serialize(second.Response!));
-        Assert.Equal(RunnerSessionStatus.AwaitingDecisionApplied, session.Status);
+        Assert.Equal(RunnerSessionStatus.Initialized, session.Status);
         Assert.Equal(0, session.AppliedEpoch);
+        Assert.Equal(1, session.NextEventSequence);
+        Assert.Equal(ProtocolHash.ZeroHash, session.PreviousDecisionHash);
     }
 
     [Fact]
     public void Same_duplicate_key_with_changed_payload_fails_session()
     {
         var session = CreateInitializedSession();
-        _ = session.Process(CreateEventBatch(eventSequence: 1));
+        _ = session.Process(Batch(1));
 
         var conflict = session.Process(
-            CreateEventBatch(eventSequence: 1, eventType: "incidentResolved"));
+            ChangedBatch(1, batch => FirstArc(batch)["travelTimeMs"] = 3001));
 
         AssertError(conflict, "DUPLICATE_PAYLOAD_CONFLICT", "failSession");
         Assert.Equal(RunnerSessionStatus.Failed, session.Status);
@@ -123,10 +160,10 @@ public sealed class RunnerSessionTests
     public void Same_duplicate_key_with_changed_simulation_time_fails_session()
     {
         var session = CreateInitializedSession();
-        _ = session.Process(CreateEventBatch(eventSequence: 1, simTime: 100));
+        _ = session.Process(Batch(1));
 
         var conflict = session.Process(
-            CreateEventBatch(eventSequence: 1, simTime: 200));
+            ChangedBatch(1, batch => batch["simTimeMs"] = batch["simTimeMs"]!.GetValue<long>() + 1));
 
         AssertError(conflict, "DUPLICATE_PAYLOAD_CONFLICT", "failSession");
         Assert.Equal(RunnerSessionStatus.Failed, session.Status);
@@ -138,19 +175,20 @@ public sealed class RunnerSessionTests
     public void Event_gap_and_overlap_fail_without_sorting_or_buffering()
     {
         var gapSession = CreateInitializedSession();
-        var gap = gapSession.Process(CreateEventBatch(eventSequence: 2));
+        var gap = gapSession.Process(
+            ChangedBatch(1, batch => Renumber(batch, firstSequence: 2)));
         AssertError(gap, "EVENT_SEQUENCE_GAP", "failSession");
 
         var overlapSession = CreateInitializedSession();
-        _ = overlapSession.Process(CreateEventBatch(eventSequence: 1));
+        _ = overlapSession.Process(Batch(1));
         var decision = DecisionPayloadCodec.Decode(
-            overlapSession.Process(CreateEventBatch(eventSequence: 1))
+            overlapSession.Process(Batch(1))
                 .Response!
                 .Payload)
             .Value!;
-        _ = overlapSession.Process(CreateDecisionApplied(decision.DecisionHash));
+        _ = overlapSession.Process(DecisionApplied(1, decision.DecisionHash));
         var overlap = overlapSession.Process(
-            CreateEventBatch(eventSequence: 1, epoch: 2, simTime: 200));
+            ChangedBatch(2, batch => Renumber(batch, firstSequence: 1)));
         AssertError(overlap, "EVENT_SEQUENCE_OVERLAP", "failSession");
     }
 
@@ -159,20 +197,19 @@ public sealed class RunnerSessionTests
     {
         var epochGapSession = CreateInitializedSession();
         var epochGap = epochGapSession.Process(
-            CreateEventBatch(eventSequence: 1, epoch: 2));
+            ChangedBatch(1, batch => batch["epochId"] = 2));
         AssertError(epochGap, "EPOCH_GAP", "failSession");
 
         var overflowSession = CreateInitializedSession();
         var overflow = overflowSession.Process(
-            CreateEventBatch(eventSequence: ProtocolLimits.MaxCanonicalInteger));
+            SingleEventBatch(ProtocolLimits.MaxCanonicalInteger));
         AssertError(overflow, "EVENT_SEQUENCE_GAP", "failSession");
     }
 
     [Fact]
     public void Ordering_validator_rejects_the_last_integer_before_increment_overflow()
     {
-        var bytes = CreateEventBatch(
-            eventSequence: ProtocolLimits.MaxCanonicalInteger);
+        var bytes = SingleEventBatch(ProtocolLimits.MaxCanonicalInteger);
         var envelope = ProtocolEnvelopeCodec.Decode(bytes).Envelope!;
         var payload = EventBatchPayloadCodec.Decode(envelope.Payload).Value!;
 
@@ -193,18 +230,18 @@ public sealed class RunnerSessionTests
     {
         var session = CreateSession();
         AssertError(
-            session.Process(ReadFixture("initialize/valid-initialize-run.json")),
+            session.Process(InitializeRun()),
             "INVALID_SESSION_STATE",
             "rejectMessage");
         AssertError(
-            session.Process(CreateEventBatch(eventSequence: 1)),
+            session.Process(Batch(1)),
             "INVALID_SESSION_STATE",
             "rejectMessage");
         Assert.Equal(RunnerSessionStatus.New, session.Status);
 
-        _ = session.Process(ReadFixture("hello/valid-hello.json"));
+        _ = session.Process(Hello());
         AssertError(
-            session.Process(ReadFixture("hello/valid-hello.json")),
+            session.Process(Hello()),
             "INVALID_SESSION_STATE",
             "rejectMessage");
         Assert.Equal(RunnerSessionStatus.Negotiated, session.Status);
@@ -214,15 +251,15 @@ public sealed class RunnerSessionTests
     public void Decision_applied_is_the_only_point_that_advances_epoch_and_hash()
     {
         var session = CreateInitializedSession();
-        var response = session.Process(CreateEventBatch(eventSequence: 1));
+        var response = session.Process(Batch(1));
         var decision = DecisionPayloadCodec.Decode(response.Response!.Payload).Value!;
 
-        var applied = session.Process(CreateDecisionApplied(decision.DecisionHash));
+        var applied = session.Process(DecisionApplied(1, decision.DecisionHash));
 
         Assert.Null(applied.Response);
         Assert.Equal(RunnerSessionStatus.Initialized, session.Status);
         Assert.Equal(1, session.AppliedEpoch);
-        Assert.Equal(2, session.NextEventSequence);
+        Assert.Equal(5, session.NextEventSequence);
         Assert.Equal(decision.DecisionHash, session.PreviousDecisionHash);
     }
 
@@ -230,12 +267,12 @@ public sealed class RunnerSessionTests
     public void Wrong_decision_applied_hash_fails_session_without_advancing()
     {
         var session = CreateInitializedSession();
-        _ = session.Process(CreateEventBatch(eventSequence: 1));
+        _ = session.Process(Batch(1));
         Sha256Hex.TryCreate(
             "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
             out var wrongHash);
 
-        var result = session.Process(CreateDecisionApplied(wrongHash!));
+        var result = session.Process(DecisionApplied(1, wrongHash!));
 
         AssertError(result, "HASH_MISMATCH", "failSession");
         Assert.Equal(0, session.AppliedEpoch);
@@ -253,7 +290,7 @@ public sealed class RunnerSessionTests
         Assert.Equal(RunnerSessionStatus.New, recoverable.Status);
         Assert.Equal(
             "helloAck",
-            recoverable.Process(ReadFixture("hello/valid-hello.json"))
+            recoverable.Process(Hello())
                 .Response?
                 .MessageType
                 .Value);
@@ -271,8 +308,7 @@ public sealed class RunnerSessionTests
     {
         var session = CreateInitializedSession();
 
-        var repeated = session.Process(
-            ReadFixture("initialize/valid-initialize-run.json"));
+        var repeated = session.Process(InitializeRun());
 
         AssertError(repeated, "INVALID_SESSION_STATE", "rejectMessage");
         Assert.Equal(RunnerSessionStatus.Initialized, session.Status);
@@ -282,57 +318,91 @@ public sealed class RunnerSessionTests
     private static RunnerSession CreateInitializedSession()
     {
         var session = CreateSession();
-        _ = session.Process(ReadFixture("hello/valid-hello.json"));
-        _ = session.Process(ReadFixture("initialize/valid-initialize-run.json"));
+        _ = session.Process(Hello());
+        _ = session.Process(InitializeRun());
         Assert.Equal(RunnerSessionStatus.Initialized, session.Status);
         return session;
     }
 
-    private static RunnerSession CreateSession() =>
-        new(RunnerDefaults.CapabilityRequirements);
+    private static RunnerSession CreateSession() => FinalRuns.NewSession(Run);
+
+    private static byte[] Hello() => Utf8(Scenario("hello").Single());
+
+    private static byte[] InitializeRun() => Utf8(Scenario("initializeRun").Single());
+
+    private static string BatchLine(int epoch) => Scenario("eventBatch")[epoch - 1];
+
+    private static byte[] Batch(int epoch) => Utf8(BatchLine(epoch));
+
+    private static byte[] ChangedBatch(int epoch, Action<JsonNode> change)
+    {
+        var batch = JsonNode.Parse(BatchLine(epoch))!;
+        change(batch);
+        return Utf8(batch.ToJsonString());
+    }
+
+    /// <summary>The first batch cut to its first event (the travel-time snapshot), numbered
+    /// <paramref name="sequence"/>.</summary>
+    private static byte[] SingleEventBatch(long sequence) =>
+        ChangedBatch(
+            1,
+            batch =>
+            {
+                var events = batch["payload"]!["events"]!.AsArray();
+
+                while (events.Count > 1)
+                {
+                    events.RemoveAt(events.Count - 1);
+                }
+
+                Renumber(batch, sequence);
+            });
+
+    private static void Renumber(JsonNode batch, long firstSequence)
+    {
+        var sequence = firstSequence;
+
+        foreach (var item in batch["payload"]!["events"]!.AsArray())
+        {
+            item!["eventSeq"] = sequence++;
+        }
+    }
+
+    private static JsonNode FirstArc(JsonNode batch) =>
+        batch["payload"]!["events"]![0]!["payload"]!["snapshot"]!["arcs"]![0]!;
+
+    /// <summary>The adapter's acknowledgement of the decision made for the batch of <paramref name="epoch"/>.</summary>
+    private static byte[] DecisionApplied(int epoch, Sha256Hex decisionHash)
+    {
+        var batch = JsonNode.Parse(BatchLine(epoch))!;
+        var applied = new JsonObject
+        {
+            ["schemaVersion"] = "1.0.0",
+            ["messageType"] = "decisionApplied",
+            ["runId"] = batch["runId"]!.GetValue<string>(),
+            ["scenarioId"] = batch["scenarioId"]!.GetValue<string>(),
+            ["epochId"] = batch["epochId"]!.GetValue<long>(),
+            ["simTimeMs"] = batch["simTimeMs"]!.GetValue<long>(),
+            ["payload"] = new JsonObject { ["decisionHash"] = decisionHash.Value },
+        };
+        return Utf8(applied.ToJsonString());
+    }
+
+    /// <summary>The decision line recorded for <paramref name="epoch"/> in the T1 golden (kept verbatim there).</summary>
+    private static string RecordedDecision(int epoch) =>
+        FinalRuns.RecordedLines(Run)
+            .Where(line => line.StartsWith('{') && RunnerProcess.MessageType(line) == "decision")
+            .ElementAt(epoch - 1);
+
+    private static string[] Scenario(string messageType) =>
+        FinalRuns.ScenarioLines(Run)
+            .Where(line => RunnerProcess.MessageType(line) == messageType)
+            .ToArray();
+
+    private static byte[] Utf8(string json) => Encoding.UTF8.GetBytes(json);
 
     private static byte[] ReadFixture(string path) =>
         Encoding.UTF8.GetBytes(FixtureLoader.ReadUtf8(path));
-
-    private static byte[] CreateEventBatch(
-        long eventSequence,
-        string eventType = "timerTick",
-        long epoch = 1,
-        long simTime = 100) =>
-        Encoding.UTF8.GetBytes(
-            $$"""
-            {
-              "schemaVersion":"1.0.0",
-              "messageType":"eventBatch",
-              "runId":"run-001",
-              "scenarioId":"manhattan-20260729-a",
-              "epochId":{{epoch}},
-              "simTimeMs":{{simTime}},
-              "payload":{
-                "events":[
-                  {
-                    "eventSeq":{{eventSequence}},
-                    "eventType":"{{eventType}}",
-                    "payload":{{(eventType == "timerTick" ? "{}" : """{"incidentId":"incident-1"}""")}}
-                  }
-                ]
-              }
-            }
-            """);
-
-    private static byte[] CreateDecisionApplied(Sha256Hex decisionHash) =>
-        Encoding.UTF8.GetBytes(
-            $$"""
-            {
-              "schemaVersion":"1.0.0",
-              "messageType":"decisionApplied",
-              "runId":"run-001",
-              "scenarioId":"manhattan-20260729-a",
-              "epochId":1,
-              "simTimeMs":100,
-              "payload":{"decisionHash":"{{decisionHash.Value}}"}
-            }
-            """);
 
     private static void AssertError(
         RunnerSessionResult result,

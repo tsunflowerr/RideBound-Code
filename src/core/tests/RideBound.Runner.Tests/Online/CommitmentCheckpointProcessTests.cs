@@ -1,51 +1,60 @@
-using System.Diagnostics;
-using System.Reflection;
 using System.Text.Json;
 using RideBound.Contracts.Protocol;
 using RideBound.Contracts.Serialization;
+using RideBound.Runner.Tests.Final;
 
 namespace RideBound.Runner.Tests.Online;
 
+/// <summary>
+/// Checkpoints of the final experiment's configuration, through child Runner processes started with the final runs'
+/// argument vector (the T1 runs FS-G2-SHRC71-CL of <see cref="FinalRuns"/>).
+/// </summary>
 public sealed class CommitmentCheckpointProcessTests
 {
+    private static readonly FinalRun Run = FinalRuns.Get("FS-G2-SHRC71-CL.light-v1");
+
+    /// <summary>
+    /// A clean process runs the first batch and takes a checkpoint; another clean process restores it and runs the
+    /// rest of the scenario. Its decisions equal the uninterrupted session's decisions after the first one.
+    /// </summary>
     [Fact]
     public async Task Restored_clean_process_matches_genesis_suffix_decisions()
     {
-        var scenarioLines = File.ReadAllLines(
-            ScenarioPath("commitment-demo.input.ndjson"));
-        var uninterrupted = await RunProcess(scenarioLines);
+        var scenario = FinalRuns.ScenarioLines(Run);
+        var uninterrupted = await FinalRuns.SessionAsync(Run);
         Assert.Equal(0, uninterrupted.ExitCode);
         Assert.Equal(string.Empty, uninterrupted.StandardError);
 
-        var checkpointRequest =
-            "{\"schemaVersion\":\"1.0.0\",\"messageType\":\"checkpoint\"," +
-            "\"runId\":\"wp3-demo-run\",\"scenarioId\":\"wp3-commitment-tiny\"," +
-            "\"payload\":{}}";
-        var prefix = await RunProcess(
-            scenarioLines.Take(4)
-                .Concat([checkpointRequest, scenarioLines[^1]]));
+        var firstBatch = IndexOf(scenario, "eventBatch");
+        var checkpointRequest = scenario[firstBatch + 1];
+        Assert.Equal("checkpoint", RunnerProcess.MessageType(checkpointRequest));
+        var prefix = await RunnerProcess.RunAsync(
+            Run.Arguments,
+            FinalRuns.FixtureDirectory,
+            [scenario[0], scenario[1], scenario[firstBatch], checkpointRequest, scenario[^1]]);
         Assert.Equal(0, prefix.ExitCode);
         Assert.Equal(string.Empty, prefix.StandardError);
-        var checkpoint = Messages(prefix.StandardOutput).Single(
+        var checkpoint = Messages(prefix).Single(
             value => value.RootElement.GetProperty("messageType").GetString()
                 == "checkpoint");
         var payload = checkpoint.RootElement.GetProperty("payload");
         var restore =
             "{\"schemaVersion\":\"1.0.0\",\"messageType\":\"restore\"," +
-            "\"runId\":\"wp3-demo-run\",\"scenarioId\":\"wp3-commitment-tiny\"," +
+            $"\"runId\":{JsonSerializer.Serialize(checkpoint.RootElement.GetProperty("runId").GetString())}," +
+            $"\"scenarioId\":{JsonSerializer.Serialize(checkpoint.RootElement.GetProperty("scenarioId").GetString())}," +
             $"\"payload\":{payload.GetRawText()}}}";
-        var restored = await RunProcess(
-            scenarioLines.Take(2)
-                .Concat([restore])
-                .Concat(scenarioLines.Skip(4)));
+        var restored = await RunnerProcess.RunAsync(
+            Run.Arguments,
+            FinalRuns.FixtureDirectory,
+            [scenario[0], scenario[1], restore, .. scenario.Skip(firstBatch + 2)]);
 
         Assert.Equal(0, restored.ExitCode);
         Assert.Equal(string.Empty, restored.StandardError);
-        var uninterruptedSuffix = DecisionLines(
-            uninterrupted.StandardOutput).Skip(1).ToArray();
-        var restoredSuffix = DecisionLines(restored.StandardOutput);
+        var uninterruptedSuffix = DecisionLines(uninterrupted).Skip(1).ToArray();
+        var restoredSuffix = DecisionLines(restored);
+        Assert.NotEmpty(restoredSuffix);
         Assert.Equal(uninterruptedSuffix, restoredSuffix);
-        var restoreAck = Messages(restored.StandardOutput).Single(
+        var restoreAck = Messages(restored).Single(
             value => value.RootElement.GetProperty("messageType").GetString()
                 == "restore");
         Assert.Equal(
@@ -56,43 +65,45 @@ public sealed class CommitmentCheckpointProcessTests
 
     /// <summary>
     /// ADR-089: the streamed checkpoint line equals, byte for byte, the line the envelope path
-    /// builds from the same content (old hash, Encode, envelope, canonical NDJSON).
+    /// builds from the same content (old hash, Encode, envelope, canonical NDJSON). Checked on every
+    /// checkpoint of the session in both audit modes.
     /// </summary>
     [Fact]
     public async Task Streamed_checkpoint_line_equals_the_envelope_path_line()
     {
-        var scenarioLines = File.ReadAllLines(
-            ScenarioPath("commitment-demo.input.ndjson"));
-        var checkpointRequest =
-            "{\"schemaVersion\":\"1.0.0\",\"messageType\":\"checkpoint\"," +
-            "\"runId\":\"wp3-demo-run\",\"scenarioId\":\"wp3-commitment-tiny\"," +
-            "\"payload\":{}}";
-        var run = await RunProcess(
-            scenarioLines.Take(4).Concat([checkpointRequest, scenarioLines[^1]]));
-        Assert.Equal(0, run.ExitCode);
-        var line = run.StandardOutput.Split('\n', StringSplitOptions.RemoveEmptyEntries)
-            .Single(value => JsonDocument.Parse(value).RootElement
-                .GetProperty("messageType").GetString() == "checkpoint");
-        var streamed = System.Text.Encoding.UTF8.GetBytes(line);
-        var decoded = ProtocolEnvelopeCodec.Decode(streamed).Envelope!;
-        var content = decoded.Payload.GetProperty("content");
-        var archivedContent = new CheckpointContent(
-            Hash(content, "manifestHash"),
-            Hash(content, "stateHash"),
-            Hash(content, "previousDecisionHash"),
-            content.GetProperty("appliedEpoch").GetInt64(),
-            content.GetProperty("nextEventSeq").GetInt64(),
-            content.GetProperty("simTimeMs").GetInt64(),
-            content.GetProperty("onlineState").Clone());
-        var archivedHash = CheckpointPayloadCodec.CalculateHash(archivedContent);
-        using var archivedPayload = JsonDocument.Parse(
-            CheckpointPayloadCodec.Encode(
-                new CheckpointPayload("1.0.0", archivedHash, archivedContent)));
-        var archivedLine = CanonicalJson.Serialize(
-            decoded with { Payload = archivedPayload.RootElement.Clone() });
+        foreach (var name in new[] { "FS-G2-SHRC71-CL.light-v1", "FS-G2-SHRC71-CL.full-v1" })
+        {
+            var run = await FinalRuns.SessionAsync(FinalRuns.Get(name));
+            Assert.Equal(0, run.ExitCode);
+            var lines = run.Lines()
+                .Where(value => RunnerProcess.MessageType(value) == "checkpoint")
+                .ToArray();
+            Assert.Equal(17, lines.Length);
 
-        Assert.Equal(archivedHash.Value, decoded.Payload.GetProperty("checkpointHash").GetString());
-        Assert.Equal(archivedLine, streamed);
+            foreach (var line in lines)
+            {
+                var streamed = System.Text.Encoding.UTF8.GetBytes(line);
+                var decoded = ProtocolEnvelopeCodec.Decode(streamed).Envelope!;
+                var content = decoded.Payload.GetProperty("content");
+                var archivedContent = new CheckpointContent(
+                    Hash(content, "manifestHash"),
+                    Hash(content, "stateHash"),
+                    Hash(content, "previousDecisionHash"),
+                    content.GetProperty("appliedEpoch").GetInt64(),
+                    content.GetProperty("nextEventSeq").GetInt64(),
+                    content.GetProperty("simTimeMs").GetInt64(),
+                    content.GetProperty("onlineState").Clone());
+                var archivedHash = CheckpointPayloadCodec.CalculateHash(archivedContent);
+                using var archivedPayload = JsonDocument.Parse(
+                    CheckpointPayloadCodec.Encode(
+                        new CheckpointPayload("1.0.0", archivedHash, archivedContent)));
+                var archivedLine = CanonicalJson.Serialize(
+                    decoded with { Payload = archivedPayload.RootElement.Clone() });
+
+                Assert.Equal(archivedHash.Value, decoded.Payload.GetProperty("checkpointHash").GetString());
+                Assert.Equal(archivedLine, streamed);
+            }
+        }
     }
 
     private static Sha256Hex Hash(JsonElement content, string name)
@@ -101,74 +112,17 @@ public sealed class CommitmentCheckpointProcessTests
         return hash!;
     }
 
-    private static async Task<ProcessResult> RunProcess(
-        IEnumerable<string> inputLines)
-    {
-        var startInfo = new ProcessStartInfo("dotnet")
-        {
-            RedirectStandardInput = true,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-            UseShellExecute = false,
-            CreateNoWindow = true,
-        };
-        startInfo.ArgumentList.Add(
-            Path.Combine(AppContext.BaseDirectory, "RideBound.Runner.dll"));
-        startInfo.ArgumentList.Add("--mode");
-        startInfo.ArgumentList.Add("commitment");
-        startInfo.ArgumentList.Add("--policy-config");
-        startInfo.ArgumentList.Add(ConfigurationPath());
+    private static int IndexOf(IReadOnlyList<string> lines, string messageType) =>
+        Enumerable.Range(0, lines.Count)
+            .First(index => RunnerProcess.MessageType(lines[index]) == messageType);
 
-        using var process = Process.Start(startInfo);
-        Assert.NotNull(process);
-        await process.StandardInput.WriteAsync(
-            string.Join('\n', inputLines) + "\n");
-        process.StandardInput.Close();
-        var stdout = await process.StandardOutput.ReadToEndAsync();
-        var stderr = await process.StandardError.ReadToEndAsync();
-        await process.WaitForExitAsync();
-        return new ProcessResult(
-            process.ExitCode,
-            Normalize(stdout),
-            Normalize(stderr));
-    }
-
-    private static string[] DecisionLines(string output) =>
-        output.Split('\n', StringSplitOptions.RemoveEmptyEntries)
-            .Where(
-                line => JsonDocument.Parse(line).RootElement
-                    .GetProperty("messageType").GetString() == "decision")
+    private static string[] DecisionLines(RunnerProcessResult result) =>
+        result.Lines()
+            .Where(line => RunnerProcess.MessageType(line) == "decision")
             .ToArray();
 
-    private static JsonDocument[] Messages(string output) =>
-        output.Split('\n', StringSplitOptions.RemoveEmptyEntries)
+    private static JsonDocument[] Messages(RunnerProcessResult result) =>
+        result.Lines()
             .Select(line => JsonDocument.Parse(line))
             .ToArray();
-
-    private static string ScenarioPath(string name) => Path.Combine(
-        RepositoryRoot(),
-        "benchmarks",
-        "scenarios",
-        "wp3-commitment-tiny",
-        name);
-
-    private static string ConfigurationPath() => Path.Combine(
-        RepositoryRoot(),
-        "benchmarks",
-        "configurations",
-        "wp3-boundary-test-v1.json");
-
-    private static string RepositoryRoot() =>
-        typeof(CommitmentCheckpointProcessTests).Assembly
-            .GetCustomAttributes<AssemblyMetadataAttribute>()
-            .Single(value => value.Key == "RideBoundRepositoryRoot")
-            .Value!;
-
-    private static string Normalize(string value) =>
-        value.Replace("\r\n", "\n", StringComparison.Ordinal);
-
-    private sealed record ProcessResult(
-        int ExitCode,
-        string StandardOutput,
-        string StandardError);
 }

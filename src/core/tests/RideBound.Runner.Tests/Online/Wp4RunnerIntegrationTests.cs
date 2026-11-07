@@ -15,6 +15,8 @@ namespace RideBound.Runner.Tests.Online;
 
 public sealed class Wp4RunnerIntegrationTests
 {
+    /// <summary>The final runs' argument vector (Final/FinalRuns.cs), which ends with
+    /// <c>--maximum-line-bytes 1073741824</c>, run in the folder its relative paths point into.</summary>
     [Fact]
     public async Task Cli_explicit_line_budget_accepts_a_bounded_frame_above_legacy_default()
     {
@@ -25,20 +27,22 @@ public sealed class Wp4RunnerIntegrationTests
             RedirectStandardError = true,
             UseShellExecute = false,
             CreateNoWindow = true,
+            WorkingDirectory = Final.FinalRuns.FixtureDirectory,
         };
         startInfo.ArgumentList.Add(
             Path.Combine(AppContext.BaseDirectory, "RideBound.Runner.dll"));
-        startInfo.ArgumentList.Add("--mode");
-        startInfo.ArgumentList.Add("online");
-        startInfo.ArgumentList.Add("--maximum-line-bytes");
-        startInfo.ArgumentList.Add((2 * 1024 * 1024).ToString(
-            System.Globalization.CultureInfo.InvariantCulture));
+
+        foreach (var argument in Final.FinalRuns.Get("FS-G2-SHRC71-CL.light-v1").Arguments)
+        {
+            startInfo.ArgumentList.Add(argument);
+        }
 
         using var process = Process.Start(startInfo);
         Assert.NotNull(process);
         var oversizedForLegacy = "{\"padding\":\""
             + new string('x', 1_100_000)
             + "\"}\n";
+        Assert.True(Encoding.UTF8.GetByteCount(oversizedForLegacy) > NdjsonReader.DefaultMaximumLineBytes);
         await process.StandardInput.WriteAsync(oversizedForLegacy);
         process.StandardInput.Close();
         var stdout = await process.StandardOutput.ReadToEndAsync();
