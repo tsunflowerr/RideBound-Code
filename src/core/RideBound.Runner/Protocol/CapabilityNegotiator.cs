@@ -7,15 +7,6 @@ public sealed record CapabilityRequirementProfile(
     IReadOnlyCollection<string> RequiredCapabilities,
     IReadOnlyCollection<string> OptionalCapabilities,
     long MinimumFleetSize,
-    long MinimumRequestCount,
-    CapabilityDowngradeProfile? Downgrade = null);
-
-public sealed record CapabilityDowngradeProfile(
-    string DowngradePolicyId,
-    string RequiredPositionModel,
-    IReadOnlyCollection<string> RequiredCapabilities,
-    IReadOnlyCollection<string> OptionalCapabilities,
-    long MinimumFleetSize,
     long MinimumRequestCount);
 
 public enum CapabilityNegotiationErrorCode
@@ -78,52 +69,13 @@ public static class CapabilityNegotiator
                     .Order(StringComparer.Ordinal));
         }
 
-        var primary = EvaluateProfile(
+        return EvaluateProfile(
             hello,
             requirements.RequiredPositionModel,
             requirements.RequiredCapabilities,
             requirements.OptionalCapabilities,
             requirements.MinimumFleetSize,
-            requirements.MinimumRequestCount,
-            CapabilitySelectionStatus.Accepted,
-            downgradePolicyId: null);
-
-        if (primary.IsSuccess)
-        {
-            return primary;
-        }
-
-        if (primary.Error?.Code is CapabilityNegotiationErrorCode.UnknownRequiredCapability
-            or CapabilityNegotiationErrorCode.InvalidRequirementProfile)
-        {
-            return primary;
-        }
-
-        if (requirements.Downgrade is null)
-        {
-            return primary;
-        }
-
-        var downgrade = requirements.Downgrade;
-
-        if (!OpaqueIdentifier.IsValid(downgrade.DowngradePolicyId))
-        {
-            return Failure(
-                CapabilityNegotiationErrorCode.InvalidRequirementProfile,
-                "SCHEMA_VALIDATION_FAILED",
-                "downgradePolicyId must contain 1 to 128 valid UTF-8 bytes.",
-                ["downgradePolicyId"]);
-        }
-
-        return EvaluateProfile(
-            hello,
-            downgrade.RequiredPositionModel,
-            downgrade.RequiredCapabilities,
-            downgrade.OptionalCapabilities,
-            downgrade.MinimumFleetSize,
-            downgrade.MinimumRequestCount,
-            CapabilitySelectionStatus.Downgraded,
-            downgrade.DowngradePolicyId);
+            requirements.MinimumRequestCount);
     }
 
     private static CapabilityNegotiationResult EvaluateProfile(
@@ -132,9 +84,7 @@ public static class CapabilityNegotiator
         IReadOnlyCollection<string> requiredCapabilityTexts,
         IReadOnlyCollection<string> optionalCapabilityTexts,
         long minimumFleetSize,
-        long minimumRequestCount,
-        CapabilitySelectionStatus status,
-        string? downgradePolicyId)
+        long minimumRequestCount)
     {
         if (requiredCapabilityTexts is null
             || optionalCapabilityTexts is null
@@ -213,12 +163,11 @@ public static class CapabilityNegotiator
             new HelloAckPayload(
                 ProtocolVersion.Current,
                 new CapabilitySelection(
-                    status,
+                    CapabilitySelectionStatus.Accepted,
                     hello.PositionModel,
                     CapabilityVocabulary.Normalize(selected),
                     hello.MaxFleetSize,
-                    hello.MaxRequestCount,
-                    downgradePolicyId)));
+                    hello.MaxRequestCount)));
     }
 
     private static CapabilitySetParseResult ParseCapabilitySet(

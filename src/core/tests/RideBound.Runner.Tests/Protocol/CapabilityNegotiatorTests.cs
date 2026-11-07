@@ -76,37 +76,6 @@ public sealed class CapabilityNegotiatorTests
     }
 
     [Fact]
-    public void Named_downgrade_is_selected_explicitly_when_primary_profile_is_missing()
-    {
-        var hello = ReadHello() with
-        {
-            PositionModel = PositionModel.NodeOnly,
-            Capabilities = [CapabilityId.ExactEventOrdering],
-        };
-        var requirements = new CapabilityRequirementProfile(
-            "directedEdgeProgress",
-            ["exactEventOrdering", "oldPlanProjection"],
-            [],
-            MinimumFleetSize: 1,
-            MinimumRequestCount: 1,
-            new CapabilityDowngradeProfile(
-                "node-only-no-old-plan-v1",
-                "nodeOnly",
-                ["exactEventOrdering"],
-                [],
-                MinimumFleetSize: 1,
-                MinimumRequestCount: 1));
-
-        var result = CapabilityNegotiator.Negotiate(hello, requirements);
-
-        Assert.True(result.IsSuccess);
-        var selection = result.Acknowledgement!.CapabilitySelection;
-        Assert.Equal(CapabilitySelectionStatus.Downgraded, selection.Status);
-        Assert.Equal("node-only-no-old-plan-v1", selection.DowngradePolicyId);
-        Assert.Equal(PositionModel.NodeOnly, selection.PositionModel);
-    }
-
-    [Fact]
     public void Unknown_required_capability_is_not_ignored()
     {
         var requirements = new CapabilityRequirementProfile(
