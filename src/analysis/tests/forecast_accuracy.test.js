@@ -28,7 +28,7 @@ function run(args, leaveOut) {
     for (const x of OUTPUTS) files[x] = fs.existsSync(prefix + x) ? fs.readFileSync(prefix + x) : null;
     return { status: p.status, stdout: p.stdout, stderr: p.stderr, files };
   } finally {
-    fs.rmSync(tmp, { recursive: true, force: true });
+    fs.rmSync(tmp, { recursive: true, force: true, maxRetries: 10 });
   }
 }
 // the first line that differs, so that a failure shows where the tables moved

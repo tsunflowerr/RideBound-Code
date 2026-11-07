@@ -43,7 +43,7 @@ function runDriver(args) {
     assert.strictEqual(p.status, 0, (p.error ? String(p.error) + '\n' : '') + p.stdout + p.stderr);
     return fs.readFileSync(out, 'utf8').split('\n').filter(Boolean).map(line => JSON.parse(line));
   } finally {
-    fs.rmSync(tmp, { recursive: true, force: true });
+    fs.rmSync(tmp, { recursive: true, force: true, maxRetries: 10 });
   }
 }
 

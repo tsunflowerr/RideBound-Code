@@ -37,7 +37,7 @@ function runLeg(dir, { profile, binMs, evaluation, departure, leg, flatRatio }) 
 
 function withTempDir(fn) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'forecast-leg-'));
-  try { return fn(dir); } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+  try { return fn(dir); } finally { fs.rmSync(dir, { recursive: true, force: true, maxRetries: 10 }); }
 }
 
 test('hand-worked legs: weight 1 in the evaluation bin, profile[b] / profile[b0] after it, held after the last', () => {

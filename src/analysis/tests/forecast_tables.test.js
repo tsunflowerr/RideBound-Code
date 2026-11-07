@@ -19,7 +19,7 @@ function run(args) {
     const read = ext => (fs.existsSync(prefix + ext) ? fs.readFileSync(prefix + ext) : null);
     return { status: p.status, stdout: p.stdout, stderr: p.stderr, txt: read('.txt'), json: read('.json') };
   } finally {
-    fs.rmSync(tmp, { recursive: true, force: true });
+    fs.rmSync(tmp, { recursive: true, force: true, maxRetries: 10 });
   }
 }
 // the first line that differs, so that a failure shows where the tables moved

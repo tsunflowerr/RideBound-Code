@@ -21,7 +21,7 @@ function run(args, rowsText) {
     const p = spawnSync(process.execPath, [path.join(DIR, 'ours_vs_theirs.js'), ...args, '--out', out], { encoding: 'utf8' });
     return { status: p.status, stdout: p.stdout, stderr: p.stderr, md: fs.existsSync(out) ? fs.readFileSync(out) : null };
   } finally {
-    fs.rmSync(tmp, { recursive: true, force: true });
+    fs.rmSync(tmp, { recursive: true, force: true, maxRetries: 10 });
   }
 }
 // the first line that differs, so that a failure shows where the tables moved

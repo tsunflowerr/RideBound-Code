@@ -76,6 +76,6 @@ test('the reference scorer on 6,000 more random contexts (export_network.js toy,
     assert.ok(refMaxRel <= 1e-12, `relative difference ${refMaxRel}`);
     assert.ok(nonzero > 4000 && withArc > 2000, `nonzero ${nonzero}, with an arc ${withArc}`);
   } finally {
-    fs.rmSync(tmp, { recursive: true, force: true });
+    fs.rmSync(tmp, { recursive: true, force: true, maxRetries: 10 });
   }
 });
