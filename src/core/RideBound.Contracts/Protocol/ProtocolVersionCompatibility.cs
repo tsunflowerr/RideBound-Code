@@ -10,35 +10,21 @@ public enum ProtocolVersionCompatibilityStatus
 public sealed record ProtocolVersionCompatibilityResult(
     ProtocolVersionCompatibilityStatus Status,
     ProtocolVersion ReceiverVersion,
-    ProtocolVersion SenderVersion,
-    bool UsesExplicitSafeForwardMinorProfile)
+    ProtocolVersion SenderVersion)
 {
     public bool IsCompatible => Status == ProtocolVersionCompatibilityStatus.Compatible;
 }
 
-public enum ProtocolOptionalFieldReadBehavior
-{
-    Ignore,
-    UseDeclaredDefault,
-}
-
-public sealed record ProtocolOptionalFieldBehavior(
-    string MessageType,
-    string FieldPath,
-    ProtocolOptionalFieldReadBehavior ReadBehavior,
-    bool IncludedInCanonicalProjection,
-    bool IncludedInHashProjection);
-
-public sealed record ProtocolForwardMinorProfile(
-    int SenderMinor,
-    IReadOnlyList<ProtocolOptionalFieldBehavior> OptionalFields);
-
 public static class ProtocolVersionCompatibility
 {
+    /// <summary>
+    /// A sender is compatible when it has the receiver's major and a minor no newer than the receiver's.
+    /// A newer minor would need an explicit safe forward-minor profile, and protocol v1 declares none
+    /// (schemas/v1/compatibility-matrix.json), so it is unsupported.
+    /// </summary>
     public static ProtocolVersionCompatibilityResult Evaluate(
         ProtocolVersion senderVersion,
-        ProtocolVersion? receiverVersion = null,
-        ProtocolForwardMinorProfile? forwardMinorProfile = null)
+        ProtocolVersion? receiverVersion = null)
     {
         ArgumentNullException.ThrowIfNull(senderVersion);
         receiverVersion ??= ProtocolVersion.Current;
@@ -48,42 +34,20 @@ public static class ProtocolVersionCompatibility
             return new ProtocolVersionCompatibilityResult(
                 ProtocolVersionCompatibilityStatus.UnsupportedMajor,
                 receiverVersion,
-                senderVersion,
-                UsesExplicitSafeForwardMinorProfile: false);
+                senderVersion);
         }
 
-        if (senderVersion.Minor > receiverVersion.Minor
-            && !IsExplicitSafeProfile(senderVersion, forwardMinorProfile))
+        if (senderVersion.Minor > receiverVersion.Minor)
         {
             return new ProtocolVersionCompatibilityResult(
                 ProtocolVersionCompatibilityStatus.UnsupportedMinor,
                 receiverVersion,
-                senderVersion,
-                UsesExplicitSafeForwardMinorProfile: false);
+                senderVersion);
         }
 
         return new ProtocolVersionCompatibilityResult(
             ProtocolVersionCompatibilityStatus.Compatible,
             receiverVersion,
-            senderVersion,
-            senderVersion.Minor > receiverVersion.Minor);
-    }
-
-    private static bool IsExplicitSafeProfile(
-        ProtocolVersion senderVersion,
-        ProtocolForwardMinorProfile? profile)
-    {
-        if (profile is null
-            || profile.SenderMinor != senderVersion.Minor
-            || profile.OptionalFields is null
-            || profile.OptionalFields.Count == 0)
-        {
-            return false;
-        }
-
-        return profile.OptionalFields.All(
-            field => OpaqueIdentifier.IsValid(field.MessageType)
-                && field.FieldPath.StartsWith("$.", StringComparison.Ordinal)
-                && field.FieldPath.Length > 2);
+            senderVersion);
     }
 }

@@ -65,60 +65,6 @@ public sealed class ProtocolVersionCompatibilityTests
     }
 
     [Fact]
-    public void Forward_minor_requires_an_explicit_safe_profile()
-    {
-        Assert.True(ProtocolVersion.TryParse("1.1.0", out var sender));
-
-        var strict = ProtocolVersionCompatibility.Evaluate(sender!);
-        var profile = new ProtocolForwardMinorProfile(
-            SenderMinor: 1,
-            OptionalFields:
-            [
-                new ProtocolOptionalFieldBehavior(
-                    "hello",
-                    "$.payload.clientLabel",
-                    ProtocolOptionalFieldReadBehavior.Ignore,
-                    IncludedInCanonicalProjection: false,
-                    IncludedInHashProjection: false),
-            ]);
-        var declaredSafe = ProtocolVersionCompatibility.Evaluate(
-            sender!,
-            forwardMinorProfile: profile);
-
-        Assert.Equal(
-            ProtocolVersionCompatibilityStatus.UnsupportedMinor,
-            strict.Status);
-        Assert.True(declaredSafe.IsCompatible);
-        Assert.True(declaredSafe.UsesExplicitSafeForwardMinorProfile);
-    }
-
-    [Fact]
-    public void Empty_or_wrong_minor_profile_does_not_open_forward_compatibility()
-    {
-        Assert.True(ProtocolVersion.TryParse("1.2.0", out var sender));
-        var empty = new ProtocolForwardMinorProfile(2, []);
-        var wrongMinor = new ProtocolForwardMinorProfile(
-            1,
-            [
-                new ProtocolOptionalFieldBehavior(
-                    "hello",
-                    "$.payload.clientLabel",
-                    ProtocolOptionalFieldReadBehavior.Ignore,
-                    IncludedInCanonicalProjection: false,
-                    IncludedInHashProjection: false),
-            ]);
-
-        Assert.Equal(
-            ProtocolVersionCompatibilityStatus.UnsupportedMinor,
-            ProtocolVersionCompatibility.Evaluate(sender!, forwardMinorProfile: empty)
-                .Status);
-        Assert.Equal(
-            ProtocolVersionCompatibilityStatus.UnsupportedMinor,
-            ProtocolVersionCompatibility.Evaluate(sender!, forwardMinorProfile: wrongMinor)
-                .Status);
-    }
-
-    [Fact]
     public void Encoder_rejects_manually_constructed_unsupported_version()
     {
         var decoded = ProtocolEnvelopeCodec.Decode(

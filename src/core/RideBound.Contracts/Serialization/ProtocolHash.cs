@@ -33,38 +33,13 @@ public static class ProtocolHash
         Sha256Hex manifestHash,
         string policyVersion,
         ReadOnlySpan<byte> canonicalInputState,
-        ReadOnlySpan<byte> canonicalDecision)
-    {
-        ArgumentNullException.ThrowIfNull(previousDecisionHash);
-        ArgumentNullException.ThrowIfNull(manifestHash);
-
-        if (!OpaqueIdentifier.IsValid(policyVersion))
-        {
-            throw new ArgumentException(
-                "policyVersion must be an opaque protocol identifier.",
-                nameof(policyVersion));
-        }
-
-        return Calculate(
-            DecisionDomain,
-            [
-                new HashFrame(
-                    "previousDecisionHash",
-                    Convert.FromHexString(previousDecisionHash.Value)),
-                new HashFrame(
-                    "manifestHash",
-                    Convert.FromHexString(manifestHash.Value)),
-                new HashFrame(
-                    "policyVersion",
-                    Encoding.UTF8.GetBytes(policyVersion)),
-                new HashFrame(
-                    "canonicalInputState",
-                    canonicalInputState.ToArray()),
-                new HashFrame(
-                    "canonicalDecision",
-                    canonicalDecision.ToArray()),
-            ]);
-    }
+        ReadOnlySpan<byte> canonicalDecision) =>
+        CalculateDecisionHash(
+            previousDecisionHash,
+            manifestHash,
+            policyVersion,
+            [canonicalInputState.ToArray()],
+            canonicalDecision);
 
     /// <summary>
     /// The same decisionHash v1 as above, with canonicalInputState given as ordered byte
