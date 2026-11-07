@@ -68,36 +68,6 @@ public sealed class Wp4RunnerConfigurationTests
     }
 
     [Fact]
-    public void Wp9_exploratory_c2_config_binds_warning_to_finite_hard_limit()
-    {
-        var repository = RepositoryRoot();
-        var commitment = CommitmentPolicyConfiguration.Decode(
-            File.ReadAllBytes(Path.Combine(
-                repository,
-                "benchmarks",
-                "configurations",
-                "wp8-drop-eta-budget-loose-v1.json")));
-        var configuration = Wp4RunnerConfiguration.Decode(
-            File.ReadAllBytes(Path.Combine(
-                repository,
-                "benchmarks",
-                "configurations",
-                "wp9-fleetpy-soft-hard-hybrid-audited-v1.json")),
-            commitment);
-
-        Assert.Equal(
-            RidePoolingPolicyRegistry.CommitSoftHardHybrid,
-            configuration.PolicyId);
-        Assert.True(configuration.EmitSolverExecutionEvidence);
-        Assert.True(configuration.TryGetProfile(
-            "wp6-synthetic-policy-overlay-v1",
-            out var profile));
-        Assert.Equal(
-            60_000,
-            profile.Limits[CommitmentDimension.DropEtaTotalMs].WarningLimit);
-    }
-
-    [Fact]
     public void Published_configuration_is_strict_and_binds_both_configuration_hashes()
     {
         var commitment = CommitmentConfiguration();
@@ -401,81 +371,16 @@ public sealed class Wp4RunnerConfigurationTests
     }
 
     [Fact]
-    public void Policy_specific_fields_are_required_and_forbidden_exactly()
+    public void The_solver_execution_block_is_required()
     {
-        var commitment = CommitmentConfiguration();
-        var repository = RepositoryRoot();
-        var c2Commitment = CommitmentPolicyConfiguration.Decode(
-            File.ReadAllBytes(Path.Combine(
-                repository,
-                "benchmarks",
-                "configurations",
-                "wp8-drop-eta-budget-loose-v1.json")));
-        var missingWarnings = Edit(
-            File.ReadAllText(Path.Combine(
-                repository,
-                "benchmarks",
-                "configurations",
-                "wp9-fleetpy-soft-hard-hybrid-audited-v1.json")),
-            json => Assert.True(json.Remove("warningProfiles")));
-        var unexpectedWarnings = FinalJson(json => json["warningProfiles"] = new JsonArray());
         var missingSolver = FinalJson(json => Assert.True(json.Remove("solverExecution")));
 
-        Assert.Contains(
-            "variant fields",
-            Assert.Throws<InvalidDataException>(
-                () => Wp4RunnerConfiguration.Decode(
-                    Encoding.UTF8.GetBytes(missingWarnings),
-                    c2Commitment)).Message);
-        Assert.Contains(
-            "variant fields",
-            Assert.Throws<InvalidDataException>(
-                () => Wp4RunnerConfiguration.Decode(
-                    Encoding.UTF8.GetBytes(unexpectedWarnings),
-                    commitment)).Message);
-        Assert.Contains(
-            "variant fields",
+        Assert.Equal(
+            "WP4 policy variant fields do not match the selected policyId.",
             Assert.Throws<InvalidDataException>(
                 () => Wp4RunnerConfiguration.Decode(
                     Encoding.UTF8.GetBytes(missingSolver),
-                    commitment)).Message);
-    }
-
-    [Fact]
-    public void C2_requires_all_profiles_and_rejects_warning_above_hard_limit()
-    {
-        var commitment = CommitmentConfiguration();
-        var limits = string.Join(
-            ",",
-            CommitmentDimensionVocabulary.Ordered.Select(
-                dimension =>
-                    $"{{\"dimension\":\"{CommitmentDimensionVocabulary.ToProtocolValue(dimension)}\"}}"));
-        var warningProfiles =
-            $"[{{\"policyId\":\"uniform-v1\",\"limits\":[{limits}]}}]";
-        // selectionObjectiveOrder is for C1 only, so the C2 file is the final configuration without it.
-        var c2 = FinalJson(json =>
-        {
-            json["policyId"] = "commit-soft-hard-hybrid";
-            json.Remove("selectionObjectiveOrder");
-            json["warningProfiles"] = JsonNode.Parse(warningProfiles);
-        });
-
-        var valid = Wp4RunnerConfiguration.Decode(
-            Encoding.UTF8.GetBytes(c2),
-            commitment);
-        Assert.True(valid.TryGetProfile("uniform-v1", out var profile));
-        Assert.All(profile.Limits.Values, value => Assert.Null(value.WarningLimit));
-
-        var invalid = c2.Replace(
-            "\"dimension\":\"vehicle_switch_count\"",
-            "\"dimension\":\"vehicle_switch_count\",\"warningLimit\":1",
-            StringComparison.Ordinal);
-        Assert.Contains(
-            "cannot exceed",
-            Assert.Throws<InvalidDataException>(
-                () => Wp4RunnerConfiguration.Decode(
-                    Encoding.UTF8.GetBytes(invalid),
-                    commitment)).Message);
+                    CommitmentConfiguration())).Message);
     }
 
     [Fact]
@@ -644,6 +549,72 @@ public sealed class Wp4RunnerConfigurationTests
     }
 
     [Fact]
+    public void The_removed_soft_hard_hybrid_policy_is_refused_with_a_pointer_to_the_archive()
+    {
+        const string refusal =
+            "WP4 policyId 'commit-soft-hard-hybrid' and the 'warningProfiles' block (the soft-hard hybrid policy): "
+            + "removed; see commit ebca912 (branch research/final-real-runs-2026-11-06)";
+        var commitment = CommitmentConfiguration();
+        var repository = RepositoryRoot();
+        var archivedCommitment = CommitmentPolicyConfiguration.Decode(
+            File.ReadAllBytes(Path.Combine(
+                repository,
+                "benchmarks",
+                "configurations",
+                "wp8-drop-eta-budget-loose-v1.json")));
+        var archived = File.ReadAllText(Path.Combine(
+            repository,
+            "benchmarks",
+            "configurations",
+            "wp9-fleetpy-soft-hard-hybrid-audited-v1.json"));
+        var limits = string.Join(
+            ",",
+            CommitmentDimensionVocabulary.Ordered.Select(
+                dimension =>
+                    $"{{\"dimension\":\"{CommitmentDimensionVocabulary.ToProtocolValue(dimension)}\"}}"));
+        var profiles = JsonNode.Parse($"[{{\"policyId\":\"uniform-v1\",\"limits\":[{limits}]}}]")!;
+        // A soft-hard hybrid file that was decoded before: the final C1 file without its C1-only key
+        // selectionObjectiveOrder, with policyId commit-soft-hard-hybrid and one warning profile per policy.
+        var decodedBefore = FinalJson(json =>
+        {
+            json["policyId"] = "commit-soft-hard-hybrid";
+            Assert.True(json.Remove("selectionObjectiveOrder"));
+            json["warningProfiles"] = profiles.DeepClone();
+        });
+        Assert.NotNull(Wp4RunnerConfiguration.Decode(Encoding.UTF8.GetBytes(FinalJson()), commitment));
+
+        // The archived soft-hard hybrid file (decoded before with its own commitment file) and that file without its
+        // warningProfiles block.
+        foreach (var json in new[] { archived, Edit(archived, json => Assert.True(json.Remove("warningProfiles"))) })
+        {
+            Assert.Equal(
+                refusal,
+                Assert.Throws<InvalidDataException>(
+                    () => Wp4RunnerConfiguration.Decode(
+                        Encoding.UTF8.GetBytes(json),
+                        archivedCommitment)).Message);
+        }
+
+        // The file decoded before, the final C1 file with policyId commit-soft-hard-hybrid, and a warningProfiles
+        // block (empty or not) added to the final C1 file.
+        foreach (var json in new[]
+                 {
+                     decodedBefore,
+                     FinalJson(json => json["policyId"] = "commit-soft-hard-hybrid"),
+                     FinalJson(json => json["warningProfiles"] = new JsonArray()),
+                     FinalJson(json => json["warningProfiles"] = profiles.DeepClone()),
+                 })
+        {
+            Assert.Equal(
+                refusal,
+                Assert.Throws<InvalidDataException>(
+                    () => Wp4RunnerConfiguration.Decode(
+                        Encoding.UTF8.GetBytes(json),
+                        commitment)).Message);
+        }
+    }
+
+    [Fact]
     public void Selection_objective_order_is_optional_stability_first_and_cost_first_only_for_C1()
     {
         var commitment = CommitmentConfiguration();
@@ -706,30 +677,6 @@ public sealed class Wp4RunnerConfigurationTests
                         Encoding.UTF8.GetBytes(json),
                         commitment)).Message);
         }
-
-        var repository = RepositoryRoot();
-        var c2Commitment = CommitmentPolicyConfiguration.Decode(
-            File.ReadAllBytes(Path.Combine(
-                repository,
-                "benchmarks",
-                "configurations",
-                "wp8-drop-eta-budget-loose-v1.json")));
-        var c2 = File.ReadAllText(Path.Combine(
-                repository,
-                "benchmarks",
-                "configurations",
-                "wp9-fleetpy-soft-hard-hybrid-audited-v1.json"))
-            .Replace(
-                "\"configurationVersion\": \"1.0.0\"",
-                "\"configurationVersion\": \"1.0.0\",\n  \"selectionObjectiveOrder\": \"cost-first\"",
-                StringComparison.Ordinal);
-        Assert.Contains("selectionObjectiveOrder", c2, StringComparison.Ordinal);
-        Assert.Contains(
-            "requires the solver-backed C1 policy",
-            Assert.Throws<InvalidDataException>(
-                () => Wp4RunnerConfiguration.Decode(
-                    Encoding.UTF8.GetBytes(c2),
-                    c2Commitment)).Message);
     }
 
     /// <summary>

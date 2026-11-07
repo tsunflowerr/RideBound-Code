@@ -213,46 +213,6 @@ public sealed class SolverBackedFleetSelectionTests
     }
 
     [Fact]
-    public void Soft_hard_mapping_places_warning_vector_before_revision_and_cost()
-    {
-        var request = new RequestId("request-1");
-        var vehicle = AlgorithmTestData.VehicleOne;
-        var noOp = Candidate("noop", vehicle, [], 0);
-        var lowerWarning = Candidate("lower-warning", vehicle, [request], 100);
-        var lowerRevision = Candidate("lower-revision", vehicle, [request], 1);
-        var assessments = new Dictionary<string, HardVectorCandidateAssessment>(
-            StringComparer.Ordinal)
-        {
-            [noOp.CandidateId] = Hard(
-                noOp,
-                0,
-                CommitmentVector.Zero,
-                warning: CommitmentVector.Zero),
-            [lowerWarning.CandidateId] = Hard(
-                lowerWarning,
-                100_000,
-                Vector(pickup: 10),
-                warning: Vector(pickup: 1)),
-            [lowerRevision.CandidateId] = Hard(
-                lowerRevision,
-                100_000,
-                Vector(pickup: 1),
-                warning: Vector(pickup: 2)),
-        };
-
-        var result = Select(
-            [Set(vehicle, noOp, lowerWarning, lowerRevision)],
-            SolverBackedObjectiveProfile.SoftHardHybrid,
-            hardAssessments: assessments);
-
-        Assert.True(result.IsSuccess, result.Witness?.Message);
-        Assert.Equal(
-            "lower-warning",
-            Assert.Single(result.Selection!.Selection.VehiclePlans)
-                .Candidate.CandidateId);
-    }
-
-    [Fact]
     public void Unbounded_hard_profile_is_semantically_rolling_cost()
     {
         var request = new RequestId("request-1");
@@ -607,19 +567,12 @@ public sealed class SolverBackedFleetSelectionTests
     {
         var (sets, hard) = ForcedAndTwoPricedInsertions();
 
-        foreach (var profile in new[]
-                 {
-                     SolverBackedObjectiveProfile.RollingCost,
-                     SolverBackedObjectiveProfile.SoftHardHybrid,
-                 })
-        {
-            Assert.Throws<ArgumentException>(
-                () => Select(
-                    sets,
-                    profile,
-                    hardAssessments: hard,
-                    objectiveOrder: SolverBackedSelectionObjectiveOrder.CostFirst));
-        }
+        Assert.Throws<ArgumentException>(
+            () => Select(
+                sets,
+                SolverBackedObjectiveProfile.RollingCost,
+                hardAssessments: hard,
+                objectiveOrder: SolverBackedSelectionObjectiveOrder.CostFirst));
 
         Assert.Throws<ArgumentOutOfRangeException>(
             () => Select(
@@ -651,12 +604,6 @@ public sealed class SolverBackedFleetSelectionTests
                 forcedNoWorseRecovery: true,
                 selectionObjectiveOrder: SolverBackedSelectionObjectiveOrder.CostFirst)
                 .SelectionObjectiveOrder);
-
-        Assert.Throws<ArgumentException>(
-            () => new SolverBackedRidePoolingPolicyOptions(
-                RidePoolingPolicyKind.CommitSoftHardHybrid,
-                budget,
-                selectionObjectiveOrder: SolverBackedSelectionObjectiveOrder.CostFirst));
 
         Assert.Throws<ArgumentOutOfRangeException>(
             () => new SolverBackedRidePoolingPolicyOptions(
@@ -716,15 +663,12 @@ public sealed class SolverBackedFleetSelectionTests
         InsertionCandidate candidate,
         long utilization,
         CommitmentVector revision,
-        bool hasHard = true,
-        CommitmentVector? warning = null) =>
+        bool hasHard = true) =>
         new(
             candidate.CandidateId,
             utilization,
             revision,
-            hasHard,
-            warning,
-            warning is not null);
+            hasHard);
 
     private static CommitmentVector Vector(
         long pickup = 0,

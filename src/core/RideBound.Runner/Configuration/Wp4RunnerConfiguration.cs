@@ -1,21 +1,19 @@
 using System.Security.Cryptography;
 using System.Text.Json;
 using RideBound.Algorithms.Candidates;
-using RideBound.Algorithms.Commitments;
 using RideBound.Algorithms.Policies;
 using RideBound.Algorithms.Shareability;
 using RideBound.Application.Commitments;
 using RideBound.Application.Optimization;
 using RideBound.Contracts.Protocol;
 using RideBound.Contracts.Serialization;
-using RideBound.Domain.Commitments;
 using RideBound.Domain.Common;
 using RideBound.Domain.Validation;
 using RideBound.Solvers.OrTools;
 
 namespace RideBound.Runner.Configuration;
 
-public sealed class Wp4RunnerConfiguration : ICommitmentWarningProfileProvider
+public sealed class Wp4RunnerConfiguration
 {
     public const string RetainedPortfolioEvidenceProfile =
         "retained-portfolio-v1";
@@ -37,7 +35,6 @@ public sealed class Wp4RunnerConfiguration : ICommitmentWarningProfileProvider
         "initialPromiseTrigger",
         "candidateGeneration",
         "solverExecution",
-        "warningProfiles",
         "emitSolverExecutionEvidence",
         "solverExecutionEvidenceProfile",
         "commitmentRecovery",
@@ -146,13 +143,6 @@ public sealed class Wp4RunnerConfiguration : ICommitmentWarningProfileProvider
         "maximumSolverDeterministicTimeMicros",
         "randomSeed",
         "skipConstantObjectiveLevels");
-    private static readonly IReadOnlySet<string> WarningProfileFields = Fields(
-        "policyId",
-        "limits");
-    private static readonly IReadOnlySet<string> WarningLimitFields = Fields(
-        "dimension",
-        "warningLimit");
-    private readonly CommitmentWarningProfileCatalog _warningProfiles;
 
     private Wp4RunnerConfiguration(
         Sha256Hex contentHash,
@@ -161,7 +151,6 @@ public sealed class Wp4RunnerConfiguration : ICommitmentWarningProfileProvider
         InitialPromiseTrigger initialPromiseTrigger,
         CandidateGenerationOptions candidateGeneration,
         SolverBackedRidePoolingPolicyOptions? solverPolicyOptions,
-        IEnumerable<CommitmentWarningProfile> warningProfiles,
         bool emitSolverExecutionEvidence,
         string? solverExecutionEvidenceProfile,
         bool recordsLateBoarding,
@@ -181,7 +170,6 @@ public sealed class Wp4RunnerConfiguration : ICommitmentWarningProfileProvider
         SolverExecutionEvidenceProfile = solverExecutionEvidenceProfile;
         RecordsLateBoarding = recordsLateBoarding;
         UsesLightAuditHash = usesLightAuditHash;
-        _warningProfiles = new CommitmentWarningProfileCatalog(warningProfiles);
     }
 
     public Sha256Hex ContentHash { get; }
@@ -225,11 +213,6 @@ public sealed class Wp4RunnerConfiguration : ICommitmentWarningProfileProvider
         StringComparer.Ordinal.Equals(
             SolverExecutionEvidenceProfile,
             RetainedPortfolioFullWitnessEvidenceProfile);
-
-    public bool TryGetProfile(
-        string policyId,
-        out CommitmentWarningProfile profile) =>
-        _warningProfiles.TryGetProfile(policyId, out profile);
 
     public Sha256Hex BindToCommitmentConfiguration(
         Sha256Hex commitmentConfigurationHash)
@@ -338,7 +321,6 @@ public sealed class Wp4RunnerConfiguration : ICommitmentWarningProfileProvider
 
         var generation = ReadGeneration(root.GetProperty("candidateGeneration"));
         var hasSolver = root.TryGetProperty("solverExecution", out var solverElement);
-        var hasWarnings = root.TryGetProperty("warningProfiles", out var warningsElement);
         var emitSolverExecutionEvidence = root.TryGetProperty(
             "emitSolverExecutionEvidence",
             out var evidenceElement)
@@ -369,10 +351,7 @@ public sealed class Wp4RunnerConfiguration : ICommitmentWarningProfileProvider
                 + "execution and emitSolverExecutionEvidence=true.");
         }
 
-        RequireVariantFields(
-            policyKind,
-            hasSolver,
-            hasWarnings);
+        RequireVariantFields(hasSolver);
 
         var (forcedReferenceRecovery, forcedNoWorseRecovery) = root.TryGetProperty(
             "commitmentRecovery",
@@ -389,8 +368,7 @@ public sealed class Wp4RunnerConfiguration : ICommitmentWarningProfileProvider
 
         if (forcedReferenceRecovery
             && (!hasSolver
-                || policyKind is not (RidePoolingPolicyKind.RideBoundHardVector
-                    or RidePoolingPolicyKind.CommitSoftHardHybrid)))
+                || policyKind is not RidePoolingPolicyKind.RideBoundHardVector))
         {
             throw new InvalidDataException(
                 $"commitmentRecovery '{Text(root, "commitmentRecovery")}' requires the "
@@ -491,9 +469,8 @@ public sealed class Wp4RunnerConfiguration : ICommitmentWarningProfileProvider
         }
 
         // Hard utilization reads the fixed hard limit only, so a per-rider drop budget would
-        // silently drop out of the stability-first C1 and C2 ranking. Fail closed instead.
+        // silently drop out of the stability-first C1 ranking. Fail closed instead.
         if (policyKind is RidePoolingPolicyKind.RideBoundHardVector
-                or RidePoolingPolicyKind.CommitSoftHardHybrid
             && selectionObjectiveOrder != SolverBackedSelectionObjectiveOrder.CostFirst
             && commitmentConfiguration.PolicyIds.Any(
                 id => commitmentConfiguration.TryGetPolicy(id, out var policy)
@@ -559,7 +536,6 @@ public sealed class Wp4RunnerConfiguration : ICommitmentWarningProfileProvider
         }
 
         SolverBackedRidePoolingPolicyOptions? solverOptions = null;
-        var warningProfiles = Array.Empty<CommitmentWarningProfile>();
 
         if (hasSolver)
         {
@@ -573,13 +549,6 @@ public sealed class Wp4RunnerConfiguration : ICommitmentWarningProfileProvider
                 selectionObjectiveOrder);
         }
 
-        if (hasWarnings)
-        {
-            warningProfiles = ReadWarningProfiles(
-                warningsElement,
-                commitmentConfiguration);
-        }
-
         return new Wp4RunnerConfiguration(
             contentHash!,
             policyId,
@@ -587,7 +556,6 @@ public sealed class Wp4RunnerConfiguration : ICommitmentWarningProfileProvider
             initialPromiseTrigger,
             generation,
             solverOptions,
-            warningProfiles,
             emitSolverExecutionEvidence,
             solverExecutionEvidenceProfile,
             recordsLateBoarding,
@@ -738,99 +706,13 @@ public sealed class Wp4RunnerConfiguration : ICommitmentWarningProfileProvider
         return execution.Value!;
     }
 
-    private static CommitmentWarningProfile[] ReadWarningProfiles(
-        JsonElement element,
-        CommitmentPolicyConfiguration commitmentConfiguration)
-    {
-        if (element.ValueKind != JsonValueKind.Array)
-        {
-            throw new InvalidDataException("'warningProfiles' must be an array.");
-        }
-
-        var profiles = new List<CommitmentWarningProfile>();
-
-        foreach (var profileElement in element.EnumerateArray())
-        {
-            RequireObject(
-                profileElement,
-                WarningProfileFields,
-                WarningProfileFields,
-                "$.warningProfiles[]");
-            var policyId = Text(profileElement, "policyId");
-
-            if (!commitmentConfiguration.TryGetPolicy(policyId, out var policy))
-            {
-                throw new InvalidDataException(
-                    $"Warning profile references unknown policy '{policyId}'.");
-            }
-
-            var limitsElement = profileElement.GetProperty("limits");
-
-            if (limitsElement.ValueKind != JsonValueKind.Array)
-            {
-                throw new InvalidDataException(
-                    "Warning profile limits must be an array.");
-            }
-
-            var limits = new List<CommitmentWarningLimit>();
-
-            foreach (var limitElement in limitsElement.EnumerateArray())
-            {
-                RequireObject(
-                    limitElement,
-                    WarningLimitFields,
-                    Fields("dimension"),
-                    "$.warningProfiles[].limits[]");
-                var dimensionText = Text(limitElement, "dimension");
-                var dimension = CommitmentDimensionVocabulary.Ordered
-                    .Cast<CommitmentDimension?>()
-                    .SingleOrDefault(
-                        value => CommitmentDimensionVocabulary.ToProtocolValue(
-                                value!.Value)
-                            == dimensionText)
-                    ?? throw new InvalidDataException(
-                        $"Unknown warning dimension '{dimensionText}'.");
-                var warning = limitElement.TryGetProperty(
-                    "warningLimit",
-                    out var warningElement)
-                        ? NonNegativeInteger(warningElement, "warningLimit")
-                        : (long?)null;
-
-                if (warning is not null
-                    && (policy.Limits[dimension].HardLimit is not long hard
-                        || warning.Value > hard))
-                {
-                    throw new InvalidDataException(
-                        $"Warning '{dimensionText}' requires a finite hard limit and cannot exceed it.");
-                }
-
-                limits.Add(new CommitmentWarningLimit(dimension, warning));
-            }
-
-            profiles.Add(new CommitmentWarningProfile(policyId, limits));
-        }
-
-        var profileIds = profiles.Select(value => value.PolicyId)
-            .Order(StringComparer.Ordinal)
-            .ToArray();
-
-        if (!profileIds.SequenceEqual(
-                commitmentConfiguration.PolicyIds,
-                StringComparer.Ordinal))
-        {
-            throw new InvalidDataException(
-                "C2 must explicitly provide one warning profile for every commitment policy.");
-        }
-
-        return profiles.ToArray();
-    }
-
     /// <summary>
     /// Runs before the field checks, so a file that still selects a removed feature is always refused with the
     /// pointer to the commit that has it: the multiple-plan policy (policyId 'least-commitment-consensus', B5)
     /// and its 'multiplePlan' block, the policies in <see cref="RemovedPolicies"/>: rolling-cost (B1) and
-    /// rolling-penalty (B2), the fixed-freeze-horizon policy (B3) and its 'fixedFreeze' block, and the
-    /// no-reassignment-repair policy (B4) and its 'repair' block. The checks run in the order the features were
+    /// rolling-penalty (B2), the fixed-freeze-horizon policy (B3) and its 'fixedFreeze' block, the
+    /// no-reassignment-repair policy (B4) and its 'repair' block, and the soft-hard hybrid policy (policyId
+    /// 'commit-soft-hard-hybrid', C2) and its 'warningProfiles' block. The checks run in the order the features were
     /// removed, so a file that an earlier check refused keeps its message.
     /// </summary>
     private static void RejectRemovedFeatures(JsonElement root)
@@ -876,17 +758,22 @@ public sealed class Wp4RunnerConfiguration : ICommitmentWarningProfileProvider
                 "WP4 policyId 'no-reassignment-repair' and the 'repair' block "
                 + $"(the no-reassignment-repair policy): {RemovedFeature}");
         }
+
+        if (root.ValueKind == JsonValueKind.Object
+            && (root.TryGetProperty("warningProfiles", out _)
+                || root.TryGetProperty("policyId", out var hybridPolicyId)
+                    && hybridPolicyId.ValueKind == JsonValueKind.String
+                    && hybridPolicyId.GetString() == "commit-soft-hard-hybrid"))
+        {
+            throw new InvalidDataException(
+                "WP4 policyId 'commit-soft-hard-hybrid' and the 'warningProfiles' block "
+                + $"(the soft-hard hybrid policy): {RemovedFeature}");
+        }
     }
 
-    private static void RequireVariantFields(
-        RidePoolingPolicyKind policy,
-        bool hasSolver,
-        bool hasWarnings)
+    private static void RequireVariantFields(bool hasSolver)
     {
-        var isC2 = policy == RidePoolingPolicyKind.CommitSoftHardHybrid;
-
-        if (!hasSolver
-            || hasWarnings != isC2)
+        if (!hasSolver)
         {
             throw new InvalidDataException(
                 "WP4 policy variant fields do not match the selected policyId.");

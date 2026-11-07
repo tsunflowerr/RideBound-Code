@@ -301,7 +301,6 @@ internal static class SolverExecutionEvidenceMapper
         {
             SolverBackedObjectiveProfile.RollingCost => "rollingCost",
             SolverBackedObjectiveProfile.HardVector => "hardVector",
-            SolverBackedObjectiveProfile.SoftHardHybrid => "softHardHybrid",
             _ => throw new ArgumentOutOfRangeException(nameof(profile)),
         };
 

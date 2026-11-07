@@ -11,7 +11,6 @@ public enum SolverBackedObjectiveProfile
 {
     RollingCost,
     HardVector,
-    SoftHardHybrid,
 }
 
 /// <summary>
@@ -190,7 +189,6 @@ public sealed class SolverBackedFleetSelector
         private readonly IReadOnlyDictionary<string, HardVectorCandidateAssessment>?
             _hardAssessments;
         private readonly bool _hardTreatmentActive;
-        private readonly bool _warningTreatmentActive;
 
         private SelectionModelMapping(
             CandidateSelectionProblem? problem,
@@ -199,7 +197,6 @@ public sealed class SolverBackedFleetSelector
             IReadOnlyDictionary<string, HardVectorCandidateAssessment>?
                 hardAssessments,
             bool hardTreatmentActive,
-            bool warningTreatmentActive,
             RollingCostWitness? witness)
         {
             Problem = problem;
@@ -207,7 +204,6 @@ public sealed class SolverBackedFleetSelector
             _profile = profile;
             _hardAssessments = hardAssessments;
             _hardTreatmentActive = hardTreatmentActive;
-            _warningTreatmentActive = warningTreatmentActive;
             Witness = witness;
         }
 
@@ -255,7 +251,6 @@ public sealed class SolverBackedFleetSelector
             }
 
             if (profile is SolverBackedObjectiveProfile.HardVector
-                    or SolverBackedObjectiveProfile.SoftHardHybrid
                 && (hardAssessments is null
                     || allCandidates.Any(
                         candidate => !hardAssessments.ContainsKey(
@@ -270,12 +265,8 @@ public sealed class SolverBackedFleetSelector
 
             var hardTreatmentActive = hardAssessments?.Values.Any(
                 value => value.HasApplicableHardLimit) == true;
-            var warningTreatmentActive =
-                profile == SolverBackedObjectiveProfile.SoftHardHybrid
-                && hardAssessments!.Values.Any(value => value.HasApplicableWarning);
             var forcedTreatmentActive = profile
                     is SolverBackedObjectiveProfile.HardVector
-                    or SolverBackedObjectiveProfile.SoftHardHybrid
                 && allCandidates.Any(
                     candidate => hardAssessments![candidate.CandidateId].IsForcedReference);
             var objectives = new List<ObjectiveMapping>();
@@ -310,37 +301,6 @@ public sealed class SolverBackedFleetSelector
                     when hardTreatmentActive
                         && objectiveOrder
                             == SolverBackedSelectionObjectiveOrder.StabilityFirst:
-                    objectives.Add(
-                        MinMaximum(
-                            "worst-hard-utilization-ppm",
-                            candidate => hardAssessments![candidate.CandidateId]
-                                .WorstHardUtilizationPartsPerMillion));
-                    AddRevisionObjectives(
-                        objectives,
-                        candidate => hardAssessments![candidate.CandidateId]
-                            .DecisionInducedRevision,
-                        "revision");
-                    break;
-                case SolverBackedObjectiveProfile.SoftHardHybrid
-                    when warningTreatmentActive:
-                    objectives.Add(
-                        MinMaximum(
-                            "worst-hard-utilization-ppm",
-                            candidate => hardAssessments![candidate.CandidateId]
-                                .WorstHardUtilizationPartsPerMillion));
-                    AddRevisionObjectives(
-                        objectives,
-                        candidate => hardAssessments![candidate.CandidateId]
-                            .WarningExcess!,
-                        "warning-excess");
-                    AddRevisionObjectives(
-                        objectives,
-                        candidate => hardAssessments![candidate.CandidateId]
-                            .DecisionInducedRevision,
-                        "revision");
-                    break;
-                case SolverBackedObjectiveProfile.SoftHardHybrid
-                    when hardTreatmentActive:
                     objectives.Add(
                         MinMaximum(
                             "worst-hard-utilization-ppm",
@@ -415,7 +375,6 @@ public sealed class SolverBackedFleetSelector
                     profile,
                     hardAssessments,
                     hardTreatmentActive,
-                    warningTreatmentActive,
                     null)
                 : Failure(
                     candidateMap,
@@ -440,11 +399,9 @@ public sealed class SolverBackedFleetSelector
                     (total, candidate) => checked(
                         total + candidate.Schedule.OperationalCost));
                 CommitmentVector? revision = null;
-                CommitmentVector? warning = null;
                 long? worst = null;
 
                 if (_profile is SolverBackedObjectiveProfile.HardVector
-                        or SolverBackedObjectiveProfile.SoftHardHybrid
                     && _hardTreatmentActive)
                 {
                     revision = SumVector(
@@ -454,14 +411,6 @@ public sealed class SolverBackedFleetSelector
                     worst = selected.Max(
                         candidate => _hardAssessments![candidate.CandidateId]
                             .WorstHardUtilizationPartsPerMillion);
-
-                    if (_warningTreatmentActive)
-                    {
-                        warning = SumVector(
-                            selected,
-                            candidate => _hardAssessments![candidate.CandidateId]
-                                .WarningExcess!);
-                    }
                 }
 
                 return MappedSelectionResult.Success(
@@ -473,8 +422,7 @@ public sealed class SolverBackedFleetSelector
                         accepted,
                         cost,
                         revision,
-                        worst,
-                        warning));
+                        worst));
             }
             catch (OverflowException)
             {
@@ -552,7 +500,6 @@ public sealed class SolverBackedFleetSelector
                 candidates,
                 profile,
                 hardAssessments,
-                false,
                 false,
                 new RollingCostWitness(
                     SolverBackedSelectionFailureCodes.ModelMappingFailed,

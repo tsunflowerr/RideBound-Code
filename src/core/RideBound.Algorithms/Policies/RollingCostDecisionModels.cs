@@ -29,8 +29,7 @@ public sealed record FleetSelection(
     int AcceptedRequestCount,
     long OperationalCost,
     CommitmentVector? DecisionInducedRevision = null,
-    long? WorstHardUtilizationPartsPerMillion = null,
-    CommitmentVector? WarningExcess = null);
+    long? WorstHardUtilizationPartsPerMillion = null);
 
 public sealed record FleetSelectionResult
 {
@@ -69,7 +68,6 @@ public sealed record RollingCostDecision(
     long OperationalCost,
     CommitmentVector? DecisionInducedRevision = null,
     long? WorstHardUtilizationPartsPerMillion = null,
-    CommitmentVector? WarningExcess = null,
     CandidateSelectionExecutionResult? SelectionExecution = null,
     CandidateGenerationDiagnostics? GenerationDiagnostics = null,
     CandidatePortfolioEvidenceSnapshot? CandidatePortfolioEvidence = null,

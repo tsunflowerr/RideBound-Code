@@ -380,93 +380,6 @@ public sealed class ExactSmallCommitmentDifferentialTests
     }
 
     [Fact]
-    public void C2_keeps_the_exact_C1_hard_feasible_set_and_computes_warning_excess()
-    {
-        var fixture = CreateState(seed: 3);
-        var context = MechanismContext(fixture, "c2-warning");
-        var generated = new InsertionCandidateGenerator().Generate(
-            fixture.State,
-            CandidateGenerationOptions.ExactSmall);
-        Assert.True(generated.IsSuccess, generated.Witness?.Message);
-        var raw = generated.VehicleCandidates!;
-        var warnings = new CommitmentWarningProfileCatalog(
-            [WarningProfile(10)]);
-
-        var c1 = new HardVectorCandidateAssessor().AssessAndFilter(context, raw);
-        var c2 = new HardVectorCandidateAssessor().AssessAndFilter(
-            context,
-            raw,
-            warnings);
-
-        Assert.True(c1.IsSuccess, c1.Witness?.Message);
-        Assert.True(c2.IsSuccess, c2.Witness?.Message);
-        Assert.Equal(
-            c1.Batch!.FeasibleCandidateSets.Single().Candidates
-                .Select(value => value.CandidateId),
-            c2.Batch!.FeasibleCandidateSets.Single().Candidates
-                .Select(value => value.CandidateId));
-        Assert.Contains(
-            c2.Batch.Assessments.Values,
-            value => value.WarningExcess != CommitmentVector.Zero);
-
-        var decision = new CommitSoftHardHybridPolicy(warnings).Decide(
-            context,
-            CandidateGenerationOptions.ExactSmall);
-        Assert.True(decision.IsSuccess, decision.Witness?.Message);
-        Assert.NotNull(decision.Decision!.WarningExcess);
-    }
-
-    [Fact]
-    public void C2_with_all_warnings_disabled_is_semantically_equal_to_C1()
-    {
-        var fixture = CreateState(seed: 3);
-        var context = MechanismContext(fixture, "c2-disabled");
-        var disabled = new CommitmentWarningProfileCatalog(
-            [WarningProfile(null)]);
-
-        var c1 = new RideBoundHardVectorPolicy().Decide(
-            context,
-            CandidateGenerationOptions.ExactSmall);
-        var c2 = new CommitSoftHardHybridPolicy(disabled).Decide(
-            context,
-            CandidateGenerationOptions.ExactSmall);
-
-        Assert.True(c1.IsSuccess, c1.Witness?.Message);
-        Assert.True(c2.IsSuccess, c2.Witness?.Message);
-        Assert.Equal(c1.Decision!.RequestActions, c2.Decision!.RequestActions);
-        Assert.Equal(
-            c1.Decision.VehiclePlans.Select(value => value.Candidate.CandidateId),
-            c2.Decision.VehiclePlans.Select(value => value.Candidate.CandidateId));
-        Assert.Equal(
-            c1.Decision.WorstHardUtilizationPartsPerMillion,
-            c2.Decision.WorstHardUtilizationPartsPerMillion);
-        Assert.Null(c2.Decision.WarningExcess);
-    }
-
-    [Fact]
-    public void C2_rejects_warning_above_its_finite_hard_limit()
-    {
-        var fixture = CreateState(seed: 3);
-        var context = MechanismContext(fixture, "c2-invalid-warning");
-        var generated = new InsertionCandidateGenerator().Generate(
-            fixture.State,
-            CandidateGenerationOptions.ExactSmall);
-        Assert.True(generated.IsSuccess, generated.Witness?.Message);
-        var invalid = new CommitmentWarningProfileCatalog(
-            [WarningProfile(fixture.HardEtaLimit + 1)]);
-
-        var assessed = new HardVectorCandidateAssessor().AssessAndFilter(
-            context,
-            generated.VehicleCandidates!,
-            invalid);
-
-        Assert.False(assessed.IsSuccess);
-        Assert.Equal(
-            "INVALID_COMMITMENT_WARNING_LIMIT",
-            assessed.Witness!.Code);
-    }
-
-    [Fact]
     public void An_exhausted_budget_prunes_disturbing_candidates_but_retains_zero_delta_options()
     {
         // The gate-level safety property that makes a finite commitment budget
@@ -1045,72 +958,6 @@ public sealed class ExactSmallCommitmentDifferentialTests
         Assert.Contains(
             solver.LastProblem.Options,
             value => value.OptionId == noOp.CandidateId);
-    }
-
-    [Fact]
-    public void C2_with_recovery_keeps_the_forced_no_op_as_an_option_and_prefers_the_insertion()
-    {
-        // The budget scenario under C2 with a zero drop warning. The forced no-op is kept and
-        // its warning excess carries the whole overrun (it is not ranked by utilization); the
-        // first level still makes the surviving insertion win.
-        var fixture = CreateState(seed: 3);
-        var generated = new InsertionCandidateGenerator().Generate(
-            fixture.State,
-            CandidateGenerationOptions.ExactSmall);
-        Assert.True(generated.IsSuccess, generated.Witness?.Message);
-        var noOp = generated.VehicleCandidates!.Single().Candidates.Single(value => value.IsNoOp);
-        var delay = SmallestPositiveDelay(fixture, generated.VehicleCandidates!.Single());
-        var policy = new CommitmentPolicy(
-            fixture.Policy.PolicyId,
-            CommitmentBudgetBasis.CustomerVisible,
-            CommitmentDimensionVocabulary.Ordered.Select(
-                dimension => new CommitmentDimensionLimit(
-                    dimension,
-                    dimension == CommitmentDimension.DropEtaTotalMs ? delay - 1 : null,
-                    CommitmentPhase.AllActive)),
-            new MaterialRevisionRule(1_000, null));
-        var context = PromiseContext(
-            fixture,
-            fixture.BaselineDrop.Milliseconds + delay,
-            policy);
-        var warnings = new CommitmentWarningProfileCatalog(
-            [
-                new CommitmentWarningProfile(
-                    fixture.Policy.PolicyId,
-                    CommitmentDimensionVocabulary.Ordered.Select(
-                        dimension => new CommitmentWarningLimit(
-                            dimension,
-                            dimension == CommitmentDimension.DropEtaTotalMs ? 0 : null))),
-            ]);
-
-        var assessed = new HardVectorCandidateAssessor().AssessAndFilter(
-            context,
-            generated.VehicleCandidates!,
-            warnings,
-            requireSafetyNoOp: true,
-            forcedReferenceRecovery: true);
-        var solver = new EnumeratingSolver();
-        var result = new SolverBackedRidePoolingPolicy(solver).Decide(
-            context,
-            CandidateGenerationOptions.ExactSmall,
-            new SolverBackedRidePoolingPolicyOptions(
-                RidePoolingPolicyKind.CommitSoftHardHybrid,
-                DeterministicCandidateSelectionExecutionBudget.Create(
-                    100_000,
-                    100_000,
-                    DeterministicSolverBudget.Create(100_000, 100_000, 1).Value!).Value!,
-                forcedReferenceRecovery: true),
-            warnings);
-
-        Assert.True(assessed.IsSuccess, assessed.Witness?.Message);
-        var forced = assessed.Batch!.Assessments[noOp.CandidateId];
-        Assert.True(forced.IsForcedReference);
-        Assert.Equal(0, forced.WorstHardUtilizationPartsPerMillion);
-        Assert.Equal(delay, forced.WarningExcess!.DropEtaTotalMs);
-        Assert.True(result.IsSuccess, result.Witness?.Message);
-        Assert.False(result.Decision!.Decision.VehiclePlans.Single().Candidate.IsNoOp);
-        Assert.Null(result.Decision.Decision.ForcedReferenceVehicles);
-        Assert.Equal("forced-reference-count", solver.LastProblem!.ObjectiveLevels[0].Name);
     }
 
     [Fact]
@@ -2074,17 +1921,6 @@ public sealed class ExactSmallCommitmentDifferentialTests
                         : null,
                     CommitmentPhase.AllActive)),
             new MaterialRevisionRule(1_000, null));
-
-    private static CommitmentWarningProfile WarningProfile(long? etaWarning) =>
-        new(
-            "uniform-v1",
-            CommitmentDimensionVocabulary.Ordered.Select(
-                dimension => new CommitmentWarningLimit(
-                    dimension,
-                    dimension is CommitmentDimension.PickupEtaTotalMs
-                        or CommitmentDimension.DropEtaTotalMs
-                        ? etaWarning
-                        : null)));
 
     private static CommitmentMechanismContext MechanismContext(
         Fixture fixture,

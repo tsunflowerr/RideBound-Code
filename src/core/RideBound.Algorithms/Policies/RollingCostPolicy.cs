@@ -371,8 +371,7 @@ public sealed class RollingCostPolicy
                 selection.AcceptedRequestCount,
                 selection.OperationalCost,
                 selection.DecisionInducedRevision,
-                selection.WorstHardUtilizationPartsPerMillion,
-                selection.WarningExcess));
+                selection.WorstHardUtilizationPartsPerMillion));
     }
 
     private static string FindRejectionReason(

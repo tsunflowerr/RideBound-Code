@@ -13,13 +13,11 @@ namespace RideBound.Algorithms.Policies;
 public enum RidePoolingPolicyKind
 {
     RideBoundHardVector,
-    CommitSoftHardHybrid,
 }
 
 public static class RidePoolingPolicyRegistry
 {
     public const string RideBoundHardVector = "ridebound-hard-vector";
-    public const string CommitSoftHardHybrid = "commit-soft-hard-hybrid";
 
     public static bool TryParse(
         string? policyId,
@@ -28,18 +26,15 @@ public static class RidePoolingPolicyRegistry
         policyKind = policyId switch
         {
             RideBoundHardVector => RidePoolingPolicyKind.RideBoundHardVector,
-            CommitSoftHardHybrid => RidePoolingPolicyKind.CommitSoftHardHybrid,
             _ => default,
         };
-        return policyId is RideBoundHardVector
-            or CommitSoftHardHybrid;
+        return policyId is RideBoundHardVector;
     }
 
     public static string ToPolicyId(RidePoolingPolicyKind policyKind) =>
         policyKind switch
         {
             RidePoolingPolicyKind.RideBoundHardVector => RideBoundHardVector,
-            RidePoolingPolicyKind.CommitSoftHardHybrid => CommitSoftHardHybrid,
             _ => throw new ArgumentOutOfRangeException(nameof(policyKind)),
         };
 }
@@ -81,8 +76,7 @@ public sealed record SolverBackedRidePoolingPolicyOptions
         }
 
         if (forcedReferenceRecovery
-            && policyKind is not (RidePoolingPolicyKind.RideBoundHardVector
-                or RidePoolingPolicyKind.CommitSoftHardHybrid))
+            && policyKind is not RidePoolingPolicyKind.RideBoundHardVector)
         {
             throw new ArgumentException(
                 "Forced-reference recovery is only valid for the C1 and C2 policies.");
@@ -103,7 +97,7 @@ public sealed record SolverBackedRidePoolingPolicyOptions
     public bool CaptureCandidatePortfolioEvidence { get; }
 
     /// <summary>
-    /// Exploratory (ADR-075, off by default). A C1/C2 vehicle whose safety no-op is
+    /// Exploratory (ADR-075, off by default). A C1 vehicle whose safety no-op is
     /// rejected only by a deadline or budget gate keeps its route as a forced
     /// option, and the kept route is recorded as a typed breach instead of failing
     /// the run.
@@ -153,7 +147,7 @@ public sealed record SolverBackedPolicyDecisionResult
 }
 
 /// <summary>
-/// Production policy path for C1 and C2. It generates the shared physical
+/// Production policy path for C1. It generates the shared physical
 /// candidate set once, performs only the named mechanism gate/assessment, maps
 /// the exact hierarchy to the solver port, and independently validates every
 /// solver or fallback fleet selection before returning it to Runner.
@@ -187,8 +181,7 @@ public sealed class SolverBackedRidePoolingPolicy
     public SolverBackedPolicyDecisionResult Decide(
         CommitmentMechanismContext context,
         CandidateGenerationOptions generationOptions,
-        SolverBackedRidePoolingPolicyOptions policyOptions,
-        ICommitmentWarningProfileProvider? warningProfiles = null)
+        SolverBackedRidePoolingPolicyOptions policyOptions)
     {
         ArgumentNullException.ThrowIfNull(context);
 
@@ -203,12 +196,6 @@ public sealed class SolverBackedRidePoolingPolicy
         }
         ArgumentNullException.ThrowIfNull(generationOptions);
         ArgumentNullException.ThrowIfNull(policyOptions);
-
-        if (policyOptions.PolicyKind == RidePoolingPolicyKind.CommitSoftHardHybrid
-            && warningProfiles is null)
-        {
-            throw new ArgumentNullException(nameof(warningProfiles));
-        }
 
         var generated = _generator.Generate(
             context.ReducedState,
@@ -231,15 +218,10 @@ public sealed class SolverBackedRidePoolingPolicy
         switch (policyOptions.PolicyKind)
         {
             case RidePoolingPolicyKind.RideBoundHardVector:
-            case RidePoolingPolicyKind.CommitSoftHardHybrid:
                 {
                     var assessed = _hardAssessor.AssessAndFilter(
                         context,
                         candidates,
-                        policyOptions.PolicyKind
-                            == RidePoolingPolicyKind.CommitSoftHardHybrid
-                                ? warningProfiles
-                                : null,
                         requireSafetyNoOp: true,
                         forcedReferenceRecovery: policyOptions.ForcedReferenceRecovery,
                         forcedNoWorse: policyOptions.ForcedNoWorseRecovery);
@@ -256,10 +238,7 @@ public sealed class SolverBackedRidePoolingPolicy
                         : assessed.Batch.ForcedReferenceVehicles;
                     validationWorkUnits = CountCandidates(
                         generated.VehicleCandidates!);
-                    profile = policyOptions.PolicyKind
-                        == RidePoolingPolicyKind.RideBoundHardVector
-                            ? SolverBackedObjectiveProfile.HardVector
-                            : SolverBackedObjectiveProfile.SoftHardHybrid;
+                    profile = SolverBackedObjectiveProfile.HardVector;
                     break;
                 }
         }

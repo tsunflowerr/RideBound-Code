@@ -20,8 +20,6 @@ public sealed record HardVectorCandidateAssessment(
     long WorstHardUtilizationPartsPerMillion,
     CommitmentVector DecisionInducedRevision,
     bool HasApplicableHardLimit,
-    CommitmentVector? WarningExcess = null,
-    bool HasApplicableWarning = false,
     bool IsForcedReference = false);
 
 public sealed record HardVectorCandidateAssessmentBatch(
@@ -100,7 +98,6 @@ public sealed class HardVectorCandidateAssessor
     public HardVectorCandidateAssessmentResult AssessAndFilter(
         CommitmentMechanismContext context,
         IReadOnlyList<VehicleCandidateSet> rawCandidateSets,
-        ICommitmentWarningProfileProvider? warningProfiles = null,
         bool requireSafetyNoOp = false,
         bool forcedReferenceRecovery = false,
         bool forcedNoWorse = false)
@@ -219,30 +216,13 @@ public sealed class HardVectorCandidateAssessor
                         set.VehicleId);
                 }
 
-                var warning = CalculateWarningExcess(
-                    validation.ValidatedState!,
-                    context.Policies,
-                    warningProfiles,
-                    set.VehicleId,
-                    context.InitialPromiseTrigger);
-
-                if (!warning.IsSuccess)
-                {
-                    return Failure(
-                        warning.Witness!,
-                        candidate,
-                        set.VehicleId);
-                }
-
                 retained.Add(candidate);
                 assessments.Add(
                     new HardVectorCandidateAssessment(
                         candidate.CandidateId,
                         utilization.PartsPerMillion,
                         revision.Value!,
-                        utilization.HasApplicableHardLimit,
-                        warning.Value,
-                        warning.HasApplicableWarning));
+                        utilization.HasApplicableHardLimit));
             }
 
             // The safety no-op is the one candidate whose rejection says why a vehicle
@@ -266,7 +246,6 @@ public sealed class HardVectorCandidateAssessor
                     context,
                     noOps[0],
                     set.VehicleId,
-                    warningProfiles,
                     noWorse: false,
                     rankNonExempt: forcedNoWorse);
 
@@ -300,7 +279,6 @@ public sealed class HardVectorCandidateAssessor
                                 context,
                                 candidate,
                                 set.VehicleId,
-                                warningProfiles,
                                 noWorse: true,
                                 rankNonExempt: true);
 
@@ -409,8 +387,7 @@ public sealed class HardVectorCandidateAssessor
             var relocated = AssessRelocations(
                 context,
                 rawCandidateSets,
-                forcedVehicles.ToHashSet(),
-                warningProfiles);
+                forcedVehicles.ToHashSet());
 
             if (relocated.Witness is not null)
             {
@@ -480,8 +457,7 @@ public sealed class HardVectorCandidateAssessor
     private RelocationAssessment AssessRelocations(
         CommitmentMechanismContext context,
         IReadOnlyList<VehicleCandidateSet> rawCandidateSets,
-        IReadOnlySet<VehicleId> forcedVehicles,
-        ICommitmentWarningProfileProvider? warningProfiles)
+        IReadOnlySet<VehicleId> forcedVehicles)
     {
         var result = new RelocationAssessment();
         var byRider = rawCandidateSets
@@ -536,7 +512,7 @@ public sealed class HardVectorCandidateAssessor
             }
 
             var d0 = donorOnly[0];
-            var d0Assessment = AssessPair(context, d0, d0, receivers[0], warningProfiles);
+            var d0Assessment = AssessPair(context, d0, d0, receivers[0]);
 
             if (d0Assessment.Witness is not null)
             {
@@ -557,7 +533,7 @@ public sealed class HardVectorCandidateAssessor
 
             foreach (var receiver in receivers)
             {
-                var assessed = AssessPair(context, receiver, d0, receiver, warningProfiles);
+                var assessed = AssessPair(context, receiver, d0, receiver);
 
                 if (assessed.Witness is not null)
                 {
@@ -586,7 +562,7 @@ public sealed class HardVectorCandidateAssessor
 
             foreach (var donor in donors.Where(value => value.CandidateId != d0.CandidateId))
             {
-                var assessed = AssessPair(context, donor, donor, survivingReceivers[0], warningProfiles);
+                var assessed = AssessPair(context, donor, donor, survivingReceivers[0]);
 
                 if (assessed.Witness is not null)
                 {
@@ -615,8 +591,7 @@ public sealed class HardVectorCandidateAssessor
         CommitmentMechanismContext context,
         InsertionCandidate candidate,
         InsertionCandidate donor,
-        InsertionCandidate receiver,
-        ICommitmentWarningProfileProvider? warningProfiles)
+        InsertionCandidate receiver)
     {
         var updated = CandidateStateApplicator.ApplyRelocationPair(
             context.ReducedState.Run,
@@ -679,26 +654,12 @@ public sealed class HardVectorCandidateAssessor
             return PairResult.Failed(utilization.Witness!, candidate);
         }
 
-        var warning = CalculateWarningExcess(
-            validation.ValidatedState!,
-            context.Policies,
-            warningProfiles,
-            candidate.VehicleId,
-            context.InitialPromiseTrigger);
-
-        if (!warning.IsSuccess)
-        {
-            return PairResult.Failed(warning.Witness!, candidate);
-        }
-
         return PairResult.Kept(
             new HardVectorCandidateAssessment(
                 candidate.CandidateId,
                 utilization.PartsPerMillion,
                 revision.Value!,
-                utilization.HasApplicableHardLimit,
-                warning.Value,
-                warning.HasApplicableWarning));
+                utilization.HasApplicableHardLimit));
     }
 
     private sealed record PairResult(
@@ -759,7 +720,6 @@ public sealed class HardVectorCandidateAssessor
         CommitmentMechanismContext context,
         InsertionCandidate candidate,
         VehicleId vehicleId,
-        ICommitmentWarningProfileProvider? warningProfiles,
         bool noWorse,
         bool rankNonExempt)
     {
@@ -820,26 +780,12 @@ public sealed class HardVectorCandidateAssessor
             return ForcedNoOpResult.Failure(utilization.Witness!);
         }
 
-        var warning = CalculateWarningExcess(
-            validation.ValidatedState!,
-            context.Policies,
-            warningProfiles,
-            vehicleId,
-            context.InitialPromiseTrigger);
-
-        if (!warning.IsSuccess)
-        {
-            return ForcedNoOpResult.Failure(warning.Witness!);
-        }
-
         return ForcedNoOpResult.Forced(
             new HardVectorCandidateAssessment(
                 candidate.CandidateId,
                 utilization.PartsPerMillion,
                 revision.Value!,
                 utilization.HasApplicableHardLimit,
-                warning.Value,
-                warning.HasApplicableWarning,
                 IsForcedReference: true));
     }
 
@@ -993,122 +939,6 @@ public sealed class HardVectorCandidateAssessor
         return checked((long)ceiling);
     }
 
-    private static WarningResult CalculateWarningExcess(
-        OnlineState state,
-        ICommitmentPolicyProvider policies,
-        ICommitmentWarningProfileProvider? warningProfiles,
-        VehicleId scopedVehicleId,
-        InitialPromiseTrigger initialPromiseTrigger)
-    {
-        if (warningProfiles is null)
-        {
-            return WarningResult.Success(CommitmentVector.Zero, false);
-        }
-
-        var values = new long[CommitmentDimensionVocabulary.Ordered.Count];
-        var hasWarning = false;
-
-        foreach (var request in state.Run.Requests.Values
-                     .Where(
-                         value => value.IsAcceptedActive
-                             && value.AssignedVehicleId == scopedVehicleId)
-                     .OrderBy(value => value.Id.Value, StringComparer.Ordinal))
-        {
-            if (initialPromiseTrigger == InitialPromiseTrigger.BookingConfirmation
-                && request.Lifecycle == RequestLifecycle.Accepted
-                && !state.Commitments.Histories.ContainsKey(request.Id))
-            {
-                continue;
-            }
-
-            if (!policies.TryGetPolicy(request.CommitmentPolicyId, out var policy)
-                || !warningProfiles.TryGetProfile(
-                    request.CommitmentPolicyId,
-                    out var warningProfile)
-                || !StringComparer.Ordinal.Equals(
-                    warningProfile.PolicyId,
-                    policy.PolicyId)
-                || !state.Commitments.Histories.TryGetValue(
-                    request.Id,
-                    out var history))
-            {
-                return WarningResult.Failure(
-                    new CommitmentAssessmentWitness(
-                        "COMMITMENT_WARNING_PROFILE_NOT_FOUND",
-                        "C2 requires an exact warning profile, policy and ledger " +
-                        "history for every active request.",
-                        RequestId: request.Id,
-                        Dimension: "commitmentPolicyId"));
-            }
-
-            var phase = ToPhase(request.Lifecycle);
-
-            for (var index = 0;
-                 index < CommitmentDimensionVocabulary.Ordered.Count;
-                 index++)
-            {
-                var dimension = CommitmentDimensionVocabulary.Ordered[index];
-                var warning = warningProfile.Limits[dimension].WarningLimit;
-
-                if (warning is not long warningLimit)
-                {
-                    continue;
-                }
-
-                var hard = policy.Limits[dimension];
-
-                if (hard.HardLimit is not long hardLimit
-                    || warningLimit > hardLimit)
-                {
-                    return WarningResult.Failure(
-                        new CommitmentAssessmentWitness(
-                            "INVALID_COMMITMENT_WARNING_LIMIT",
-                            "An enabled warning requires a finite hard limit and " +
-                            "cannot exceed it.",
-                            RequestId: request.Id,
-                            Dimension: CommitmentDimensionVocabulary
-                                .ToProtocolValue(dimension)));
-                }
-
-                if ((hard.ApplicablePhases & phase) == 0)
-                {
-                    continue;
-                }
-
-                hasWarning = true;
-                var usage = history.Current.BudgetAfter.Get(dimension);
-                var excess = usage > warningLimit ? usage - warningLimit : 0;
-
-                if (values[index] > DomainLimits.MaxCanonicalInteger - excess)
-                {
-                    return WarningResult.Failure(
-                        new CommitmentAssessmentWitness(
-                            CommitmentFailureCodes.VectorOverflow,
-                            "Aggregate warning excess exceeds the canonical range.",
-                            RequestId: request.Id,
-                            Dimension: CommitmentDimensionVocabulary
-                                .ToProtocolValue(dimension)));
-                }
-
-                values[index] += excess;
-            }
-        }
-
-        return WarningResult.Success(
-            new CommitmentVector(
-                values[0],
-                values[1],
-                values[2],
-                values[3],
-                values[4],
-                values[5],
-                values[6],
-                values[7],
-                values[8],
-                values[9]),
-            hasWarning);
-    }
-
     private static CommitmentPhase ToPhase(RequestLifecycle lifecycle) =>
         lifecycle switch
         {
@@ -1170,22 +1000,5 @@ public sealed class HardVectorCandidateAssessor
         public static UtilizationResult Failure(
             CommitmentAssessmentWitness witness) =>
             new(0, false, witness);
-    }
-
-    private sealed record WarningResult(
-        CommitmentVector? Value,
-        bool HasApplicableWarning,
-        CommitmentAssessmentWitness? Witness)
-    {
-        public bool IsSuccess => Value is not null;
-
-        public static WarningResult Success(
-            CommitmentVector value,
-            bool hasApplicableWarning) =>
-            new(value, hasApplicableWarning, null);
-
-        public static WarningResult Failure(
-            CommitmentAssessmentWitness witness) =>
-            new(null, false, witness);
     }
 }

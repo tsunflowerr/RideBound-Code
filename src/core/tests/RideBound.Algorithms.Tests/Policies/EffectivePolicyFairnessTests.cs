@@ -26,13 +26,12 @@ public sealed class EffectivePolicyFairnessTests
 
     /// <summary>
     /// No declared kind is exempt from the cumulative burden limits: the baseline arms
-    /// that were scored without them (B1 to B4) were removed, and C1 and C2 keep them.
+    /// that were scored without them (B1 to B4) were removed, and C1 keeps them.
     /// </summary>
     private static readonly RidePoolingPolicyKind[] ExemptKinds = [];
 
     [Theory]
     [InlineData(RidePoolingPolicyKind.RideBoundHardVector)]
-    [InlineData(RidePoolingPolicyKind.CommitSoftHardHybrid)]
     public void A_commitment_arm_is_scored_against_the_configured_limits(
         RidePoolingPolicyKind kind)
     {
@@ -49,7 +48,6 @@ public sealed class EffectivePolicyFairnessTests
     /// </summary>
     [Theory]
     [InlineData(RidePoolingPolicyKind.RideBoundHardVector)]
-    [InlineData(RidePoolingPolicyKind.CommitSoftHardHybrid)]
     public void A_commitment_arm_keeps_a_configured_deadline(RidePoolingPolicyKind kind)
     {
         var policy = EffectivePolicyFor(
@@ -68,7 +66,6 @@ public sealed class EffectivePolicyFairnessTests
     /// </summary>
     [Theory]
     [InlineData(RidePoolingPolicyKind.RideBoundHardVector)]
-    [InlineData(RidePoolingPolicyKind.CommitSoftHardHybrid)]
     public void A_commitment_arm_keeps_a_revision_limit_and_a_relaxed_deadline(
         RidePoolingPolicyKind kind)
     {
@@ -185,8 +182,7 @@ public sealed class EffectivePolicyFairnessTests
                     maximumNewRequestsPerVehicle: 1,
                     exactSmallMode: false,
                     maximumExplorationWorkUnits: 100_000),
-                new SolverBackedRidePoolingPolicyOptions(kind, executionBudget),
-                WarningProfiles());
+                new SolverBackedRidePoolingPolicyOptions(kind, executionBudget));
 
         Assert.True(result.IsSuccess, result.Witness?.Message);
         Assert.True(
@@ -217,20 +213,6 @@ public sealed class EffectivePolicyFairnessTests
             dropEtaDeadlineTwoSided: deadlineTwoSided,
             dropEtaDeadlineRelaxed: deadlineRelaxed,
             dropEtaRevisionLimit: revisionLimitMs is long limit ? new Duration(limit) : null);
-
-    /// <summary>
-    /// Only C2 consults warning profiles, but supplying them for every arm keeps the
-    /// sweep uniform: an arm that starts consulting them later must still land in the
-    /// classification this file pins, not fall over on a null argument.
-    /// </summary>
-    private static ICommitmentWarningProfileProvider WarningProfiles() =>
-        new CommitmentWarningProfileCatalog(
-        [
-            new CommitmentWarningProfile(
-                PolicyId,
-                CommitmentDimensionVocabulary.Ordered.Select(
-                    dimension => new CommitmentWarningLimit(dimension, null))),
-        ]);
 
     /// <summary>
     /// The effective-policy decision is taken before the solver runs, so the cheapest

@@ -968,8 +968,7 @@ public sealed class RunnerSession
             _useManifestSolverSeed
                 ? _wp4Configuration.CreateSolverPolicyOptionsForRun(
                     _identity!.Manifest.MasterSeed)
-                : _wp4Configuration.SolverPolicyOptions!,
-            _wp4Configuration);
+                : _wp4Configuration.SolverPolicyOptions!);
 
         if (!solved.IsSuccess)
         {
