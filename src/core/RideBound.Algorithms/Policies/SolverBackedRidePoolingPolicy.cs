@@ -13,7 +13,6 @@ namespace RideBound.Algorithms.Policies;
 
 public enum RidePoolingPolicyKind
 {
-    RollingPenalty,
     FixedFreezeHorizon,
     NoReassignmentRepair,
     RideBoundHardVector,
@@ -22,7 +21,6 @@ public enum RidePoolingPolicyKind
 
 public static class RidePoolingPolicyRegistry
 {
-    public const string RollingPenalty = "rolling-penalty";
     public const string FixedFreezeHorizon = "fixed-freeze-horizon";
     public const string NoReassignmentRepair = "no-reassignment-repair";
     public const string RideBoundHardVector = "ridebound-hard-vector";
@@ -34,15 +32,13 @@ public static class RidePoolingPolicyRegistry
     {
         policyKind = policyId switch
         {
-            RollingPenalty => RidePoolingPolicyKind.RollingPenalty,
             FixedFreezeHorizon => RidePoolingPolicyKind.FixedFreezeHorizon,
             NoReassignmentRepair => RidePoolingPolicyKind.NoReassignmentRepair,
             RideBoundHardVector => RidePoolingPolicyKind.RideBoundHardVector,
             CommitSoftHardHybrid => RidePoolingPolicyKind.CommitSoftHardHybrid,
             _ => default,
         };
-        return policyId is RollingPenalty
-            or FixedFreezeHorizon
+        return policyId is FixedFreezeHorizon
             or NoReassignmentRepair
             or RideBoundHardVector
             or CommitSoftHardHybrid;
@@ -51,7 +47,6 @@ public static class RidePoolingPolicyRegistry
     public static string ToPolicyId(RidePoolingPolicyKind policyKind) =>
         policyKind switch
         {
-            RidePoolingPolicyKind.RollingPenalty => RollingPenalty,
             RidePoolingPolicyKind.FixedFreezeHorizon => FixedFreezeHorizon,
             RidePoolingPolicyKind.NoReassignmentRepair => NoReassignmentRepair,
             RidePoolingPolicyKind.RideBoundHardVector => RideBoundHardVector,
@@ -219,7 +214,7 @@ public sealed record SolverBackedPolicyDecisionResult
 }
 
 /// <summary>
-/// Production policy path for B2–B4/C1/C2. It generates the shared physical
+/// Production policy path for B3, B4, C1 and C2. It generates the shared physical
 /// candidate set once, performs only the named mechanism gate/assessment, maps
 /// the exact hierarchy to the solver port, and independently validates every
 /// solver or fallback fleet selection before returning it to Runner.
@@ -229,7 +224,6 @@ public sealed class SolverBackedRidePoolingPolicy
     private static readonly byte[] OmissionAccountingDomain =
         "RideBound.Wp4OmissionAccounting.v1\0"u8.ToArray();
     private readonly InsertionCandidateGenerator _generator;
-    private readonly CommitmentCandidateAssessor _revisionAssessor;
     private readonly HardVectorCandidateAssessor _hardAssessor;
     private readonly SolverBackedFleetSelector _selector;
     private readonly CommitmentDecisionValidator _commitmentValidator;
@@ -238,15 +232,12 @@ public sealed class SolverBackedRidePoolingPolicy
     public SolverBackedRidePoolingPolicy(
         ICandidateSelectionSolver solver,
         InsertionCandidateGenerator? generator = null,
-        CommitmentCandidateAssessor? revisionAssessor = null,
         HardVectorCandidateAssessor? hardAssessor = null,
         CommitmentDecisionValidator? commitmentValidator = null,
         PhysicalPlanValidator? physicalValidator = null)
     {
         ArgumentNullException.ThrowIfNull(solver);
         _generator = generator ?? new InsertionCandidateGenerator();
-        _revisionAssessor = revisionAssessor
-            ?? new CommitmentCandidateAssessor();
         _hardAssessor = hardAssessor ?? new HardVectorCandidateAssessor();
         _selector = new SolverBackedFleetSelector(solver);
         _commitmentValidator = commitmentValidator
@@ -296,8 +287,6 @@ public sealed class SolverBackedRidePoolingPolicy
         }
 
         var candidates = generated.VehicleCandidates!;
-        IReadOnlyDictionary<string, CandidateCommitmentAssessment>?
-            revisionAssessments = null;
         IReadOnlyDictionary<string, HardVectorCandidateAssessment>?
             hardAssessments = null;
         var validationWorkUnits = 0L;
@@ -307,22 +296,6 @@ public sealed class SolverBackedRidePoolingPolicy
 
         switch (policyOptions.PolicyKind)
         {
-            case RidePoolingPolicyKind.RollingPenalty:
-                {
-                    var assessed = _revisionAssessor.AssessRevisionPenalty(
-                        context,
-                        candidates);
-
-                    if (!assessed.IsSuccess)
-                    {
-                        return AssessmentFailure(assessed.Witness!);
-                    }
-
-                    revisionAssessments = assessed.Assessments;
-                    validationWorkUnits = CountCandidates(candidates);
-                    profile = SolverBackedObjectiveProfile.RevisionPenalty;
-                    break;
-                }
             case RidePoolingPolicyKind.FixedFreezeHorizon:
                 {
                     var filter = new CommitmentCandidateFilter(
@@ -399,7 +372,6 @@ public sealed class SolverBackedRidePoolingPolicy
             policyOptions.ExecutionBudget,
             accounting.Value!,
             validator,
-            revisionAssessments,
             hardAssessments,
             policyOptions.SelectionObjectiveOrder);
 

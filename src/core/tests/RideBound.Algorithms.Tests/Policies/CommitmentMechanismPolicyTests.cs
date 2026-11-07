@@ -55,102 +55,6 @@ public sealed class CommitmentMechanismPolicyTests
     }
 
     [Fact]
-    public void B2_acceptance_dominates_revision_and_revision_dominates_cost()
-    {
-        var request = AlgorithmTestData.PendingRequest();
-        var vehicle = AlgorithmTestData.Vehicle();
-        var noOp = Candidate("noop", vehicle.Id, [], cost: 0);
-        var lowerRevision = Candidate(
-            "accept-lower-revision",
-            vehicle.Id,
-            [request.Id],
-            cost: 100);
-        var lowerCost = Candidate(
-            "accept-lower-cost",
-            vehicle.Id,
-            [request.Id],
-            cost: 1);
-        var materialButCheap = Candidate(
-            "accept-material-cheap",
-            vehicle.Id,
-            [request.Id],
-            cost: 0);
-        var set = new VehicleCandidateSet(
-            vehicle.Id,
-            [noOp, lowerRevision, lowerCost, materialButCheap],
-            [],
-            false);
-        var assessments = new Dictionary<string, CandidateCommitmentAssessment>(
-            StringComparer.Ordinal)
-        {
-            [noOp.CandidateId] = Assessment(noOp, CommitmentVector.Zero),
-            [lowerRevision.CandidateId] = Assessment(
-                lowerRevision,
-                Vector(pickupEta: 1)),
-            [lowerCost.CandidateId] = Assessment(
-                lowerCost,
-                Vector(pickupEta: 2)),
-            [materialButCheap.CandidateId] = Assessment(
-                materialButCheap,
-                Vector(material: 1)),
-        };
-
-        var result = new RevisionPenaltyFleetSelector().Select(
-            [set],
-            assessments);
-
-        Assert.True(result.IsSuccess, result.Witness?.Message);
-        var selected = Assert.Single(result.Selection!.VehiclePlans).Candidate;
-        Assert.Equal(lowerRevision.CandidateId, selected.CandidateId);
-        Assert.Equal(1, result.Selection.AcceptedRequestCount);
-        Assert.Equal(1, result.Selection.DecisionInducedRevision!.PickupEtaTotalMs);
-        Assert.Equal(100, result.Selection.OperationalCost);
-    }
-
-    [Fact]
-    public void B2_uses_stable_dimension_order_before_operational_cost()
-    {
-        var request = AlgorithmTestData.PendingRequest();
-        var vehicle = AlgorithmTestData.Vehicle();
-        var lowerPickupHigherDrop = Candidate(
-            "lower-pickup",
-            vehicle.Id,
-            [request.Id],
-            cost: 1000);
-        var higherPickupLowerDrop = Candidate(
-            "higher-pickup",
-            vehicle.Id,
-            [request.Id],
-            cost: 0);
-        var noOp = Candidate("noop", vehicle.Id, [], 0);
-        var assessments = new Dictionary<string, CandidateCommitmentAssessment>(
-            StringComparer.Ordinal)
-        {
-            [noOp.CandidateId] = Assessment(noOp, CommitmentVector.Zero),
-            [lowerPickupHigherDrop.CandidateId] = Assessment(
-                lowerPickupHigherDrop,
-                Vector(pickupEta: 1, dropEta: 999)),
-            [higherPickupLowerDrop.CandidateId] = Assessment(
-                higherPickupLowerDrop,
-                Vector(pickupEta: 2, dropEta: 0)),
-        };
-        var result = new RevisionPenaltyFleetSelector().Select(
-            [
-                new VehicleCandidateSet(
-                    vehicle.Id,
-                    [noOp, lowerPickupHigherDrop, higherPickupLowerDrop],
-                    [],
-                    false),
-            ],
-            assessments);
-
-        Assert.True(result.IsSuccess, result.Witness?.Message);
-        Assert.Equal(
-            lowerPickupHigherDrop.CandidateId,
-            Assert.Single(result.Selection!.VehiclePlans).Candidate.CandidateId);
-    }
-
-    [Fact]
     public void C1_acceptance_then_worst_utilization_dominate_revision_and_cost()
     {
         var request = AlgorithmTestData.PendingRequest();
@@ -365,15 +269,8 @@ public sealed class CommitmentMechanismPolicyTests
             new VehicleCandidateSet(firstVehicle.Id, [first], [], false),
             new VehicleCandidateSet(secondVehicle.Id, [second], [], false),
         };
-        var assessments = new Dictionary<string, CandidateCommitmentAssessment>(
-            StringComparer.Ordinal)
-        {
-            [first.CandidateId] = Assessment(first, CommitmentVector.Zero),
-            [second.CandidateId] = Assessment(second, CommitmentVector.Zero),
-        };
 
         var b1 = new CandidateFleetSelector().Select(sets);
-        var b2 = new RevisionPenaltyFleetSelector().Select(sets, assessments);
         var hardAssessments = new Dictionary<
             string,
             HardVectorCandidateAssessment>(StringComparer.Ordinal)
@@ -394,9 +291,6 @@ public sealed class CommitmentMechanismPolicyTests
             b1.Witness?.Code);
         Assert.Equal(
             RollingCostFailureCodes.OperationalCostOverflow,
-            b2.Witness?.Code);
-        Assert.Equal(
-            RollingCostFailureCodes.OperationalCostOverflow,
             c1.Witness?.Code);
     }
 
@@ -412,11 +306,6 @@ public sealed class CommitmentMechanismPolicyTests
             requestIds,
             new CandidateSchedule([], cost),
             requestIds.Count == 0);
-
-    private static CandidateCommitmentAssessment Assessment(
-        InsertionCandidate candidate,
-        CommitmentVector vector) =>
-        new(candidate.CandidateId, vector);
 
     private static HardVectorCandidateAssessment HardAssessment(
         InsertionCandidate candidate,

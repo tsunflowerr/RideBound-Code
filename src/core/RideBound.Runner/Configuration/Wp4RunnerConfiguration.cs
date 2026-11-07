@@ -53,6 +53,14 @@ public sealed class Wp4RunnerConfiguration : ICommitmentWarningProfileProvider
     private const string RemovedFeature =
         "removed; see commit ebca912 (branch research/final-real-runs-2026-11-06)";
 
+    /// <summary>The removed WP4 policyIds, each with the name its refusal gives.</summary>
+    private static readonly IReadOnlyDictionary<string, string> RemovedPolicies =
+        new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            ["rolling-cost"] = "the rolling-cost policy",
+            ["rolling-penalty"] = "the rolling-penalty policy",
+        };
+
     /// <summary>
     /// ADR-089 GĐ4 (exploratory). Optional; omitted means every projected leg is the snapshot
     /// time (as before, same content hash). `{ "profile": [f0, f1, …], "binMs": 900000 }`
@@ -870,7 +878,8 @@ public sealed class Wp4RunnerConfiguration : ICommitmentWarningProfileProvider
     /// <summary>
     /// Runs before the field checks, so a file that still selects a removed feature is always refused with the
     /// pointer to the commit that has it: the multiple-plan policy (policyId 'least-commitment-consensus', B5)
-    /// and its 'multiplePlan' block, and the rolling-cost policy (policyId 'rolling-cost', B1).
+    /// and its 'multiplePlan' block, and the policies in <see cref="RemovedPolicies"/>: rolling-cost (B1) and
+    /// rolling-penalty (B2).
     /// </summary>
     private static void RejectRemovedFeatures(JsonElement root)
     {
@@ -888,10 +897,10 @@ public sealed class Wp4RunnerConfiguration : ICommitmentWarningProfileProvider
         if (root.ValueKind == JsonValueKind.Object
             && root.TryGetProperty("policyId", out var removedPolicyId)
             && removedPolicyId.ValueKind == JsonValueKind.String
-            && removedPolicyId.GetString() == "rolling-cost")
+            && RemovedPolicies.TryGetValue(removedPolicyId.GetString()!, out var removedPolicy))
         {
             throw new InvalidDataException(
-                $"WP4 policyId 'rolling-cost' (the rolling-cost policy): {RemovedFeature}");
+                $"WP4 policyId '{removedPolicyId.GetString()}' ({removedPolicy}): {RemovedFeature}");
         }
     }
 

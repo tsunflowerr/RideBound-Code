@@ -184,39 +184,6 @@ public sealed class SolverBackedFleetSelectionTests
     }
 
     [Fact]
-    public void Revision_mapping_preserves_material_then_dimension_hierarchy()
-    {
-        var request = new RequestId("request-1");
-        var vehicle = AlgorithmTestData.VehicleOne;
-        var noOp = Candidate("noop", vehicle, [], 0);
-        var lowerRevision = Candidate("lower-revision", vehicle, [request], 100);
-        var cheaper = Candidate("cheaper", vehicle, [request], 1);
-        var material = Candidate("material", vehicle, [request], 0);
-        var assessments = new Dictionary<string, CandidateCommitmentAssessment>(
-            StringComparer.Ordinal)
-        {
-            [noOp.CandidateId] = Revision(noOp, CommitmentVector.Zero),
-            [lowerRevision.CandidateId] = Revision(lowerRevision, Vector(pickup: 1)),
-            [cheaper.CandidateId] = Revision(cheaper, Vector(pickup: 2)),
-            [material.CandidateId] = Revision(material, Vector(material: 1)),
-        };
-
-        var result = Select(
-            [Set(vehicle, noOp, lowerRevision, cheaper, material)],
-            SolverBackedObjectiveProfile.RevisionPenalty,
-            revisionAssessments: assessments);
-
-        Assert.True(result.IsSuccess, result.Witness?.Message);
-        Assert.Equal(
-            "lower-revision",
-            Assert.Single(result.Selection!.Selection.VehiclePlans)
-                .Candidate.CandidateId);
-        Assert.Equal(
-            1,
-            result.Selection.Selection.DecisionInducedRevision!.PickupEtaTotalMs);
-    }
-
-    [Fact]
     public void Hard_vector_mapping_uses_maximum_utilization_before_revision_and_cost()
     {
         var request = new RequestId("request-1");
@@ -643,7 +610,6 @@ public sealed class SolverBackedFleetSelectionTests
         foreach (var profile in new[]
                  {
                      SolverBackedObjectiveProfile.RollingCost,
-                     SolverBackedObjectiveProfile.RevisionPenalty,
                      SolverBackedObjectiveProfile.SoftHardHybrid,
                  })
         {
@@ -686,16 +652,18 @@ public sealed class SolverBackedFleetSelectionTests
                 selectionObjectiveOrder: SolverBackedSelectionObjectiveOrder.CostFirst)
                 .SelectionObjectiveOrder);
 
-        foreach (var kind in new[]
+        // B4 carries its mandatory repair capacity, so only the cost-first rule can refuse it.
+        foreach (var (kind, repairCapacity) in new[]
                  {
-                     RidePoolingPolicyKind.RollingPenalty,
-                     RidePoolingPolicyKind.CommitSoftHardHybrid,
+                     (RidePoolingPolicyKind.NoReassignmentRepair, 1),
+                     (RidePoolingPolicyKind.CommitSoftHardHybrid, 0),
                  })
         {
             Assert.Throws<ArgumentException>(
                 () => new SolverBackedRidePoolingPolicyOptions(
                     kind,
                     budget,
+                    maximumRepairRequestsConsideredPerVehicle: repairCapacity,
                     selectionObjectiveOrder: SolverBackedSelectionObjectiveOrder.CostFirst));
         }
 
@@ -709,8 +677,6 @@ public sealed class SolverBackedFleetSelectionTests
     private static SolverBackedFleetSelectionResult Select(
         IReadOnlyList<VehicleCandidateSet> sets,
         SolverBackedObjectiveProfile profile,
-        IReadOnlyDictionary<string, CandidateCommitmentAssessment>?
-            revisionAssessments = null,
         IReadOnlyDictionary<string, HardVectorCandidateAssessment>?
             hardAssessments = null,
         IFleetSelectionValidator? validator = null,
@@ -733,9 +699,8 @@ public sealed class SolverBackedFleetSelectionTests
             budget,
             accounting,
             validator ?? new FleetValidator(_ => true),
-            revisionAssessments,
-            hardAssessments,
-            objectiveOrder);
+            hardAssessments: hardAssessments,
+            objectiveOrder: objectiveOrder);
     }
 
     private static VehicleCandidateSet Set(
@@ -755,11 +720,6 @@ public sealed class SolverBackedFleetSelectionTests
             requests,
             new CandidateSchedule([], cost),
             requests.Count == 0);
-
-    private static CandidateCommitmentAssessment Revision(
-        InsertionCandidate candidate,
-        CommitmentVector revision) =>
-        new(candidate.CandidateId, revision);
 
     private static HardVectorCandidateAssessment Hard(
         InsertionCandidate candidate,

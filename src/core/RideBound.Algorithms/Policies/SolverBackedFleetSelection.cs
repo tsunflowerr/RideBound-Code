@@ -10,7 +10,6 @@ namespace RideBound.Algorithms.Policies;
 public enum SolverBackedObjectiveProfile
 {
     RollingCost,
-    RevisionPenalty,
     HardVector,
     SoftHardHybrid,
 }
@@ -86,8 +85,6 @@ public sealed class SolverBackedFleetSelector
         DeterministicCandidateSelectionExecutionBudget executionBudget,
         CandidateSelectionPreSolveAccounting preSolveAccounting,
         IFleetSelectionValidator validator,
-        IReadOnlyDictionary<string, CandidateCommitmentAssessment>?
-            revisionAssessments = null,
         IReadOnlyDictionary<string, HardVectorCandidateAssessment>?
             hardAssessments = null,
         SolverBackedSelectionObjectiveOrder objectiveOrder =
@@ -119,7 +116,6 @@ public sealed class SolverBackedFleetSelector
         var mapping = SelectionModelMapping.Create(
             candidateSets,
             objectiveProfile,
-            revisionAssessments,
             hardAssessments,
             objectiveOrder);
 
@@ -191,8 +187,6 @@ public sealed class SolverBackedFleetSelector
     {
         private readonly IReadOnlyDictionary<string, InsertionCandidate> _candidates;
         private readonly SolverBackedObjectiveProfile _profile;
-        private readonly IReadOnlyDictionary<string, CandidateCommitmentAssessment>?
-            _revisionAssessments;
         private readonly IReadOnlyDictionary<string, HardVectorCandidateAssessment>?
             _hardAssessments;
         private readonly bool _hardTreatmentActive;
@@ -202,8 +196,6 @@ public sealed class SolverBackedFleetSelector
             CandidateSelectionProblem? problem,
             IReadOnlyDictionary<string, InsertionCandidate> candidates,
             SolverBackedObjectiveProfile profile,
-            IReadOnlyDictionary<string, CandidateCommitmentAssessment>?
-                revisionAssessments,
             IReadOnlyDictionary<string, HardVectorCandidateAssessment>?
                 hardAssessments,
             bool hardTreatmentActive,
@@ -213,7 +205,6 @@ public sealed class SolverBackedFleetSelector
             Problem = problem;
             _candidates = candidates;
             _profile = profile;
-            _revisionAssessments = revisionAssessments;
             _hardAssessments = hardAssessments;
             _hardTreatmentActive = hardTreatmentActive;
             _warningTreatmentActive = warningTreatmentActive;
@@ -227,8 +218,6 @@ public sealed class SolverBackedFleetSelector
         public static SelectionModelMapping Create(
             IReadOnlyList<VehicleCandidateSet> candidateSets,
             SolverBackedObjectiveProfile profile,
-            IReadOnlyDictionary<string, CandidateCommitmentAssessment>?
-                revisionAssessments,
             IReadOnlyDictionary<string, HardVectorCandidateAssessment>?
                 hardAssessments,
             SolverBackedSelectionObjectiveOrder objectiveOrder)
@@ -252,7 +241,6 @@ public sealed class SolverBackedFleetSelector
                 return Failure(
                     candidateMap,
                     profile,
-                    revisionAssessments,
                     hardAssessments,
                     "Every vehicle needs at least one feasible candidate.");
             }
@@ -262,23 +250,8 @@ public sealed class SolverBackedFleetSelector
                 return Failure(
                     candidateMap,
                     profile,
-                    revisionAssessments,
                     hardAssessments,
                     "Candidate IDs must be globally unique across the fleet.");
-            }
-
-            if (profile == SolverBackedObjectiveProfile.RevisionPenalty
-                && (revisionAssessments is null
-                    || allCandidates.Any(
-                        candidate => !revisionAssessments.ContainsKey(
-                            candidate.CandidateId))))
-            {
-                return Failure(
-                    candidateMap,
-                    profile,
-                    revisionAssessments,
-                    hardAssessments,
-                    "Every B2 candidate needs a revision assessment.");
             }
 
             if (profile is SolverBackedObjectiveProfile.HardVector
@@ -291,7 +264,6 @@ public sealed class SolverBackedFleetSelector
                 return Failure(
                     candidateMap,
                     profile,
-                    revisionAssessments,
                     hardAssessments,
                     "Every C1/C2 candidate needs a hard-vector assessment.");
             }
@@ -332,18 +304,6 @@ public sealed class SolverBackedFleetSelector
 
             switch (profile)
             {
-                case SolverBackedObjectiveProfile.RevisionPenalty:
-                    objectives.Add(
-                        MinSum(
-                            "material-revision-count",
-                            candidate => revisionAssessments![candidate.CandidateId]
-                                .DecisionInducedRevision.MaterialEtaRevisionCount));
-                    AddRevisionObjectives(
-                        objectives,
-                        candidate => revisionAssessments![candidate.CandidateId]
-                            .DecisionInducedRevision,
-                        "revision");
-                    break;
                 // Cost-first (ADR-078) matches no case here, so operational cost follows the
                 // accepted-request count directly; the forced level above is unchanged.
                 case SolverBackedObjectiveProfile.HardVector
@@ -453,7 +413,6 @@ public sealed class SolverBackedFleetSelector
                     problem.Value,
                     candidateMap,
                     profile,
-                    revisionAssessments,
                     hardAssessments,
                     hardTreatmentActive,
                     warningTreatmentActive,
@@ -461,7 +420,6 @@ public sealed class SolverBackedFleetSelector
                 : Failure(
                     candidateMap,
                     profile,
-                    revisionAssessments,
                     hardAssessments,
                     problem.Failure!.Message);
         }
@@ -485,15 +443,8 @@ public sealed class SolverBackedFleetSelector
                 CommitmentVector? warning = null;
                 long? worst = null;
 
-                if (_profile == SolverBackedObjectiveProfile.RevisionPenalty)
-                {
-                    revision = SumVector(
-                        selected,
-                        candidate => _revisionAssessments![candidate.CandidateId]
-                            .DecisionInducedRevision);
-                }
-                else if (_profile is SolverBackedObjectiveProfile.HardVector
-                             or SolverBackedObjectiveProfile.SoftHardHybrid
+                if (_profile is SolverBackedObjectiveProfile.HardVector
+                        or SolverBackedObjectiveProfile.SoftHardHybrid
                     && _hardTreatmentActive)
                 {
                     revision = SumVector(
@@ -593,8 +544,6 @@ public sealed class SolverBackedFleetSelector
         private static SelectionModelMapping Failure(
             IReadOnlyDictionary<string, InsertionCandidate> candidates,
             SolverBackedObjectiveProfile profile,
-            IReadOnlyDictionary<string, CandidateCommitmentAssessment>?
-                revisionAssessments,
             IReadOnlyDictionary<string, HardVectorCandidateAssessment>?
                 hardAssessments,
             string message) =>
@@ -602,7 +551,6 @@ public sealed class SolverBackedFleetSelector
                 null,
                 candidates,
                 profile,
-                revisionAssessments,
                 hardAssessments,
                 false,
                 false,

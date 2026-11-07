@@ -16,77 +16,6 @@ namespace RideBound.Algorithms.Tests.Oracle;
 public sealed class ExactSmallCommitmentDifferentialTests
 {
     [Fact]
-    public void B2_assesses_every_raw_candidate_without_hard_budget_pruning()
-    {
-        var fixture = CreateState(seed: 0);
-        var generated = new InsertionCandidateGenerator().Generate(
-            fixture.State,
-            CandidateGenerationOptions.ExactSmall);
-        Assert.True(generated.IsSuccess, generated.Witness?.Message);
-        var raw = generated.VehicleCandidates!;
-        var rawIds = raw.Single().Candidates
-            .Select(candidate => candidate.CandidateId)
-            .ToArray();
-        var context = MechanismContext(fixture, "b2-assessment");
-
-        var assessed = new CommitmentCandidateAssessor()
-            .AssessRevisionPenalty(context, raw);
-        var hardFiltered = new CommitmentCandidateFilter(
-            fixture.BeforeEventState,
-            new CommitmentPolicyCatalog([fixture.Policy]),
-            NoDistances.Instance,
-            "hard-reference",
-            1).Filter(fixture.State, raw);
-
-        Assert.True(assessed.IsSuccess, assessed.Witness?.Message);
-        Assert.Equal(rawIds.Length, assessed.Assessments!.Count);
-        Assert.Contains(
-            assessed.Assessments.Values,
-            assessment => assessment.DecisionInducedRevision
-                != CommitmentVector.Zero);
-        Assert.True(hardFiltered.Single().Candidates.Count < rawIds.Length);
-        Assert.Equal(
-            rawIds,
-            raw.Single().Candidates.Select(candidate => candidate.CandidateId));
-
-        var decision = new RevisionPenaltyPolicy().Decide(
-            context,
-            CandidateGenerationOptions.ExactSmall);
-        Assert.True(decision.IsSuccess, decision.Witness?.Message);
-        Assert.NotNull(decision.Decision!.DecisionInducedRevision);
-    }
-
-    [Fact]
-    public void B2_preserves_the_raw_candidate_set_across_published_small_seeds()
-    {
-        const int publishedSeedCount = 16;
-
-        for (var seed = 0; seed < publishedSeedCount; seed++)
-        {
-            var fixture = CreateState(seed);
-            var generated = new InsertionCandidateGenerator().Generate(
-                fixture.State,
-                CandidateGenerationOptions.ExactSmall);
-            Assert.True(
-                generated.IsSuccess,
-                $"seed={seed}; {generated.Witness?.Message}");
-            var raw = generated.VehicleCandidates!;
-
-            var assessed = new CommitmentCandidateAssessor()
-                .AssessRevisionPenalty(
-                    MechanismContext(fixture, $"b2-seed-{seed}"),
-                    raw);
-
-            Assert.True(
-                assessed.IsSuccess,
-                $"seed={seed}; {assessed.Witness?.Message}");
-            Assert.Equal(
-                raw.Sum(set => set.Candidates.Count),
-                assessed.Assessments!.Count);
-        }
-    }
-
-    [Fact]
     public void B3_freezes_only_inside_explicit_horizon_and_never_uses_source_budgets()
     {
         var fixture = CreateState(seed: 0);
@@ -1889,8 +1818,9 @@ public sealed class ExactSmallCommitmentDifferentialTests
 
         Assert.Throws<ArgumentException>(
             () => new SolverBackedRidePoolingPolicyOptions(
-                RidePoolingPolicyKind.RollingPenalty,
+                RidePoolingPolicyKind.NoReassignmentRepair,
                 budget,
+                maximumRepairRequestsConsideredPerVehicle: 1,
                 forcedReferenceRecovery: true));
     }
 

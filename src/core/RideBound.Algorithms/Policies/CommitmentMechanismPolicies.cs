@@ -6,68 +6,13 @@ using RideBound.Domain.Validation;
 
 namespace RideBound.Algorithms.Policies;
 
-public sealed class RevisionPenaltyPolicy
+/// <summary>
+/// The two decision steps that the policy classes share: validate and apply a fleet selection, and turn a
+/// candidate generation failure into a decision failure. The class keeps the name of the rolling-penalty policy
+/// (B2), which owned these steps and was removed.
+/// </summary>
+public static class RevisionPenaltyPolicy
 {
-    private readonly InsertionCandidateGenerator _generator;
-    private readonly CommitmentCandidateAssessor _assessor;
-    private readonly RevisionPenaltyFleetSelector _selector;
-    private readonly PhysicalPlanValidator _physicalValidator;
-
-    public RevisionPenaltyPolicy(
-        InsertionCandidateGenerator? generator = null,
-        CommitmentCandidateAssessor? assessor = null,
-        RevisionPenaltyFleetSelector? selector = null,
-        PhysicalPlanValidator? physicalValidator = null)
-    {
-        _generator = generator ?? new InsertionCandidateGenerator();
-        _assessor = assessor ?? new CommitmentCandidateAssessor();
-        _selector = selector ?? new RevisionPenaltyFleetSelector();
-        _physicalValidator = physicalValidator ?? new PhysicalPlanValidator();
-    }
-
-    public string PolicyId => RidePoolingPolicyRegistry.RollingPenalty;
-
-    public RollingCostDecisionResult Decide(
-        CommitmentMechanismContext context,
-        CandidateGenerationOptions options)
-    {
-        ArgumentNullException.ThrowIfNull(context);
-        ArgumentNullException.ThrowIfNull(options);
-        var generated = _generator.Generate(context.ReducedState, options);
-
-        if (!generated.IsSuccess)
-        {
-            return GenerationFailure(generated.Witness!);
-        }
-
-        var assessed = _assessor.AssessRevisionPenalty(
-            context,
-            generated.VehicleCandidates!);
-
-        if (!assessed.IsSuccess)
-        {
-            var witness = assessed.Witness!;
-            return RollingCostDecisionResult.Failure(
-                new RollingCostWitness(
-                    RollingCostFailureCodes.CommitmentAssessmentFailed,
-                    witness.Message,
-                    witness.VehicleId,
-                    witness.RequestId,
-                    witness.CandidateId,
-                    witness.Dimension));
-        }
-
-        var selected = _selector.Select(
-            generated.VehicleCandidates!,
-            assessed.Assessments!);
-
-        return Finish(
-            context,
-            generated.VehicleCandidates!,
-            selected,
-            _physicalValidator);
-    }
-
     internal static RollingCostDecisionResult Finish(
         CommitmentMechanismContext context,
         IReadOnlyList<VehicleCandidateSet> candidates,

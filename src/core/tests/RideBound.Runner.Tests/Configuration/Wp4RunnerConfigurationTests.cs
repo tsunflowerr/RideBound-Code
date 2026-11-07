@@ -532,6 +532,34 @@ public sealed class Wp4RunnerConfigurationTests
     }
 
     [Fact]
+    public void The_removed_rolling_penalty_policy_is_refused_with_a_pointer_to_the_archive()
+    {
+        const string refusal =
+            "WP4 policyId 'rolling-penalty' (the rolling-penalty policy): "
+            + "removed; see commit ebca912 (branch research/final-real-runs-2026-11-06)";
+        var commitment = CommitmentConfiguration();
+        var decodedBefore = FinalJson(json =>
+        {
+            json["policyId"] = "rolling-penalty";
+            Assert.True(json.Remove("selectionObjectiveOrder"));
+            Assert.True(json.Remove("commitmentRecovery"));
+        });
+        Assert.NotNull(Wp4RunnerConfiguration.Decode(Encoding.UTF8.GetBytes(RepairJson()), commitment));
+
+        // The rolling-penalty file the old tests decoded (the final C1 file without its C1-only keys), and the final
+        // C1 file with policyId rolling-penalty.
+        foreach (var json in new[] { decodedBefore, FinalJson(json => json["policyId"] = "rolling-penalty") })
+        {
+            Assert.Equal(
+                refusal,
+                Assert.Throws<InvalidDataException>(
+                    () => Wp4RunnerConfiguration.Decode(
+                        Encoding.UTF8.GetBytes(json),
+                        commitment)).Message);
+        }
+    }
+
+    [Fact]
     public void Selection_objective_order_is_optional_stability_first_and_cost_first_only_for_C1()
     {
         var commitment = CommitmentConfiguration();
@@ -595,12 +623,12 @@ public sealed class Wp4RunnerConfigurationTests
                         commitment)).Message);
         }
 
-        var rollingPenalty = RollingPenaltyJson(json => json["selectionObjectiveOrder"] = "cost-first");
+        var repair = RepairJson(json => json["selectionObjectiveOrder"] = "cost-first");
         Assert.Contains(
             "requires the solver-backed C1 policy",
             Assert.Throws<InvalidDataException>(
                 () => Wp4RunnerConfiguration.Decode(
-                    Encoding.UTF8.GetBytes(rollingPenalty),
+                    Encoding.UTF8.GetBytes(repair),
                     commitment)).Message);
 
         var repository = RepositoryRoot();
@@ -756,12 +784,12 @@ public sealed class Wp4RunnerConfigurationTests
             StringComparison.Ordinal);
 
         var costFirst = Wp4RunnerConfiguration.Decode(Encoding.UTF8.GetBytes(costFirstJson), commitment);
-        var rollingPenalty = Wp4RunnerConfiguration.Decode(Encoding.UTF8.GetBytes(RollingPenaltyJson()), commitment);
+        var repair = Wp4RunnerConfiguration.Decode(Encoding.UTF8.GetBytes(RepairJson()), commitment);
 
         Assert.Equal(
             SolverBackedSelectionObjectiveOrder.CostFirst,
             costFirst.SolverPolicyOptions!.SelectionObjectiveOrder);
-        Assert.Equal(RidePoolingPolicyRegistry.RollingPenalty, rollingPenalty.PolicyId);
+        Assert.Equal(RidePoolingPolicyRegistry.NoReassignmentRepair, repair.PolicyId);
 
         foreach (var stabilityFirst in new[]
                  {
@@ -969,15 +997,17 @@ public sealed class Wp4RunnerConfigurationTests
     }
 
     /// <summary>
-    /// The final C1 configuration turned into the solver-backed rolling-penalty policy (a policy other than C1 and
-    /// C2) by dropping its C1-only keys selectionObjectiveOrder and commitmentRecovery, after <paramref name="edit"/>.
+    /// The final C1 configuration turned into the solver-backed no-reassignment-repair policy (B4, a policy other
+    /// than C1 and C2) by dropping its C1-only keys selectionObjectiveOrder and commitmentRecovery and adding the
+    /// repair block that B4 requires, after <paramref name="edit"/>.
     /// </summary>
-    private static string RollingPenaltyJson(Action<JsonObject>? edit = null) =>
+    private static string RepairJson(Action<JsonObject>? edit = null) =>
         FinalJson(json =>
         {
-            json["policyId"] = RidePoolingPolicyRegistry.RollingPenalty;
+            json["policyId"] = RidePoolingPolicyRegistry.NoReassignmentRepair;
             Assert.True(json.Remove("selectionObjectiveOrder"));
             Assert.True(json.Remove("commitmentRecovery"));
+            json["repair"] = new JsonObject { ["maximumRequestsConsideredPerVehicle"] = 1 };
             edit?.Invoke(json);
         });
 

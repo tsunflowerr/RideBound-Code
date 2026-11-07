@@ -76,19 +76,26 @@ public sealed class WaitingRiderRelocationPolicyTests
     {
         // Every other kind would see half moves, so the combination fails before any work.
         var fixture = Fixture(relocation: true);
+        var budget = DeterministicCandidateSelectionExecutionBudget.Create(
+            100_000,
+            100_000,
+            DeterministicSolverBudget.Create(100_000, 100_000, 1).Value!).Value!;
 
-        foreach (var kind in new[] { RidePoolingPolicyKind.RollingPenalty, RidePoolingPolicyKind.CommitSoftHardHybrid })
+        // B4 needs its repair capacity; the options are built before the call, so only the relocation check can throw.
+        foreach (var options in new[]
+                 {
+                     new SolverBackedRidePoolingPolicyOptions(
+                         RidePoolingPolicyKind.NoReassignmentRepair,
+                         budget,
+                         maximumRepairRequestsConsideredPerVehicle: 1),
+                     new SolverBackedRidePoolingPolicyOptions(RidePoolingPolicyKind.CommitSoftHardHybrid, budget),
+                 })
         {
             Assert.Throws<ArgumentException>(
                 () => new SolverBackedRidePoolingPolicy(new EnumeratingSolver()).Decide(
                     fixture.Context,
                     Generation(relocation: true),
-                    new SolverBackedRidePoolingPolicyOptions(
-                        kind,
-                        DeterministicCandidateSelectionExecutionBudget.Create(
-                            100_000,
-                            100_000,
-                            DeterministicSolverBudget.Create(100_000, 100_000, 1).Value!).Value!)));
+                    options));
         }
     }
 
