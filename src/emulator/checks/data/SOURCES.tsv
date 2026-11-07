@@ -1,0 +1,25 @@
+file	sha256	source
+factors.json	73244be0a5120bc303a1bbd59a2158c1090e5beb9fe5b1f7ac04aafa84bcd825	FleetPy Manhattan input data (Zenodo record 15187906, CC BY 4.0): JSON.stringify({day: travel_time_factor column}) of FleetPy_Manhattan/networks/Manhattan_2019_corrected/<day>_tt_factors.csv, days 2018-11-12 to 2018-11-18
+costcap-riders.tsv	4557e0b47a227c0c8aea8bbb673ecf3615c4cf76a673447b1e67676e766a9f7b	ebca912:research/continuation/2026-10-16/cost-cap-sensitivity-v1/results/riders.tsv
+realjob/x15-U-mf2-run-00.json	f175056a3870185056336cccb782f1445f583aa96a44d37c5c36f976f513b1e5	bundle/run-00.json of the real RideBound + FleetPy job x15-U-mf2 (2026-10-21)
+realjob/x15-C30-mf-run-00.json	1f90cc5142eaf6191bd7cfe6b95682ffb04f97aa28c8a65f049de7d52b2cd369	bundle/run-00.json of the real RideBound + FleetPy job x15-C30-mf (2026-10-21)
+realjob/x15-C300-mf-run-00.json	794c050f2306f0e1a5b942a0581ad186a8f183f2bab94701e0c5112696834d23	bundle/run-00.json of the real RideBound + FleetPy job x15-C300-mf (2026-10-21)
+realjob/x25s-U-gc896-run-00.json	27d253130c9ecec9257f6e561d16718b53705f6f63329e68653dda6b56bf9dfc	bundle/run-00.json of the real RideBound + FleetPy job x25s-U-gc896 (2026-10-21)
+realjob/x25s-C30-mf-run-00.json	adc25ec68ae4f75839c71cfda088576e190889676862388ad7e0f229a81df1dd	bundle/run-00.json of the real RideBound + FleetPy job x25s-C30-mf (2026-10-21)
+realjob/x25s-C300-gc896-run-00.json	253a5d443f79f4d03a4effd7da640e9e4e8b89ff421dbfdfb31fcc7993784268	bundle/run-00.json of the real RideBound + FleetPy job x25s-C300-gc896 (2026-10-21)
+bridge/emulator-riders-2000.tsv	06742da62c45af96c1310b85a811088fbaaa7ad9674f2e068557592a8a13d17a	ebca912:research/continuation/2026-10-26/kits/via-bridge-2026-10-22/emulator-riders-2000.tsv
+bridge/emulator-riders-elmi-2000.tsv	e42c7e2d344e86a27f7ef0992ee7474c561eb1a871f63be531055e0a496d54b1	ebca912:research/continuation/2026-10-26/kits/via-bridge-2026-10-22/emulator-riders-elmi-2000.tsv
+bridge/emulator-riders-g2-2000.tsv	447b6e4795a61a4e63603e87e335b3ce6a2e081b32b6b02f9672fce84f4dc1c2	ebca912:research/continuation/2026-10-26/kits/via-bridge-2026-10-22/emulator-riders-g2-2000.tsv
+bridge/emulator-riders-p1.tsv	2083d28236f2e9bad5bb589dc0058fe58fea65f7487a64ea2c413e7b0f1ede7a	ebca912:research/continuation/2026-10-26/kits/bridge-phase1-2026-10-23/emulator-riders-p1.tsv
+bridge/emulator-riders-r128.tsv	d8aa4afd2515a9f3c76139efe418dfd376d659a275f6174e0cedc520e5cab1c5	ebca912:research/continuation/2026-10-26/kits/bridge-phase1-2026-10-23/emulator-riders-r128.tsv
+bridge/final-55-2026-10-22-real-riders.tsv	ff583917cf345010b40544f83dcea2175d6a26c7d089983a4a45f6753a9369c7	ebca912:research/continuation/2026-10-26/kits/via-bridge-2026-10-22/compare/final-55-2026-10-22-real-riders.tsv
+bridge/elmi-22-2026-10-23-real-riders.tsv	1af5312e5df075d033499455065d304f928c1e8ff9c270ee107febdbef93d1ab	ebca912:research/continuation/2026-10-26/kits/via-bridge-2026-10-22/compare/elmi-22-2026-10-23-real-riders.tsv
+bridge/g2all-v4-2026-10-23-real-riders.tsv	7d269fbf0c8094a98afe0c421e7ea227261210619da3f899ad1300e3a0d968a1	ebca912:research/continuation/2026-10-26/kits/via-bridge-2026-10-22/compare/v4-2026-10-23/g2all-real-riders.tsv
+bridge/p1all-2026-10-23-real-riders.tsv	284d1ac7057a6f7816d7e27dcdf361504bd8e01f7333b9a965358592f35c6bbe	ebca912:research/continuation/2026-10-26/kits/bridge-phase1-2026-10-23/compare/p1all-2026-10-23-real-riders.tsv
+bridge/fixsmoke-diag-2026-10-24-real-riders.tsv	c0ef685f887bb8b523adb058c9d76821ac909e2d0056a9472fdcf28b940da00a	ebca912:research/continuation/2026-10-26/kits/bridge-phase1-2026-10-23/compare/fixsmoke-diag-2026-10-24-real-riders.tsv
+bridge/r128v2all-2026-10-24-real-riders.tsv	a69e58c2659ba6243c09a61f837827a6f9e0e8f4e6f143c01b1a525219a2de3e	ebca912:research/continuation/2026-10-26/kits/bridge-phase1-2026-10-23/compare/r128v2all-2026-10-24-real-riders.tsv
+bridge/fix1-r128-2026-10-24-real-riders.tsv	1e1432e61c22c1a75d73554bac5b847b881f7e3aa4c47cca3bb5477fd61704fc	ebca912:research/continuation/2026-10-26/kits/bridge-phase1-2026-10-23/compare/fix1-2026-10-24/r128-real-riders.tsv
+bridge/nw-final-2026-10-25-real-riders.tsv	82a53c13ac07d96a4c4b82c56bbd07f4129c110ae57600ca5553b7f7c023fbef	ebca912:research/continuation/2026-10-26/kits/bridge-phase1-2026-10-23/compare/nw-2026-10-25/final-real-riders.tsv
+via/emulator-riders-via.tsv	c0cd48de54cab3565c78a7e86f20351a2d6b7aab610ddfeaeabf39ceba40e53d	ebca912:research/continuation/2026-10-26/kits/via-real-2026-10-26/data-snapshot/predictions/emulator-riders-via.tsv
+via/emulator-riders-via-counts.tsv	02f53959e044851d6ab35ddc457ca0c8e466388620ff10ca993607263db1c65e	ebca912:research/continuation/2026-10-26/kits/via-real-2026-10-26/data-snapshot/predictions/emulator-riders-via-counts.tsv
+via/runA3-final-real-riders.tsv	3135faa73c83192ae720a4e0b319d4391a6d388693e7c11a161aa6231a54c772	ebca912:research/continuation/2026-10-26/kits/via-real-2026-10-26/compare/runA3-final-real-riders.tsv

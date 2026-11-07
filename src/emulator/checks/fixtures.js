@@ -1,37 +1,33 @@
 // Section 9 re-checks: loader for the RideBound/FleetPy Manhattan fixture cells (<panel>/<cell>/scenario-content.json
-// and normalizer-configuration.json) and their traffic profile from the FleetPy day factors (factors.json: 96 bin
-// factors per day). No built-in data paths: every loader takes its folder or file as an argument.
+// and normalizer-configuration.json, copied out of commit ebca912 by fetch_cells.js) and prepareFixtureCell, which
+// turns one cell into the prepared scenario that engine.js simulates (the interface in the engine.js header).
+// Traffic: data/factors.json holds the FleetPy day factors (96 bins of 15 min per day; see data/SOURCES.tsv). A cell
+// starting in bin s sees f(b) = F[s + min(b, 8)] / F[s]: the anchored real-traffic world W5 (sigma 0, no shocks), which
+// reads [start, start + 2 h] and holds the last value.
 'use strict';
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
+const ID = require('../identity.js');
 const { rqId, maxRideFromPermille } = require('../scenario.js');
 
 const BIN_MS = 900000;
-const WINDOW_START_BIN = 32; // 08:00 = 28800 s = bin 32 of the day
-const HOLD_BIN = 8;          // measured_base reads [start, start+7200] and holds the last value
+const HOLD_BIN = 8;
+const FACTORS_FILE = path.join(__dirname, 'data', 'factors.json');
+const PICK = 0, DROP = 1;
 
 let factorCache = null;
-function loadFactors(factorsFile) {   // factors.json (per-day 96 bin factors)
-  if (!factorCache) factorCache = JSON.parse(fs.readFileSync(factorsFile, 'utf8'));
-  return factorCache;
-}
-
-// Anchored real-traffic-only world (W5: sigma 0, shockRate 0, exponent 1, windowStart 28800):
-// f(b) = F[32 + min(b, 8)] / F[32]  (preflight_world.py:67-93 measured_base; world_v1.py:103-120 AnchoredWorld)
-// startBin: 15-min bin of the world windowStart (32 = 08:00 for the w08 panel; 68 = 17:00 for w17 fresh cells).
-function trafficProfile(cell, factorsFile, startBin = WINDOW_START_BIN) {
+function trafficProfile(cell, startBin) {
+  if (!factorCache) factorCache = JSON.parse(fs.readFileSync(FACTORS_FILE, 'utf8'));
   const day = cell.slice(1, 5) + '-' + cell.slice(5, 7) + '-' + cell.slice(7, 9);
-  const F = loadFactors(factorsFile)[day];
+  const F = factorCache[day];
   if (!F || F.length !== 96) throw new Error('no factors for ' + day);
   if (startBin + HOLD_BIN >= 96) throw new Error('window past end of day');
-  const base = F[startBin];
   const prof = [];
-  for (let b = 0; b <= HOLD_BIN; b++) prof.push(F[startBin + b] / base);
-  return prof; // index by min(bin, 8)
+  for (let b = 0; b <= HOLD_BIN; b++) prof.push(F[startBin + b] / F[startBin]);
+  return prof;
 }
 
-// panelRoot: fixture panel folder (the frozen w08 panel A is wp9-confirmatory-fixed-panel-v2)
 function loadCell(cell, panelRoot) {
   const file = path.join(panelRoot, cell, 'scenario-content.json');
   const j = JSON.parse(fs.readFileSync(file, 'utf8'));
@@ -64,10 +60,53 @@ function loadCell(cell, panelRoot) {
   }
   const fleet = j.fleet.map(v => ({ id: v.vehicleId, node: idx.get(v.position.nodeId), capacity: v.capacity }))
     .sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
-  return { cell, N, T0, requests, fleet, norm, timeWindow: j.timeWindow, nodeIds, sourceArtifactSha256: j.sourceArtifactSha256, scenarioId: j.scenarioId };
+  return { N, T0, requests, fleet, norm };
 }
 
-// per-rider rows of the archived real runs (riders.tsv)
+// The prepared scenario of fixture cell <panelRoot>/<cell> (as wf4/sim/sim.js prepareCell built it).
+//   permille  maximum ride max(direct, halfEven(direct * permille / 1000)); default: the fixture's own permille
+//   profile   travel factor per 15-min bin, held after the last one; default: trafficProfile from the cell's window
+function prepareFixtureCell(cell, panelRoot, { permille, profile } = {}) {
+  const base = loadCell(cell, panelRoot);
+  const fixturePermille = base.norm.maximumRideTimePermille;
+  if (!profile) {
+    const startBin = Math.round(base.norm.sourceWindowStartSeconds / 900);
+    if (startBin * 900 !== base.norm.sourceWindowStartSeconds) throw new Error('window start not on a bin');
+    profile = trafficProfile(cell, startBin);
+  }
+  const H = profile.length - 1;
+  const { N, T0 } = base;
+  const snaps = profile.map(f => T0.map(ms => ID.snapshotMs(ms, f)));
+  const nodeIds = Array.from({ length: N }, (_, i) => ID.nodeId(i));
+  const reqs = base.requests.map(q => {
+    if (maxRideFromPermille(q.direct, fixturePermille) !== q.maxRide) {
+      throw new Error('fixture maxRide does not follow the normalizer rule');
+    }
+    return { ...q, maxRide: maxRideFromPermille(q.direct, permille || fixturePermille) };
+  });
+  reqs.sort((a, b) => a.arrival - b.arrival || (a.rq < b.rq ? -1 : 1));
+  reqs.forEach((q, i) => {
+    q.stopP = { r: i, kind: PICK, node: q.o, code: 2 * i, sid: ID.stopId(q.rq, 0),
+      body: ID.stopBody(nodeIds[q.o], 0, q.rq, 0) };
+    q.stopD = { r: i, kind: DROP, node: q.d, code: 2 * i + 1, sid: ID.stopId(q.rq, 1),
+      body: ID.stopBody(nodeIds[q.d], 1, q.rq, 0) };
+  });
+  const snapHashes = new Map();
+  const snapHash = bin => {
+    if (!snapHashes.has(bin)) snapHashes.set(bin, ID.snapshotHash(N, T0, profile[Math.min(bin, H)], bin + 1, nodeIds));
+    return snapHashes.get(bin);
+  };
+  return {
+    N, T0, binMs: BIN_MS, reqs, fleet: base.fleet, dwell: 0,
+    physFactor: bin => profile[Math.min(bin, H)],
+    snapOf: bin => snaps[Math.min(bin, H)],
+    snapHash,
+    vehIdStr: base.fleet.map((f, vi) => ID.vehicleId(vi)),
+    drainTimerMs: 600000, clockGuardMs: 40 * 3600 * 1000,
+  };
+}
+
+// Per-rider rows of the archived real runs (data/costcap-riders.tsv).
 function readRidersTsv(file) {
   const lines = fs.readFileSync(file, 'utf8').split(/\r?\n/).filter(Boolean);
   const hdr = lines[0].split('\t');
@@ -83,4 +122,4 @@ function readRidersTsv(file) {
   });
 }
 
-module.exports = { BIN_MS, HOLD_BIN, loadFactors, trafficProfile, loadCell, readRidersTsv, maxRideFromPermille };
+module.exports = { prepareFixtureCell, readRidersTsv };

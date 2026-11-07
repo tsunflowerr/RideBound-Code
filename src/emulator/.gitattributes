@@ -1,3 +1,4 @@
 # Sealed digests and shipped inputs are compared byte for byte: never convert their line endings.
 data/** -text
 expected/** -text
+checks/data/** -text
