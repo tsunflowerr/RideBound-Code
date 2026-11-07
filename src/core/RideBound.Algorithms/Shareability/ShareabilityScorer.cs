@@ -159,22 +159,16 @@ public sealed class ShareabilityScorer
         return d;
     }
 
+    /// <summary>
+    /// Scores the target rider of the context in four steps: main nodes, section shadows, the instants on the rest
+    /// of the current arc, then the instants of every section up to the target's drop.
+    /// </summary>
     public ShareabilityScore Score(ShareabilityContext context)
     {
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(context.Stops);
 
-        var n = network.NodeCount;
-        var d = network.D;
-        var dt = network.DT;
-        var zoneIndex = network.ZoneIndex;
-        var zones = network.ZoneCount;
-        var globalOf = cell.GlobalOf;
-        var omega = cell.PickupWindow;
-        var stride = cell.StrideMilliseconds;
-        var stops = context.Stops;
-        var m = stops.Count;
-
+        var m = context.Stops.Count;
         if (context.Bin < 0)
         {
             throw new ArgumentException("Negative bin.", nameof(context));
@@ -185,9 +179,49 @@ public sealed class ShareabilityScorer
             throw new ArgumentException("Target stops are not on the route.", nameof(context));
         }
 
+        // driving time per free-flow second in this bin (ms)
         var g = cell.Kappa * cell.Factors[Math.Min(context.Bin, cell.Factors.Count - 1)] * 1000;
+        var main = FindMainNodes(context, cell.GlobalOf);
+        CheckTimes(main, context.EvaluationTime);
+        var shadow = new RouteShadow(network, cell, context, main, g);
+        var integral = new Integral(context.EvaluationTime);
+        var arcInstants = context.Arc is null ? 0 : IntegrateArc(context, main, shadow, integral);
+        IntegrateSections(main, shadow, integral);
 
-        // main nodes (SPEC 4.3)
+        var (mainNode, _, departure, _, kP, kK) = main;
+        if (Math.Abs(integral.WeightSum - (departure[kK] - context.EvaluationTime)) > 1e-6)
+        {
+            throw new InvalidOperationException("The instant weights do not add up to drop - evaluation time.");
+        }
+
+        return new ShareabilityScore(
+            integral.WaitingSum + integral.DrivingSum,
+            integral.WaitingSum,
+            integral.DrivingSum,
+            integral.Instants,
+            kP,
+            kK,
+            mainNode.Count,
+            arcInstants);
+    }
+
+    /// <summary>
+    /// Main nodes of a route: Node, Arrival, Departure and FirstStop (-1 for the vehicle start) per main node, and
+    /// the main nodes PickupMain (kP) and DropMain (kK) of the target's pickup and drop.
+    /// </summary>
+    private sealed record MainNodes(
+        List<int> Node,
+        List<double> Arrival,
+        List<double> Departure,
+        List<int> FirstStop,
+        int PickupMain,
+        int DropMain);
+
+    // main nodes (SPEC 4.3): the vehicle start, then the route stops, consecutive stops at one node merged
+    private static MainNodes FindMainNodes(ShareabilityContext context, IReadOnlyList<int> globalOf)
+    {
+        var stops = context.Stops;
+        var m = stops.Count;
         var mainNode = new List<int> { globalOf[context.StartNode] };
         var arrival = new List<double> { context.StartTime };
         var departure = new List<double> { context.StartTime };
@@ -225,7 +259,14 @@ public sealed class ShareabilityScorer
             throw new InvalidOperationException($"Bad target main nodes kP {kP} kK {kK}.");
         }
 
-        if (!(departure[0] >= context.EvaluationTime))
+        return new MainNodes(mainNode, arrival, departure, firstStop, kP, kK);
+    }
+
+    // the vehicle leaves its start at or after the evaluation time, and main-node times never decrease
+    private static void CheckTimes(MainNodes main, double evaluationTime)
+    {
+        var (_, arrival, departure, _, _, kK) = main;
+        if (!(departure[0] >= evaluationTime))
         {
             throw new InvalidOperationException("Start time before the evaluation time.");
         }
@@ -237,158 +278,110 @@ public sealed class ShareabilityScorer
                 throw new InvalidOperationException("Main-node times decrease.");
             }
         }
+    }
 
-        // section headroom: suffix minimum of the stop headrooms
-        var suffix = new double[m + 1];
-        suffix[m] = double.PositiveInfinity;
-        for (var q = m - 1; q >= 0; q--)
-        {
-            suffix[q] = Math.Min(stops[q].Headroom, suffix[q + 1]);
-        }
+    /// <summary>
+    /// The sections of one route up to the target's drop main node kK (section k = main node k-1 -> k, section 0 =
+    /// rest of the arc being driven) with their headroom, load and ellipse, and from them the instant value S(t)
+    /// of the vehicle at a main node or at an intermediate node.
+    /// </summary>
+    private sealed class RouteShadow
+    {
+        private readonly int n;
+        private readonly ushort[] d;
+        private readonly ushort[] dt;
+        private readonly int[] zoneIndex;
+        private readonly int zones;
+        private readonly double g;
+        private readonly double omega;
+        private readonly int kK;
+        private readonly List<int> mainNode;
+        private readonly List<double> departure;
+        private readonly int[] load;
+        private readonly int capacity;
+        private readonly double dPickup;
+        private readonly double[] dMaxSection;
+        private readonly byte[][] masks;
+        private readonly int[][] lists;
+        private readonly int[] maxSection;
+        private readonly int[][] unionCount;
+        private readonly ZoneDemandRates rates;
+        private readonly double interval;
+        private readonly bool oracle;
+        private readonly ZoneWeights? causalWeights;
+        private readonly int[] pickupCount;
+        private readonly int[] dropCount;
 
-        var headroom = new double[kK + 2];
-        headroom[0] = suffix[0];
-        for (var k = 1; k <= kK; k++)
+        public RouteShadow(
+            ShareabilityNetwork network,
+            ShareabilityCell cell,
+            ShareabilityContext context,
+            MainNodes main,
+            double g)
         {
-            headroom[k] = suffix[firstStop[k]];
-        }
+            n = network.NodeCount;
+            d = network.D;
+            dt = network.DT;
+            zoneIndex = network.ZoneIndex;
+            zones = network.ZoneCount;
+            this.g = g;
+            omega = cell.PickupWindow;
+            kK = main.DropMain;
+            mainNode = main.Node;
+            departure = main.Departure;
 
-        // section loads: load on section k after serving every stop before main node k
-        var load = new int[kK + 2];
-        var running = context.InitialLoad;
-        load[0] = running;
-        for (int k = 1, q = 0; k <= kK; k++)
-        {
-            for (; q < firstStop[k]; q++)
+            var headroom = SectionHeadroom(context.Stops, main.FirstStop, kK);
+            load = SectionLoads(context.Stops, context.InitialLoad, main.FirstStop, kK);
+            capacity = context.Capacity;
+            dPickup = DMaxMul(g, omega);
+            dMaxSection = new double[kK + 2];
+
+            // full-section ellipses R_k (mask + node list)
+            masks = new byte[kK + 2][];
+            lists = new int[kK + 2][];
+            lists[kK + 1] = [];
+            var scratch = new int[n];
+            for (var k = 1; k <= kK; k++)
             {
-                running += stops[q].IsPickup ? stops[q].Party : -stops[q].Party;
+                dMaxSection[k] = DMaxMul(g, headroom[k]);
+                (masks[k], lists[k]) = Ellipse(mainNode[k - 1], mainNode[k], dMaxSection[k], scratch);
             }
 
-            load[k] = running;
-        }
-
-        var capacity = context.Capacity;
-        var dPickup = DMaxMul(g, omega);
-        var dMaxSection = new double[kK + 2];
-
-        // full-section ellipses R_k (mask + node list)
-        var masks = new byte[kK + 2][];
-        var lists = new int[kK + 2][];
-        lists[kK + 1] = [];
-        var scratch = new int[n];
-        for (var k = 1; k <= kK; k++)
-        {
-            var a = mainNode[k - 1];
-            var b = mainNode[k];
-            var rowA = a * n;
-            var rowB = b * n;
-            int dab = d[rowA + b];
-            var dm = dMaxSection[k] = DMaxMul(g, headroom[k]);
-            var mask = masks[k] = new byte[n];
-            var count = 0;
-            for (var node = 0; node < n; node++)
+            // section 0: ellipse of the whole arc a0 -> M[0] when the vehicle is mid-arc
+            var arc = context.Arc;
+            if (arc is not null)
             {
-                if (d[rowA + node] + dt[rowB + node] - dab <= dm)
+                var a0 = cell.GlobalOf[arc.From];
+                if (arc.Permille is < 1 or > 999)
                 {
-                    mask[node] = 1;
-                    scratch[count++] = node;
+                    throw new ArgumentException("The arc progress must be 1..999 permille.", nameof(context));
                 }
-            }
 
-            lists[k] = scratch[..count];
-        }
-
-        // section 0: ellipse of the whole arc a0 -> M[0] when the vehicle is mid-arc
-        var arc = context.Arc;
-        var a0 = -1;
-        if (arc is not null)
-        {
-            a0 = globalOf[arc.From];
-            if (arc.Permille is < 1 or > 999)
-            {
-                throw new ArgumentException("The arc progress must be 1..999 permille.", nameof(context));
-            }
-
-            if (a0 == mainNode[0])
-            {
-                throw new InvalidOperationException("The arc start equals the arc end.");
-            }
-
-            var rowA = a0 * n;
-            var rowB = mainNode[0] * n;
-            int dab = d[rowA + mainNode[0]];
-            var dm = dMaxSection[0] = DMaxMul(g, headroom[0]);
-            var mask = masks[0] = new byte[n];
-            var count = 0;
-            for (var node = 0; node < n; node++)
-            {
-                if (d[rowA + node] + dt[rowB + node] - dab <= dm)
+                if (a0 == mainNode[0])
                 {
-                    mask[node] = 1;
-                    scratch[count++] = node;
+                    throw new InvalidOperationException("The arc start equals the arc end.");
                 }
+
+                dMaxSection[0] = DMaxMul(g, headroom[0]);
+                (masks[0], lists[0]) = Ellipse(a0, mainNode[0], dMaxSection[0], scratch);
             }
 
-            lists[0] = scratch[..count];
-        }
+            maxSection = LargestSections();
+            unionCount = SuffixUnionCounts();
 
-        // maxSection[node] = largest section containing node; per-zone counts of the suffix unions U[k]
-        var maxSection = new int[n];
-        for (var k = 1; k <= kK; k++)
-        {
-            foreach (var node in lists[k])
-            {
-                maxSection[node] = k;
-            }
-        }
-
-        var inUnion = new bool[n];
-        var unionCount = new int[kK + 2][];
-        unionCount[kK + 1] = new int[zones];
-        var runningCount = new int[zones];
-        for (var k = kK; k >= 1; k--)
-        {
-            foreach (var node in lists[k])
-            {
-                if (!inUnion[node])
-                {
-                    inUnion[node] = true;
-                    runningCount[zoneIndex[node]]++;
-                }
-            }
-
-            unionCount[k] = (int[])runningCount.Clone();
-        }
-
-        // The rate interval is the one the rates were binned with (the emulator's 600 s).
-        var rates = cell.Rates;
-        var interval = rates.IntervalMilliseconds;
-        var causalWeights = cell.Oracle
-            ? null
-            : rates.Causal((long)Math.Floor(context.EvaluationTime / interval));
-        ZoneWeights WeightsAt(double t) =>
-            cell.Oracle ? rates.Oracle((long)Math.Floor(t / interval)) : causalWeights!;
-
-        var pickupCount = new int[zones];
-        var dropCount = new int[zones];
-
-        static double ZoneSum(IReadOnlyList<double> weights, int[] counts)
-        {
-            var sum = 0.0;
-            for (var z = 0; z < counts.Length; z++)
-            {
-                if (counts[z] != 0)
-                {
-                    sum += weights[z] * counts[z];
-                }
-            }
-
-            return sum;
+            // The rate interval is the one the rates were binned with (the emulator's 600 s).
+            rates = cell.Rates;
+            interval = rates.IntervalMilliseconds;
+            oracle = cell.Oracle;
+            causalWeights = oracle ? null : rates.Causal((long)Math.Floor(context.EvaluationTime / interval));
+            pickupCount = new int[zones];
+            dropCount = new int[zones];
         }
 
         // vehicle at main node M[k] after service (k < kK): sigma1 = section k+1, sigma2 = section k+2
-        double AtMain(int k, double t, ZoneWeights w)
+        public double AtMain(int k, double t)
         {
+            var w = WeightsAt(t);
             if (k >= kK || load[k + 1] >= capacity)
             {
                 return 0;
@@ -434,8 +427,9 @@ public sealed class ShareabilityScorer
 
         // vehicle at intermediate node x of section k: sigma1 = (x -> M[k]) with H[k], sigma2 = section k+1
         // (k = 0: x on the rest of the current arc, sigma1 = (x -> M[0]) with H[0], sigma2 = section 1)
-        double AtIntermediate(int k, int x, double t, ZoneWeights w)
+        public double AtIntermediate(int k, int x, double t)
         {
+            var w = WeightsAt(t);
             if (load[k] >= capacity)
             {
                 return 0;
@@ -489,67 +483,220 @@ public sealed class ShareabilityScorer
             return ZoneSum(w.Origin, pickupCount) + ZoneSum(w.Destination, dropCount);
         }
 
-        var waitingSum = 0.0;
-        var drivingSum = 0.0;
-        var previous = context.EvaluationTime;
-        var instants = 0;
-        var weightSum = 0.0;
-
-        void Add(double value, double t, bool waiting)
+        // section headroom H[k]: suffix minimum of the stop headrooms, from the first stop of main node k on
+        private static double[] SectionHeadroom(IReadOnlyList<ShareabilityStop> stops, List<int> firstStop, int kK)
         {
-            var dtInstant = t - previous;
+            var m = stops.Count;
+            var suffix = new double[m + 1];
+            suffix[m] = double.PositiveInfinity;
+            for (var q = m - 1; q >= 0; q--)
+            {
+                suffix[q] = Math.Min(stops[q].Headroom, suffix[q + 1]);
+            }
+
+            var headroom = new double[kK + 2];
+            headroom[0] = suffix[0];
+            for (var k = 1; k <= kK; k++)
+            {
+                headroom[k] = suffix[firstStop[k]];
+            }
+
+            return headroom;
+        }
+
+        // section loads: load on section k after serving every stop before main node k
+        private static int[] SectionLoads(
+            IReadOnlyList<ShareabilityStop> stops, int initialLoad, List<int> firstStop, int kK)
+        {
+            var load = new int[kK + 2];
+            var running = initialLoad;
+            load[0] = running;
+            for (int k = 1, q = 0; k <= kK; k++)
+            {
+                for (; q < firstStop[k]; q++)
+                {
+                    running += stops[q].IsPickup ? stops[q].Party : -stops[q].Party;
+                }
+
+                load[k] = running;
+            }
+
+            return load;
+        }
+
+        // ellipse of the section a -> b: the nodes whose detour D[a][node] + D[node][b] - D[a][b] is at most dm
+        private (byte[] Mask, int[] Nodes) Ellipse(int a, int b, double dm, int[] scratch)
+        {
+            var rowA = a * n;
+            var rowB = b * n;
+            int dab = d[rowA + b];
+            var mask = new byte[n];
+            var count = 0;
+            for (var node = 0; node < n; node++)
+            {
+                if (d[rowA + node] + dt[rowB + node] - dab <= dm)
+                {
+                    mask[node] = 1;
+                    scratch[count++] = node;
+                }
+            }
+
+            return (mask, scratch[..count]);
+        }
+
+        // largest[node] = largest section containing node
+        private int[] LargestSections()
+        {
+            var largest = new int[n];
+            for (var k = 1; k <= kK; k++)
+            {
+                foreach (var node in lists[k])
+                {
+                    largest[node] = k;
+                }
+            }
+
+            return largest;
+        }
+
+        // per-zone node counts of the suffix unions U[k] = sections k..kK (U[kK + 1] is empty)
+        private int[][] SuffixUnionCounts()
+        {
+            var inUnion = new bool[n];
+            var counts = new int[kK + 2][];
+            counts[kK + 1] = new int[zones];
+            var runningCount = new int[zones];
+            for (var k = kK; k >= 1; k--)
+            {
+                foreach (var node in lists[k])
+                {
+                    if (!inUnion[node])
+                    {
+                        inUnion[node] = true;
+                        runningCount[zoneIndex[node]]++;
+                    }
+                }
+
+                counts[k] = (int[])runningCount.Clone();
+            }
+
+            return counts;
+        }
+
+        // zone weights at time t: the causal ones of the evaluation time, or the oracle ones of t's rate interval
+        private ZoneWeights WeightsAt(double t) =>
+            oracle ? rates.Oracle((long)Math.Floor(t / interval)) : causalWeights!;
+
+        private static double ZoneSum(IReadOnlyList<double> weights, int[] counts)
+        {
+            var sum = 0.0;
+            for (var z = 0; z < counts.Length; z++)
+            {
+                if (counts[z] != 0)
+                {
+                    sum += weights[z] * counts[z];
+                }
+            }
+
+            return sum;
+        }
+    }
+
+    /// <summary>
+    /// Running integral of S(t) over the instants: each instant adds S(t) * (t - previous instant) / 1000 to the
+    /// waiting part (up to the target's pickup main node) or to the driving part.
+    /// </summary>
+    private sealed class Integral
+    {
+        public Integral(double evaluationTime)
+        {
+            Previous = evaluationTime;
+        }
+
+        public double WaitingSum { get; private set; }
+
+        public double DrivingSum { get; private set; }
+
+        public double Previous { get; private set; }
+
+        public int Instants { get; private set; }
+
+        public double WeightSum { get; private set; }
+
+        public void Add(double value, double t, bool waiting)
+        {
+            var dtInstant = t - Previous;
             var contribution = value * dtInstant / 1000;
             if (waiting)
             {
-                waitingSum += contribution;
+                WaitingSum += contribution;
             }
             else
             {
-                drivingSum += contribution;
+                DrivingSum += contribution;
             }
 
-            weightSum += dtInstant;
-            previous = t;
-            instants++;
+            WeightSum += dtInstant;
+            Previous = t;
+            Instants++;
         }
+    }
 
+    // instants at the nodes of the current arc still ahead of the vehicle (section 0); returns their number
+    private int IntegrateArc(ShareabilityContext context, MainNodes main, RouteShadow shadow, Integral integral)
+    {
+        var (mainNode, arrival, _, _, _, _) = main;
+        var arc = context.Arc!;
+        var n = network.NodeCount;
+        var d = network.D;
+        var stride = cell.StrideMilliseconds;
+        var a0 = cell.GlobalOf[arc.From];
         var arcInstants = 0;
-        if (arc is not null)
+
+        var b0 = mainNode[0];
+        var path = network.PathOf(a0, b0);
+        int dab = d[a0 * n + b0];
+        var permille = arc.Permille;
+        var span = arrival[0] - context.EvaluationTime;
+        if (path[0] != a0 || path[^1] != b0)
         {
-            // nodes of the current arc still ahead of the vehicle (section 0)
-            var b0 = mainNode[0];
-            var path = network.PathOf(a0, b0);
-            int dab = d[a0 * n + b0];
-            var permille = arc.Permille;
-            var span = arrival[0] - context.EvaluationTime;
-            if (path[0] != a0 || path[^1] != b0)
-            {
-                throw new InvalidOperationException("Path ends.");
-            }
-
-            var kept = previous;
-            for (var j = 1; j < path.Length - 1; j++)
-            {
-                // > 0 exactly when the free-flow fraction of path[j] is beyond permille / 1000
-                var numerator = 1000 * d[a0 * n + path[j]] - permille * dab;
-                if (numerator <= 0)
-                {
-                    continue;
-                }
-
-                var t = context.EvaluationTime + span * numerator / ((1000 - permille) * dab);
-                if (stride != 0 && t - kept < stride)
-                {
-                    continue;
-                }
-
-                Add(AtIntermediate(0, path[j], t, WeightsAt(t)), t, true);
-                kept = t;
-                arcInstants++;
-            }
+            throw new InvalidOperationException("Path ends.");
         }
 
-        Add(AtMain(0, departure[0], WeightsAt(departure[0])), departure[0], 0 <= kP);
+        var kept = integral.Previous;
+        for (var j = 1; j < path.Length - 1; j++)
+        {
+            // > 0 exactly when the free-flow fraction of path[j] is beyond permille / 1000
+            var numerator = 1000 * d[a0 * n + path[j]] - permille * dab;
+            if (numerator <= 0)
+            {
+                continue;
+            }
+
+            var t = context.EvaluationTime + span * numerator / ((1000 - permille) * dab);
+            if (stride != 0 && t - kept < stride)
+            {
+                continue;
+            }
+
+            integral.Add(shadow.AtIntermediate(0, path[j], t), t, true);
+            kept = t;
+            arcInstants++;
+        }
+
+        return arcInstants;
+    }
+
+    // instants at main node M[0], then at the intermediate nodes and the end main node of sections 1..kK;
+    // instants up to the pickup main node kP count as waiting
+    private void IntegrateSections(MainNodes main, RouteShadow shadow, Integral integral)
+    {
+        var (mainNode, arrival, departure, _, kP, kK) = main;
+        var n = network.NodeCount;
+        var d = network.D;
+        var stride = cell.StrideMilliseconds;
+
+        integral.Add(shadow.AtMain(0, departure[0]), departure[0], 0 <= kP);
         for (var k = 1; k <= kK; k++)
         {
             var a = mainNode[k - 1];
@@ -561,7 +708,7 @@ public sealed class ShareabilityScorer
                 throw new InvalidOperationException("Path ends.");
             }
 
-            var kept = previous;
+            var kept = integral.Previous;
             for (var j = 1; j < path.Length - 1; j++)
             {
                 var t = departure[k - 1] + (arrival[k] - departure[k - 1]) * d[a * n + path[j]] / dab;
@@ -570,26 +717,11 @@ public sealed class ShareabilityScorer
                     continue;
                 }
 
-                Add(AtIntermediate(k, path[j], t, WeightsAt(t)), t, k <= kP);
+                integral.Add(shadow.AtIntermediate(k, path[j], t), t, k <= kP);
                 kept = t;
             }
 
-            Add(AtMain(k, departure[k], WeightsAt(departure[k])), departure[k], k <= kP);
+            integral.Add(shadow.AtMain(k, departure[k]), departure[k], k <= kP);
         }
-
-        if (Math.Abs(weightSum - (departure[kK] - context.EvaluationTime)) > 1e-6)
-        {
-            throw new InvalidOperationException("The instant weights do not add up to drop - evaluation time.");
-        }
-
-        return new ShareabilityScore(
-            waitingSum + drivingSum,
-            waitingSum,
-            drivingSum,
-            instants,
-            kP,
-            kK,
-            mainNode.Count,
-            arcInstants);
     }
 }
