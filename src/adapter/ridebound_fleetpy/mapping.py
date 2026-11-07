@@ -185,7 +185,6 @@ class FleetPyProtocolMapper:
         self.vehicles = CanonicalIdRegistry("veh")
         self.nodes = CanonicalIdRegistry("node")
         self.edges = CanonicalIdRegistry("edge")
-        self.stops = CanonicalIdRegistry("stop")
 
     def node_id(self, fleetpy_node: Any) -> str:
         if isinstance(fleetpy_node, bool) or not isinstance(fleetpy_node, (int, str)):
@@ -331,12 +330,6 @@ class FleetPyProtocolMapper:
             b"RideBound.FleetPyTravelSnapshot.v1\0" + canonical_json_bytes(content)
         ).hexdigest()
         return {"version": version, "snapshotHash": snapshot_hash, "arcs": arcs}
-
-    def stop_id(self, request_id: str, kind: str) -> str:
-        if kind not in {"pickup", "dropOff"}:
-            raise _failure("RBWP7_STOP_KIND_INVALID", "$stop.kind", repr(kind))
-        raw_request = self.requests.resolve(request_id)
-        return self.stops.register((raw_request, kind))
 
     def _request_node(self, position: Any, path: str) -> str:
         if not isinstance(position, tuple) or len(position) != 3:
