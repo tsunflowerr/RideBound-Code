@@ -862,40 +862,39 @@ public sealed class Wp4RunnerIntegrationTests
     public void No_worse_recovery_is_rejected_outside_the_solver_backed_C1_and_C2()
     {
         var commitment = CommitmentConfiguration();
-        var json = File.ReadAllText(Path.Combine(
-                RepositoryRoot(),
-                "benchmarks",
-                "configurations",
-                "wp4-rolling-cost-boundary-v1.json"))
-            .Replace(
-                "\"policyVersion\": \"wp4-boundary-v1\"",
-                "\"policyVersion\": \"wp4-boundary-v1\",\n  "
-                + "\"commitmentRecovery\": \"no-worse-than-reference-v1\"",
-                StringComparison.Ordinal);
+        var json = RollingPenaltyJson("no-worse-than-reference-v1");
 
-        Assert.Throws<InvalidDataException>(
-            () => Wp4RunnerConfiguration.Decode(Encoding.UTF8.GetBytes(json), commitment));
+        Assert.Contains(
+            "requires the solver-backed C1 or C2 policy",
+            Assert.Throws<InvalidDataException>(
+                () => Wp4RunnerConfiguration.Decode(Encoding.UTF8.GetBytes(json), commitment)).Message);
     }
 
     [Fact]
     public void Forced_reference_recovery_is_rejected_outside_the_solver_backed_C1_and_C2()
     {
         var commitment = CommitmentConfiguration();
-        var json = File.ReadAllText(Path.Combine(
-                RepositoryRoot(),
-                "benchmarks",
-                "configurations",
-                "wp4-rolling-cost-boundary-v1.json"))
-            .Replace(
-                "\"policyVersion\": \"wp4-boundary-v1\"",
-                "\"policyVersion\": \"wp4-boundary-v1\",\n  "
-                + "\"commitmentRecovery\": \"forced-reference-v1\"",
-                StringComparison.Ordinal);
+        var json = RollingPenaltyJson("forced-reference-v1");
 
-        Assert.Throws<InvalidDataException>(
-            () => Wp4RunnerConfiguration.Decode(Encoding.UTF8.GetBytes(json), commitment));
+        Assert.Contains(
+            "requires the solver-backed C1 or C2 policy",
+            Assert.Throws<InvalidDataException>(
+                () => Wp4RunnerConfiguration.Decode(Encoding.UTF8.GetBytes(json), commitment)).Message);
         Assert.Throws<InvalidDataException>(
             () => HardVectorConfiguration(commitment, recovery: "forced-reference-v2"));
+    }
+
+    /// <summary>
+    /// The final C1 configuration turned into the solver-backed rolling-penalty policy (a policy other than C1 and
+    /// C2): without the C1-only selectionObjectiveOrder, and with <paramref name="recovery"/> as commitmentRecovery.
+    /// </summary>
+    private static string RollingPenaltyJson(string recovery)
+    {
+        var json = Final.FinalRuns.FinalC1Wp4WithoutShadow();
+        json["policyId"] = RidePoolingPolicyRegistry.RollingPenalty;
+        Assert.True(json.Remove("selectionObjectiveOrder"));
+        json["commitmentRecovery"] = recovery;
+        return json.ToJsonString();
     }
 
     /// <summary>

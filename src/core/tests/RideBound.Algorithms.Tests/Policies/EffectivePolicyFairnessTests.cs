@@ -26,20 +26,18 @@ public sealed class EffectivePolicyFairnessTests
     private const long DropEtaHardLimit = 30_000;
 
     /// <summary>
-    /// Every baseline arm — B1 through B4 — still publishes the common promise
+    /// Every baseline arm — B2 through B4 — still publishes the common promise
     /// projection used for measurement, but its named mechanism is not scored
     /// against a cumulative burden limit. Only C1 and C2 retain those limits.
     /// </summary>
     private static readonly RidePoolingPolicyKind[] ExemptKinds =
     [
-        RidePoolingPolicyKind.RollingCost,
         RidePoolingPolicyKind.RollingPenalty,
         RidePoolingPolicyKind.FixedFreezeHorizon,
         RidePoolingPolicyKind.NoReassignmentRepair,
     ];
 
     [Theory]
-    [InlineData(RidePoolingPolicyKind.RollingCost)]
     [InlineData(RidePoolingPolicyKind.RollingPenalty)]
     [InlineData(RidePoolingPolicyKind.FixedFreezeHorizon)]
     [InlineData(RidePoolingPolicyKind.NoReassignmentRepair)]
@@ -76,10 +74,10 @@ public sealed class EffectivePolicyFairnessTests
     public void Tightening_the_budget_cannot_move_the_baseline_arm()
     {
         var underTightBudget = EffectivePolicyFor(
-            RidePoolingPolicyKind.RollingCost,
+            RidePoolingPolicyKind.RollingPenalty,
             dropEtaHardLimit: 1);
         var underNoBudget = EffectivePolicyFor(
-            RidePoolingPolicyKind.RollingCost,
+            RidePoolingPolicyKind.RollingPenalty,
             dropEtaHardLimit: null);
 
         Assert.Equal(
@@ -93,7 +91,6 @@ public sealed class EffectivePolicyFairnessTests
     /// against a deadline would silently stop being a baseline.
     /// </summary>
     [Theory]
-    [InlineData(RidePoolingPolicyKind.RollingCost)]
     [InlineData(RidePoolingPolicyKind.RollingPenalty)]
     [InlineData(RidePoolingPolicyKind.FixedFreezeHorizon)]
     [InlineData(RidePoolingPolicyKind.NoReassignmentRepair)]
@@ -127,10 +124,9 @@ public sealed class EffectivePolicyFairnessTests
     /// <summary>
     /// The per-decision revision limit (P-b) and the relaxed deadline (DL-HZ) are research
     /// probes of the same kind: a baseline arm scored against either would stop being a
-    /// baseline, so B1-B4 never receive them.
+    /// baseline, so B2-B4 never receive them.
     /// </summary>
     [Theory]
-    [InlineData(RidePoolingPolicyKind.RollingCost)]
     [InlineData(RidePoolingPolicyKind.RollingPenalty)]
     [InlineData(RidePoolingPolicyKind.FixedFreezeHorizon)]
     [InlineData(RidePoolingPolicyKind.NoReassignmentRepair)]

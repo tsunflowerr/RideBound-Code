@@ -13,7 +13,6 @@ namespace RideBound.Algorithms.Policies;
 
 public enum RidePoolingPolicyKind
 {
-    RollingCost,
     RollingPenalty,
     FixedFreezeHorizon,
     NoReassignmentRepair,
@@ -23,7 +22,6 @@ public enum RidePoolingPolicyKind
 
 public static class RidePoolingPolicyRegistry
 {
-    public const string RollingCost = "rolling-cost";
     public const string RollingPenalty = "rolling-penalty";
     public const string FixedFreezeHorizon = "fixed-freeze-horizon";
     public const string NoReassignmentRepair = "no-reassignment-repair";
@@ -36,7 +34,6 @@ public static class RidePoolingPolicyRegistry
     {
         policyKind = policyId switch
         {
-            RollingCost => RidePoolingPolicyKind.RollingCost,
             RollingPenalty => RidePoolingPolicyKind.RollingPenalty,
             FixedFreezeHorizon => RidePoolingPolicyKind.FixedFreezeHorizon,
             NoReassignmentRepair => RidePoolingPolicyKind.NoReassignmentRepair,
@@ -44,8 +41,7 @@ public static class RidePoolingPolicyRegistry
             CommitSoftHardHybrid => RidePoolingPolicyKind.CommitSoftHardHybrid,
             _ => default,
         };
-        return policyId is RollingCost
-            or RollingPenalty
+        return policyId is RollingPenalty
             or FixedFreezeHorizon
             or NoReassignmentRepair
             or RideBoundHardVector
@@ -55,7 +51,6 @@ public static class RidePoolingPolicyRegistry
     public static string ToPolicyId(RidePoolingPolicyKind policyKind) =>
         policyKind switch
         {
-            RidePoolingPolicyKind.RollingCost => RollingCost,
             RidePoolingPolicyKind.RollingPenalty => RollingPenalty,
             RidePoolingPolicyKind.FixedFreezeHorizon => FixedFreezeHorizon,
             RidePoolingPolicyKind.NoReassignmentRepair => NoReassignmentRepair,
@@ -224,7 +219,7 @@ public sealed record SolverBackedPolicyDecisionResult
 }
 
 /// <summary>
-/// Production policy path for B1–B4/C1/C2. It generates the shared physical
+/// Production policy path for B2–B4/C1/C2. It generates the shared physical
 /// candidate set once, performs only the named mechanism gate/assessment, maps
 /// the exact hierarchy to the solver port, and independently validates every
 /// solver or fallback fleet selection before returning it to Runner.

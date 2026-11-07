@@ -77,7 +77,7 @@ public sealed class WaitingRiderRelocationPolicyTests
         // Every other kind would see half moves, so the combination fails before any work.
         var fixture = Fixture(relocation: true);
 
-        foreach (var kind in new[] { RidePoolingPolicyKind.RollingCost, RidePoolingPolicyKind.CommitSoftHardHybrid })
+        foreach (var kind in new[] { RidePoolingPolicyKind.RollingPenalty, RidePoolingPolicyKind.CommitSoftHardHybrid })
         {
             Assert.Throws<ArgumentException>(
                 () => new SolverBackedRidePoolingPolicy(new EnumeratingSolver()).Decide(

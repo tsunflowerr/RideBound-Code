@@ -13,7 +13,6 @@ namespace RideBound.Runner.Tests.Configuration;
 public sealed class Wp4RunnerConfigurationTests
 {
     [Theory]
-    [InlineData("wp7-fleetpy-rolling-cost-v1.json", "rolling-cost")]
     [InlineData(
         "wp7-fleetpy-ridebound-hard-vector-v1.json",
         "ridebound-hard-vector")]
@@ -45,7 +44,6 @@ public sealed class Wp4RunnerConfigurationTests
     }
 
     [Theory]
-    [InlineData("wp9-fleetpy-rolling-cost-audited-v1.json", "rolling-cost")]
     [InlineData(
         "wp9-fleetpy-ridebound-hard-vector-audited-v1.json",
         "ridebound-hard-vector")]
@@ -274,7 +272,6 @@ public sealed class Wp4RunnerConfigurationTests
 
         foreach (var name in new[]
                  {
-                     "wp13-e1-fleetpy-rolling-cost-retained-v1.json",
                      "wp13-e1-fleetpy-ridebound-hard-vector-retained-v1.json",
                  })
         {
@@ -509,6 +506,32 @@ public sealed class Wp4RunnerConfigurationTests
     }
 
     [Fact]
+    public void The_removed_rolling_cost_policy_is_refused_with_a_pointer_to_the_archive()
+    {
+        const string refusal =
+            "WP4 policyId 'rolling-cost' (the rolling-cost policy): "
+            + "removed; see commit ebca912 (branch research/final-real-runs-2026-11-06)";
+        var commitment = CommitmentConfiguration();
+        var archived = File.ReadAllText(Path.Combine(
+            RepositoryRoot(),
+            "benchmarks",
+            "configurations",
+            "wp4-rolling-cost-boundary-v1.json"));
+        Assert.NotNull(Wp4RunnerConfiguration.Decode(Encoding.UTF8.GetBytes(FinalJson()), commitment));
+
+        // The rolling-cost file the old tests decoded, and the final C1 file with policyId rolling-cost.
+        foreach (var json in new[] { archived, FinalJson(json => json["policyId"] = "rolling-cost") })
+        {
+            Assert.Equal(
+                refusal,
+                Assert.Throws<InvalidDataException>(
+                    () => Wp4RunnerConfiguration.Decode(
+                        Encoding.UTF8.GetBytes(json),
+                        commitment)).Message);
+        }
+    }
+
+    [Fact]
     public void Selection_objective_order_is_optional_stability_first_and_cost_first_only_for_C1()
     {
         var commitment = CommitmentConfiguration();
@@ -572,15 +595,12 @@ public sealed class Wp4RunnerConfigurationTests
                         commitment)).Message);
         }
 
-        var rollingCost = PublishedJson().Replace(
-            "\"policyVersion\": \"wp4-boundary-v1\"",
-            "\"policyVersion\": \"wp4-boundary-v1\",\n  \"selectionObjectiveOrder\": \"cost-first\"",
-            StringComparison.Ordinal);
+        var rollingPenalty = RollingPenaltyJson(json => json["selectionObjectiveOrder"] = "cost-first");
         Assert.Contains(
             "requires the solver-backed C1 policy",
             Assert.Throws<InvalidDataException>(
                 () => Wp4RunnerConfiguration.Decode(
-                    Encoding.UTF8.GetBytes(rollingCost),
+                    Encoding.UTF8.GetBytes(rollingPenalty),
                     commitment)).Message);
 
         var repository = RepositoryRoot();
@@ -736,12 +756,12 @@ public sealed class Wp4RunnerConfigurationTests
             StringComparison.Ordinal);
 
         var costFirst = Wp4RunnerConfiguration.Decode(Encoding.UTF8.GetBytes(costFirstJson), commitment);
-        var rollingCost = Wp4RunnerConfiguration.Decode(Encoding.UTF8.GetBytes(PublishedJson()), commitment);
+        var rollingPenalty = Wp4RunnerConfiguration.Decode(Encoding.UTF8.GetBytes(RollingPenaltyJson()), commitment);
 
         Assert.Equal(
             SolverBackedSelectionObjectiveOrder.CostFirst,
             costFirst.SolverPolicyOptions!.SelectionObjectiveOrder);
-        Assert.Equal(RidePoolingPolicyRegistry.RollingCost, rollingCost.PolicyId);
+        Assert.Equal(RidePoolingPolicyRegistry.RollingPenalty, rollingPenalty.PolicyId);
 
         foreach (var stabilityFirst in new[]
                  {
@@ -948,12 +968,18 @@ public sealed class Wp4RunnerConfigurationTests
         return node.ToJsonString();
     }
 
-    private static string PublishedJson() =>
-        File.ReadAllText(Path.Combine(
-            RepositoryRoot(),
-            "benchmarks",
-            "configurations",
-            "wp4-rolling-cost-boundary-v1.json"));
+    /// <summary>
+    /// The final C1 configuration turned into the solver-backed rolling-penalty policy (a policy other than C1 and
+    /// C2) by dropping its C1-only keys selectionObjectiveOrder and commitmentRecovery, after <paramref name="edit"/>.
+    /// </summary>
+    private static string RollingPenaltyJson(Action<JsonObject>? edit = null) =>
+        FinalJson(json =>
+        {
+            json["policyId"] = RidePoolingPolicyRegistry.RollingPenalty;
+            Assert.True(json.Remove("selectionObjectiveOrder"));
+            Assert.True(json.Remove("commitmentRecovery"));
+            edit?.Invoke(json);
+        });
 
     private static string RepositoryRoot() =>
         typeof(Wp4RunnerConfigurationTests)

@@ -24,8 +24,6 @@ public sealed class RollingCostPolicy
         _validator = validator ?? new PhysicalPlanValidator();
     }
 
-    public string PolicyId => RidePoolingPolicyRegistry.RollingCost;
-
     public RollingCostDecisionResult Decide(
         OnlineState state,
         CandidateGenerationOptions options,

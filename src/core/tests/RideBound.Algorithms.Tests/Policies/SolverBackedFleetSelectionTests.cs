@@ -408,8 +408,9 @@ public sealed class SolverBackedFleetSelectionTests
                     exactSmallMode: false,
                     maximumExplorationWorkUnits: 100_000),
                 new SolverBackedRidePoolingPolicyOptions(
-                    RidePoolingPolicyKind.RollingCost,
-                    executionBudget));
+                    RidePoolingPolicyKind.RideBoundHardVector,
+                    executionBudget,
+                    selectionObjectiveOrder: SolverBackedSelectionObjectiveOrder.CostFirst));
 
         Assert.True(result.IsSuccess, result.Witness?.Message);
         Assert.Equal(1, result.Decision!.Decision.GenerationDiagnostics!.OmittedRequestCount);
@@ -687,7 +688,6 @@ public sealed class SolverBackedFleetSelectionTests
 
         foreach (var kind in new[]
                  {
-                     RidePoolingPolicyKind.RollingCost,
                      RidePoolingPolicyKind.RollingPenalty,
                      RidePoolingPolicyKind.CommitSoftHardHybrid,
                  })

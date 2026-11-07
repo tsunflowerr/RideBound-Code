@@ -870,7 +870,7 @@ public sealed class Wp4RunnerConfiguration : ICommitmentWarningProfileProvider
     /// <summary>
     /// Runs before the field checks, so a file that still selects a removed feature is always refused with the
     /// pointer to the commit that has it: the multiple-plan policy (policyId 'least-commitment-consensus', B5)
-    /// and its 'multiplePlan' block.
+    /// and its 'multiplePlan' block, and the rolling-cost policy (policyId 'rolling-cost', B1).
     /// </summary>
     private static void RejectRemovedFeatures(JsonElement root)
     {
@@ -883,6 +883,15 @@ public sealed class Wp4RunnerConfiguration : ICommitmentWarningProfileProvider
             throw new InvalidDataException(
                 "WP4 policyId 'least-commitment-consensus' and the 'multiplePlan' block "
                 + $"(the multiple-plan policy): {RemovedFeature}");
+        }
+
+        if (root.ValueKind == JsonValueKind.Object
+            && root.TryGetProperty("policyId", out var removedPolicyId)
+            && removedPolicyId.ValueKind == JsonValueKind.String
+            && removedPolicyId.GetString() == "rolling-cost")
+        {
+            throw new InvalidDataException(
+                $"WP4 policyId 'rolling-cost' (the rolling-cost policy): {RemovedFeature}");
         }
     }
 
