@@ -20,6 +20,9 @@ from .mapping import canonical_json_bytes
 
 _HASH = re.compile(r"^[0-9a-f]{64}$")
 _EOF = object()
+# The Runner's helloAck must select this position model and offer at least these capabilities.
+_POSITION_MODEL = "directedEdgeProgress"
+_REQUIRED_CAPABILITIES = frozenset({"exactEventOrdering", "dynamicTravelTimes", "oldPlanProjection"})
 
 
 @dataclass(frozen=True)
@@ -46,16 +49,9 @@ class RunnerClient:
         *,
         timeout_seconds: float = 30.0,
         shutdown_timeout_seconds: float = 10.0,
-        maximum_line_bytes: int = 64 * 1024 * 1024,
-        maximum_input_line_bytes: int | None = None,
-        maximum_output_line_bytes: int | None = None,
+        maximum_input_line_bytes: int = 64 * 1024 * 1024,
+        maximum_output_line_bytes: int = 64 * 1024 * 1024,
         maximum_stderr_bytes: int = 1024 * 1024,
-        expected_position_model: str = "directedEdgeProgress",
-        required_capabilities: Iterable[str] = (
-            "exactEventOrdering",
-            "dynamicTravelTimes",
-            "oldPlanProjection",
-        ),
         transcript_writer: Callable[[str, bytes], None] | None = None,
     ) -> None:
         self._command = tuple(str(part) for part in command)
@@ -66,30 +62,13 @@ class RunnerClient:
             raise ValueError("at least one artifact path is required")
         if timeout_seconds <= 0 or shutdown_timeout_seconds <= 0:
             raise ValueError("timeouts must be positive")
-        maximum_input = (
-            maximum_line_bytes
-            if maximum_input_line_bytes is None
-            else maximum_input_line_bytes
-        )
-        maximum_output = (
-            maximum_line_bytes
-            if maximum_output_line_bytes is None
-            else maximum_output_line_bytes
-        )
-        if maximum_input < 256 or maximum_output < 256 or maximum_stderr_bytes < 1:
+        if maximum_input_line_bytes < 256 or maximum_output_line_bytes < 256 or maximum_stderr_bytes < 1:
             raise ValueError("invalid stream bounds")
-        if not isinstance(expected_position_model, str) or not expected_position_model:
-            raise ValueError("expected_position_model cannot be empty")
-        required = tuple(required_capabilities)
-        if not required or any(not isinstance(value, str) or not value for value in required):
-            raise ValueError("required_capabilities must contain non-empty strings")
         self._timeout = timeout_seconds
         self._shutdown_timeout = shutdown_timeout_seconds
-        self._maximum_input_line_bytes = maximum_input
-        self._maximum_output_line_bytes = maximum_output
+        self._maximum_input_line_bytes = maximum_input_line_bytes
+        self._maximum_output_line_bytes = maximum_output_line_bytes
         self._maximum_stderr_bytes = maximum_stderr_bytes
-        self._expected_position_model = expected_position_model
-        self._required_capabilities = frozenset(required)
         self._transcript_writer = transcript_writer
         self._process: subprocess.Popen[bytes] | None = None
         self._stdout: queue.Queue[bytes | object | BaseException] = queue.Queue()
@@ -164,10 +143,10 @@ class RunnerClient:
             self._fail("RBWP7_RUNNER_ACK_INVALID", "missing capabilitySelection")
         if selection.get("status") != "accepted":
             self._fail("RBWP7_RUNNER_CAPABILITY_DOWNGRADE", repr(selection))
-        if selection.get("positionModel") != self._expected_position_model:
+        if selection.get("positionModel") != _POSITION_MODEL:
             self._fail("RBWP7_RUNNER_POSITION_DOWNGRADE", repr(selection))
         capabilities = selection.get("capabilities")
-        if not isinstance(capabilities, list) or not self._required_capabilities.issubset(
+        if not isinstance(capabilities, list) or not _REQUIRED_CAPABILITIES.issubset(
             set(capabilities)
         ):
             self._fail("RBWP7_RUNNER_CAPABILITY_MISSING", repr(capabilities))

@@ -73,18 +73,8 @@ class RunnerClientTests(unittest.TestCase):
         self.assertEqual("closed", client.state)
         self.assertEqual(client.artifact_receipts["before"], client.artifact_receipts["after"])
 
-    def test_node_only_capability_can_be_selected_explicitly(self) -> None:
-        client = self.make_client("node-only", expected_position_model="nodeOnly")
-        try:
-            client.start()
-            acknowledgement = client.negotiate(hello())
-            selection = acknowledgement["payload"]["capabilitySelection"]
-            self.assertEqual("nodeOnly", selection["positionModel"])
-        finally:
-            client.shutdown()
-
     def test_position_model_mismatch_remains_fail_closed(self) -> None:
-        client = self.make_client(expected_position_model="nodeOnly")
+        client = self.make_client("node-only")
         try:
             client.start()
             with self.assertRaises(AdapterFailure) as raised:
@@ -217,8 +207,9 @@ class RunnerClientTests(unittest.TestCase):
         }
         for mode, code in expected.items():
             with self.subTest(mode=mode):
+                bound = 256 if mode == "oversized" else 512
                 client = self.make_client(
-                    mode, maximum_line_bytes=256 if mode == "oversized" else 512
+                    mode, maximum_input_line_bytes=bound, maximum_output_line_bytes=bound
                 )
                 try:
                     client.start()
