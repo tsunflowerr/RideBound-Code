@@ -31,13 +31,6 @@ public enum RunnerSessionStatus
     Shutdown,
 }
 
-public enum RunnerExecutionMode
-{
-    StructuralConformance,
-    OnlineRollingCost,
-    OnlineCommitment,
-}
-
 public sealed record RunnerSessionResult(
     ProtocolEnvelope? Response,
     bool ShouldTerminate = false)
@@ -68,20 +61,17 @@ public sealed class RunnerSession
     public const int RetainedBatchResponseCount = 1;
 
     private readonly CapabilityRequirementProfile _requirements;
-    private readonly RunnerExecutionMode _executionMode;
-    private readonly OnlineEventMapper _onlineEventMapper;
-    private readonly RollingCostPolicy _rollingCostPolicy;
-    private readonly CandidateGenerationOptions _candidateOptions;
-    private readonly ICommitmentPolicyProvider? _commitmentPolicies;
-    private readonly IStopDistanceLookup? _stopDistances;
-    private readonly Sha256Hex? _commitmentPolicyConfigurationHash;
-    private readonly CommitmentDecisionValidator _commitmentValidator;
+    private readonly OnlineEventMapper _onlineEventMapper = new();
+    private readonly ICommitmentPolicyProvider _commitmentPolicies;
+    private readonly IStopDistanceLookup _stopDistances;
+    private readonly Sha256Hex _commitmentPolicyConfigurationHash;
+    private readonly CommitmentDecisionValidator _commitmentValidator = new();
     private readonly ExogenousServiceQualityBreachBridge _breachBridge;
-    private readonly Wp4RunnerConfiguration? _wp4Configuration;
+    private readonly Wp4RunnerConfiguration _wp4Configuration;
     private readonly RideBound.Algorithms.Shareability.ShadowAllocator? _shadowAllocator;
     private readonly SolverBackedRidePoolingPolicy? _solverBackedPolicy;
     private readonly bool _useManifestSolverSeed;
-    private readonly MultiplePlanConsensusPolicy _multiplePlanPolicy;
+    private readonly MultiplePlanConsensusPolicy _multiplePlanPolicy = new();
     private HelloPayload? _hello;
     private HelloAckPayload? _helloAcknowledgement;
     private InitializedSessionIdentity? _identity;
@@ -102,75 +92,47 @@ public sealed class RunnerSession
     private CanonicalStateBytes? _committedCanonical;
     private CanonicalStateBytes? _stagedCanonical;
 
+    /// <summary>
+    /// An online commitment session. The commitment policy file supplies the policy catalog and the stop distances,
+    /// the WP4 file the dispatch policy, and <paramref name="commitmentPolicyConfigurationHash"/> is the binding of
+    /// the two files that initializeRun must carry. <paramref name="useManifestSolverSeed"/> seeds the solver with the
+    /// manifest's masterSeed instead of the WP4 file's randomSeed (the command line always does);
+    /// <paramref name="solverBackedPolicy"/> replaces the OR-Tools policy in tests.
+    /// </summary>
     public RunnerSession(
         CapabilityRequirementProfile requirements,
-        RunnerExecutionMode executionMode =
-            RunnerExecutionMode.StructuralConformance,
-        OnlineEventMapper? onlineEventMapper = null,
-        RollingCostPolicy? rollingCostPolicy = null,
-        CandidateGenerationOptions? candidateOptions = null,
-        ICommitmentPolicyProvider? commitmentPolicies = null,
-        IStopDistanceLookup? stopDistances = null,
-        Sha256Hex? commitmentPolicyConfigurationHash = null,
-        CommitmentDecisionValidator? commitmentValidator = null,
-        Wp4RunnerConfiguration? wp4Configuration = null,
+        ICommitmentPolicyProvider commitmentPolicies,
+        IStopDistanceLookup stopDistances,
+        Sha256Hex commitmentPolicyConfigurationHash,
+        Wp4RunnerConfiguration wp4Configuration,
         SolverBackedRidePoolingPolicy? solverBackedPolicy = null,
-        MultiplePlanConsensusPolicy? multiplePlanPolicy = null,
         bool useManifestSolverSeed = false)
     {
         ArgumentNullException.ThrowIfNull(requirements);
+        ArgumentNullException.ThrowIfNull(commitmentPolicies);
+        ArgumentNullException.ThrowIfNull(stopDistances);
+        ArgumentNullException.ThrowIfNull(commitmentPolicyConfigurationHash);
+        ArgumentNullException.ThrowIfNull(wp4Configuration);
         _requirements = requirements;
-        _executionMode = executionMode;
-        _onlineEventMapper = onlineEventMapper ?? new OnlineEventMapper();
-        _rollingCostPolicy = rollingCostPolicy ?? new RollingCostPolicy();
-        _candidateOptions = wp4Configuration?.CandidateGeneration
-            ?? candidateOptions
-            ?? new CandidateGenerationOptions(
-                maximumCandidatesPerVehicle: 10_000,
-                maximumNewRequestsPerVehicle: 4,
-                exactSmallMode: false);
         _commitmentPolicies = commitmentPolicies;
         _stopDistances = stopDistances;
         _commitmentPolicyConfigurationHash = commitmentPolicyConfigurationHash;
-        _commitmentValidator = commitmentValidator
-            ?? new CommitmentDecisionValidator();
         _breachBridge = new ExogenousServiceQualityBreachBridge();
         _wp4Configuration = wp4Configuration;
-        _shadowAllocator = wp4Configuration?.ShadowAllocation is { } shadowInputs
+        _shadowAllocator = wp4Configuration.ShadowAllocation is { } shadowInputs
             ? new RideBound.Algorithms.Shareability.ShadowAllocator(shadowInputs)
             : null;
-        _lightAudit = wp4Configuration?.UsesLightAuditHash == true;
+        _lightAudit = wp4Configuration.UsesLightAuditHash;
         _useManifestSolverSeed = useManifestSolverSeed;
-        _solverBackedPolicy = wp4Configuration is not null
-                && wp4Configuration.SolverPolicyOptions is not null
+        _solverBackedPolicy = wp4Configuration.SolverPolicyOptions is not null
             ? solverBackedPolicy
                 ?? new SolverBackedRidePoolingPolicy(
                     new OrToolsCandidateSelectionSolver(),
                     commitmentValidator: _commitmentValidator)
             : null;
-        _multiplePlanPolicy = multiplePlanPolicy
-            ?? new MultiplePlanConsensusPolicy();
-
-        if (executionMode == RunnerExecutionMode.OnlineCommitment
-            && (commitmentPolicies is null
-                || stopDistances is null
-                || commitmentPolicyConfigurationHash is null))
-        {
-            throw new ArgumentException(
-                "Commitment mode requires an explicit policy catalog, " +
-                "stop-distance lookup, and canonical configuration hash.");
-        }
-
-        if (wp4Configuration is not null
-            && executionMode != RunnerExecutionMode.OnlineCommitment)
-        {
-            throw new ArgumentException(
-                "A WP4 policy configuration requires commitment execution mode.",
-                nameof(wp4Configuration));
-        }
 
         if (useManifestSolverSeed
-            && wp4Configuration?.SolverPolicyOptions is null)
+            && wp4Configuration.SolverPolicyOptions is null)
         {
             throw new ArgumentException(
                 "Manifest solver seeding requires a solver-backed WP4 configuration.",
@@ -333,9 +295,8 @@ public sealed class RunnerSession
                 envelope);
         }
 
-        if (_executionMode == RunnerExecutionMode.OnlineCommitment
-            && payloadResult.Value!.Manifest.PolicyConfigurationHash
-                != _commitmentPolicyConfigurationHash)
+        if (payloadResult.Value!.Manifest.PolicyConfigurationHash
+            != _commitmentPolicyConfigurationHash)
         {
             return Error(
                 "HASH_MISMATCH",
@@ -345,13 +306,12 @@ public sealed class RunnerSession
                 envelope);
         }
 
-        if (_wp4Configuration is not null
-            && (!StringComparer.Ordinal.Equals(
-                    payloadResult.Value!.Manifest.PolicyId,
-                    _wp4Configuration.PolicyId)
-                || !StringComparer.Ordinal.Equals(
-                    payloadResult.Value.Manifest.PolicyVersion,
-                    _wp4Configuration.PolicyVersion)))
+        if (!StringComparer.Ordinal.Equals(
+                payloadResult.Value.Manifest.PolicyId,
+                _wp4Configuration.PolicyId)
+            || !StringComparer.Ordinal.Equals(
+                payloadResult.Value.Manifest.PolicyVersion,
+                _wp4Configuration.PolicyVersion))
         {
             return Error(
                 "HASH_MISMATCH",
@@ -380,32 +340,29 @@ public sealed class RunnerSession
             simTime);
         _identity = validation.Identity;
 
-        if (IsOnlineMode)
-        {
-            var run = RideBoundRun.Create(
-                new RunIdentifier(_identity!.RunId.Value),
-                new ScenarioIdentifier(_identity.ScenarioId.Value),
-                new SimTime(0));
-            _onlineCoordinator = new EventReductionCoordinator(
-                OnlineState.Create(
-                    run,
-                    _identity.Manifest.TravelTimeSnapshotHash.Value),
-                CreateEventReducer());
-            _stagedCanonical = null;
+        var run = RideBoundRun.Create(
+            new RunIdentifier(_identity!.RunId.Value),
+            new ScenarioIdentifier(_identity.ScenarioId.Value),
+            new SimTime(0));
+        _onlineCoordinator = new EventReductionCoordinator(
+            OnlineState.Create(
+                run,
+                _identity.Manifest.TravelTimeSnapshotHash.Value),
+            CreateEventReducer());
+        _stagedCanonical = null;
 
-            if (_lightAudit)
-            {
-                // ADR-089 light audit: the state hash stays the identity hash computed above.
-                _committedCanonical = null;
-            }
-            else
-            {
-                var initialCanonical = CanonicalOf(_onlineCoordinator.CommittedState);
-                _committedCanonical = new CanonicalStateBytes(
-                    _onlineCoordinator.CommittedState,
-                    initialCanonical);
-                _stateHash = OnlineStateCanonicalWriter.HashV1(initialCanonical);
-            }
+        if (_lightAudit)
+        {
+            // ADR-089 light audit: the state hash stays the identity hash computed above.
+            _committedCanonical = null;
+        }
+        else
+        {
+            var initialCanonical = CanonicalOf(_onlineCoordinator.CommittedState);
+            _committedCanonical = new CanonicalStateBytes(
+                _onlineCoordinator.CommittedState,
+                initialCanonical);
+            _stateHash = OnlineStateCanonicalWriter.HashV1(initialCanonical);
         }
 
         Status = RunnerSessionStatus.Initialized;
@@ -530,65 +487,39 @@ public sealed class RunnerSession
         EpochId.TryCreate(nextEpoch, out var nextEpochId);
         EventSequence.TryCreate(nextSequence, out var nextEventSequence);
         SimulationTimeMilliseconds.TryCreate(nextSimTime, out var nextSimulationTime);
-        Sha256Hex stateAfterHash;
-        var zero = ProtocolHash.ZeroHash;
-        DecisionPayload shell;
 
-        if (IsOnlineMode)
+        // ADR-089 light audit: the staged state is identified, not hashed.
+        var lightStateAfterHash = _lightAudit
+            ? ProtocolHash.CalculateStateIdentityHash(
+                nextEpochId!,
+                nextEventSequence!,
+                nextSimulationTime!)
+            : null;
+        var online = BuildOnlineDecision(
+            envelope,
+            canonicalBatchHash,
+            lightStateAfterHash);
+
+        if (online.Error is not null)
         {
-            // ADR-089 light audit: the staged state is identified, not hashed.
-            var lightStateAfterHash = _lightAudit
-                ? ProtocolHash.CalculateStateIdentityHash(
-                    nextEpochId!,
-                    nextEventSequence!,
-                    nextSimulationTime!)
-                : null;
-            var online = BuildOnlineDecision(
-                envelope,
-                canonicalBatchHash,
-                lightStateAfterHash);
-
-            if (online.Error is not null)
-            {
-                return Error(
-                    online.Error.Code,
-                    online.Error.Disposition,
-                    online.Error.Message,
-                    envelope);
-            }
-
-            stateAfterHash = online.StateAfterHash!;
-            shell = new DecisionPayload(
-                DecisionProductionStatus.Produced,
-                online.ReasonCode!,
-                online.Actions!,
-                online.Certificate!,
-                online.Solver!,
-                _stateHash,
-                stateAfterHash,
-                _previousDecisionHash,
-                zero);
-        }
-        else
-        {
-            stateAfterHash = ProtocolHash.CalculateStateIdentityHash(
-                nextEpochId,
-                nextEventSequence,
-                nextSimulationTime);
-            shell = new DecisionPayload(
-                DecisionProductionStatus.NotProduced,
-                DecisionPayloadCodec.StructuralOnlyReasonCode,
-                [],
-                new CertificateShell(
-                    CertificateStatus.NotProduced,
-                    DecisionPayloadCodec.CertificateNotAvailableReasonCode),
-                new SolverStatusShell(SolverStatus.NotRun),
-                _stateHash,
-                stateAfterHash,
-                _previousDecisionHash,
-                zero);
+            return Error(
+                online.Error.Code,
+                online.Error.Disposition,
+                online.Error.Message,
+                envelope);
         }
 
+        var stateAfterHash = online.StateAfterHash!;
+        var shell = new DecisionPayload(
+            DecisionProductionStatus.Produced,
+            online.ReasonCode!,
+            online.Actions!,
+            online.Certificate!,
+            online.Solver!,
+            _stateHash,
+            stateAfterHash,
+            _previousDecisionHash,
+            ProtocolHash.ZeroHash);
         var canonicalDecision = CanonicalJson.Canonicalize(
             DecisionPayloadCodec.Encode(shell, hashProjection: true));
         var decisionHash = _lightAudit
@@ -602,7 +533,7 @@ public sealed class RunnerSession
                 _previousDecisionHash,
                 _manifestHash,
                 _identity!.Manifest.PolicyVersion,
-                CreateCanonicalInputParts(canonicalBatch, includeOnlineState: IsOnlineMode),
+                CreateCanonicalInputParts(canonicalBatch, includeOnlineState: true),
                 canonicalDecision);
         var decision = shell with { DecisionHash = decisionHash };
         var response = CreateEnvelope(
@@ -664,31 +595,28 @@ public sealed class RunnerSession
                 envelope);
         }
 
-        if (IsOnlineMode)
+        var acknowledged =
+            _onlineCoordinator!.ApplyDecisionAcknowledgement(
+                _pending.Epoch);
+
+        if (!acknowledged.IsSuccess)
         {
-            var acknowledged =
-                _onlineCoordinator!.ApplyDecisionAcknowledgement(
-                    _pending.Epoch);
-
-            if (!acknowledged.IsSuccess)
-            {
-                return Error(
-                    "INTERNAL_ERROR",
-                    ProtocolFailureDisposition.FailSession,
-                    acknowledged.Witness!.Message,
-                    envelope);
-            }
-
-            // The acknowledged state is the staged object itself
-            // (EventReductionCoordinator.ApplyDecisionAcknowledgement), so its canonical
-            // bytes are the ones hashed for stateAfterHash.
-            _committedCanonical =
-                _stagedCanonical is { } staged
-                    && ReferenceEquals(staged.State, _onlineCoordinator.CommittedState)
-                    ? staged
-                    : null;
-            _stagedCanonical = null;
+            return Error(
+                "INTERNAL_ERROR",
+                ProtocolFailureDisposition.FailSession,
+                acknowledged.Witness!.Message,
+                envelope);
         }
+
+        // The acknowledged state is the staged object itself
+        // (EventReductionCoordinator.ApplyDecisionAcknowledgement), so its canonical
+        // bytes are the ones hashed for stateAfterHash.
+        _committedCanonical =
+            _stagedCanonical is { } staged
+                && ReferenceEquals(staged.State, _onlineCoordinator.CommittedState)
+                ? staged
+                : null;
+        _stagedCanonical = null;
 
         _appliedEpoch = _pending.Epoch;
         _nextEventSequence = _pending.NextEventSequence;
@@ -703,7 +631,6 @@ public sealed class RunnerSession
     private RunnerSessionResult ProcessCheckpoint(ProtocolEnvelope envelope)
     {
         if (Status != RunnerSessionStatus.Initialized
-            || !IsOnlineMode
             || _onlineCoordinator is null
             || _pending is not null
             || !IdentityMatches(envelope))
@@ -774,7 +701,6 @@ public sealed class RunnerSession
     private RunnerSessionResult ProcessRestore(ProtocolEnvelope envelope)
     {
         if (Status != RunnerSessionStatus.Initialized
-            || !IsOnlineMode
             || _onlineCoordinator is null
             || _pending is not null
             || _appliedEpoch != 0
@@ -820,7 +746,7 @@ public sealed class RunnerSession
 
         var state = restored.State!;
 
-        if (_wp4Configuration?.PlanningForecast is { } forecast && state.TravelTimes is not null)
+        if (_wp4Configuration.PlanningForecast is { } forecast && state.TravelTimes is not null)
         {
             state = state with { TravelTimes = state.TravelTimes.WithForecast(forecast) };
         }
@@ -925,7 +851,7 @@ public sealed class RunnerSession
     /// </summary>
     private InternalEventBatch WithPlanningForecast(InternalEventBatch batch)
     {
-        if (_wp4Configuration?.PlanningForecast is not { } forecast
+        if (_wp4Configuration.PlanningForecast is not { } forecast
             || !batch.Events.Any(value => value is TravelTimesUpdated))
         {
             return batch;
@@ -1025,103 +951,78 @@ public sealed class RunnerSession
                 reduced.Witness!.Message);
         }
 
-        CommitmentCandidateFilter? commitmentFilter = null;
-        ICommitmentPolicyProvider validationPolicies = _commitmentPolicies!;
+        ICommitmentPolicyProvider validationPolicies = _commitmentPolicies;
         RollingCostDecisionResult decision;
 
         var sourceEventSequence = batch.Events[^1].EventSequence;
+        var context = new CommitmentMechanismContext(
+            beforeEventState,
+            reduced.ProposedState!,
+            _commitmentPolicies,
+            _stopDistances,
+            publicationScope,
+            sourceEventSequence,
+            InitialPromiseTrigger: _wp4Configuration.InitialPromiseTrigger,
+            CollectAllCommitmentWitnesses:
+                _wp4Configuration.CollectAllCommitmentWitnesses);
 
-        if (_wp4Configuration is not null)
+        if (_wp4Configuration.MultiplePlanOptions is not null)
         {
-            var context = new CommitmentMechanismContext(
+            validationPolicies = MechanismCommitmentPolicyProvider
+                .RevisionPenalty(_commitmentPolicies);
+            var commitmentFilter = new CommitmentCandidateFilter(
                 beforeEventState,
-                reduced.ProposedState!,
-                _commitmentPolicies!,
-                _stopDistances!,
+                validationPolicies,
+                _stopDistances,
                 publicationScope,
                 sourceEventSequence,
-                InitialPromiseTrigger: _wp4Configuration.InitialPromiseTrigger,
-                CollectAllCommitmentWitnesses:
-                    _wp4Configuration.CollectAllCommitmentWitnesses);
+                _commitmentValidator,
+                _wp4Configuration.InitialPromiseTrigger);
+            var multiple = _multiplePlanPolicy.Decide(
+                reduced.ProposedState!,
+                _wp4Configuration.CandidateGeneration,
+                _wp4Configuration.MultiplePlanOptions,
+                commitmentFilter);
 
-            if (_wp4Configuration.MultiplePlanOptions is not null)
+            if (!multiple.IsSuccess)
             {
-                validationPolicies = MechanismCommitmentPolicyProvider
-                    .RevisionPenalty(_commitmentPolicies!);
-                commitmentFilter = new CommitmentCandidateFilter(
-                    beforeEventState,
-                    validationPolicies,
-                    _stopDistances!,
-                    publicationScope,
-                    sourceEventSequence,
-                    _commitmentValidator,
-                    _wp4Configuration.InitialPromiseTrigger);
-                var multiple = _multiplePlanPolicy.Decide(
-                    reduced.ProposedState!,
-                    _candidateOptions,
-                    _wp4Configuration.MultiplePlanOptions,
-                    commitmentFilter);
-
-                if (!multiple.IsSuccess)
-                {
-                    _onlineCoordinator.DiscardPendingProposal();
-                    return OnlineDecisionBuildResult.Fail(
-                        "INTERNAL_ERROR",
-                        ProtocolFailureDisposition.FailSession,
-                        multiple.Witness!.Message);
-                }
-
-                decision = RollingCostDecisionResult.Success(
-                    multiple.Decision!.DistinguishedDecision with
-                    {
-                        GenerationDiagnostics =
-                            multiple.Decision.GenerationDiagnostics,
-                    });
+                _onlineCoordinator.DiscardPendingProposal();
+                return OnlineDecisionBuildResult.Fail(
+                    "INTERNAL_ERROR",
+                    ProtocolFailureDisposition.FailSession,
+                    multiple.Witness!.Message);
             }
-            else
-            {
-                var solved = _solverBackedPolicy!.Decide(
-                    context,
-                    _candidateOptions,
-                    _useManifestSolverSeed
-                        ? _wp4Configuration.CreateSolverPolicyOptionsForRun(
-                            _identity!.Manifest.MasterSeed)
-                        : _wp4Configuration.SolverPolicyOptions!,
-                    _wp4Configuration);
 
-                if (!solved.IsSuccess)
+            decision = RollingCostDecisionResult.Success(
+                multiple.Decision!.DistinguishedDecision with
                 {
-                    _onlineCoordinator.DiscardPendingProposal();
-                    return OnlineDecisionBuildResult.Fail(
-                        "INTERNAL_ERROR",
-                        ProtocolFailureDisposition.FailSession,
-                        solved.Witness!.Message);
-                }
-
-                decision = RollingCostDecisionResult.Success(
-                    solved.Decision!.Decision);
-                validationPolicies = solved.Decision.EffectivePolicies;
-            }
+                    GenerationDiagnostics =
+                        multiple.Decision.GenerationDiagnostics,
+                });
         }
         else
         {
-            if (_executionMode == RunnerExecutionMode.OnlineCommitment)
+            var solved = _solverBackedPolicy!.Decide(
+                context,
+                _wp4Configuration.CandidateGeneration,
+                _useManifestSolverSeed
+                    ? _wp4Configuration.CreateSolverPolicyOptionsForRun(
+                        _identity!.Manifest.MasterSeed)
+                    : _wp4Configuration.SolverPolicyOptions!,
+                _wp4Configuration);
+
+            if (!solved.IsSuccess)
             {
-                commitmentFilter = new CommitmentCandidateFilter(
-                    beforeEventState,
-                    _commitmentPolicies!,
-                    _stopDistances!,
-                    publicationScope,
-                    sourceEventSequence,
-                    _commitmentValidator,
-                    _wp4Configuration?.InitialPromiseTrigger
-                        ?? InitialPromiseTrigger.InitialAcceptance);
+                _onlineCoordinator.DiscardPendingProposal();
+                return OnlineDecisionBuildResult.Fail(
+                    "INTERNAL_ERROR",
+                    ProtocolFailureDisposition.FailSession,
+                    solved.Witness!.Message);
             }
 
-            decision = _rollingCostPolicy.Decide(
-                reduced.ProposedState!,
-                _candidateOptions,
-                commitmentFilter);
+            decision = RollingCostDecisionResult.Success(
+                solved.Decision!.Decision);
+            validationPolicies = solved.Decision.EffectivePolicies;
         }
 
         if (!decision.IsSuccess)
@@ -1133,111 +1034,93 @@ public sealed class RunnerSession
                 decision.Witness!.Message);
         }
 
-        var stateToStage = decision.Decision!.ProposedState;
-        IReadOnlyList<PromisePublication> publications = [];
-        CertificateShell certificate;
-        CanonicalSegments? stagedCanonical = null;
-        Sha256Hex? stagedHash = null;
+        var validation = _commitmentValidator.Validate(
+            new CommitmentValidationContext(
+                beforeEventState,
+                reduced.ProposedState!,
+                decision.Decision!.ProposedState,
+                validationPolicies,
+                _stopDistances,
+                publicationScope,
+                sourceEventSequence,
+                InitialPromiseTrigger: _wp4Configuration.InitialPromiseTrigger,
+                ForcedReferenceVehicles:
+                    decision.Decision.ForcedReferenceVehicles,
+                ForcedNoWorse:
+                    _wp4Configuration.SolverPolicyOptions?.ForcedNoWorseRecovery == true));
 
-        if (_executionMode == RunnerExecutionMode.OnlineCommitment)
+        if (!validation.IsValid)
         {
-            var validation = _commitmentValidator.Validate(
-                new CommitmentValidationContext(
-                    beforeEventState,
-                    reduced.ProposedState!,
-                    decision.Decision.ProposedState,
-                    validationPolicies,
-                    _stopDistances!,
-                    publicationScope,
-                    sourceEventSequence,
-                    InitialPromiseTrigger:
-                        _wp4Configuration?.InitialPromiseTrigger
-                            ?? InitialPromiseTrigger.InitialAcceptance,
-                    ForcedReferenceVehicles:
-                        decision.Decision.ForcedReferenceVehicles,
-                    ForcedNoWorse:
-                        _wp4Configuration?.SolverPolicyOptions?.ForcedNoWorseRecovery == true));
+            // The policy already validated this decision, so a rejection here is an
+            // internal inconsistency. The commitment code is not a protocol error
+            // code, and encoding it used to throw; it is kept in the message.
+            _onlineCoordinator.DiscardPendingProposal();
+            var witness = validation.Witnesses[0];
+            return OnlineDecisionBuildResult.Fail(
+                "INTERNAL_ERROR",
+                ProtocolFailureDisposition.FailSession,
+                $"{witness.Code}: {witness.Message}");
+        }
 
-            if (!validation.IsValid)
+        var stateToStage = validation.ValidatedState!;
+        IReadOnlyList<PromisePublication> publications = validation.Publications;
+
+        if (decision.Decision.GenerationDiagnostics is { } diagnostics
+            && diagnostics.ExogenousServiceQualityBreaches.Count != 0)
+        {
+            var bridged = _breachBridge.Apply(
+                reduced.ProposedState!,
+                stateToStage,
+                diagnostics,
+                validationPolicies,
+                _stopDistances,
+                sourceEventSequence);
+
+            if (!bridged.IsSuccess)
             {
-                // The policy already validated this decision, so a rejection here is an
-                // internal inconsistency. The commitment code is not a protocol error
-                // code, and encoding it used to throw; it is kept in the message.
                 _onlineCoordinator.DiscardPendingProposal();
-                var witness = validation.Witnesses[0];
                 return OnlineDecisionBuildResult.Fail(
                     "INTERNAL_ERROR",
                     ProtocolFailureDisposition.FailSession,
-                    $"{witness.Code}: {witness.Message}");
+                    $"EXOGENOUS_BREACH_BRIDGE_FAILED: {bridged.Error}");
             }
 
-            stateToStage = validation.ValidatedState!;
-            publications = validation.Publications;
-
-            if (decision.Decision.GenerationDiagnostics is { } diagnostics
-                && diagnostics.ExogenousServiceQualityBreaches.Count != 0)
-            {
-                var bridged = _breachBridge.Apply(
-                    reduced.ProposedState!,
-                    stateToStage,
-                    diagnostics,
-                    validationPolicies,
-                    _stopDistances!,
-                    sourceEventSequence);
-
-                if (!bridged.IsSuccess)
-                {
-                    _onlineCoordinator.DiscardPendingProposal();
-                    return OnlineDecisionBuildResult.Fail(
-                        "INTERNAL_ERROR",
-                        ProtocolFailureDisposition.FailSession,
-                        $"EXOGENOUS_BREACH_BRIDGE_FAILED: {bridged.Error}");
-                }
-
-                stateToStage = bridged.State!;
-            }
-
-            // ADR-089 GĐ4: Shadow Control. Every rider whose first promise this decision publishes
-            // gets its frozen class now, from this staged state, so the next decision reads it and
-            // the state hash and checkpoint carry it (engine17.js:742-776).
-            if (_shadowAllocator is not null)
-            {
-                var opened = publications
-                    .Where(value => value.Entry.Kind == CommitmentLedgerEntryKind.InitialPromise)
-                    .Select(value => value.Entry.PublishedPromise.Projection.RequestId)
-                    .ToArray();
-                stateToStage = _shadowAllocator.Allocate(
-                    stateToStage,
-                    opened,
-                    stateToStage.Run.SimulationTime);
-            }
-
-            // One canonicalization and one hash of the staged state per epoch; the original
-            // computed the same hash twice (here and in the Success call below).
-            stagedHash = HashStagedState(stateToStage, lightStateAfterHash, ref stagedCanonical);
-            var afterHash = stagedHash;
-            var breachWitnesses = ForcedBreachWitnesses(validation.ForcedExemptions);
-            certificate = new CertificateShell(
-                CertificateStatus.Produced,
-                "VALIDATED",
-                new CommitmentCertificateBody(
-                    "1.0.0",
-                    "commitment-validator-v1",
-                    breachWitnesses.Length == 0,
-                    _stateHash,
-                    afterHash,
-                    publications.Select(value => value.PublicationId).ToArray(),
-                    stateToStage.Run.Vehicles.Count,
-                    stateToStage.Run.Requests.Values.Count(
-                        value => value.IsAcceptedActive),
-                    breachWitnesses));
+            stateToStage = bridged.State!;
         }
-        else
+
+        // ADR-089 GĐ4: Shadow Control. Every rider whose first promise this decision publishes
+        // gets its frozen class now, from this staged state, so the next decision reads it and
+        // the state hash and checkpoint carry it (engine17.js:742-776).
+        if (_shadowAllocator is not null)
         {
-            certificate = new CertificateShell(
-                CertificateStatus.NotProduced,
-                DecisionPayloadCodec.CertificateNotAvailableReasonCode);
+            var opened = publications
+                .Where(value => value.Entry.Kind == CommitmentLedgerEntryKind.InitialPromise)
+                .Select(value => value.Entry.PublishedPromise.Projection.RequestId)
+                .ToArray();
+            stateToStage = _shadowAllocator.Allocate(
+                stateToStage,
+                opened,
+                stateToStage.Run.SimulationTime);
         }
+
+        // One canonicalization and one hash of the staged state per epoch.
+        CanonicalSegments? stagedCanonical = null;
+        var stagedHash = HashStagedState(stateToStage, lightStateAfterHash, ref stagedCanonical);
+        var breachWitnesses = ForcedBreachWitnesses(validation.ForcedExemptions);
+        var certificate = new CertificateShell(
+            CertificateStatus.Produced,
+            "VALIDATED",
+            new CommitmentCertificateBody(
+                "1.0.0",
+                "commitment-validator-v1",
+                breachWitnesses.Length == 0,
+                _stateHash,
+                stagedHash,
+                publications.Select(value => value.PublicationId).ToArray(),
+                stateToStage.Run.Vehicles.Count,
+                stateToStage.Run.Requests.Values.Count(
+                    value => value.IsAcceptedActive),
+                breachWitnesses));
 
         var staged = _onlineCoordinator.StageDecisionState(
             reduced.ProposedState!,
@@ -1252,7 +1135,6 @@ public sealed class RunnerSession
                 staged.Witness!.Message);
         }
 
-        stagedHash ??= HashStagedState(stateToStage, lightStateAfterHash, ref stagedCanonical);
         _stagedCanonical = stagedCanonical is null
             ? null
             : new CanonicalStateBytes(stateToStage, stagedCanonical);
@@ -1260,7 +1142,7 @@ public sealed class RunnerSession
         var actions = OnlineDecisionActionMapper.Map(
                 decision.Decision,
                 beforeEventState,
-                _wp4Configuration?.InitialPromiseTrigger
+                _wp4Configuration.InitialPromiseTrigger
                     == InitialPromiseTrigger.BookingConfirmation)
             .Concat(OnlineDecisionActionMapper.MapPublications(publications))
             .ToArray();
@@ -1277,16 +1159,16 @@ public sealed class RunnerSession
             CandidateSelectionSolveStatus.Optimal
                 or CandidateSelectionSolveStatus.Feasible =>
                 SolverStatus.Completed,
-            _ when _wp4Configuration?.MultiplePlanOptions is not null =>
+            _ when _wp4Configuration.MultiplePlanOptions is not null =>
                 SolverStatus.Completed,
             _ => SolverStatus.NotRun,
         };
         var solverExecutionEvidence =
-            _wp4Configuration?.EmitSolverExecutionEvidence == true
+            _wp4Configuration.EmitSolverExecutionEvidence
                 ? SolverExecutionEvidenceMapper.Map(decision.Decision)
                 : null;
         return OnlineDecisionBuildResult.Success(
-            stagedHash!,
+            stagedHash,
             reasonCode,
             actions,
             certificate,
@@ -1295,7 +1177,7 @@ public sealed class RunnerSession
 
     /// <summary>ADR-076: late boardings are recorded only when the WP4 configuration asks.</summary>
     private EventReducer CreateEventReducer() =>
-        new(recordLatePickups: _wp4Configuration?.RecordsLateBoarding == true);
+        new(recordLatePickups: _wp4Configuration.RecordsLateBoarding);
 
     /// <summary>
     /// ADR-075: every decision that keeps a gate-rejected route is certified as
@@ -1452,8 +1334,4 @@ public sealed class RunnerSession
         string Code,
         ProtocolFailureDisposition Disposition,
         string Message);
-
-    private bool IsOnlineMode =>
-        _executionMode is RunnerExecutionMode.OnlineRollingCost
-            or RunnerExecutionMode.OnlineCommitment;
 }

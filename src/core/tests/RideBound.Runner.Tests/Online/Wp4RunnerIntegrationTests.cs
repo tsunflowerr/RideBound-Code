@@ -1441,7 +1441,6 @@ public sealed class Wp4RunnerIntegrationTests
         bool useManifestSolverSeed = false) =>
         new(
             RunnerDefaults.CapabilityRequirements,
-            RunnerExecutionMode.OnlineCommitment,
             commitmentPolicies: commitment,
             stopDistances: commitment,
             commitmentPolicyConfigurationHash:

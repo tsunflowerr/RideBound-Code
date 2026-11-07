@@ -94,7 +94,6 @@ internal static partial class FinalRuns
         var (commitment, wp4, binding) = InProcessConfiguration(run);
         return new RunnerSession(
             RunnerDefaults.CapabilityRequirements,
-            RunnerExecutionMode.OnlineCommitment,
             commitmentPolicies: commitment,
             stopDistances: commitment,
             commitmentPolicyConfigurationHash: binding,
@@ -112,7 +111,6 @@ internal static partial class FinalRuns
             output,
             diagnostics,
             maximumLineBytes: int.Parse(run.Arguments[^1], CultureInfo.InvariantCulture),
-            executionMode: RunnerExecutionMode.OnlineCommitment,
             commitmentPolicies: commitment,
             stopDistances: commitment,
             commitmentPolicyConfigurationHash: binding,

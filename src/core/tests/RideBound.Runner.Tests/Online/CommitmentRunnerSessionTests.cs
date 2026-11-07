@@ -1,24 +1,33 @@
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using RideBound.Application.Commitments;
 using RideBound.Contracts.Protocol;
 using RideBound.Contracts.Serialization;
-using RideBound.Contracts.Tests.Fixtures;
-using RideBound.Domain.Commitments;
-using RideBound.Domain.Common;
-using RideBound.Domain.Validation;
 using RideBound.Runner.Protocol;
+using RideBound.Runner.Tests.Final;
 
 namespace RideBound.Runner.Tests.Online;
 
+/// <summary>
+/// The commitment rules of a Runner session: a promise is published with a produced certificate and enters the
+/// commitment ledger only when its decision is acknowledged; a restored checkpoint continues exactly like the
+/// uninterrupted session; no checkpoint is taken while a decision is pending. Checked on the final experiment's
+/// configuration, the T1 session FS-G2-SHRC71-CL.full-v1 of <see cref="FinalRuns"/> (full-v1: the state hash covers
+/// the whole online state), run inside the test process. Its policy opens a promise when the booking is confirmed,
+/// so the decision for epoch 1 accepts the first rider without a promise and the decision for epoch 2 publishes the
+/// first one.
+/// </summary>
 public sealed class CommitmentRunnerSessionTests
 {
+    private static readonly FinalRun Run = FinalRuns.Get("FS-G2-SHRC71-CL.full-v1");
+
     [Fact]
-    public void Bootstrap_publishes_initial_promise_and_produced_certificate_atomically()
+    public void Initial_promise_publication_and_produced_certificate_commit_atomically_on_ack()
     {
         var session = CreateInitializedSession();
-        var batch = ReadFixture("wp2/valid-bootstrap-event-batch.json");
+        Acknowledge(session, epoch: 1);
+        Assert.Empty(session.CommittedOnlineState!.Commitments.Histories);
+        var batch = Batch(2);
 
         var first = session.Process(batch);
         var retry = session.Process(batch);
@@ -28,7 +37,7 @@ public sealed class CommitmentRunnerSessionTests
         Assert.Equal(CertificateStatus.Produced, decision.Value!.Certificate.Status);
         Assert.NotNull(decision.Value.Certificate.Body);
         Assert.True(decision.Value.Certificate.Body!.NormalOperation);
-        Assert.Equal(1, decision.Value.Certificate.Body.PromiseCount);
+        Assert.Equal(2, decision.Value.Certificate.Body.PromiseCount);
         Assert.Single(decision.Value.Certificate.Body.PublicationIds);
         Assert.Contains(
             decision.Value.Actions,
@@ -37,23 +46,16 @@ public sealed class CommitmentRunnerSessionTests
         Assert.Equal(
             CanonicalJson.Serialize(first.Response),
             CanonicalJson.Serialize(retry.Response!));
-        Assert.Empty(session.CommittedOnlineState!.Commitments.Histories);
+        Assert.Empty(session.CommittedOnlineState.Commitments.Histories);
 
         var wrongEpoch = session.Process(
-            DecisionApplied(
-                2,
-                1_000,
-                decision.Value.DecisionHash.Value));
+            DecisionApplied(2, decision.Value.DecisionHash, epochId: 3));
 
         Assert.Equal("error", wrongEpoch.Response?.MessageType.Value);
         Assert.Empty(session.CommittedOnlineState.Commitments.Histories);
         Assert.Equal(RunnerSessionStatus.AwaitingDecisionApplied, session.Status);
 
-        var applied = session.Process(
-            DecisionApplied(
-                1,
-                1_000,
-                decision.Value.DecisionHash.Value));
+        var applied = session.Process(DecisionApplied(2, decision.Value.DecisionHash));
 
         Assert.Null(applied.Response);
         var history = Assert.Single(
@@ -66,25 +68,23 @@ public sealed class CommitmentRunnerSessionTests
     public void Restore_suffix_matches_genesis_replay_and_tamper_is_rejected()
     {
         var genesis = CreateInitializedSession();
-        var first = DecisionPayloadCodec.Decode(
-            genesis.Process(ReadFixture("wp2/valid-bootstrap-event-batch.json"))
-                .Response!.Payload).Value!;
-        _ = genesis.Process(DecisionApplied(1, 1_000, first.DecisionHash.Value));
+        Acknowledge(genesis, epoch: 1);
+        Acknowledge(genesis, epoch: 2);
         var checkpointResponse = genesis.Process(CheckpointRequest()).Response!;
         var checkpoint = CheckpointPayloadCodec.Decode(
             checkpointResponse.Payload);
         Assert.True(checkpoint.IsSuccess, checkpoint.Error?.Message);
 
         var uninterrupted = DecisionPayloadCodec.Decode(
-            genesis.Process(TimerBatch()).Response!.Payload).Value!;
+            genesis.Process(Batch(3)).Response!.Payload).Value!;
         var restored = CreateInitializedSession();
         var restoreResponse = restored.Process(
             RestoreRequest(checkpointResponse.Payload));
 
         Assert.Equal("restore", restoreResponse.Response?.MessageType.Value);
-        Assert.Equal(1, restored.AppliedEpoch);
+        Assert.Equal(2, restored.AppliedEpoch);
         Assert.Single(restored.CommittedOnlineState!.Commitments.Histories);
-        var replayResponse = restored.Process(TimerBatch()).Response!;
+        var replayResponse = restored.Process(Batch(3)).Response!;
         Assert.True(
             replayResponse.MessageType.Value == "decision",
             replayResponse.Payload.GetRawText());
@@ -110,7 +110,8 @@ public sealed class CommitmentRunnerSessionTests
     public void Checkpoint_is_forbidden_while_a_decision_is_pending()
     {
         var session = CreateInitializedSession();
-        _ = session.Process(ReadFixture("wp2/valid-bootstrap-event-batch.json"));
+        Acknowledge(session, epoch: 1);
+        _ = session.Process(Batch(2));
 
         var rejected = session.Process(CheckpointRequest());
 
@@ -123,121 +124,63 @@ public sealed class CommitmentRunnerSessionTests
 
     private static RunnerSession CreateInitializedSession()
     {
-        var policy = new CommitmentPolicy(
-            "uniform-v1",
-            CommitmentBudgetBasis.DecisionInduced,
-            CommitmentDimensionVocabulary.Ordered.Select(
-                dimension => new CommitmentDimensionLimit(
-                    dimension,
-                    null,
-                    CommitmentPhase.AllActive)),
-            new MaterialRevisionRule(1_000, 60_000));
-        var session = new RunnerSession(
-            RunnerDefaults.CapabilityRequirements,
-            RunnerExecutionMode.OnlineCommitment,
-            commitmentPolicies: new CommitmentPolicyCatalog([policy]),
-            stopDistances: NoDistances.Instance,
-            commitmentPolicyConfigurationHash: Hash(
-                new string('1', 64)));
+        var session = FinalRuns.NewSession(Run);
         Assert.Equal(
             "helloAck",
-            session.Process(ReadFixture("hello/valid-hello.json"))
+            session.Process(Utf8(Scenario("hello").Single()))
                 .Response?.MessageType.Value);
-        var initialize = JsonNode.Parse(
-            ReadFixture("initialize/valid-initialize-run.json"))!;
-        initialize["runId"] = "wp2-run-001";
-        initialize["scenarioId"] = "wp2-two-epoch-small";
-        initialize["payload"]!["manifest"]!["travelTimeSnapshotHash"] =
-            new string('a', 64);
         Assert.Equal(
             "initialized",
-            session.Process(
-                Encoding.UTF8.GetBytes(initialize.ToJsonString()))
+            session.Process(Utf8(Scenario("initializeRun").Single()))
                 .Response?.MessageType.Value);
         return session;
     }
 
-    private static byte[] DecisionApplied(
-        long epoch,
-        long simTime,
-        string hash) =>
-        Encoding.UTF8.GetBytes(
-            $$"""
-            {
-              "schemaVersion":"1.0.0",
-              "messageType":"decisionApplied",
-              "runId":"wp2-run-001",
-              "scenarioId":"wp2-two-epoch-small",
-              "epochId":{{epoch}},
-              "simTimeMs":{{simTime}},
-              "payload":{"decisionHash":"{{hash}}"}
-            }
-            """);
-
-    private static byte[] CheckpointRequest() =>
-        Encoding.UTF8.GetBytes(
-            """
-            {
-              "schemaVersion":"1.0.0",
-              "messageType":"checkpoint",
-              "runId":"wp2-run-001",
-              "scenarioId":"wp2-two-epoch-small",
-              "payload":{}
-            }
-            """);
-
-    private static byte[] RestoreRequest(JsonElement payload) =>
-        Encoding.UTF8.GetBytes(
-            $$"""
-            {
-              "schemaVersion":"1.0.0",
-              "messageType":"restore",
-              "runId":"wp2-run-001",
-              "scenarioId":"wp2-two-epoch-small",
-              "payload":{{payload.GetRawText()}}
-            }
-            """);
-
-    private static byte[] TimerBatch() =>
-        Encoding.UTF8.GetBytes(
-            """
-            {
-              "schemaVersion":"1.0.0",
-              "messageType":"eventBatch",
-              "runId":"wp2-run-001",
-              "scenarioId":"wp2-two-epoch-small",
-              "epochId":2,
-              "simTimeMs":1100,
-              "payload":{
-                "events":[{
-                  "eventSeq":4,
-                  "eventType":"timerTick",
-                  "payload":{}
-                }]
-              }
-            }
-            """);
-
-    private static byte[] ReadFixture(string path) =>
-        Encoding.UTF8.GetBytes(FixtureLoader.ReadUtf8(path));
-
-    private static Sha256Hex Hash(string value)
+    /// <summary>Sends the batch of <paramref name="epoch"/> and acknowledges its decision.</summary>
+    private static void Acknowledge(RunnerSession session, int epoch)
     {
-        Assert.True(Sha256Hex.TryCreate(value, out var hash));
-        return hash!;
+        var decision = DecisionPayloadCodec.Decode(
+            session.Process(Batch(epoch)).Response!.Payload).Value!;
+        Assert.Null(session.Process(DecisionApplied(epoch, decision.DecisionHash)).Response);
     }
 
-    private sealed class NoDistances : IStopDistanceLookup
-    {
-        public static NoDistances Instance { get; } = new();
+    private static byte[] Batch(int epoch) => Utf8(Scenario("eventBatch")[epoch - 1]);
 
-        public bool TryGetDistanceMillimeters(
-            NodeId fromNodeId,
-            NodeId toNodeId,
-            out long distanceMillimeters)
+    /// <summary>The adapter's acknowledgement of the decision made for the batch of <paramref name="epoch"/>, sent
+    /// with <paramref name="epochId"/> in place of that epoch when given.</summary>
+    private static byte[] DecisionApplied(int epoch, Sha256Hex decisionHash, long? epochId = null)
+    {
+        var batch = JsonNode.Parse(Scenario("eventBatch")[epoch - 1])!;
+        var applied = new JsonObject
         {
-            distanceMillimeters = 0;
-            return false;
-        }
+            ["schemaVersion"] = "1.0.0",
+            ["messageType"] = "decisionApplied",
+            ["runId"] = batch["runId"]!.GetValue<string>(),
+            ["scenarioId"] = batch["scenarioId"]!.GetValue<string>(),
+            ["epochId"] = epochId ?? batch["epochId"]!.GetValue<long>(),
+            ["simTimeMs"] = batch["simTimeMs"]!.GetValue<long>(),
+            ["payload"] = new JsonObject { ["decisionHash"] = decisionHash.Value },
+        };
+        return Utf8(applied.ToJsonString());
     }
+
+    private static byte[] CheckpointRequest() => Utf8(Scenario("checkpoint")[0]);
+
+    /// <summary>A restore request carrying <paramref name="payload"/> byte for byte.</summary>
+    private static byte[] RestoreRequest(JsonElement payload)
+    {
+        var checkpoint = JsonNode.Parse(Scenario("checkpoint")[0])!;
+        return Utf8(
+            "{\"schemaVersion\":\"1.0.0\",\"messageType\":\"restore\","
+            + $"\"runId\":{JsonSerializer.Serialize(checkpoint["runId"]!.GetValue<string>())},"
+            + $"\"scenarioId\":{JsonSerializer.Serialize(checkpoint["scenarioId"]!.GetValue<string>())},"
+            + $"\"payload\":{payload.GetRawText()}}}");
+    }
+
+    private static string[] Scenario(string messageType) =>
+        FinalRuns.ScenarioLines(Run)
+            .Where(line => RunnerProcess.MessageType(line) == messageType)
+            .ToArray();
+
+    private static byte[] Utf8(string json) => Encoding.UTF8.GetBytes(json);
 }

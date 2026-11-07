@@ -27,15 +27,13 @@ public static class RunnerHost
         Stream input,
         Stream output,
         TextWriter diagnostics,
-        CancellationToken cancellationToken = default,
+        ICommitmentPolicyProvider commitmentPolicies,
+        IStopDistanceLookup stopDistances,
+        Sha256Hex commitmentPolicyConfigurationHash,
+        Wp4RunnerConfiguration wp4Configuration,
+        bool useManifestSolverSeed,
         int maximumLineBytes = NdjsonReader.DefaultMaximumLineBytes,
-        RunnerExecutionMode executionMode =
-            RunnerExecutionMode.StructuralConformance,
-        ICommitmentPolicyProvider? commitmentPolicies = null,
-        IStopDistanceLookup? stopDistances = null,
-        Sha256Hex? commitmentPolicyConfigurationHash = null,
-        Wp4RunnerConfiguration? wp4Configuration = null,
-        bool useManifestSolverSeed = false)
+        CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
         ArgumentNullException.ThrowIfNull(output);
@@ -49,7 +47,6 @@ public static class RunnerHost
         {
             session = new RunnerSession(
                 RunnerDefaults.CapabilityRequirements,
-                executionMode,
                 commitmentPolicies: commitmentPolicies,
                 stopDistances: stopDistances,
                 commitmentPolicyConfigurationHash:
