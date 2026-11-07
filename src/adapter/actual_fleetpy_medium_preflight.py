@@ -477,11 +477,9 @@ def _run_repeat(arguments, repeat, source, driver, output_directory):
         request_db = {}
         vehicle_directory = (
             arguments.repository_root
-            / "benchmarks"
-            / "scenarios"
-            / "wp7-fleetpy-tiny"
-            / "data"
-            / "vehicles"
+            / "src"
+            / "adapter"
+            / "assets"
         )
         vehicles = [
             SimulationVehicle(
@@ -507,8 +505,9 @@ def _run_repeat(arguments, repeat, source, driver, output_directory):
 
         scenario_root = (
             arguments.repository_root
-            / "benchmarks"
-            / "scenarios"
+            / "src"
+            / "adapter"
+            / "assets"
             / "wp7-fleetpy-medium"
         )
         additional = [
