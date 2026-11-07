@@ -18,7 +18,7 @@ def settings(maximum_line_bytes: int | None) -> session.RideBoundSessionSettings
     path = pathlib.Path("unused")
     return session.RideBoundSessionSettings(
         path, path, path, path, path, path, path,
-        "run-1", "scenario-1", 1, "service", "policy", 60, 0, None,
+        "run-1", "scenario-1", 1, "service", "policy", 60, 2, None,
         "policy-id", "policy-version", "a" * 64, "b" * 40, (path,),
         maximum_line_bytes=maximum_line_bytes,
     )

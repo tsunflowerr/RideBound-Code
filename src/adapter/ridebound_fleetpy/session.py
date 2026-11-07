@@ -85,6 +85,21 @@ def _nonnegative_integer(values: Mapping[str, Any], key: str, default: int = 0) 
     return value
 
 
+def _snapshot_node_count(values: Mapping[str, Any]) -> int:
+    # Every travel snapshot holds all graph nodes, so this bound is the network's node count.
+    # 0, also the value of a missing key, asked for the sparse snapshot mode, which is gone.
+    key = "ridebound_complete_travel_snapshot_maximum_nodes"
+    value = _nonnegative_integer(values, key)
+    if value == 0:
+        raise _fail(
+            "RBWP7_SPARSE_TRAVEL_SNAPSHOT_REMOVED",
+            f"$.operator.{key}",
+            "sparse travel snapshot (0): "
+            "removed; see commit ebca912 (branch research/final-real-runs-2026-11-06)",
+        )
+    return value
+
+
 def _maximum_line_bytes(values: Mapping[str, Any]) -> int | None:
     key = "ridebound_maximum_line_bytes"
     value = _setting(values, key)
@@ -398,10 +413,7 @@ class RideBoundSessionSettings:
             _required_text(attributes, "ridebound_service_class"),
             commitment_policy_id,
             timeout,
-            _nonnegative_integer(
-                attributes,
-                "ridebound_complete_travel_snapshot_maximum_nodes",
-            ),
+            _snapshot_node_count(attributes),
             transcript_path,
             policy_id,
             policy_version,

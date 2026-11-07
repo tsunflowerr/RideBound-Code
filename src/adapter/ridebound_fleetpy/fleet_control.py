@@ -217,8 +217,6 @@ class RideBoundFleetControl(FleetControlBase):
             {"request": request},
             dedupe_key=f"request:{request['requestId']}",
         )
-        if self._rb_settings.complete_travel_snapshot_maximum_nodes == 0:
-            self._rb_travel_dirty = True
 
     def user_confirms_booking(self, rid, simulation_time):
         self._require_request_state(rid, "offered")
@@ -489,39 +487,16 @@ class RideBoundFleetControl(FleetControlBase):
         return self._rb_graph_nodes
 
     def _active_raw_nodes(self) -> set[Any]:
+        # A travel snapshot holds every graph node, up to the operator's node bound.
         maximum = self._rb_settings.complete_travel_snapshot_maximum_nodes
-        if maximum > 0:
-            graph_nodes = self._all_graph_nodes()
-            if len(graph_nodes) > maximum:
-                raise _fail(
-                    "RBWP7_COMPLETE_TRAVEL_SNAPSHOT_BOUND_EXCEEDED",
-                    "$.network.nodes",
-                    f"actual={len(graph_nodes)}; maximum={maximum}",
-                )
-            return set(graph_nodes)
-
-        nodes: set[Any] = set()
-        for vehicle in self.sim_vehicles:
-            self._collect_position_nodes(vehicle.pos, nodes)
-        for prq in self.rq_dict.values():
-            self._collect_position_nodes(prq.o_pos, nodes)
-            self._collect_position_nodes(prq.d_pos, nodes)
-        for route in self._rb_routes.values():
-            nodes.update(stop.raw_node for stop in route.remaining_stops)
-        if len(nodes) < 2:
-            for node in self._all_graph_nodes():
-                nodes.add(node)
-                if len(nodes) == 2:
-                    break
-        return nodes
-
-    @staticmethod
-    def _collect_position_nodes(position, nodes):
-        if not isinstance(position, tuple) or len(position) != 3:
-            raise _fail("RBWP7_POSITION_SHAPE_INVALID", "$.vehicle.position", repr(position))
-        nodes.add(position[0])
-        if position[1] is not None:
-            nodes.add(position[1])
+        graph_nodes = self._all_graph_nodes()
+        if len(graph_nodes) > maximum:
+            raise _fail(
+                "RBWP7_COMPLETE_TRAVEL_SNAPSHOT_BOUND_EXCEEDED",
+                "$.network.nodes",
+                f"actual={len(graph_nodes)}; maximum={maximum}",
+            )
+        return set(graph_nodes)
 
     def _build_travel_snapshot(self):
         nodes = sorted(self._active_raw_nodes(), key=repr)

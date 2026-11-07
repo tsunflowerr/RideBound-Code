@@ -156,6 +156,7 @@ class RunnerServiceBoundsSettingTests(unittest.TestCase):
                         "ridebound_scenario_id": "scenario-1",
                         "ridebound_master_seed": 7,
                         "ridebound_service_class": "standard",
+                        "ridebound_complete_travel_snapshot_maximum_nodes": 2,
                     }
                 )
 
