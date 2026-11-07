@@ -1,7 +1,6 @@
 using System.Buffers.Binary;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
-using System.Text;
 using RideBound.Application.State;
 using RideBound.Application.Travel;
 using RideBound.Contracts.Protocol;
@@ -22,13 +21,6 @@ namespace RideBound.Runner.Online;
 /// </summary>
 public sealed class OnlineStateCanonicalCache
 {
-    /// <summary>
-    /// False (default): ledger entries are separate segments, cache memory ~1x the canonical
-    /// ledger. True: one concatenated fragment per rider history as well (~2x memory, fewer
-    /// segments).
-    /// </summary>
-    public bool CacheHistories { get; init; }
-
     internal ConditionalWeakTable<RideRequest, byte[]> Requests { get; } = new();
 
     internal ConditionalWeakTable<VehicleState, byte[]> Vehicles { get; } = new();
@@ -37,15 +29,9 @@ public sealed class OnlineStateCanonicalCache
 
     internal ConditionalWeakTable<CommitmentLedgerEntry, byte[]> LedgerEntries { get; } = new();
 
-    internal ConditionalWeakTable<RiderCommitmentHistory, byte[]> LedgerHistories { get; } = new();
-
     internal ConditionalWeakTable<OperationalIncident, byte[]> Incidents { get; } = new();
 
     internal ConditionalWeakTable<CommitmentBreachRecord, byte[]> Breaches { get; } = new();
-
-    public long FragmentMisses { get; internal set; }
-
-    public long FragmentHits { get; internal set; }
 }
 
 /// <summary>
@@ -84,13 +70,7 @@ public static class OnlineStateCanonicalWriter
 
             firstHistory = false;
 
-            if (cache is { CacheHistories: true })
-            {
-                builder.Fragment(HistoryFragment(history, cache));
-                continue;
-            }
-
-            // Default: one segment per ledger entry (memory ~1x the canonical ledger bytes).
+            // One segment per ledger entry (memory ~1x the canonical ledger bytes).
             var item = new CanonicalObject(glue);
             item.Member("entries"u8).Byte((byte)'[');
 
@@ -101,7 +81,7 @@ public static class OnlineStateCanonicalWriter
                     glue.Byte((byte)',');
                 }
 
-                builder.Fragment(Cached(cache?.LedgerEntries, history.Entries[index], cache, WriteLedgerEntry));
+                builder.Fragment(Cached(cache?.LedgerEntries, history.Entries[index], WriteLedgerEntry));
             }
 
             glue.Byte((byte)']');
@@ -128,7 +108,7 @@ public static class OnlineStateCanonicalWriter
             }
 
             first = false;
-            builder.Fragment(Cached(cache?.Requests, request, cache, WriteRequest));
+            builder.Fragment(Cached(cache?.Requests, request, WriteRequest));
         }
 
         glue.Byte((byte)']');
@@ -147,7 +127,7 @@ public static class OnlineStateCanonicalWriter
         if (state.TravelTimes is not null)
         {
             root.Member("travelTimes"u8);
-            builder.Fragment(Cached(cache?.TravelTimes, state.TravelTimes, cache, WriteTravelTimes));
+            builder.Fragment(Cached(cache?.TravelTimes, state.TravelTimes, WriteTravelTimes));
         }
 
         root.Member("vehicles"u8).Byte((byte)'[');
@@ -163,7 +143,7 @@ public static class OnlineStateCanonicalWriter
             }
 
             first = false;
-            builder.Fragment(Cached(cache?.Vehicles, vehicle, cache, WriteVehicle));
+            builder.Fragment(Cached(cache?.Vehicles, vehicle, WriteVehicle));
         }
 
         glue.Byte((byte)']');
@@ -191,13 +171,11 @@ public static class OnlineStateCanonicalWriter
     private static byte[] Cached<T>(
         ConditionalWeakTable<T, byte[]>? table,
         T value,
-        OnlineStateCanonicalCache? cache,
         Action<CanonicalBuffer, T> write)
         where T : class
     {
         if (table is not null && table.TryGetValue(value, out var cached))
         {
-            cache!.FragmentHits++;
             return cached;
         }
 
@@ -207,55 +185,7 @@ public static class OnlineStateCanonicalWriter
 
         if (table is not null)
         {
-            cache!.FragmentMisses++;
             table.AddOrUpdate(value, fragment);
-        }
-
-        return fragment;
-    }
-
-    private static byte[] HistoryFragment(
-        RiderCommitmentHistory history,
-        OnlineStateCanonicalCache? cache)
-    {
-        if (cache is not null && cache.LedgerHistories.TryGetValue(history, out var cached))
-        {
-            cache.FragmentHits++;
-            return cached;
-        }
-
-        var entries = new byte[history.Entries.Count][];
-        var size = 64 + Encoding.UTF8.GetMaxByteCount(history.RequestId.Value.Length);
-
-        for (var index = 0; index < entries.Length; index++)
-        {
-            entries[index] = Cached(cache?.LedgerEntries, history.Entries[index], cache, WriteLedgerEntry);
-            size += entries[index].Length + 1;
-        }
-
-        var buffer = new CanonicalBuffer(size);
-        var item = new CanonicalObject(buffer);
-        item.Member("entries"u8).Byte((byte)'[');
-
-        for (var index = 0; index < entries.Length; index++)
-        {
-            if (index > 0)
-            {
-                buffer.Byte((byte)',');
-            }
-
-            buffer.Raw(entries[index]);
-        }
-
-        buffer.Byte((byte)']');
-        item.Member("requestId"u8).String(history.RequestId.Value);
-        item.End();
-        var fragment = buffer.ToArray();
-
-        if (cache is not null)
-        {
-            cache.FragmentMisses++;
-            cache.LedgerHistories.AddOrUpdate(history, fragment);
         }
 
         return fragment;
@@ -487,7 +417,7 @@ public static class OnlineStateCanonicalWriter
             }
 
             first = false;
-            builder.Fragment(Cached(cache?.Breaches, breach, cache, WriteBreach));
+            builder.Fragment(Cached(cache?.Breaches, breach, WriteBreach));
         }
 
         glue.Byte((byte)']');
@@ -504,7 +434,7 @@ public static class OnlineStateCanonicalWriter
             }
 
             first = false;
-            builder.Fragment(Cached(cache?.Incidents, incident, cache, WriteIncident));
+            builder.Fragment(Cached(cache?.Incidents, incident, WriteIncident));
         }
 
         glue.Byte((byte)']');
