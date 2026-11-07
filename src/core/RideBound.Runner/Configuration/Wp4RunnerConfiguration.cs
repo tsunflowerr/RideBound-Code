@@ -10,6 +10,7 @@ using RideBound.Contracts.Serialization;
 using RideBound.Domain.Common;
 using RideBound.Domain.Validation;
 using RideBound.Solvers.OrTools;
+using static RideBound.Runner.Configuration.JsonConfig;
 
 namespace RideBound.Runner.Configuration;
 
@@ -780,59 +781,6 @@ public sealed class Wp4RunnerConfiguration
         }
     }
 
-    private static void RequireObject(
-        JsonElement element,
-        IReadOnlySet<string> allowed,
-        IReadOnlySet<string> required,
-        string path)
-    {
-        if (element.ValueKind != JsonValueKind.Object)
-        {
-            throw new InvalidDataException($"'{path}' must be an object.");
-        }
-
-        var names = element.EnumerateObject()
-            .Select(value => value.Name)
-            .ToArray();
-        var unknown = names.FirstOrDefault(value => !allowed.Contains(value));
-        var missing = required.FirstOrDefault(value => !names.Contains(value));
-
-        if (unknown is not null || missing is not null)
-        {
-            throw new InvalidDataException(
-                unknown is not null
-                    ? $"Unknown field '{unknown}' at '{path}'."
-                    : $"Missing field '{missing}' at '{path}'.");
-        }
-    }
-
-    private static string Text(JsonElement element, string propertyName)
-    {
-        var value = element.GetProperty(propertyName);
-
-        if (value.ValueKind != JsonValueKind.String
-            || string.IsNullOrWhiteSpace(value.GetString()))
-        {
-            throw new InvalidDataException(
-                $"'{propertyName}' must be a non-empty string.");
-        }
-
-        return value.GetString()!;
-    }
-
-    private static bool OptionalBoolean(JsonElement element, string name) =>
-        element.TryGetProperty(name, out var value)
-            ? Boolean(value, name)
-            : false;
-
-    private static bool Boolean(JsonElement element, string name) =>
-        element.ValueKind switch
-        {
-            JsonValueKind.True => true,
-            JsonValueKind.False => false,
-            _ => throw new InvalidDataException($"'{name}' must be a boolean."),
-        };
-
     private static long PositiveInteger(JsonElement element, string name)
     {
         var value = NonNegativeInteger(element, name);
@@ -869,7 +817,4 @@ public sealed class Wp4RunnerConfiguration
             ? (int)value
             : throw new InvalidDataException($"'{name}' exceeds Int32.");
     }
-
-    private static IReadOnlySet<string> Fields(params string[] names) =>
-        new HashSet<string>(names, StringComparer.Ordinal);
 }

@@ -6,6 +6,7 @@ using RideBound.Contracts.Serialization;
 using RideBound.Domain.Commitments;
 using RideBound.Domain.Common;
 using RideBound.Domain.Validation;
+using static RideBound.Runner.Configuration.JsonConfig;
 
 namespace RideBound.Runner.Configuration;
 
@@ -365,46 +366,8 @@ public sealed class CommitmentPolicyConfiguration :
         return locks;
     }
 
-    private static void RequireObject(
-        JsonElement element,
-        IReadOnlySet<string> allowed,
-        IReadOnlySet<string> required,
-        string path)
-    {
-        if (element.ValueKind != JsonValueKind.Object)
-        {
-            throw new InvalidDataException($"'{path}' must be an object.");
-        }
-
-        var names = element.EnumerateObject()
-            .Select(value => value.Name)
-            .ToArray();
-        var unknown = names.FirstOrDefault(value => !allowed.Contains(value));
-        var missing = required.FirstOrDefault(value => !names.Contains(value));
-
-        if (unknown is not null || missing is not null)
-        {
-            throw new InvalidDataException(
-                unknown is not null
-                    ? $"Unknown field '{unknown}' at '{path}'."
-                    : $"Missing field '{missing}' at '{path}'.");
-        }
-    }
-
-    private static string Text(JsonElement element, string propertyName)
-    {
-        var value = element.GetProperty(propertyName);
-
-        if (value.ValueKind != JsonValueKind.String
-            || string.IsNullOrWhiteSpace(value.GetString()))
-        {
-            throw new InvalidDataException(
-                $"'{propertyName}' must be a non-empty string.");
-        }
-
-        return value.GetString()!;
-    }
-
+    // The commitment integer readers keep their own error text ("canonical non-negative integer"),
+    // which differs from the WP4 parser's.
     private static long NonNegativeInteger(
         JsonElement element,
         string propertyName)
@@ -433,19 +396,6 @@ public sealed class CommitmentPolicyConfiguration :
         element.TryGetProperty(propertyName, out var value)
             ? PositiveInteger(value, propertyName)
             : null;
-
-    private static bool OptionalBoolean(JsonElement element, string propertyName) =>
-        element.TryGetProperty(propertyName, out var value)
-        && value.ValueKind switch
-        {
-            JsonValueKind.True => true,
-            JsonValueKind.False => false,
-            _ => throw new InvalidDataException(
-                $"'{propertyName}' must be a boolean."),
-        };
-
-    private static IReadOnlySet<string> Fields(params string[] values) =>
-        new HashSet<string>(values, StringComparer.Ordinal);
 
     private readonly record struct StopArc(NodeId From, NodeId To);
 }
