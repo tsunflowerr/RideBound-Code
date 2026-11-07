@@ -4,11 +4,11 @@
 'use strict';
 const { Worker } = require('worker_threads');
 const path = require('path');
-const NETF = require('./netfull.js');
+const NETWORK = require('./network.js');
 const LIB = require('./shlib.js');
 
 let NET_SHARED = null;
-function sharedNet() { if (!NET_SHARED) NET_SHARED = NETF.share(NETF.build(LIB.SP)); return NET_SHARED; }
+function sharedNet() { if (!NET_SHARED) NET_SHARED = NETWORK.share(NETWORK.build(LIB.SP)); return NET_SHARED; }
 
 function runPool(tasks, { workers = 8, onResult = () => {}, log = true } = {}) {
   if (workers > 8) throw new Error('at most 8 worker threads');
