@@ -41,7 +41,10 @@ class SessionLineBoundsTests(unittest.TestCase):
     def test_the_setting_is_optional_and_can_only_raise_the_shipped_bound(self) -> None:
         self.assertIsNone(session._maximum_line_bytes({}))
         self.assertEqual(64 * MIB, session._maximum_line_bytes({"ridebound_maximum_line_bytes": 64 * MIB}))
-        self.assertEqual(1024 * MIB, session._maximum_line_bytes({"op_ridebound_maximum_line_bytes": 1024 * MIB}))
+        self.assertEqual(1024 * MIB, session._maximum_line_bytes({"ridebound_maximum_line_bytes": 1024 * MIB}))
+        with self.assertRaises(AdapterFailure) as raised:
+            session._maximum_line_bytes({"op_ridebound_maximum_line_bytes": 1024 * MIB})
+        self.assertEqual("RBWP7_SETTING_PREFIX_REMOVED", raised.exception.code)
         for value in (True, "67108864", MIB, 64 * MIB - 1, 1024 * MIB + 1):
             with self.assertRaises(AdapterFailure) as raised:
                 session._maximum_line_bytes({"ridebound_maximum_line_bytes": value})

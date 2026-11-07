@@ -45,16 +45,14 @@ def _required_text(values: Mapping[str, Any], key: str) -> str:
 
 
 def _setting(values: Mapping[str, Any], key: str, default: Any = None) -> Any:
-    direct = values.get(key, default)
-    prefixed_key = f"op_{key}"
-    prefixed = values.get(prefixed_key, default)
-    if key in values and prefixed_key in values and direct != prefixed:
+    # Settings use their direct names; an "op_"-prefixed copy is refused.
+    if f"op_{key}" in values:
         raise _fail(
-            "RBWP7_SETTING_CONFLICT",
-            f"$.operator.{key}",
-            f"direct={direct!r}; prefixed={prefixed!r}",
+            "RBWP7_SETTING_PREFIX_REMOVED",
+            f"$.operator.op_{key}",
+            "op_ prefix: removed; see commit ebca912 (branch research/final-real-runs-2026-11-06)",
         )
-    return direct if key in values else prefixed
+    return values.get(key, default)
 
 
 def _required_file(values: Mapping[str, Any], key: str) -> pathlib.Path:
