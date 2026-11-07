@@ -55,7 +55,6 @@ public sealed record InsertionCandidate(
         CandidateScheduleStrategy.EarliestFeasible,
     long RelocatedWaitMilliseconds = 0,
     long? CertifiedForwardSlackMilliseconds = null,
-    RequestId? RepairedIncumbentRequestId = null,
     RequestId? RelocatedRequestId = null,
     RelocationRole? RelocationRole = null);
 
@@ -95,9 +94,6 @@ public sealed record VehicleCandidateLoss(
     bool WorkBudgetExhausted,
     bool CandidateCapApplied,
     bool OmissionCountWasSaturated = false,
-    long EligibleRepairRequestCount = 0,
-    long ConsideredRepairRequestCount = 0,
-    long OmittedRepairRequestCount = 0,
     VehicleId? VehicleId = null);
 
 /// <summary>
@@ -156,8 +152,7 @@ public sealed record CandidateGenerationDiagnostics(
     public bool IsComplete => OmittedRequestCount == 0
         && VehicleLosses.All(
             loss => loss.OmittedUnexpandedCandidatePathCount == 0
-                && loss.OmittedFeasibleCandidateCountByCap == 0
-                && loss.OmittedRepairRequestCount == 0)
+                && loss.OmittedFeasibleCandidateCountByCap == 0)
         && (RelocationLosses is null
             || RelocationLosses.All(
                 loss => loss.OmittedRiderCount == 0
@@ -210,7 +205,6 @@ public sealed record CandidateGenerationOptions
         CandidateScheduleStrategy scheduleStrategy =
             CandidateScheduleStrategy.EarliestFeasible,
         long maximumExplorationWorkUnits = 100_000,
-        int maximumRepairRequestsConsideredPerVehicle = 0,
         CandidateRetentionStrategy retentionStrategy =
             CandidateRetentionStrategy.LegacyAcceptedCountCostSlack,
         WaitingRiderRelocationGenerationOptions? waitingRiderRelocation = null,
@@ -240,12 +234,6 @@ public sealed record CandidateGenerationOptions
                 nameof(maximumExplorationWorkUnits));
         }
 
-        if (maximumRepairRequestsConsideredPerVehicle < 0)
-        {
-            throw new ArgumentOutOfRangeException(
-                nameof(maximumRepairRequestsConsideredPerVehicle));
-        }
-
         if (!Enum.IsDefined(retentionStrategy))
         {
             throw new ArgumentOutOfRangeException(nameof(retentionStrategy));
@@ -266,8 +254,6 @@ public sealed record CandidateGenerationOptions
         ExactSmallMode = exactSmallMode;
         ScheduleStrategy = scheduleStrategy;
         MaximumExplorationWorkUnits = maximumExplorationWorkUnits;
-        MaximumRepairRequestsConsideredPerVehicle =
-            maximumRepairRequestsConsideredPerVehicle;
         if (stopServiceDurationMs is < 0 or > DomainLimits.MaxCanonicalInteger)
         {
             throw new ArgumentOutOfRangeException(nameof(stopServiceDurationMs));
@@ -288,12 +274,6 @@ public sealed record CandidateGenerationOptions
 
     public long MaximumExplorationWorkUnits { get; }
 
-    /// <summary>
-    /// Zero disables the B4 neighborhood. A positive value bounds how many
-    /// eligible waiting incumbents may each seed one atomic pair-repair move.
-    /// </summary>
-    public int MaximumRepairRequestsConsideredPerVehicle { get; }
-
     public CandidateRetentionStrategy RetentionStrategy { get; }
 
     /// <summary>
@@ -308,18 +288,6 @@ public sealed record CandidateGenerationOptions
     /// the Runner plan a non-zero boarding time (bridge step 1.3, opt-in).
     /// </summary>
     public Duration StopServiceDuration { get; }
-
-    public CandidateGenerationOptions WithRepairRequestCap(int maximumRequests) =>
-        new(
-            MaximumCandidatesPerVehicle,
-            MaximumNewRequestsPerVehicle,
-            ExactSmallMode,
-            ScheduleStrategy,
-            MaximumExplorationWorkUnits,
-            maximumRequests,
-            RetentionStrategy,
-            WaitingRiderRelocation,
-            StopServiceDuration.Milliseconds);
 
     public static CandidateGenerationOptions ExactSmall { get; } =
         new(
@@ -376,10 +344,6 @@ public static class CandidateGenerationFailureCodes
     public const string RequestBoundOmission = "REQUEST_BOUND_OMISSION";
     public const string WorkBoundOmission = "WORK_BOUND_OMISSION";
     public const string CandidateCapOmission = "CANDIDATE_CAP_OMISSION";
-    public const string RepairRequestBoundOmission =
-        "REPAIR_REQUEST_BOUND_OMISSION";
-    public const string ExactSmallRepairRequestBoundExceeded =
-        "EXACT_SMALL_REPAIR_REQUEST_BOUND_EXCEEDED";
     public const string RelocationRiderBoundOmission =
         "RELOCATION_RIDER_BOUND_OMISSION";
     public const string RelocationWorkBoundOmission =

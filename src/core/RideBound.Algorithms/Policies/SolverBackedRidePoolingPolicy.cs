@@ -12,14 +12,12 @@ namespace RideBound.Algorithms.Policies;
 
 public enum RidePoolingPolicyKind
 {
-    NoReassignmentRepair,
     RideBoundHardVector,
     CommitSoftHardHybrid,
 }
 
 public static class RidePoolingPolicyRegistry
 {
-    public const string NoReassignmentRepair = "no-reassignment-repair";
     public const string RideBoundHardVector = "ridebound-hard-vector";
     public const string CommitSoftHardHybrid = "commit-soft-hard-hybrid";
 
@@ -29,20 +27,17 @@ public static class RidePoolingPolicyRegistry
     {
         policyKind = policyId switch
         {
-            NoReassignmentRepair => RidePoolingPolicyKind.NoReassignmentRepair,
             RideBoundHardVector => RidePoolingPolicyKind.RideBoundHardVector,
             CommitSoftHardHybrid => RidePoolingPolicyKind.CommitSoftHardHybrid,
             _ => default,
         };
-        return policyId is NoReassignmentRepair
-            or RideBoundHardVector
+        return policyId is RideBoundHardVector
             or CommitSoftHardHybrid;
     }
 
     public static string ToPolicyId(RidePoolingPolicyKind policyKind) =>
         policyKind switch
         {
-            RidePoolingPolicyKind.NoReassignmentRepair => NoReassignmentRepair,
             RidePoolingPolicyKind.RideBoundHardVector => RideBoundHardVector,
             RidePoolingPolicyKind.CommitSoftHardHybrid => CommitSoftHardHybrid,
             _ => throw new ArgumentOutOfRangeException(nameof(policyKind)),
@@ -54,7 +49,6 @@ public sealed record SolverBackedRidePoolingPolicyOptions
     public SolverBackedRidePoolingPolicyOptions(
         RidePoolingPolicyKind policyKind,
         DeterministicCandidateSelectionExecutionBudget executionBudget,
-        int maximumRepairRequestsConsideredPerVehicle = 0,
         bool captureCandidatePortfolioEvidence = false,
         bool forcedReferenceRecovery = false,
         bool forcedNoWorseRecovery = false,
@@ -86,20 +80,6 @@ public sealed record SolverBackedRidePoolingPolicyOptions
             throw new ArgumentOutOfRangeException(nameof(policyKind));
         }
 
-        if (policyKind == RidePoolingPolicyKind.NoReassignmentRepair)
-        {
-            if (maximumRepairRequestsConsideredPerVehicle < 1)
-            {
-                throw new ArgumentOutOfRangeException(
-                    nameof(maximumRepairRequestsConsideredPerVehicle));
-            }
-        }
-        else if (maximumRepairRequestsConsideredPerVehicle != 0)
-        {
-            throw new ArgumentException(
-                "Repair request capacity is only valid for the B4 policy.");
-        }
-
         if (forcedReferenceRecovery
             && policyKind is not (RidePoolingPolicyKind.RideBoundHardVector
                 or RidePoolingPolicyKind.CommitSoftHardHybrid))
@@ -110,8 +90,6 @@ public sealed record SolverBackedRidePoolingPolicyOptions
 
         PolicyKind = policyKind;
         ExecutionBudget = executionBudget;
-        MaximumRepairRequestsConsideredPerVehicle =
-            maximumRepairRequestsConsideredPerVehicle;
         CaptureCandidatePortfolioEvidence = captureCandidatePortfolioEvidence;
         ForcedReferenceRecovery = forcedReferenceRecovery;
         ForcedNoWorseRecovery = forcedNoWorseRecovery;
@@ -121,8 +99,6 @@ public sealed record SolverBackedRidePoolingPolicyOptions
     public RidePoolingPolicyKind PolicyKind { get; }
 
     public DeterministicCandidateSelectionExecutionBudget ExecutionBudget { get; }
-
-    public int MaximumRepairRequestsConsideredPerVehicle { get; }
 
     public bool CaptureCandidatePortfolioEvidence { get; }
 
@@ -177,7 +153,7 @@ public sealed record SolverBackedPolicyDecisionResult
 }
 
 /// <summary>
-/// Production policy path for B4, C1 and C2. It generates the shared physical
+/// Production policy path for C1 and C2. It generates the shared physical
 /// candidate set once, performs only the named mechanism gate/assessment, maps
 /// the exact hierarchy to the solver port, and independently validates every
 /// solver or fallback fleet selection before returning it to Runner.
@@ -234,14 +210,9 @@ public sealed class SolverBackedRidePoolingPolicy
             throw new ArgumentNullException(nameof(warningProfiles));
         }
 
-        var effectiveGenerationOptions = policyOptions.PolicyKind
-            == RidePoolingPolicyKind.NoReassignmentRepair
-                ? generationOptions.WithRepairRequestCap(
-                    policyOptions.MaximumRepairRequestsConsideredPerVehicle)
-                : generationOptions;
         var generated = _generator.Generate(
             context.ReducedState,
-            effectiveGenerationOptions);
+            generationOptions);
 
         if (!generated.IsSuccess)
         {
@@ -253,7 +224,7 @@ public sealed class SolverBackedRidePoolingPolicy
         IReadOnlyDictionary<string, HardVectorCandidateAssessment>?
             hardAssessments = null;
         var validationWorkUnits = 0L;
-        var effectivePolicies = EffectivePolicies(context, policyOptions);
+        var effectivePolicies = context.Policies;
         var profile = SolverBackedObjectiveProfile.RollingCost;
         IReadOnlySet<VehicleId>? forcedReferenceVehicles = null;
 
@@ -401,17 +372,6 @@ public sealed class SolverBackedRidePoolingPolicy
             .ToFrozenSet();
         return selected.Count == 0 ? null : selected;
     }
-
-    private static ICommitmentPolicyProvider EffectivePolicies(
-        CommitmentMechanismContext context,
-        SolverBackedRidePoolingPolicyOptions options) =>
-        options.PolicyKind switch
-        {
-            RidePoolingPolicyKind.RideBoundHardVector
-                or RidePoolingPolicyKind.CommitSoftHardHybrid => context.Policies,
-            _ => MechanismCommitmentPolicyProvider.RevisionPenalty(
-                context.Policies),
-        };
 
     private static DomainResult<CandidateSelectionPreSolveAccounting>
         CreateAccounting(

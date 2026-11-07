@@ -652,20 +652,11 @@ public sealed class SolverBackedFleetSelectionTests
                 selectionObjectiveOrder: SolverBackedSelectionObjectiveOrder.CostFirst)
                 .SelectionObjectiveOrder);
 
-        // B4 carries its mandatory repair capacity, so only the cost-first rule can refuse it.
-        foreach (var (kind, repairCapacity) in new[]
-                 {
-                     (RidePoolingPolicyKind.NoReassignmentRepair, 1),
-                     (RidePoolingPolicyKind.CommitSoftHardHybrid, 0),
-                 })
-        {
-            Assert.Throws<ArgumentException>(
-                () => new SolverBackedRidePoolingPolicyOptions(
-                    kind,
-                    budget,
-                    maximumRepairRequestsConsideredPerVehicle: repairCapacity,
-                    selectionObjectiveOrder: SolverBackedSelectionObjectiveOrder.CostFirst));
-        }
+        Assert.Throws<ArgumentException>(
+            () => new SolverBackedRidePoolingPolicyOptions(
+                RidePoolingPolicyKind.CommitSoftHardHybrid,
+                budget,
+                selectionObjectiveOrder: SolverBackedSelectionObjectiveOrder.CostFirst));
 
         Assert.Throws<ArgumentOutOfRangeException>(
             () => new SolverBackedRidePoolingPolicyOptions(

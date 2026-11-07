@@ -49,7 +49,7 @@ public sealed class StopServiceDurationTests
     }
 
     [Fact]
-    public void A_negative_dwell_is_refused_and_the_repair_cap_keeps_the_dwell()
+    public void A_negative_dwell_is_refused()
     {
         Assert.Throws<ArgumentOutOfRangeException>(
             () => new CandidateGenerationOptions(100, 1, exactSmallMode: false, stopServiceDurationMs: -1));
@@ -58,6 +58,5 @@ public sealed class StopServiceDurationTests
         var options = new CandidateGenerationOptions(100, 1, exactSmallMode: false, stopServiceDurationMs: 24_000);
 
         Assert.Equal(24_000, options.StopServiceDuration.Milliseconds);
-        Assert.Equal(24_000, options.WithRepairRequestCap(2).StopServiceDuration.Milliseconds);
     }
 }

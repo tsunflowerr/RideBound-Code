@@ -599,7 +599,7 @@ public sealed class ExactSmallCommitmentDifferentialTests
                 [],
                 false,
                 new VehicleCandidateLoss(
-                    0, 0, 0, 0, 0, 0, 0, false, false, false, 0, 0, 0)),
+                    0, 0, 0, 0, 0, 0, 0, false, false, false)),
         };
 
         var assessed = new HardVectorCandidateAssessor().AssessAndFilter(
@@ -1755,22 +1755,6 @@ public sealed class ExactSmallCommitmentDifferentialTests
                 RidePoolingPolicyKind.RideBoundHardVector,
                 budget,
                 forcedNoWorseRecovery: true));
-    }
-
-    [Fact]
-    public void Forced_recovery_is_rejected_for_a_policy_other_than_C1_or_C2()
-    {
-        var budget = DeterministicCandidateSelectionExecutionBudget.Create(
-            100_000,
-            100_000,
-            DeterministicSolverBudget.Create(1000, 1000, 1).Value!).Value!;
-
-        Assert.Throws<ArgumentException>(
-            () => new SolverBackedRidePoolingPolicyOptions(
-                RidePoolingPolicyKind.NoReassignmentRepair,
-                budget,
-                maximumRepairRequestsConsideredPerVehicle: 1,
-                forcedReferenceRecovery: true));
     }
 
     [Fact]

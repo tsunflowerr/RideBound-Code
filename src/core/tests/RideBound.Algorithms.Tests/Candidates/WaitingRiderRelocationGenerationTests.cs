@@ -174,8 +174,51 @@ public sealed class WaitingRiderRelocationGenerationTests
         Assert.Equal(CandidateGenerationFailureCodes.ExactSmallRelocationRiderBoundExceeded, exact.Witness!.Code);
     }
 
+    /// <summary>
+    /// A donor seed needs the rider's whole pickup and drop-off pair in the mutable suffix: a rider whose pair
+    /// sits in the frozen prefix, or who is on board, is never eligible.
+    /// </summary>
     [Fact]
-    public void Relocation_options_survive_the_repair_cap_copy_and_reject_origin_hold()
+    public void Only_a_waiting_rider_with_its_whole_pair_in_the_mutable_suffix_is_eligible()
+    {
+        var second = AlgorithmTestData.PendingRequest(
+            "second",
+            AlgorithmTestData.NodeThree,
+            AlgorithmTestData.NodeOne);
+        var state = Fixture(secondWaiting: second);
+        var donor = state.Run.Vehicles[AlgorithmTestData.VehicleOne];
+        var builder = new WaitingRiderRelocationBuilder();
+
+        Assert.Equal([Waiting, second.Id], builder.Eligible(state, donor, null).EligibleRequestIds);
+
+        // The waiting rider's pair moves to the frozen prefix, not yet executed.
+        var frozen = VehicleState.Create(
+            donor.Id,
+            donor.Capacity,
+            donor.OccupiedSeats,
+            donor.Position,
+            donor.OnboardRequestIds,
+            donor.AcceptedRequestIds,
+            RoutePlan.Create(
+                donor.Route.Version,
+                executedStopCount: 0,
+                donor.Route.MutableSuffix.Where(stop => stop.RequestId == Waiting).ToArray(),
+                donor.Route.MutableSuffix.Where(stop => stop.RequestId == second.Id).ToArray()).Value!,
+            donor.LastObservedEpoch).Value!;
+        Assert.Equal([second.Id], builder.Eligible(state, frozen, null).EligibleRequestIds);
+
+        // The waiting rider boards.
+        var boarded = state with
+        {
+            Run = state.Run.Board(donor.Id, Waiting, donor.Route.Version, new SimTime(1_000)).Value!,
+        };
+        Assert.Equal(
+            [second.Id],
+            builder.Eligible(boarded, boarded.Run.Vehicles[donor.Id], null).EligibleRequestIds);
+    }
+
+    [Fact]
+    public void Relocation_options_reject_origin_hold_and_non_positive_caps()
     {
         var options = new CandidateGenerationOptions(
             100,
@@ -183,7 +226,8 @@ public sealed class WaitingRiderRelocationGenerationTests
             exactSmallMode: false,
             waitingRiderRelocation: new WaitingRiderRelocationGenerationOptions(2, 3));
 
-        Assert.Equal(options.WaitingRiderRelocation, options.WithRepairRequestCap(4).WaitingRiderRelocation);
+        Assert.Equal(2, options.WaitingRiderRelocation!.MaximumRidersPerVehicle);
+        Assert.Equal(3, options.WaitingRiderRelocation.MaximumTargetVehicles);
         Assert.Throws<ArgumentException>(
             () => new CandidateGenerationOptions(
                 100,

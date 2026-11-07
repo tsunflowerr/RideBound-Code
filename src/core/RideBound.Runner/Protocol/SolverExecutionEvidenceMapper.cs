@@ -199,11 +199,6 @@ internal static class SolverExecutionEvidenceMapper
             writer.WriteNumber("certifiedForwardSlackMs", slack);
         }
 
-        if (candidate.RepairedIncumbentRequestId is { } repaired)
-        {
-            writer.WriteString("repairedIncumbentRequestId", repaired.Value);
-        }
-
         // G2 fields are written only for relocation candidates, so evidence without G2 is unchanged.
         if (candidate.RelocatedRequestId is { } relocated)
         {
@@ -392,15 +387,11 @@ internal static class SolverExecutionEvidenceMapper
             writer.WriteBoolean(
                 "omissionCountWasSaturated",
                 loss.OmissionCountWasSaturated);
-            writer.WriteNumber(
-                "eligibleRepairRequestCount",
-                loss.EligibleRepairRequestCount);
-            writer.WriteNumber(
-                "consideredRepairRequestCount",
-                loss.ConsideredRepairRequestCount);
-            writer.WriteNumber(
-                "omittedRepairRequestCount",
-                loss.OmittedRepairRequestCount);
+            // Protocol v1 evidence keeps the three counts of the removed waiting-incumbent repair search (B4),
+            // which were always 0 without it.
+            writer.WriteNumber("eligibleRepairRequestCount", 0L);
+            writer.WriteNumber("consideredRepairRequestCount", 0L);
+            writer.WriteNumber("omittedRepairRequestCount", 0L);
             writer.WriteEndObject();
         }
 

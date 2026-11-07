@@ -11,19 +11,6 @@ namespace RideBound.Algorithms.Tests.Policies;
 public sealed class CommitmentMechanismPolicyTests
 {
     [Fact]
-    public void Mechanism_providers_remove_every_cumulative_limit()
-    {
-        var source = new CommitmentPolicyCatalog([SourcePolicy(hardLimit: 0)]);
-        var b2 = MechanismCommitmentPolicyProvider.RevisionPenalty(source);
-
-        Assert.True(b2.TryGetPolicy("uniform-v1", out var penalty));
-        Assert.All(penalty.Limits.Values, limit => Assert.Null(limit.HardLimit));
-        Assert.Null(penalty.FreezeHorizon);
-        Assert.Equal(PromiseLock.None, penalty.FreezeHorizonLocks);
-        Assert.Equal(PromiseLock.None, penalty.FinalConfirmationLocks);
-    }
-
-    [Fact]
     public void C1_acceptance_then_worst_utilization_dominate_revision_and_cost()
     {
         var request = AlgorithmTestData.PendingRequest();
@@ -288,18 +275,4 @@ public sealed class CommitmentMechanismPolicyTests
         long dropEta = 0,
         long material = 0) =>
         new(pickupEta, dropEta, material, 0, 0, 0, 0, 0, 0, 0);
-
-    private static CommitmentPolicy SourcePolicy(long? hardLimit) =>
-        new(
-            "uniform-v1",
-            CommitmentBudgetBasis.DecisionInduced,
-            CommitmentDimensionVocabulary.Ordered.Select(
-                dimension => new CommitmentDimensionLimit(
-                    dimension,
-                    hardLimit,
-                    CommitmentPhase.AllActive)),
-            new MaterialRevisionRule(1, null),
-            new Duration(10_000),
-            PromiseLock.PickupEta,
-            PromiseLock.DropEta);
 }

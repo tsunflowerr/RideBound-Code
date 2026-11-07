@@ -27,7 +27,7 @@ public sealed record WaitingRiderRelocationEligibility(
 /// work accounting and identities stay in <see cref="InsertionCandidateGenerator"/>.
 /// <list type="bullet">
 /// <item>Eligible riders: confirmed waiting riders of the donor whose pickup and drop are both in
-/// its mutable suffix, by pickup index then ordinal id (the B4 template, waiting only).</item>
+/// its mutable suffix, by pickup index then ordinal id (waiting riders only).</item>
 /// <item>Receivers: every other vehicle, or the k nearest; each takes the rider's own two stops at
 /// every precedence-preserving position of its mutable suffix and no new request.</item>
 /// </list>
@@ -48,7 +48,7 @@ public sealed class WaitingRiderRelocationBuilder
                     && request.AssignedVehicleId == donor.Id
                     && donor.AcceptedRequestIds.Contains(request.Id)
                     && !donor.OnboardRequestIds.Contains(request.Id)
-                    && WaitingIncumbentRepairSeedBuilder.HasExactMutablePair(
+                    && HasExactMutablePair(
                         donor.Route,
                         request.Id))
             .Select(
@@ -175,5 +175,29 @@ public sealed class WaitingRiderRelocationBuilder
         }
 
         throw new InvalidOperationException("An eligible rider must have both stops in the mutable suffix.");
+    }
+
+    /// <summary>
+    /// True when the rider has no stop left in the frozen prefix and exactly one pickup and one drop-off in the mutable
+    /// suffix, so the whole pair can be taken out.
+    /// </summary>
+    private static bool HasExactMutablePair(
+        RoutePlan route,
+        RequestId requestId)
+    {
+        if (route.FrozenPrefix
+            .Skip(route.ExecutedStopCount)
+            .Any(stop => stop.RequestId == requestId))
+        {
+            return false;
+        }
+
+        var pickupCount = route.MutableSuffix.Count(
+            stop => stop.RequestId == requestId
+                && stop.Kind == RouteStopKind.Pickup);
+        var dropCount = route.MutableSuffix.Count(
+            stop => stop.RequestId == requestId
+                && stop.Kind == RouteStopKind.DropOff);
+        return pickupCount == 1 && dropCount == 1;
     }
 }

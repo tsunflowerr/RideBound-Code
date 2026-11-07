@@ -859,44 +859,14 @@ public sealed class Wp4RunnerIntegrationTests
     }
 
     [Fact]
-    public void No_worse_recovery_is_rejected_outside_the_solver_backed_C1_and_C2()
+    public void An_unknown_commitment_recovery_value_is_rejected()
     {
         var commitment = CommitmentConfiguration();
-        var json = RepairJson("no-worse-than-reference-v1");
 
         Assert.Contains(
-            "requires the solver-backed C1 or C2 policy",
+            "commitmentRecovery",
             Assert.Throws<InvalidDataException>(
-                () => Wp4RunnerConfiguration.Decode(Encoding.UTF8.GetBytes(json), commitment)).Message);
-    }
-
-    [Fact]
-    public void Forced_reference_recovery_is_rejected_outside_the_solver_backed_C1_and_C2()
-    {
-        var commitment = CommitmentConfiguration();
-        var json = RepairJson("forced-reference-v1");
-
-        Assert.Contains(
-            "requires the solver-backed C1 or C2 policy",
-            Assert.Throws<InvalidDataException>(
-                () => Wp4RunnerConfiguration.Decode(Encoding.UTF8.GetBytes(json), commitment)).Message);
-        Assert.Throws<InvalidDataException>(
-            () => HardVectorConfiguration(commitment, recovery: "forced-reference-v2"));
-    }
-
-    /// <summary>
-    /// The final C1 configuration turned into the solver-backed no-reassignment-repair policy (B4, a policy other
-    /// than C1 and C2): without the C1-only selectionObjectiveOrder, with the repair block that B4 requires, and with
-    /// <paramref name="recovery"/> as commitmentRecovery.
-    /// </summary>
-    private static string RepairJson(string recovery)
-    {
-        var json = Final.FinalRuns.FinalC1Wp4WithoutShadow();
-        json["policyId"] = RidePoolingPolicyRegistry.NoReassignmentRepair;
-        Assert.True(json.Remove("selectionObjectiveOrder"));
-        json["repair"] = new JsonObject { ["maximumRequestsConsideredPerVehicle"] = 1 };
-        json["commitmentRecovery"] = recovery;
-        return json.ToJsonString();
+                () => HardVectorConfiguration(commitment, recovery: "forced-reference-v2")).Message);
     }
 
     /// <summary>

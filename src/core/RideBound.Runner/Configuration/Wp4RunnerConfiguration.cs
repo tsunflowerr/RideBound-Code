@@ -37,7 +37,6 @@ public sealed class Wp4RunnerConfiguration : ICommitmentWarningProfileProvider
         "initialPromiseTrigger",
         "candidateGeneration",
         "solverExecution",
-        "repair",
         "warningProfiles",
         "emitSolverExecutionEvidence",
         "solverExecutionEvidenceProfile",
@@ -147,8 +146,6 @@ public sealed class Wp4RunnerConfiguration : ICommitmentWarningProfileProvider
         "maximumSolverDeterministicTimeMicros",
         "randomSeed",
         "skipConstantObjectiveLevels");
-    private static readonly IReadOnlySet<string> RepairFields = Fields(
-        "maximumRequestsConsideredPerVehicle");
     private static readonly IReadOnlySet<string> WarningProfileFields = Fields(
         "policyId",
         "limits");
@@ -276,7 +273,6 @@ public sealed class Wp4RunnerConfiguration : ICommitmentWarningProfileProvider
         return new SolverBackedRidePoolingPolicyOptions(
             source.PolicyKind,
             execution.Value!,
-            source.MaximumRepairRequestsConsideredPerVehicle,
             source.CaptureCandidatePortfolioEvidence,
             source.ForcedReferenceRecovery,
             source.ForcedNoWorseRecovery,
@@ -342,7 +338,6 @@ public sealed class Wp4RunnerConfiguration : ICommitmentWarningProfileProvider
 
         var generation = ReadGeneration(root.GetProperty("candidateGeneration"));
         var hasSolver = root.TryGetProperty("solverExecution", out var solverElement);
-        var hasRepair = root.TryGetProperty("repair", out var repairElement);
         var hasWarnings = root.TryGetProperty("warningProfiles", out var warningsElement);
         var emitSolverExecutionEvidence = root.TryGetProperty(
             "emitSolverExecutionEvidence",
@@ -377,7 +372,6 @@ public sealed class Wp4RunnerConfiguration : ICommitmentWarningProfileProvider
         RequireVariantFields(
             policyKind,
             hasSolver,
-            hasRepair,
             hasWarnings);
 
         var (forcedReferenceRecovery, forcedNoWorseRecovery) = root.TryGetProperty(
@@ -570,25 +564,9 @@ public sealed class Wp4RunnerConfiguration : ICommitmentWarningProfileProvider
         if (hasSolver)
         {
             var budget = ReadSolverBudget(solverElement);
-            var repairCap = 0;
-
-            if (hasRepair)
-            {
-                RequireObject(
-                    repairElement,
-                    RepairFields,
-                    RepairFields,
-                    "$.repair");
-                repairCap = PositiveInt32(
-                    repairElement.GetProperty(
-                        "maximumRequestsConsideredPerVehicle"),
-                    "maximumRequestsConsideredPerVehicle");
-            }
-
             solverOptions = new SolverBackedRidePoolingPolicyOptions(
                 policyKind,
                 budget,
-                repairCap,
                 solverExecutionEvidenceProfile is not null,
                 forcedReferenceRecovery,
                 forcedNoWorseRecovery,
@@ -851,8 +829,9 @@ public sealed class Wp4RunnerConfiguration : ICommitmentWarningProfileProvider
     /// Runs before the field checks, so a file that still selects a removed feature is always refused with the
     /// pointer to the commit that has it: the multiple-plan policy (policyId 'least-commitment-consensus', B5)
     /// and its 'multiplePlan' block, the policies in <see cref="RemovedPolicies"/>: rolling-cost (B1) and
-    /// rolling-penalty (B2), and the fixed-freeze-horizon policy (B3) and its 'fixedFreeze' block. The checks run
-    /// in the order the features were removed, so a file that an earlier check refused keeps its message.
+    /// rolling-penalty (B2), the fixed-freeze-horizon policy (B3) and its 'fixedFreeze' block, and the
+    /// no-reassignment-repair policy (B4) and its 'repair' block. The checks run in the order the features were
+    /// removed, so a file that an earlier check refused keeps its message.
     /// </summary>
     private static void RejectRemovedFeatures(JsonElement root)
     {
@@ -886,19 +865,27 @@ public sealed class Wp4RunnerConfiguration : ICommitmentWarningProfileProvider
                 "WP4 policyId 'fixed-freeze-horizon' and the 'fixedFreeze' block "
                 + $"(the fixed-freeze-horizon policy): {RemovedFeature}");
         }
+
+        if (root.ValueKind == JsonValueKind.Object
+            && (root.TryGetProperty("repair", out _)
+                || root.TryGetProperty("policyId", out var repairPolicyId)
+                    && repairPolicyId.ValueKind == JsonValueKind.String
+                    && repairPolicyId.GetString() == "no-reassignment-repair"))
+        {
+            throw new InvalidDataException(
+                "WP4 policyId 'no-reassignment-repair' and the 'repair' block "
+                + $"(the no-reassignment-repair policy): {RemovedFeature}");
+        }
     }
 
     private static void RequireVariantFields(
         RidePoolingPolicyKind policy,
         bool hasSolver,
-        bool hasRepair,
         bool hasWarnings)
     {
-        var isB4 = policy == RidePoolingPolicyKind.NoReassignmentRepair;
         var isC2 = policy == RidePoolingPolicyKind.CommitSoftHardHybrid;
 
         if (!hasSolver
-            || hasRepair != isB4
             || hasWarnings != isC2)
         {
             throw new InvalidDataException(

@@ -13,7 +13,6 @@ public sealed class InsertionCandidateGenerator
     private readonly PhysicalPlanValidator _validator;
     private readonly ForwardSlackProfileCache _slackCache;
     private readonly OriginHoldCandidateTransformer _originHoldTransformer;
-    private readonly WaitingIncumbentRepairSeedBuilder _repairSeedBuilder;
     private readonly CandidatePortfolioRetainer _portfolioRetainer;
     private readonly WaitingRiderRelocationBuilder _relocationBuilder;
 
@@ -22,7 +21,6 @@ public sealed class InsertionCandidateGenerator
         CandidateScheduleEvaluator? scheduleEvaluator = null,
         ForwardSlackProfileCache? slackCache = null,
         OriginHoldCandidateTransformer? originHoldTransformer = null,
-        WaitingIncumbentRepairSeedBuilder? repairSeedBuilder = null,
         CandidatePortfolioRetainer? portfolioRetainer = null,
         WaitingRiderRelocationBuilder? relocationBuilder = null)
     {
@@ -31,8 +29,6 @@ public sealed class InsertionCandidateGenerator
             new ForwardSlackProfileBuilder(scheduleEvaluator));
         _originHoldTransformer =
             originHoldTransformer ?? new OriginHoldCandidateTransformer();
-        _repairSeedBuilder =
-            repairSeedBuilder ?? new WaitingIncumbentRepairSeedBuilder();
         _portfolioRetainer = portfolioRetainer
             ?? new CandidatePortfolioRetainer();
         _relocationBuilder = relocationBuilder
@@ -262,7 +258,6 @@ public sealed class InsertionCandidateGenerator
                         donorOnly.Value!,
                         [],
                         isNoOp: false,
-                        repairedIncumbentRequestId: null,
                         options,
                         ServiceQualityAllowance.Strict,
                         donorFeasible,
@@ -302,7 +297,6 @@ public sealed class InsertionCandidateGenerator
                             route,
                             [],
                             isNoOp: false,
-                            repairedIncumbentRequestId: null,
                             options,
                             ServiceQualityAllowance.Strict,
                             receiverFeasible,
@@ -322,7 +316,6 @@ public sealed class InsertionCandidateGenerator
                     state,
                     donor,
                     requests,
-                    [],
                     options,
                     ServiceQualityAllowance.Strict,
                     donorFeasible,
@@ -402,25 +395,6 @@ public sealed class InsertionCandidateGenerator
             new Dictionary<string, InsertionCandidate>(StringComparer.Ordinal);
         var prunedById =
             new Dictionary<string, CandidatePruneWitness>(StringComparer.Ordinal);
-        var repair = options.MaximumRepairRequestsConsideredPerVehicle == 0
-            ? new WaitingIncumbentRepairSeedResult([], [], [], [])
-            : _repairSeedBuilder.Build(
-                state,
-                vehicle,
-                options.MaximumRepairRequestsConsideredPerVehicle);
-
-        if (options.ExactSmallMode && repair.OmittedRequestIds.Count > 0)
-        {
-            return VehicleGenerationResult.Failure(
-                new CandidateGenerationWitness(
-                    CandidateGenerationFailureCodes
-                        .ExactSmallRepairRequestBoundExceeded,
-                    "Exact-small B4 repair cannot omit an eligible waiting " +
-                    "incumbent above its explicit request cap.",
-                    vehicle.Id,
-                    repair.OmittedRequestIds[0],
-                    "maximumRepairRequestsConsideredPerVehicle"));
-        }
 
         // ADR-045. Probe the unchanged active route first. Whatever it can no
         // longer honour on the two service-quality dimensions is exogenous by
@@ -468,7 +442,6 @@ public sealed class InsertionCandidateGenerator
             vehicle.Route,
             [],
             isNoOp: true,
-            repairedIncumbentRequestId: null,
             options,
             serviceQuality,
             feasibleById,
@@ -503,7 +476,6 @@ public sealed class InsertionCandidateGenerator
             state,
             vehicle,
             pendingRequests,
-            repair.Seeds,
             options,
             ServiceQualityAllowance.Strict,
             feasibleById,
@@ -547,20 +519,6 @@ public sealed class InsertionCandidateGenerator
 
         var omissions = new List<CandidateOmissionWitness>();
 
-        if (repair.OmittedRequestIds.Count > 0)
-        {
-            omissions.Add(
-                new CandidateOmissionWitness(
-                    CandidateGenerationFailureCodes.RepairRequestBoundOmission,
-                    repair.OmittedRequestIds.Count,
-                    CandidateIdentity.CreateOmissionDigest(
-                        repair.OmittedRequestIds.Select(id => id.Value)),
-                    "Eligible same-vehicle waiting incumbents beyond the " +
-                    "explicit B4 repair-request cap were omitted.",
-                    vehicle.Id,
-                    repair.OmittedRequestIds));
-        }
-
         if (exploration.OmittedCandidatePathCount > 0)
         {
             omissions.Add(
@@ -599,14 +557,10 @@ public sealed class InsertionCandidateGenerator
             exploration.OmittedCandidatePathCount > 0,
             omittedByCap.Length > 0,
             exploration.OmissionCountWasSaturated,
-            repair.EligibleRequestIds.Count,
-            repair.ConsideredRequestIds.Count,
-            repair.OmittedRequestIds.Count,
             vehicle.Id);
         var wasTruncated = requestsWereOmitted
             || loss.WorkBudgetExhausted
-            || loss.CandidateCapApplied
-            || loss.OmittedRepairRequestCount > 0;
+            || loss.CandidateCapApplied;
 
         return VehicleGenerationResult.Success(
             new VehicleCandidateSet(
@@ -638,7 +592,6 @@ public sealed class InsertionCandidateGenerator
         OnlineState state,
         VehicleState vehicle,
         IReadOnlyList<RideRequest> requests,
-        IReadOnlyList<WaitingIncumbentRepairSeed> repairSeeds,
         CandidateGenerationOptions options,
         ServiceQualityAllowance serviceQuality,
         IDictionary<string, InsertionCandidate> feasibleById,
@@ -649,35 +602,14 @@ public sealed class InsertionCandidateGenerator
             SearchPriorityComparer.Instance);
         // A G2 donor search has the single root D0 (the donor suffix without the moved
         // rider). Its root-only path is D0 itself, evaluated by the caller like the no-op.
-        var roots = relocationRoot is not null
-            ? [CreateNode(requestIndex: 0, relocationRoot.Suffix, [], repairedIncumbentRequestId: null)]
-            : new[]
-            {
-                CreateNode(
-                    requestIndex: 0,
-                    vehicle.Route.MutableSuffix,
-                    [],
-                    repairedIncumbentRequestId: null),
-            }
-            .Concat(
-                repairSeeds.Select(
-                    seed => CreateNode(
-                        requestIndex: 0,
-                        seed.Route.MutableSuffix,
-                        [],
-                        seed.RequestId)))
-            .GroupBy(node => node.StableId, StringComparer.Ordinal)
-            .Select(group => group.First())
-            .ToArray();
-
+        var root = CreateNode(
+            requestIndex: 0,
+            relocationRoot?.Suffix ?? vehicle.Route.MutableSuffix,
+            []);
         var rootIsActiveRoute = relocationRoot is null;
-
-        foreach (var root in roots)
-        {
-            frontier.Enqueue(
-                root,
-                CreatePriority(state, vehicle, requests, serviceQuality, root, rootIsActiveRoute));
-        }
+        frontier.Enqueue(
+            root,
+            CreatePriority(state, vehicle, requests, serviceQuality, root, rootIsActiveRoute));
         var workUnits = 0L;
         var evaluatedPaths = 0L;
 
@@ -688,8 +620,7 @@ public sealed class InsertionCandidateGenerator
 
             if (node.RequestIndex == requests.Count)
             {
-                if (node.InsertedRequestIds.Count == 0
-                    && node.RepairedIncumbentRequestId is null)
+                if (node.InsertedRequestIds.Count == 0)
                 {
                     continue;
                 }
@@ -705,7 +636,6 @@ public sealed class InsertionCandidateGenerator
                         routeResult.Value!,
                         node.InsertedRequestIds,
                         isNoOp: false,
-                        node.RepairedIncumbentRequestId,
                         options,
                         serviceQuality,
                         feasibleById,
@@ -796,8 +726,7 @@ public sealed class InsertionCandidateGenerator
         yield return CreateNode(
             node.RequestIndex + 1,
             node.Suffix,
-            node.InsertedRequestIds,
-            node.RepairedIncumbentRequestId);
+            node.InsertedRequestIds);
 
         // The dwell of an inserted stop is CandidateGenerationOptions.StopServiceDuration (0 by default).
         var pickup = new RouteStop(
@@ -852,8 +781,7 @@ public sealed class InsertionCandidateGenerator
                 yield return CreateOwnedNode(
                     node.RequestIndex + 1,
                     withPair,
-                    inserted,
-                    node.RepairedIncumbentRequestId);
+                    inserted);
             }
         }
     }
@@ -870,14 +798,10 @@ public sealed class InsertionCandidateGenerator
         var potentialAccepted = node.InsertedRequestIds.Count + remaining;
         var mandatoryService = node.MandatoryServiceMilliseconds;
 
-        // The ordinary root is the current route, but a B4 repair root already
-        // carries a different mutable suffix. Ranking that root by the current
-        // route's slack would make the bounded best-first order blind to the
-        // repair it is deciding whether to explore. Keep the no-repair fast
-        // path, while every repair root (and every expanded node) is projected
-        // on its own candidate suffix.
+        // The ordinary root is the current route, so it is ranked on that route
+        // directly; a G2 donor root carries a different mutable suffix, so it
+        // (like every expanded node) is projected on its own candidate suffix.
         var route = node.RequestIndex == 0
-                    && node.RepairedIncumbentRequestId is null
                     && rootIsActiveRoute
             ? vehicle.Route
             : node.Project(vehicle).Value;
@@ -912,13 +836,11 @@ public sealed class InsertionCandidateGenerator
     private static ExplorationNode CreateNode(
         int requestIndex,
         IEnumerable<RouteStop> suffix,
-        IEnumerable<RequestId> insertedRequestIds,
-        RequestId? repairedIncumbentRequestId) =>
+        IEnumerable<RequestId> insertedRequestIds) =>
         CreateOwnedNode(
             requestIndex,
             suffix.ToArray(),
-            Array.AsReadOnly(insertedRequestIds.ToArray()),
-            repairedIncumbentRequestId);
+            Array.AsReadOnly(insertedRequestIds.ToArray()));
 
     /// <summary>
     /// Builds a node from a suffix array the caller has just allocated and will
@@ -928,13 +850,11 @@ public sealed class InsertionCandidateGenerator
     private static ExplorationNode CreateOwnedNode(
         int requestIndex,
         RouteStop[] ownedSuffix,
-        IReadOnlyList<RequestId> insertedRequestIds,
-        RequestId? repairedIncumbentRequestId) =>
+        IReadOnlyList<RequestId> insertedRequestIds) =>
         new(
             requestIndex,
             Array.AsReadOnly(ownedSuffix),
-            insertedRequestIds,
-            repairedIncumbentRequestId);
+            insertedRequestIds);
 
     private static BigInteger CountTerminalCandidatePaths(
         ExplorationNode node,
@@ -943,8 +863,7 @@ public sealed class InsertionCandidateGenerator
         Count(
             node.Suffix.Count,
             requestCount - node.RequestIndex,
-            node.InsertedRequestIds.Count > 0
-                || node.RepairedIncumbentRequestId is not null,
+            node.InsertedRequestIds.Count > 0,
             memo);
 
     private static BigInteger Count(
@@ -994,7 +913,6 @@ public sealed class InsertionCandidateGenerator
         RoutePlan route,
         IReadOnlyList<RequestId> insertedRequestIds,
         bool isNoOp,
-        RequestId? repairedIncumbentRequestId,
         CandidateGenerationOptions options,
         ServiceQualityAllowance serviceQuality,
         IDictionary<string, InsertionCandidate> feasibleById,
@@ -1170,7 +1088,6 @@ public sealed class InsertionCandidateGenerator
                 selectedStrategy,
                 relocatedWait,
                 selectedProfile.CertifiedDelayAtRouteStartMilliseconds,
-                repairedIncumbentRequestId,
                 relocation?.RequestId,
                 relocationRole));
     }
@@ -1213,8 +1130,7 @@ public sealed class InsertionCandidateGenerator
     private sealed class ExplorationNode(
         int requestIndex,
         IReadOnlyList<RouteStop> suffix,
-        IReadOnlyList<RequestId> insertedRequestIds,
-        RequestId? repairedIncumbentRequestId)
+        IReadOnlyList<RequestId> insertedRequestIds)
     {
         private string? _stableId;
         private DomainResult<RoutePlan>? _projection;
@@ -1227,9 +1143,6 @@ public sealed class InsertionCandidateGenerator
         public IReadOnlyList<RequestId> InsertedRequestIds { get; } =
             insertedRequestIds;
 
-        public RequestId? RepairedIncumbentRequestId { get; } =
-            repairedIncumbentRequestId;
-
         public ForwardSlackCacheLookup? SlackLookup { get; private set; }
 
         public long MandatoryServiceMilliseconds =>
@@ -1239,11 +1152,16 @@ public sealed class InsertionCandidateGenerator
                     total,
                     stop.ServiceDuration.Milliseconds));
 
+        /// <remarks>
+        /// The digest still ends with the token "no-repair", which marked a node outside the removed
+        /// waiting-incumbent repair search (B4). Node ids order the frontier on ties and name the
+        /// omitted subtrees in the omission digests, so the token keeps both byte-identical.
+        /// </remarks>
         public string StableId => _stableId ??= $"{RequestIndex:D8}:" +
             CandidateIdentity.CreateSearchNodeDigest(
                 Suffix.Select(stop => stop.StopId.Value)
                     .Concat(InsertedRequestIds.Select(request => request.Value))
-                    .Append(RepairedIncumbentRequestId?.Value ?? "no-repair"),
+                    .Append("no-repair"),
                 Suffix.Count + InsertedRequestIds.Count + 1);
 
         public DomainResult<RoutePlan> Project(VehicleState vehicle) =>

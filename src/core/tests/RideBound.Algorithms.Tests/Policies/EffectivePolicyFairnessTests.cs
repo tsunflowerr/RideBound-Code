@@ -12,13 +12,12 @@ using RideBound.Domain.Validation;
 namespace RideBound.Algorithms.Tests.Policies;
 
 /// <summary>
-/// The WP8 budget frontier is only interpretable if a commitment budget binds the
-/// treatment arm and leaves the baseline arm untouched. That property is not an
-/// operational convention — it is decided by
-/// <c>SolverBackedRidePoolingPolicy.EffectivePolicies</c>, which every arm routes
-/// through and which hands the runner the policy provider the validator then scores
-/// the decision against. These tests pin that switch so a later edit cannot silently
-/// make one arm easier or harder than the published comparison claims.
+/// The WP8 budget frontier is only interpretable if a commitment budget binds every
+/// arm exactly as configured. That property is not an operational convention — it is
+/// decided by the effective policies that <c>SolverBackedRidePoolingPolicy</c> hands
+/// the runner, which the validator then scores the decision against. These tests pin
+/// them so a later edit cannot silently make one arm easier or harder than the
+/// published comparison claims.
 /// </summary>
 public sealed class EffectivePolicyFairnessTests
 {
@@ -26,26 +25,10 @@ public sealed class EffectivePolicyFairnessTests
     private const long DropEtaHardLimit = 30_000;
 
     /// <summary>
-    /// The baseline arm — B4 — still publishes the common promise
-    /// projection used for measurement, but its named mechanism is not scored
-    /// against a cumulative burden limit. Only C1 and C2 retain those limits.
+    /// No declared kind is exempt from the cumulative burden limits: the baseline arms
+    /// that were scored without them (B1 to B4) were removed, and C1 and C2 keep them.
     /// </summary>
-    private static readonly RidePoolingPolicyKind[] ExemptKinds =
-    [
-        RidePoolingPolicyKind.NoReassignmentRepair,
-    ];
-
-    [Theory]
-    [InlineData(RidePoolingPolicyKind.NoReassignmentRepair)]
-    public void A_baseline_arm_is_scored_without_any_cumulative_limit(
-        RidePoolingPolicyKind kind)
-    {
-        var policy = EffectivePolicyFor(kind);
-
-        Assert.All(
-            policy.Limits.Values,
-            limit => Assert.Null(limit.HardLimit));
-    }
+    private static readonly RidePoolingPolicyKind[] ExemptKinds = [];
 
     [Theory]
     [InlineData(RidePoolingPolicyKind.RideBoundHardVector)]
@@ -61,45 +44,9 @@ public sealed class EffectivePolicyFairnessTests
     }
 
     /// <summary>
-    /// The frontier sweeps the budget for the treatment arm only. If tightening the
-    /// budget also moved the baseline, every paired difference would confound the two
-    /// changes and the curve would measure nothing. This asserts the baseline is scored
-    /// against the same limits at both ends of the sweep.
-    /// </summary>
-    [Fact]
-    public void Tightening_the_budget_cannot_move_the_baseline_arm()
-    {
-        var underTightBudget = EffectivePolicyFor(
-            RidePoolingPolicyKind.NoReassignmentRepair,
-            dropEtaHardLimit: 1);
-        var underNoBudget = EffectivePolicyFor(
-            RidePoolingPolicyKind.NoReassignmentRepair,
-            dropEtaHardLimit: null);
-
-        Assert.Equal(
-            Fingerprint(underNoBudget),
-            Fingerprint(underTightBudget));
-    }
-
-    /// <summary>
     /// The drop-ETA deadline is a research probe for the deadline family. Like every
-    /// cumulative limit it binds only the commitment arms: a baseline arm scored
-    /// against a deadline would silently stop being a baseline.
+    /// cumulative limit it binds the commitment arms as configured.
     /// </summary>
-    [Theory]
-    [InlineData(RidePoolingPolicyKind.NoReassignmentRepair)]
-    public void A_baseline_arm_never_inherits_a_configured_deadline(
-        RidePoolingPolicyKind kind)
-    {
-        var policy = EffectivePolicyFor(
-            kind,
-            deadlineSlackMs: 30_000,
-            deadlineTwoSided: true);
-
-        Assert.Null(policy.DropEtaDeadlineSlack);
-        Assert.False(policy.DropEtaDeadlineTwoSided);
-    }
-
     [Theory]
     [InlineData(RidePoolingPolicyKind.RideBoundHardVector)]
     [InlineData(RidePoolingPolicyKind.CommitSoftHardHybrid)]
@@ -117,28 +64,8 @@ public sealed class EffectivePolicyFairnessTests
 
     /// <summary>
     /// The per-decision revision limit (P-b) and the relaxed deadline (DL-HZ) are research
-    /// probes of the same kind: a baseline arm scored against either would stop being a
-    /// baseline, so B4 never receives them.
+    /// probes of the same kind, and the commitment arms keep them as configured.
     /// </summary>
-    [Theory]
-    [InlineData(RidePoolingPolicyKind.NoReassignmentRepair)]
-    public void A_baseline_arm_never_inherits_a_revision_limit_or_a_relaxed_deadline(
-        RidePoolingPolicyKind kind)
-    {
-        var policy = EffectivePolicyFor(
-            kind,
-            deadlineSlackMs: 30_000,
-            deadlineRelaxed: true,
-            revisionLimitMs: 60_000);
-
-        Assert.Null(policy.DropEtaRevisionLimit);
-        Assert.False(policy.DropEtaDeadlineRelaxed);
-        Assert.Null(policy.DropEtaDeadlineSlack);
-        Assert.Equal(
-            Fingerprint(EffectivePolicyFor(kind)),
-            Fingerprint(policy));
-    }
-
     [Theory]
     [InlineData(RidePoolingPolicyKind.RideBoundHardVector)]
     [InlineData(RidePoolingPolicyKind.CommitSoftHardHybrid)]
@@ -161,18 +88,6 @@ public sealed class EffectivePolicyFairnessTests
                     deadlineRelaxed: true,
                     revisionLimitMs: 60_000)),
             Fingerprint(policy));
-    }
-
-    [Fact]
-    public void B4_keeps_its_declared_repair_capacity()
-    {
-        var solver = DeterministicSolverBudget.Create(1000, 1000, 1).Value!;
-        var execution = DeterministicCandidateSelectionExecutionBudget.Create(
-            100_000,
-            100_000,
-            solver).Value!;
-        var b4 = OptionsFor(RidePoolingPolicyKind.NoReassignmentRepair, execution);
-        Assert.Equal(1, b4.MaximumRepairRequestsConsideredPerVehicle);
     }
 
     /// <summary>
@@ -270,7 +185,7 @@ public sealed class EffectivePolicyFairnessTests
                     maximumNewRequestsPerVehicle: 1,
                     exactSmallMode: false,
                     maximumExplorationWorkUnits: 100_000),
-                OptionsFor(kind, executionBudget),
+                new SolverBackedRidePoolingPolicyOptions(kind, executionBudget),
                 WarningProfiles());
 
         Assert.True(result.IsSuccess, result.Witness?.Message);
@@ -302,25 +217,6 @@ public sealed class EffectivePolicyFairnessTests
             dropEtaDeadlineTwoSided: deadlineTwoSided,
             dropEtaDeadlineRelaxed: deadlineRelaxed,
             dropEtaRevisionLimit: revisionLimitMs is long limit ? new Duration(limit) : null);
-
-    /// <summary>
-    /// Each arm carries its own mandatory settings — B4 needs a repair capacity — and the
-    /// constructor rejects the settings that do not belong to that arm. Building them here
-    /// keeps the sweep over every declared kind honest instead of narrowing it to the arms
-    /// that happen to need no arguments.
-    /// </summary>
-    private static SolverBackedRidePoolingPolicyOptions OptionsFor(
-        RidePoolingPolicyKind kind,
-        DeterministicCandidateSelectionExecutionBudget executionBudget) =>
-        kind switch
-        {
-            RidePoolingPolicyKind.NoReassignmentRepair =>
-                new SolverBackedRidePoolingPolicyOptions(
-                    kind,
-                    executionBudget,
-                    maximumRepairRequestsConsideredPerVehicle: 1),
-            _ => new SolverBackedRidePoolingPolicyOptions(kind, executionBudget),
-        };
 
     /// <summary>
     /// Only C2 consults warning profiles, but supplying them for every arm keeps the
