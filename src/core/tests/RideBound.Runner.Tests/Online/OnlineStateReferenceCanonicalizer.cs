@@ -117,12 +117,6 @@ internal static class OnlineStateReferenceCanonicalizer
                 writer.WriteEndObject();
             }
 
-            if (state.PlanPool.Version != 0)
-            {
-                writer.WritePropertyName("planPool");
-                WritePlanPool(writer, state.PlanPool);
-            }
-
             writer.WritePropertyName("commitmentLedger");
             WriteCommitmentLedger(writer, state.Commitments);
             writer.WritePropertyName("incidentLedger");
@@ -302,46 +296,6 @@ internal static class OnlineStateReferenceCanonicalizer
         }
 
         writer.WriteEndArray();
-    }
-
-    private static void WritePlanPool(
-        Utf8JsonWriter writer,
-        VersionedPlanPool pool)
-    {
-        writer.WriteStartObject();
-        writer.WriteNumber("version", pool.Version);
-        writer.WriteNumber("sourceEpoch", pool.SourceEpoch);
-        writer.WriteString("distinguishedPlanId", pool.DistinguishedPlanId);
-        writer.WritePropertyName("plans");
-        writer.WriteStartArray();
-
-        foreach (var plan in pool.Plans.OrderBy(
-                     value => value.PlanId,
-                     StringComparer.Ordinal))
-        {
-            writer.WriteStartObject();
-            writer.WriteString("planId", plan.PlanId);
-            writer.WriteNumber("sourceEpoch", plan.SourceEpoch);
-            writer.WritePropertyName("vehiclePlans");
-            writer.WriteStartArray();
-
-            foreach (var vehicle in plan.VehiclePlans.OrderBy(
-                         value => value.VehicleId.Value,
-                         StringComparer.Ordinal))
-            {
-                writer.WriteStartObject();
-                writer.WriteString("vehicleId", vehicle.VehicleId.Value);
-                writer.WritePropertyName("route");
-                WriteRoute(writer, vehicle.Route);
-                writer.WriteEndObject();
-            }
-
-            writer.WriteEndArray();
-            writer.WriteEndObject();
-        }
-
-        writer.WriteEndArray();
-        writer.WriteEndObject();
     }
 
     private static string ToProtocolValue(RequestLifecycle lifecycle) =>

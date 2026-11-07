@@ -111,11 +111,6 @@ public static class OnlineStateCheckpointCodec
 
             var incidents = ReadIncidentLedger(
                 element.GetProperty("incidentLedger"));
-            var planPool = element.TryGetProperty(
-                "planPool",
-                out var planPoolElement)
-                ? ReadPlanPool(planPoolElement)
-                : VersionedPlanPool.Empty;
             var nextEventSequence = Integer(element, "nextEventSeq");
             var expectedInitialHash = Text(
                 element,
@@ -126,7 +121,6 @@ public static class OnlineStateCheckpointCodec
                 expectedInitialHash,
                 commitments,
                 incidents,
-                planPool,
                 nextEventSequence);
 
             if (relationError is not null)
@@ -140,10 +134,7 @@ public static class OnlineStateCheckpointCodec
                 nextEventSequence,
                 expectedInitialHash,
                 commitments,
-                incidents)
-            {
-                PlanPool = planPool,
-            };
+                incidents);
             var inputCanonical = CanonicalJson.Canonicalize(
                 JsonSerializer.SerializeToUtf8Bytes(element));
             var rebuiltCanonical = OnlineStateCanonicalizer.Canonicalize(state);
@@ -269,29 +260,6 @@ public static class OnlineStateCheckpointCodec
                 ? new RequestId(request.GetString()!)
                 : null,
             new Duration(Integer(element, "serviceDurationMs")));
-
-    private static VersionedPlanPool ReadPlanPool(JsonElement element)
-    {
-        var plans = element.GetProperty("plans")
-            .EnumerateArray()
-            .Select(
-                plan => CanonicalFleetPlan.Rehydrate(
-                    Text(plan, "planId"),
-                    Integer(plan, "sourceEpoch"),
-                    plan.GetProperty("vehiclePlans")
-                        .EnumerateArray()
-                        .Select(
-                            vehicle => new CanonicalVehiclePlan(
-                                new VehicleId(Text(vehicle, "vehicleId")),
-                                ReadRoute(vehicle.GetProperty("route"))))))
-            .ToArray();
-
-        return VersionedPlanPool.Rehydrate(
-            Integer(element, "version"),
-            Integer(element, "sourceEpoch"),
-            Text(element, "distinguishedPlanId"),
-            plans);
-    }
 
     private static CommitmentLedger ReadCommitmentLedger(JsonElement element)
     {
@@ -540,7 +508,6 @@ public static class OnlineStateCheckpointCodec
         string expectedInitialTravelHash,
         CommitmentLedger commitments,
         OperationalIncidentLedger incidents,
-        VersionedPlanPool planPool,
         long nextEventSequence)
     {
         if (nextEventSequence is < 1 or > DomainLimits.MaxCanonicalInteger)
@@ -568,8 +535,7 @@ public static class OnlineStateCheckpointCodec
                 || commitments.Histories.Count != 0
                 || incidents.Incidents.Count != 0
                 || incidents.Breaches.Count != 0
-                || incidents.LatePickups.Count != 0
-                || planPool.Version != 0)
+                || incidents.LatePickups.Count != 0)
             {
                 return "A genesis checkpoint must be the exact empty initialized state.";
             }
@@ -577,13 +543,6 @@ public static class OnlineStateCheckpointCodec
         else if (travel is null || run.Vehicles.Count == 0)
         {
             return "A post-genesis checkpoint requires travel state and a vehicle.";
-        }
-
-        var planPoolError = ValidatePlanPool(run, travel, planPool);
-
-        if (planPoolError is not null)
-        {
-            return planPoolError;
         }
 
         // ADR-076: each late-pickup record names a boarded rider with exactly that pickup, and
@@ -698,96 +657,6 @@ public static class OnlineStateCheckpointCodec
 
         return null;
     }
-
-    private static string? ValidatePlanPool(
-        RideBoundRun run,
-        TravelTimeSnapshot? travel,
-        VersionedPlanPool pool)
-    {
-        if (pool.Version == 0)
-        {
-            return null;
-        }
-
-        if (travel is null || pool.SourceEpoch > run.AppliedEpoch)
-        {
-            return "Checkpoint plan pool crosses its run/travel epoch boundary.";
-        }
-
-        var vehicleIds = run.Vehicles.Keys.ToHashSet();
-        var validator = new PhysicalPlanValidator();
-
-        foreach (var plan in pool.Plans)
-        {
-            if (plan.SourceEpoch != pool.SourceEpoch
-                || !plan.VehiclePlans.Select(value => value.VehicleId)
-                    .ToHashSet().SetEquals(vehicleIds))
-            {
-                return "Checkpoint fleet plan does not bind the exact run vehicle set.";
-            }
-
-            foreach (var vehiclePlan in plan.VehiclePlans)
-            {
-                var current = run.Vehicles[vehiclePlan.VehicleId];
-
-                if (!current.Route.HasExactFrozenPrefix(vehiclePlan.Route)
-                    || !SameRequestStopMembership(
-                        current.Route,
-                        vehiclePlan.Route))
-                {
-                    return "Checkpoint alternative conflicts with executed, frozen, " +
-                        "or assigned request decisions.";
-                }
-
-                var validation = validator.ValidateWithExogenousRelief(
-                    run,
-                    vehiclePlan.VehicleId,
-                    vehiclePlan.Route,
-                    travel,
-                    run.SimulationTime);
-
-                if (!validation.IsFeasible)
-                {
-                    return "Checkpoint plan pool contains a physically invalid route.";
-                }
-            }
-        }
-
-        var distinguished = pool.DistinguishedPlan!;
-
-        if (distinguished.VehiclePlans.Any(
-                vehicle => !run.Vehicles[vehicle.VehicleId].Route
-                    .IsSemanticallyEqual(vehicle.Route)))
-        {
-            return "Checkpoint distinguished plan does not match the online run.";
-        }
-
-        return null;
-    }
-
-    private static bool SameRequestStopMembership(
-        RoutePlan left,
-        RoutePlan right) =>
-        left.AllStops
-            .Where(value => value.RequestId is not null)
-            .Select(RequestStopIdentity)
-            .OrderBy(value => value, StringComparer.Ordinal)
-            .SequenceEqual(
-                right.AllStops
-                    .Where(value => value.RequestId is not null)
-                    .Select(RequestStopIdentity)
-                    .OrderBy(value => value, StringComparer.Ordinal),
-                StringComparer.Ordinal);
-
-    private static string RequestStopIdentity(RouteStop stop) =>
-        string.Join(
-            "\u001f",
-            stop.StopId.Value,
-            stop.RequestId!.Value.Value,
-            ((int)stop.Kind).ToString(System.Globalization.CultureInfo.InvariantCulture),
-            stop.NodeId.Value,
-            stop.ServiceDuration.Milliseconds.ToString(
-                System.Globalization.CultureInfo.InvariantCulture));
 
     private static bool IsLowerSha256(string value) =>
         value.Length == 64

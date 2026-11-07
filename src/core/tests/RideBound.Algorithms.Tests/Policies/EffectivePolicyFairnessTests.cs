@@ -236,8 +236,7 @@ public sealed class EffectivePolicyFairnessTests
                         (int)policy.Limits[dimension].ApplicablePhases))));
 
     private static IEnumerable<RidePoolingPolicyKind> SupportedKinds() =>
-        Enum.GetValues<RidePoolingPolicyKind>()
-            .Where(kind => kind != RidePoolingPolicyKind.LeastCommitmentConsensus);
+        Enum.GetValues<RidePoolingPolicyKind>();
 
     private static CommitmentPolicy EffectivePolicyFor(
         RidePoolingPolicyKind kind,

@@ -71,7 +71,6 @@ public sealed class RunnerSession
     private readonly RideBound.Algorithms.Shareability.ShadowAllocator? _shadowAllocator;
     private readonly SolverBackedRidePoolingPolicy? _solverBackedPolicy;
     private readonly bool _useManifestSolverSeed;
-    private readonly MultiplePlanConsensusPolicy _multiplePlanPolicy = new();
     private HelloPayload? _hello;
     private HelloAckPayload? _helloAcknowledgement;
     private InitializedSessionIdentity? _identity;
@@ -951,9 +950,6 @@ public sealed class RunnerSession
                 reduced.Witness!.Message);
         }
 
-        ICommitmentPolicyProvider validationPolicies = _commitmentPolicies;
-        RollingCostDecisionResult decision;
-
         var sourceEventSequence = batch.Events[^1].EventSequence;
         var context = new CommitmentMechanismContext(
             beforeEventState,
@@ -966,64 +962,27 @@ public sealed class RunnerSession
             CollectAllCommitmentWitnesses:
                 _wp4Configuration.CollectAllCommitmentWitnesses);
 
-        if (_wp4Configuration.MultiplePlanOptions is not null)
+        var solved = _solverBackedPolicy!.Decide(
+            context,
+            _wp4Configuration.CandidateGeneration,
+            _useManifestSolverSeed
+                ? _wp4Configuration.CreateSolverPolicyOptionsForRun(
+                    _identity!.Manifest.MasterSeed)
+                : _wp4Configuration.SolverPolicyOptions!,
+            _wp4Configuration);
+
+        if (!solved.IsSuccess)
         {
-            validationPolicies = MechanismCommitmentPolicyProvider
-                .RevisionPenalty(_commitmentPolicies);
-            var commitmentFilter = new CommitmentCandidateFilter(
-                beforeEventState,
-                validationPolicies,
-                _stopDistances,
-                publicationScope,
-                sourceEventSequence,
-                _commitmentValidator,
-                _wp4Configuration.InitialPromiseTrigger);
-            var multiple = _multiplePlanPolicy.Decide(
-                reduced.ProposedState!,
-                _wp4Configuration.CandidateGeneration,
-                _wp4Configuration.MultiplePlanOptions,
-                commitmentFilter);
-
-            if (!multiple.IsSuccess)
-            {
-                _onlineCoordinator.DiscardPendingProposal();
-                return OnlineDecisionBuildResult.Fail(
-                    "INTERNAL_ERROR",
-                    ProtocolFailureDisposition.FailSession,
-                    multiple.Witness!.Message);
-            }
-
-            decision = RollingCostDecisionResult.Success(
-                multiple.Decision!.DistinguishedDecision with
-                {
-                    GenerationDiagnostics =
-                        multiple.Decision.GenerationDiagnostics,
-                });
+            _onlineCoordinator.DiscardPendingProposal();
+            return OnlineDecisionBuildResult.Fail(
+                "INTERNAL_ERROR",
+                ProtocolFailureDisposition.FailSession,
+                solved.Witness!.Message);
         }
-        else
-        {
-            var solved = _solverBackedPolicy!.Decide(
-                context,
-                _wp4Configuration.CandidateGeneration,
-                _useManifestSolverSeed
-                    ? _wp4Configuration.CreateSolverPolicyOptionsForRun(
-                        _identity!.Manifest.MasterSeed)
-                    : _wp4Configuration.SolverPolicyOptions!,
-                _wp4Configuration);
 
-            if (!solved.IsSuccess)
-            {
-                _onlineCoordinator.DiscardPendingProposal();
-                return OnlineDecisionBuildResult.Fail(
-                    "INTERNAL_ERROR",
-                    ProtocolFailureDisposition.FailSession,
-                    solved.Witness!.Message);
-            }
-
-            decision = RollingCostDecisionResult.Success(
-                solved.Decision!.Decision);
-            validationPolicies = solved.Decision.EffectivePolicies;
-        }
+        var decision = RollingCostDecisionResult.Success(
+            solved.Decision!.Decision);
+        var validationPolicies = solved.Decision.EffectivePolicies;
 
         if (!decision.IsSuccess)
         {
@@ -1158,8 +1117,6 @@ public sealed class RunnerSession
                 SolverStatus.SafeFallback,
             CandidateSelectionSolveStatus.Optimal
                 or CandidateSelectionSolveStatus.Feasible =>
-                SolverStatus.Completed,
-            _ when _wp4Configuration.MultiplePlanOptions is not null =>
                 SolverStatus.Completed,
             _ => SolverStatus.NotRun,
         };

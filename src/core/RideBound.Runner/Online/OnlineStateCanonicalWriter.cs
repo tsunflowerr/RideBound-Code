@@ -115,13 +115,6 @@ public static class OnlineStateCanonicalWriter
         root.Member("incidentLedger"u8);
         WriteIncidentLedger(builder, state.Incidents, cache);
         root.Member("nextEventSeq"u8).Integer(state.NextEventSequence);
-
-        if (state.PlanPool.Version != 0)
-        {
-            root.Member("planPool"u8);
-            WritePlanPool(glue, state.PlanPool);
-        }
-
         root.Member("requests"u8).Byte((byte)'[');
         var first = true;
 
@@ -430,54 +423,6 @@ public static class OnlineStateCanonicalWriter
         }
 
         buffer.Byte((byte)']');
-    }
-
-    // OnlineStateReferenceCanonicalizer.WritePlanPool. Not cached: absent unless multiple-plan mode.
-    internal static void WritePlanPool(CanonicalBuffer buffer, VersionedPlanPool pool)
-    {
-        var item = new CanonicalObject(buffer);
-        item.Member("distinguishedPlanId"u8).String(pool.DistinguishedPlanId);
-        item.Member("plans"u8).Byte((byte)'[');
-        var first = true;
-
-        foreach (var plan in pool.Plans.OrderBy(value => value.PlanId, StringComparer.Ordinal))
-        {
-            if (!first)
-            {
-                buffer.Byte((byte)',');
-            }
-
-            first = false;
-            var planItem = new CanonicalObject(buffer);
-            planItem.Member("planId"u8).String(plan.PlanId);
-            planItem.Member("sourceEpoch"u8).Integer(plan.SourceEpoch);
-            planItem.Member("vehiclePlans"u8).Byte((byte)'[');
-            var firstVehicle = true;
-
-            foreach (var vehicle in plan.VehiclePlans.OrderBy(
-                         value => value.VehicleId.Value,
-                         StringComparer.Ordinal))
-            {
-                if (!firstVehicle)
-                {
-                    buffer.Byte((byte)',');
-                }
-
-                firstVehicle = false;
-                var vehicleItem = new CanonicalObject(buffer);
-                WriteRoute(vehicleItem.Member("route"u8), vehicle.Route);
-                vehicleItem.Member("vehicleId"u8).String(vehicle.VehicleId.Value);
-                vehicleItem.End();
-            }
-
-            buffer.Byte((byte)']');
-            planItem.End();
-        }
-
-        buffer.Byte((byte)']');
-        item.Member("sourceEpoch"u8).Integer(pool.SourceEpoch);
-        item.Member("version"u8).Integer(pool.Version);
-        item.End();
     }
 
     // OnlineStateReferenceCanonicalizer.WriteCommitmentLedger entry body.

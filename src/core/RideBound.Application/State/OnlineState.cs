@@ -14,8 +14,6 @@ public sealed record OnlineState(
     CommitmentLedger Commitments,
     OperationalIncidentLedger Incidents)
 {
-    public VersionedPlanPool PlanPool { get; init; } = VersionedPlanPool.Empty;
-
     public OnlineState(
         RideBoundRun run,
         TravelTimeSnapshot? travelTimes,

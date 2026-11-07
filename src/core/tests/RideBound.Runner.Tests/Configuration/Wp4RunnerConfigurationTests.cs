@@ -120,7 +120,6 @@ public sealed class Wp4RunnerConfigurationTests
             OrToolsCandidateSelectionSolver.AdapterVersion,
             "google-ortools-9.15.6755");
         Assert.NotNull(first.SolverPolicyOptions);
-        Assert.Null(first.MultiplePlanOptions);
         Assert.Equal(
             CandidateRetentionStrategy.LegacyAcceptedCountCostSlack,
             first.CandidateGeneration.RetentionStrategy);
@@ -223,7 +222,7 @@ public sealed class Wp4RunnerConfigurationTests
             """
             {
               "configurationVersion":"1.0.0",
-              "policyId":"least-commitment-consensus",
+              "policyId":"ridebound-hard-vector",
               "policyVersion":"wp13-evidence-negative-v1",
               "candidateGeneration":{
                 "maximumCandidatesPerVehicle":10,
@@ -231,11 +230,6 @@ public sealed class Wp4RunnerConfigurationTests
                 "exactSmallMode":false,
                 "scheduleStrategy":"earliest-feasible",
                 "maximumExplorationWorkUnits":100
-              },
-              "multiplePlan":{
-                "maximumPlanCount":2,
-                "maximumCombinationWorkUnits":100,
-                "requireCompleteEnumeration":true
               },
               "emitSolverExecutionEvidence":true,
               "solverExecutionEvidenceProfile":"retained-portfolio-v1"
@@ -508,10 +502,13 @@ public sealed class Wp4RunnerConfigurationTests
     }
 
     [Fact]
-    public void B5_uses_explicit_plan_pool_budget_and_forbids_solver_block()
+    public void The_removed_multiple_plan_policy_is_refused_with_a_pointer_to_the_archive()
     {
+        const string refusal =
+            "WP4 policyId 'least-commitment-consensus' and the 'multiplePlan' block (the multiple-plan policy): "
+            + "removed; see commit ebca912 (branch research/final-real-runs-2026-11-06)";
         var commitment = CommitmentConfiguration();
-        var b5 =
+        const string b5 =
             """
             {
               "configurationVersion":"1.0.0",
@@ -531,14 +528,23 @@ public sealed class Wp4RunnerConfigurationTests
               }
             }
             """;
+        var policyOnly = JsonNode.Parse(b5)!.AsObject();
+        policyOnly.Remove("multiplePlan");
+        var blockOnC1 = JsonNode.Parse(HardVectorJson(null))!.AsObject();
+        blockOnC1["multiplePlan"] = JsonNode.Parse(b5)!["multiplePlan"]!.DeepClone();
+        Assert.NotNull(
+            Wp4RunnerConfiguration.Decode(Encoding.UTF8.GetBytes(HardVectorJson(null)), commitment));
 
-        var configuration = Wp4RunnerConfiguration.Decode(
-            Encoding.UTF8.GetBytes(b5),
-            commitment);
-
-        Assert.Null(configuration.SolverPolicyOptions);
-        Assert.Equal(4, configuration.MultiplePlanOptions!.MaximumPlanCount);
-        Assert.True(configuration.MultiplePlanOptions.RequireCompleteEnumeration);
+        // The B5 file the old test decoded, its policyId alone, and its block added to the valid C1 file.
+        foreach (var json in new[] { b5, policyOnly.ToJsonString(), blockOnC1.ToJsonString() })
+        {
+            Assert.Equal(
+                refusal,
+                Assert.Throws<InvalidDataException>(
+                    () => Wp4RunnerConfiguration.Decode(
+                        Encoding.UTF8.GetBytes(json),
+                        commitment)).Message);
+        }
     }
 
     [Fact]

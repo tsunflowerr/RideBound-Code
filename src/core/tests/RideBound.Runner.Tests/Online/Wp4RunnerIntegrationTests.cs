@@ -1376,39 +1376,6 @@ public sealed class Wp4RunnerIntegrationTests
         Assert.Null(session.CommittedOnlineState);
     }
 
-    [Fact]
-    public void B5_plan_pool_commits_only_on_ack_and_survives_checkpoint_restore()
-    {
-        var commitment = CommitmentConfiguration();
-        var b5 = B5Configuration(commitment);
-        var setup = CreateSession(b5, commitmentConfiguration: commitment);
-        var decision = DecisionPayloadCodec.Decode(
-            setup.Session.Process(
-                ReadFixture("wp2/valid-bootstrap-event-batch.json"))
-                .Response!.Payload).Value!;
-
-        Assert.Equal(SolverStatus.Completed, decision.Solver.Status);
-        Assert.Empty(setup.Session.CommittedOnlineState!.PlanPool.Plans);
-        _ = setup.Session.Process(
-            DecisionApplied(1, 1_000, decision.DecisionHash.Value));
-        Assert.NotEmpty(setup.Session.CommittedOnlineState!.PlanPool.Plans);
-
-        var checkpointResponse = setup.Session.Process(CheckpointRequest()).Response!;
-        var restoredSetup = CreateSession(
-            b5,
-            commitmentConfiguration: commitment);
-        var restored = restoredSetup.Session.Process(
-            RestoreRequest(checkpointResponse.Payload));
-
-        Assert.Equal("restore", restored.Response?.MessageType.Value);
-        Assert.Equal(
-            setup.Session.CommittedOnlineState.PlanPool.Version,
-            restoredSetup.Session.CommittedOnlineState!.PlanPool.Version);
-        Assert.Equal(
-            setup.Session.CommittedOnlineState.PlanPool.DistinguishedPlanId,
-            restoredSetup.Session.CommittedOnlineState.PlanPool.DistinguishedPlanId);
-    }
-
     private static SessionSetup CreateSession(
         Wp4RunnerConfiguration wp4,
         ICandidateSelectionSolver? solver = null,
@@ -1497,31 +1464,6 @@ public sealed class Wp4RunnerIntegrationTests
             Encoding.UTF8.GetBytes(json),
             commitment);
     }
-
-    private static Wp4RunnerConfiguration B5Configuration(
-        CommitmentPolicyConfiguration commitment) =>
-        Wp4RunnerConfiguration.Decode(
-            Encoding.UTF8.GetBytes(
-                """
-                {
-                  "configurationVersion":"1.0.0",
-                  "policyId":"least-commitment-consensus",
-                  "policyVersion":"wp4-b5-test-v1",
-                  "candidateGeneration":{
-                    "maximumCandidatesPerVehicle":100,
-                    "maximumNewRequestsPerVehicle":2,
-                    "exactSmallMode":false,
-                    "scheduleStrategy":"earliest-feasible",
-                    "maximumExplorationWorkUnits":10000
-                  },
-                  "multiplePlan":{
-                    "maximumPlanCount":4,
-                    "maximumCombinationWorkUnits":10000,
-                    "requireCompleteEnumeration":true
-                  }
-                }
-                """),
-            commitment);
 
     private static CommitmentPolicyConfiguration CommitmentConfiguration() =>
         CommitmentPolicyConfiguration.Decode(

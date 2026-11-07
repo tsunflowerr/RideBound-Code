@@ -17,7 +17,6 @@ public enum RidePoolingPolicyKind
     RollingPenalty,
     FixedFreezeHorizon,
     NoReassignmentRepair,
-    LeastCommitmentConsensus,
     RideBoundHardVector,
     CommitSoftHardHybrid,
 }
@@ -28,8 +27,6 @@ public static class RidePoolingPolicyRegistry
     public const string RollingPenalty = "rolling-penalty";
     public const string FixedFreezeHorizon = "fixed-freeze-horizon";
     public const string NoReassignmentRepair = "no-reassignment-repair";
-    public const string LeastCommitmentConsensus =
-        "least-commitment-consensus";
     public const string RideBoundHardVector = "ridebound-hard-vector";
     public const string CommitSoftHardHybrid = "commit-soft-hard-hybrid";
 
@@ -43,8 +40,6 @@ public static class RidePoolingPolicyRegistry
             RollingPenalty => RidePoolingPolicyKind.RollingPenalty,
             FixedFreezeHorizon => RidePoolingPolicyKind.FixedFreezeHorizon,
             NoReassignmentRepair => RidePoolingPolicyKind.NoReassignmentRepair,
-            LeastCommitmentConsensus =>
-                RidePoolingPolicyKind.LeastCommitmentConsensus,
             RideBoundHardVector => RidePoolingPolicyKind.RideBoundHardVector,
             CommitSoftHardHybrid => RidePoolingPolicyKind.CommitSoftHardHybrid,
             _ => default,
@@ -53,7 +48,6 @@ public static class RidePoolingPolicyRegistry
             or RollingPenalty
             or FixedFreezeHorizon
             or NoReassignmentRepair
-            or LeastCommitmentConsensus
             or RideBoundHardVector
             or CommitSoftHardHybrid;
     }
@@ -65,8 +59,6 @@ public static class RidePoolingPolicyRegistry
             RidePoolingPolicyKind.RollingPenalty => RollingPenalty,
             RidePoolingPolicyKind.FixedFreezeHorizon => FixedFreezeHorizon,
             RidePoolingPolicyKind.NoReassignmentRepair => NoReassignmentRepair,
-            RidePoolingPolicyKind.LeastCommitmentConsensus =>
-                LeastCommitmentConsensus,
             RidePoolingPolicyKind.RideBoundHardVector => RideBoundHardVector,
             RidePoolingPolicyKind.CommitSoftHardHybrid => CommitSoftHardHybrid,
             _ => throw new ArgumentOutOfRangeException(nameof(policyKind)),
@@ -107,8 +99,7 @@ public sealed record SolverBackedRidePoolingPolicyOptions
                 "No-worse recovery extends forced-reference recovery, so it requires it.");
         }
 
-        if (!Enum.IsDefined(policyKind)
-            || policyKind == RidePoolingPolicyKind.LeastCommitmentConsensus)
+        if (!Enum.IsDefined(policyKind))
         {
             throw new ArgumentOutOfRangeException(nameof(policyKind));
         }

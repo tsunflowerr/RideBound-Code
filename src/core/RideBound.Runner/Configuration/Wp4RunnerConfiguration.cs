@@ -39,7 +39,6 @@ public sealed class Wp4RunnerConfiguration : ICommitmentWarningProfileProvider
         "solverExecution",
         "fixedFreeze",
         "repair",
-        "multiplePlan",
         "warningProfiles",
         "emitSolverExecutionEvidence",
         "solverExecutionEvidenceProfile",
@@ -49,6 +48,10 @@ public sealed class Wp4RunnerConfiguration : ICommitmentWarningProfileProvider
         "auditHash",
         "planningForecast",
         "shadowAllocation");
+
+    /// <summary>The pointer that every refused removed feature carries.</summary>
+    private const string RemovedFeature =
+        "removed; see commit ebca912 (branch research/final-real-runs-2026-11-06)";
 
     /// <summary>
     /// ADR-089 GĐ4 (exploratory). Optional; omitted means every projected leg is the snapshot
@@ -142,10 +145,6 @@ public sealed class Wp4RunnerConfiguration : ICommitmentWarningProfileProvider
         "locks");
     private static readonly IReadOnlySet<string> RepairFields = Fields(
         "maximumRequestsConsideredPerVehicle");
-    private static readonly IReadOnlySet<string> MultiplePlanFields = Fields(
-        "maximumPlanCount",
-        "maximumCombinationWorkUnits",
-        "requireCompleteEnumeration");
     private static readonly IReadOnlySet<string> WarningProfileFields = Fields(
         "policyId",
         "limits");
@@ -161,7 +160,6 @@ public sealed class Wp4RunnerConfiguration : ICommitmentWarningProfileProvider
         InitialPromiseTrigger initialPromiseTrigger,
         CandidateGenerationOptions candidateGeneration,
         SolverBackedRidePoolingPolicyOptions? solverPolicyOptions,
-        MultiplePlanPoolOptions? multiplePlanOptions,
         IEnumerable<CommitmentWarningProfile> warningProfiles,
         bool emitSolverExecutionEvidence,
         string? solverExecutionEvidenceProfile,
@@ -178,7 +176,6 @@ public sealed class Wp4RunnerConfiguration : ICommitmentWarningProfileProvider
         InitialPromiseTrigger = initialPromiseTrigger;
         CandidateGeneration = candidateGeneration;
         SolverPolicyOptions = solverPolicyOptions;
-        MultiplePlanOptions = multiplePlanOptions;
         EmitSolverExecutionEvidence = emitSolverExecutionEvidence;
         SolverExecutionEvidenceProfile = solverExecutionEvidenceProfile;
         RecordsLateBoarding = recordsLateBoarding;
@@ -197,8 +194,6 @@ public sealed class Wp4RunnerConfiguration : ICommitmentWarningProfileProvider
     public CandidateGenerationOptions CandidateGeneration { get; }
 
     public SolverBackedRidePoolingPolicyOptions? SolverPolicyOptions { get; }
-
-    public MultiplePlanPoolOptions? MultiplePlanOptions { get; }
 
     public bool EmitSolverExecutionEvidence { get; }
 
@@ -297,6 +292,7 @@ public sealed class Wp4RunnerConfiguration : ICommitmentWarningProfileProvider
             out var contentHash);
         using var document = JsonDocument.Parse(canonical);
         var root = document.RootElement;
+        RejectRemovedFeatures(root);
         RequireObject(
             root,
             RootFields,
@@ -346,7 +342,6 @@ public sealed class Wp4RunnerConfiguration : ICommitmentWarningProfileProvider
         var hasSolver = root.TryGetProperty("solverExecution", out var solverElement);
         var hasFreeze = root.TryGetProperty("fixedFreeze", out var freezeElement);
         var hasRepair = root.TryGetProperty("repair", out var repairElement);
-        var hasMultiple = root.TryGetProperty("multiplePlan", out var multipleElement);
         var hasWarnings = root.TryGetProperty("warningProfiles", out var warningsElement);
         var emitSolverExecutionEvidence = root.TryGetProperty(
             "emitSolverExecutionEvidence",
@@ -383,7 +378,6 @@ public sealed class Wp4RunnerConfiguration : ICommitmentWarningProfileProvider
             hasSolver,
             hasFreeze,
             hasRepair,
-            hasMultiple,
             hasWarnings);
 
         var (forcedReferenceRecovery, forcedNoWorseRecovery) = root.TryGetProperty(
@@ -571,7 +565,6 @@ public sealed class Wp4RunnerConfiguration : ICommitmentWarningProfileProvider
         }
 
         SolverBackedRidePoolingPolicyOptions? solverOptions = null;
-        MultiplePlanPoolOptions? multipleOptions = null;
         var warningProfiles = Array.Empty<CommitmentWarningProfile>();
 
         if (hasSolver)
@@ -622,25 +615,6 @@ public sealed class Wp4RunnerConfiguration : ICommitmentWarningProfileProvider
                 selectionObjectiveOrder);
         }
 
-        if (hasMultiple)
-        {
-            RequireObject(
-                multipleElement,
-                MultiplePlanFields,
-                MultiplePlanFields,
-                "$.multiplePlan");
-            multipleOptions = new MultiplePlanPoolOptions(
-                PositiveInt32(
-                    multipleElement.GetProperty("maximumPlanCount"),
-                    "maximumPlanCount"),
-                PositiveInteger(
-                    multipleElement.GetProperty("maximumCombinationWorkUnits"),
-                    "maximumCombinationWorkUnits"),
-                Boolean(
-                    multipleElement.GetProperty("requireCompleteEnumeration"),
-                    "requireCompleteEnumeration"));
-        }
-
         if (hasWarnings)
         {
             warningProfiles = ReadWarningProfiles(
@@ -655,7 +629,6 @@ public sealed class Wp4RunnerConfiguration : ICommitmentWarningProfileProvider
             initialPromiseTrigger,
             generation,
             solverOptions,
-            multipleOptions,
             warningProfiles,
             emitSolverExecutionEvidence,
             solverExecutionEvidenceProfile,
@@ -894,23 +867,39 @@ public sealed class Wp4RunnerConfiguration : ICommitmentWarningProfileProvider
         return profiles.ToArray();
     }
 
+    /// <summary>
+    /// Runs before the field checks, so a file that still selects a removed feature is always refused with the
+    /// pointer to the commit that has it: the multiple-plan policy (policyId 'least-commitment-consensus', B5)
+    /// and its 'multiplePlan' block.
+    /// </summary>
+    private static void RejectRemovedFeatures(JsonElement root)
+    {
+        if (root.ValueKind == JsonValueKind.Object
+            && (root.TryGetProperty("multiplePlan", out _)
+                || root.TryGetProperty("policyId", out var policyId)
+                    && policyId.ValueKind == JsonValueKind.String
+                    && policyId.GetString() == "least-commitment-consensus"))
+        {
+            throw new InvalidDataException(
+                "WP4 policyId 'least-commitment-consensus' and the 'multiplePlan' block "
+                + $"(the multiple-plan policy): {RemovedFeature}");
+        }
+    }
+
     private static void RequireVariantFields(
         RidePoolingPolicyKind policy,
         bool hasSolver,
         bool hasFreeze,
         bool hasRepair,
-        bool hasMultiple,
         bool hasWarnings)
     {
         var isB3 = policy == RidePoolingPolicyKind.FixedFreezeHorizon;
         var isB4 = policy == RidePoolingPolicyKind.NoReassignmentRepair;
-        var isB5 = policy == RidePoolingPolicyKind.LeastCommitmentConsensus;
         var isC2 = policy == RidePoolingPolicyKind.CommitSoftHardHybrid;
 
-        if (hasSolver == isB5
+        if (!hasSolver
             || hasFreeze != isB3
             || hasRepair != isB4
-            || hasMultiple != isB5
             || hasWarnings != isC2)
         {
             throw new InvalidDataException(
