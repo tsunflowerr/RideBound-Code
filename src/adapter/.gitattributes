@@ -1,0 +1,3 @@
+# The converter writes its own sha256 into every fixture it makes: keep both scripts byte for byte (the converter is CRLF).
+convert_via_full_v2.py -text
+make_run_drivers.py -text
