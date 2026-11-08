@@ -11,7 +11,7 @@ monkey-patch in this process only; no repository file changes:
       ~15-20 MiB final checkpoint can exceed the 60 s wait on a loaded machine.
 The company showed identical decisions with and without the fix (2321/2321 frames).
 
-Via-zone copy (2026-10-26) of bridge_launcher_fix1.py: the same adapter (C:/Code/RideBound-p1fix) and fixes (1)-(2),
+Via-zone copy (2026-10-26) of bridge_launcher_fix1.py: the same adapter and fixes (1)-(2),
 plus one more process-local patch, also with no repository file change:
   (3) RB_VIA_MAX_OUTPUT_LINE_BYTES=<n> -> session.RUNNER_MAXIMUM_OUTPUT_LINE_BYTES = n (shipped 64 MiB,
       session.py:28, read at call time in session.py:413). At 108 requests the final checkpoint line was already
@@ -25,8 +25,8 @@ Amendment A3 copy (2026-10-26 02:50): bridge_launcher_via.py plus one diagnostic
       unexpected exception with the same INTERNAL_ERROR text and writes only the exception type to stderr
       (RunnerHost.cs:96-106); trialA1 lost that line. Nothing else changes: the failure is raised exactly as before.
 
-Full-node copy (ADR-089, 2026-11-03) of bridge_launcher_via_a3.py: the adapter of the run worktree
-E:/Code/RideBound-fastrun-run and one more process-local patch, with no repository file change:
+Full-node copy (ADR-089, 2026-11-03) of bridge_launcher_via_a3.py: the adapter of this checkout
+(src/adapter, see ADAPTER_ROOT) and one more process-local patch, with no repository file change:
   (5) RB_VIA_MAX_INPUT_LINE_BYTES=<n> -> session.RUNNER_MAXIMUM_INPUT_LINE_BYTES = n (shipped 64 MiB, session.py:27,
       passed on the Runner command line). A full-node travel snapshot is about 140 MB; the Runner accepts up to 1 GiB
       (NdjsonReader.MaximumConfigurableLineBytes). It only raises the limit; no message or decision changes.
@@ -38,12 +38,13 @@ from __future__ import annotations
 
 import io
 import os
+import pathlib
 import runpy
 import sys
 
-# G2 copy (2026-10-23, AMENDMENTS A8): the adapter of the G2 worktree. bridge_launcher.py imports the package from
-# E:/Code/RideBound-deadline, and that cached import made every job run that adapter.
-ADAPTER_ROOT = r"E:\Code\RideBound-fastrun-run\simulators\fleetpy-ridebound"  # ADR-089 run worktree
+# The adapter of this checkout: src/adapter, the parent of this legacy/ folder. The launcher imports the package
+# from there first, and that cached import is the adapter every job runs.
+ADAPTER_ROOT = str(pathlib.Path(__file__).resolve().parents[1])
 
 
 def install_fix() -> list[str]:

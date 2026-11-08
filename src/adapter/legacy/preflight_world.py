@@ -29,6 +29,7 @@ The repository is not modified; it is hash-checked by the preflight.
 
 Usage: identical to the real preflight, plus in the environment
     RB_WORLD_CONFIG   path to a world-v1 JSON (strict keys; its SHA-256 is printed)
+    RB_WORLD_FACTORS  folder with the measured <day>_tt_factors.csv files (only read for a measured base)
 """
 
 from __future__ import annotations
@@ -46,13 +47,8 @@ sys.path.insert(0, str(HERE))
 
 from world_v1 import BIN_S, AnchoredWorld, World, WorldConfig  # noqa: E402
 
-REPO = pathlib.Path(r"E:/Code/RideBound-fastrun-run")  # ADR-089 full-node copy: the only line that differs from via-real-2026-10-26/world-via
-TARGET = REPO / "simulators/fleetpy-ridebound/actual_fleetpy_medium_preflight.py"
-FACTORS = pathlib.Path(
-    r"E:/RideBoundData/wp6/extracted/sha256/d9/"
-    r"d9e86f33645e5eec287d387f8d63ad41ddf41d4ef648138b65d636482e2c599e/"
-    r"FleetPy_Manhattan/networks/Manhattan_2019_corrected"
-)
+# The medium preflight of this checkout, in src/adapter (the parent of this legacy/ folder).
+TARGET = HERE.parent / "actual_fleetpy_medium_preflight.py"
 ALLOWED_WINDOW_STARTS = (28800, 61200)
 WINDOW_SECONDS = 7200
 CONFIG_KEYS = {
@@ -68,7 +64,10 @@ def measured_base(day: str, exponent: float, window_start: int, bins: int) -> tu
     """v0 base per bin: the Tier-2 measured Manhattan ratio to the window start, raised to k."""
     if window_start not in ALLOWED_WINDOW_STARTS:
         raise SystemExit(f"unsupported window start {window_start}")
-    path = FACTORS / f"{day}_tt_factors.csv"
+    factors = os.environ.get("RB_WORLD_FACTORS")
+    if not factors:
+        raise SystemExit("RB_WORLD_FACTORS is required for a measured world base")
+    path = pathlib.Path(factors) / f"{day}_tt_factors.csv"
     if not path.exists():
         raise SystemExit(f"no measured factors for {day}: {path}")
     rows = []

@@ -15,7 +15,7 @@ WHAT CHANGES
   AnchoredWorld.factor call, checks it bit for bit against the per-edge call on 100 edges spread over the edge list,
   and sets every edge to free_flow * factor exactly as EdgeTimes does. It records one read per bin.
 * Everything else is preflight_world_v1_2.main (bin starts on the event clock, window-start check), run against the
-  preflight of the run worktree (preflight_world.REPO in this folder).
+  preflight of this checkout (preflight_world.TARGET in this folder).
 
 Usage: identical to preflight_world_v1_2.py (RB_WORLD_CONFIG required).
 """
@@ -31,7 +31,7 @@ import sys
 HERE = pathlib.Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 
-import preflight_world  # noqa: E402  (this folder's copy: REPO = the run worktree)
+import preflight_world  # noqa: E402  (this folder's copy: TARGET = the preflight of this checkout)
 import preflight_world_v1_1 as v11  # noqa: E402
 from world_v1 import BIN_S  # noqa: E402
 
