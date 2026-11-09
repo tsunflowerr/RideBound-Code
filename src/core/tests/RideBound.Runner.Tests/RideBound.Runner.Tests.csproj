@@ -27,6 +27,7 @@
     <Compile
       Include="..\RideBound.Contracts.Tests\Fixtures\FixtureLoader.cs"
       Link="Fixtures\FixtureLoader.cs" />
+    <Compile Include="..\TestPaths.cs" Link="TestPaths.cs" />
   </ItemGroup>
 
   <ItemGroup>

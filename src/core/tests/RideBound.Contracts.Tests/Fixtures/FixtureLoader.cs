@@ -1,13 +1,13 @@
-using System.Reflection;
 using System.Text;
+using RideBound.Tests;
 
 namespace RideBound.Contracts.Tests.Fixtures;
 
 internal static class FixtureLoader
 {
-    private const string FixtureRoot = "benchmarks/schemas/fixtures";
+    private const string FixtureRoot = "protocol/fixtures";
 
-    private const string SchemaRoot = "benchmarks/schemas";
+    private const string SchemaRoot = "protocol/schemas";
 
     public static string ReadUtf8(string relativePath) =>
         ReadUnderRoot(FixtureRoot, relativePath);
@@ -20,6 +20,13 @@ internal static class FixtureLoader
         ArgumentException.ThrowIfNullOrWhiteSpace(relativePath);
         var normalizedPath = ValidateRelativePath(relativePath, SchemaRoot);
         return BuildFullPath(SchemaRoot, normalizedPath);
+    }
+
+    public static string GetFixturePath(string relativePath)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(relativePath);
+        var normalizedPath = ValidateRelativePath(relativePath, FixtureRoot);
+        return BuildFullPath(FixtureRoot, normalizedPath);
     }
 
     private static string ReadUnderRoot(string assetRoot, string relativePath)
@@ -57,41 +64,9 @@ internal static class FixtureLoader
 
     private static string BuildFullPath(string assetRoot, string normalizedPath)
     {
-        var repositoryRoot = FindRepositoryRoot();
         return Path.Combine(
-            repositoryRoot,
+            TestPaths.Root(),
             assetRoot.Replace('/', Path.DirectorySeparatorChar),
             normalizedPath.Replace('/', Path.DirectorySeparatorChar));
-    }
-
-    private static string FindRepositoryRoot()
-    {
-        var configuredRoot = typeof(FixtureLoader)
-            .Assembly
-            .GetCustomAttributes<AssemblyMetadataAttribute>()
-            .SingleOrDefault(
-                attribute => attribute.Key == "RideBoundRepositoryRoot")
-            ?.Value;
-
-        if (configuredRoot is not null
-            && File.Exists(Path.Combine(configuredRoot, "RideBound.slnx")))
-        {
-            return configuredRoot;
-        }
-
-        var current = new DirectoryInfo(AppContext.BaseDirectory);
-
-        while (current is not null)
-        {
-            if (File.Exists(Path.Combine(current.FullName, "RideBound.slnx")))
-            {
-                return current.FullName;
-            }
-
-            current = current.Parent;
-        }
-
-        throw new DirectoryNotFoundException(
-            "Could not find the RideBound repository root from the test output directory.");
     }
 }

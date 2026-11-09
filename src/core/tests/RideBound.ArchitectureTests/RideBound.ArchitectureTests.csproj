@@ -19,6 +19,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="..\TestPaths.cs" Link="TestPaths.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
       <_Parameter1>RideBoundRepositoryRoot</_Parameter1>
       <_Parameter2>$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)\..\..'))</_Parameter2>

@@ -1,5 +1,5 @@
-using System.Reflection;
 using System.Xml.Linq;
+using RideBound.Tests;
 
 namespace RideBound.ArchitectureTests;
 
@@ -27,7 +27,7 @@ public sealed class DependencyRuleTests
     [Fact]
     public void Project_references_follow_clean_architecture()
     {
-        var repositoryRoot = FindRepositoryRoot();
+        var repositoryRoot = TestPaths.Root();
         var projectFiles = FindSourceProjectFiles(repositoryRoot);
 
         var failures = new List<string>();
@@ -84,7 +84,7 @@ public sealed class DependencyRuleTests
     [Fact]
     public void Domain_and_application_do_not_contain_framework_dependencies()
     {
-        var repositoryRoot = FindRepositoryRoot();
+        var repositoryRoot = TestPaths.Root();
         var forbiddenTerms = new[]
         {
             "OptiGo",
@@ -127,7 +127,7 @@ public sealed class DependencyRuleTests
     [Fact]
     public void OrTools_package_is_pinned_only_in_the_solver_adapter()
     {
-        var repositoryRoot = FindRepositoryRoot();
+        var repositoryRoot = TestPaths.Root();
         var projects = FindSourceProjectFiles(repositoryRoot);
         var references = projects
             .Select(
@@ -158,7 +158,7 @@ public sealed class DependencyRuleTests
     [Fact]
     public void Solver_neutral_port_is_defined_inside_application_source_boundary()
     {
-        var repositoryRoot = FindRepositoryRoot();
+        var repositoryRoot = TestPaths.Root();
         var portFile = Path.Combine(
             repositoryRoot,
             "RideBound.Application",
@@ -175,7 +175,7 @@ public sealed class DependencyRuleTests
     private static string FindProjectFile(string projectName)
     {
         return Path.Combine(
-            FindRepositoryRoot(),
+            TestPaths.Root(),
             projectName,
             $"{projectName}.csproj");
     }
@@ -216,36 +216,5 @@ public sealed class DependencyRuleTests
         var normalized = projectReference.Replace('\\', '/');
         var fileName = normalized[(normalized.LastIndexOf('/') + 1)..];
         return Path.GetFileNameWithoutExtension(fileName);
-    }
-
-    private static string FindRepositoryRoot()
-    {
-        var configuredRoot = typeof(DependencyRuleTests)
-            .Assembly
-            .GetCustomAttributes<AssemblyMetadataAttribute>()
-            .SingleOrDefault(
-                attribute => attribute.Key == "RideBoundRepositoryRoot")
-            ?.Value;
-
-        if (configuredRoot is not null
-            && File.Exists(Path.Combine(configuredRoot, "RideBound.slnx")))
-        {
-            return configuredRoot;
-        }
-
-        var current = new DirectoryInfo(AppContext.BaseDirectory);
-
-        while (current is not null)
-        {
-            if (File.Exists(Path.Combine(current.FullName, "RideBound.slnx")))
-            {
-                return current.FullName;
-            }
-
-            current = current.Parent;
-        }
-
-        throw new DirectoryNotFoundException(
-            "Could not find the RideBound repository root.");
     }
 }

@@ -1,6 +1,5 @@
 using System.Collections.Concurrent;
 using System.Globalization;
-using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json.Nodes;
@@ -8,6 +7,7 @@ using System.Text.RegularExpressions;
 using RideBound.Contracts.Protocol;
 using RideBound.Runner.Configuration;
 using RideBound.Runner.Protocol;
+using RideBound.Tests;
 
 namespace RideBound.Runner.Tests.Final;
 
@@ -60,7 +60,7 @@ internal static partial class FinalRuns
     public static FinalRun Get(string name) => All.Single(run => run.Name == name);
 
     public static string FixtureDirectory { get; } = Path.Combine(
-        RepositoryRoot(), "tests", "RideBound.Runner.Tests", "Final", "Fixtures");
+        TestPaths.Root(), "tests", "RideBound.Runner.Tests", "Final", "Fixtures");
 
     /// <summary>
     /// Adapter-to-Runner lines of the run: hello, initializeRun (with the run's binding), a checkpoint request,
@@ -195,29 +195,6 @@ internal static partial class FinalRuns
         var path = Path.Combine(directory, name + ".stdout");
         File.WriteAllBytes(path, standardOutput);
         return path;
-    }
-
-    private static string RepositoryRoot()
-    {
-        var configured = typeof(FinalRuns).Assembly
-            .GetCustomAttributes<AssemblyMetadataAttribute>()
-            .SingleOrDefault(attribute => attribute.Key == "RideBoundRepositoryRoot")
-            ?.Value;
-
-        if (configured is not null && File.Exists(Path.Combine(configured, "RideBound.slnx")))
-        {
-            return configured;
-        }
-
-        for (var current = new DirectoryInfo(AppContext.BaseDirectory); current is not null; current = current.Parent)
-        {
-            if (File.Exists(Path.Combine(current.FullName, "RideBound.slnx")))
-            {
-                return current.FullName;
-            }
-        }
-
-        throw new DirectoryNotFoundException("Could not find the folder that holds RideBound.slnx.");
     }
 
     [GeneratedRegex("\"policyConfigurationHash\":\"[0-9a-f]{64}\"")]

@@ -11,7 +11,7 @@ public sealed class GoldenFixtureTests
     [Fact]
     public void Required_inventory_contains_exactly_ten_named_fixtures()
     {
-        var root = FixtureLoader.GetSchemaPath("fixtures/golden/required");
+        var root = FixtureLoader.GetFixturePath("golden/required");
         var directories = Directory.GetDirectories(root)
             .Order(StringComparer.Ordinal)
             .ToArray();
@@ -36,7 +36,7 @@ public sealed class GoldenFixtureTests
     [Fact]
     public void Required_metadata_uses_honest_wp1_support_taxonomy()
     {
-        var root = FixtureLoader.GetSchemaPath("fixtures/golden/required");
+        var root = FixtureLoader.GetFixturePath("golden/required");
         var metadataFiles = Directory.GetFiles(
                 root,
                 "metadata.json",
@@ -84,7 +84,7 @@ public sealed class GoldenFixtureTests
     [Fact]
     public void Every_required_input_is_canonicalizable_event_batch_contract()
     {
-        var root = FixtureLoader.GetSchemaPath("fixtures/golden/required");
+        var root = FixtureLoader.GetFixturePath("golden/required");
         var inputs = Directory.GetFiles(
             root,
             "input.json",

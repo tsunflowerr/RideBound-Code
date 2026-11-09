@@ -285,7 +285,7 @@ public sealed class SchemaAssetTests
     public void Published_valid_protocol_fixtures_have_canonical_utf8_projection()
     {
         var fixtureRoot = Path.GetDirectoryName(
-            FixtureLoader.GetSchemaPath("fixtures/README.md"))!;
+            FixtureLoader.GetFixturePath("README.md"))!;
         var validFixtures = Directory.GetFiles(
             fixtureRoot,
             "valid-*.json",

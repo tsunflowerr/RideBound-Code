@@ -19,7 +19,7 @@ public sealed class FixtureLoaderTests
             () => FixtureLoader.ReadUtf8("missing/not-there.json"));
 
         Assert.Contains("missing/not-there.json", exception.Message);
-        Assert.Contains("benchmarks/schemas/fixtures", exception.Message);
+        Assert.Contains("protocol/fixtures", exception.Message);
         Assert.DoesNotContain(AppContext.BaseDirectory, exception.Message);
     }
 
@@ -41,7 +41,7 @@ public sealed class FixtureLoaderTests
 
         Assert.Contains("\"schemaVersion\": \"1.0.0\"", content);
         Assert.EndsWith(
-            Path.Combine("benchmarks", "schemas", "v1", "schema-inventory.json"),
+            Path.Combine("protocol", "schemas", "v1", "schema-inventory.json"),
             FixtureLoader.GetSchemaPath("v1/schema-inventory.json"),
             StringComparison.OrdinalIgnoreCase);
     }
