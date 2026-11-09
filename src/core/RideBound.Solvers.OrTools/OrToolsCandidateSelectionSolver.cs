@@ -72,16 +72,10 @@ public sealed class OrToolsCandidateSelectionSolver : ICandidateSelectionSolver
             if (remainingWork == 0 || remainingMicros == 0)
             {
                 return incumbent is null
-                    ? NoSolution(
-                        problem,
-                        budget,
-                        stopwatch,
+                    ? Fail(
                         CandidateSelectionSolveStatus.Unknown,
                         "ORTOOLS_BUDGET_EXHAUSTED",
-                        "The deterministic budget was exhausted before an incumbent.",
-                        consumedWork,
-                        consumedDeterministicMicros,
-                        bounds)
+                        "The deterministic budget was exhausted before an incumbent.")
                     : WithIncumbent(
                         problem,
                         budget,
@@ -103,16 +97,10 @@ public sealed class OrToolsCandidateSelectionSolver : ICandidateSelectionSolver
 
             if (built.Error is not null)
             {
-                return NoSolution(
-                    problem,
-                    budget,
-                    stopwatch,
+                return Fail(
                     CandidateSelectionSolveStatus.ModelInvalid,
                     "ORTOOLS_MODEL_INVALID",
-                    built.Error,
-                    consumedWork,
-                    consumedDeterministicMicros,
-                    bounds);
+                    built.Error);
             }
 
             context = built.Context!;
@@ -141,16 +129,10 @@ public sealed class OrToolsCandidateSelectionSolver : ICandidateSelectionSolver
 
             if (response is null)
             {
-                return NoSolution(
-                    problem,
-                    budget,
-                    stopwatch,
+                return Fail(
                     CandidateSelectionSolveStatus.ModelInvalid,
                     "ORTOOLS_RESPONSE_MISSING",
-                    "CP-SAT returned no response object.",
-                    consumedWork,
-                    consumedDeterministicMicros,
-                    bounds);
+                    "CP-SAT returned no response object.");
             }
 
             var passWork = Math.Min(remainingWork, response.NumConflicts);
@@ -162,24 +144,15 @@ public sealed class OrToolsCandidateSelectionSolver : ICandidateSelectionSolver
 
             if (status == CpSolverStatus.ModelInvalid)
             {
-                return NoSolution(
-                    problem,
-                    budget,
-                    stopwatch,
+                return Fail(
                     CandidateSelectionSolveStatus.ModelInvalid,
                     "ORTOOLS_MODEL_INVALID",
-                    context.Model.Validate(),
-                    consumedWork,
-                    consumedDeterministicMicros,
-                    bounds);
+                    context.Model.Validate());
             }
 
             if (status == CpSolverStatus.Infeasible)
             {
-                return NoSolution(
-                    problem,
-                    budget,
-                    stopwatch,
+                return Fail(
                     levelIndex == 0
                         ? CandidateSelectionSolveStatus.Infeasible
                         : CandidateSelectionSolveStatus.ModelInvalid,
@@ -189,25 +162,16 @@ public sealed class OrToolsCandidateSelectionSolver : ICandidateSelectionSolver
                     levelIndex == 0
                         ? "CP-SAT proved the candidate-selection model infeasible."
                         : "A later lexicographic pass contradicted a previously " +
-                            "proven objective equality.",
-                    consumedWork,
-                    consumedDeterministicMicros,
-                    bounds);
+                            "proven objective equality.");
             }
 
             if (status == CpSolverStatus.Unknown)
             {
                 return incumbent is null
-                    ? NoSolution(
-                        problem,
-                        budget,
-                        stopwatch,
+                    ? Fail(
                         CandidateSelectionSolveStatus.Unknown,
                         "ORTOOLS_UNKNOWN",
-                        "CP-SAT returned UNKNOWN without a validated incumbent.",
-                        consumedWork,
-                        consumedDeterministicMicros,
-                        bounds)
+                        "CP-SAT returned UNKNOWN without a validated incumbent.")
                     : WithIncumbent(
                         problem,
                         budget,
@@ -224,16 +188,10 @@ public sealed class OrToolsCandidateSelectionSolver : ICandidateSelectionSolver
             if (status is not CpSolverStatus.Feasible
                 and not CpSolverStatus.Optimal)
             {
-                return NoSolution(
-                    problem,
-                    budget,
-                    stopwatch,
+                return Fail(
                     CandidateSelectionSolveStatus.ModelInvalid,
                     "ORTOOLS_STATUS_INVALID",
-                    "CP-SAT returned an unsupported status.",
-                    consumedWork,
-                    consumedDeterministicMicros,
-                    bounds);
+                    "CP-SAT returned an unsupported status.");
             }
 
             var selectedIds = context.Variables
@@ -244,16 +202,10 @@ public sealed class OrToolsCandidateSelectionSolver : ICandidateSelectionSolver
 
             if (!created.IsSuccess)
             {
-                return NoSolution(
-                    problem,
-                    budget,
-                    stopwatch,
+                return Fail(
                     CandidateSelectionSolveStatus.ModelInvalid,
                     "ORTOOLS_SOLUTION_INVALID",
-                    created.Failure!.Message,
-                    consumedWork,
-                    consumedDeterministicMicros,
-                    bounds);
+                    created.Failure!.Message);
             }
 
             incumbent = created.Value!;
@@ -272,16 +224,10 @@ public sealed class OrToolsCandidateSelectionSolver : ICandidateSelectionSolver
 
             if (!bound.IsSuccess)
             {
-                return NoSolution(
-                    problem,
-                    budget,
-                    stopwatch,
+                return Fail(
                     CandidateSelectionSolveStatus.ModelInvalid,
                     "ORTOOLS_BOUND_INVALID",
-                    bound.Failure!.Message,
-                    consumedWork,
-                    consumedDeterministicMicros,
-                    bounds);
+                    bound.Failure!.Message);
             }
 
             bounds.Add(bound.Value!);
@@ -323,6 +269,22 @@ public sealed class OrToolsCandidateSelectionSolver : ICandidateSelectionSolver
                     skippedLevels,
                     problem.ObjectiveLevels.Count));
         return CandidateSelectionSolveResult.Optimal(incumbent!, diagnostics);
+
+        // Ends the solve without a solution, reporting the work and bounds counted so far.
+        CandidateSelectionSolveResult Fail(
+            CandidateSelectionSolveStatus status,
+            string reasonCode,
+            string message) =>
+            NoSolution(
+                problem,
+                budget,
+                stopwatch,
+                status,
+                reasonCode,
+                message,
+                consumedWork,
+                consumedDeterministicMicros,
+                bounds);
     }
 
     /// <summary>
