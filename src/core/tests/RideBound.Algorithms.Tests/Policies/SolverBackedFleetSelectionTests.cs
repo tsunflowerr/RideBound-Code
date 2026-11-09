@@ -155,7 +155,7 @@ public sealed class SolverBackedFleetSelectionTests
             ["accept"]);
         Assert.False(nonIdentitySubset.IsSuccess);
         Assert.Equal(
-            RollingCostFailureCodes.CandidatePortfolioEvidenceInvalid,
+            DecisionFailureCodes.CandidatePortfolioEvidenceInvalid,
             nonIdentitySubset.Failure?.Code);
 
         var freshAccept = Candidate("accept", vehicle, [request], 10);

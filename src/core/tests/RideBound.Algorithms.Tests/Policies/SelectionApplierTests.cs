@@ -6,7 +6,7 @@ using RideBound.Domain.Routes;
 
 namespace RideBound.Algorithms.Tests.Policies;
 
-public sealed class RollingCostPolicyTests
+public sealed class SelectionApplierTests
 {
     private static readonly CandidateGenerationOptions ExactOptions =
         new(10_000, 4, exactSmallMode: true);
@@ -23,7 +23,7 @@ public sealed class RollingCostPolicyTests
             position: AlgorithmTestData.NodeThree);
         var state = AlgorithmTestData.CreateState([request], [near, far]);
 
-        var result = new RollingCostPolicy().Decide(state, ExactOptions);
+        var result = new SelectionApplier().Decide(state, ExactOptions);
 
         Assert.True(result.IsSuccess, result.Witness?.Message);
         var accepted = Assert.Single(
@@ -67,7 +67,7 @@ public sealed class RollingCostPolicyTests
             ? AlgorithmTestData.VehicleOne
             : AlgorithmTestData.VehicleTwo;
 
-        var result = new RollingCostPolicy().Decide(state, ExactOptions);
+        var result = new SelectionApplier().Decide(state, ExactOptions);
 
         Assert.True(result.IsSuccess, result.Witness?.Message);
         var selected = result.Decision!.VehiclePlans.Single(
@@ -86,7 +86,7 @@ public sealed class RollingCostPolicyTests
                 AlgorithmTestData.Vehicle(AlgorithmTestData.VehicleTwo),
             ]);
 
-        var result = new RollingCostPolicy().Decide(state, ExactOptions);
+        var result = new SelectionApplier().Decide(state, ExactOptions);
 
         Assert.True(result.IsSuccess, result.Witness?.Message);
         Assert.Equal(2, result.Decision!.VehiclePlans.Count);
@@ -106,7 +106,7 @@ public sealed class RollingCostPolicyTests
             [request],
             [AlgorithmTestData.Vehicle(capacity: 4)]);
 
-        var result = new RollingCostPolicy().Decide(state, ExactOptions);
+        var result = new SelectionApplier().Decide(state, ExactOptions);
 
         Assert.True(result.IsSuccess, result.Witness?.Message);
         var action = Assert.Single(result.Decision!.RequestActions);
@@ -137,7 +137,7 @@ public sealed class RollingCostPolicyTests
                     position: AlgorithmTestData.NodeThree),
             ]);
 
-        var result = new RollingCostPolicy().Decide(state, ExactOptions);
+        var result = new SelectionApplier().Decide(state, ExactOptions);
 
         Assert.True(result.IsSuccess, result.Witness?.Message);
         var action = Assert.Single(result.Decision!.RequestActions);
@@ -166,7 +166,7 @@ public sealed class RollingCostPolicyTests
             [first, second],
             [AlgorithmTestData.Vehicle()]);
 
-        var result = new RollingCostPolicy().Decide(state, ExactOptions);
+        var result = new SelectionApplier().Decide(state, ExactOptions);
 
         Assert.True(result.IsSuccess, result.Witness?.Message);
         Assert.Single(
@@ -230,7 +230,7 @@ public sealed class RollingCostPolicyTests
             travel.SnapshotHash,
             RideBound.Domain.Commitments.CommitmentLedger.Empty);
 
-        var result = new RollingCostPolicy().Decide(state, ExactOptions);
+        var result = new SelectionApplier().Decide(state, ExactOptions);
 
         Assert.True(result.IsSuccess, result.Witness?.Message);
         Assert.Equal(

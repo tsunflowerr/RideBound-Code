@@ -14,7 +14,7 @@ internal static class SolverExecutionEvidenceMapper
         "https://ridebound.local/schemas/wp13/v1/" +
         "runner-retained-candidate-portfolio-evidence.schema.json";
 
-    public static JsonElement? Map(RollingCostDecision decision)
+    public static JsonElement? Map(DispatchDecision decision)
     {
         ArgumentNullException.ThrowIfNull(decision);
 

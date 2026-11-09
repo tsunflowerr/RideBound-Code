@@ -11,7 +11,7 @@ namespace RideBound.Algorithms.Policies;
 /// </summary>
 public static class RevisionPenaltyPolicy
 {
-    internal static RollingCostDecisionResult Finish(
+    internal static DispatchDecisionResult Finish(
         CommitmentMechanismContext context,
         IReadOnlyList<VehicleCandidateSet> candidates,
         FleetSelectionResult selected,
@@ -19,27 +19,27 @@ public static class RevisionPenaltyPolicy
     {
         if (!selected.IsSuccess)
         {
-            return RollingCostDecisionResult.Failure(selected.Witness!);
+            return DispatchDecisionResult.Failure(selected.Witness!);
         }
 
-        var invalid = RollingCostPolicy.ValidateSelection(
+        var invalid = SelectionApplier.ValidateSelection(
             context.ReducedState,
             selected.Selection!,
             physicalValidator);
 
         return invalid is null
-            ? RollingCostPolicy.ApplySelection(
+            ? SelectionApplier.ApplySelection(
                 context.ReducedState,
                 selected.Selection!,
                 candidates)
-            : RollingCostDecisionResult.Failure(invalid);
+            : DispatchDecisionResult.Failure(invalid);
     }
 
-    internal static RollingCostDecisionResult GenerationFailure(
+    internal static DispatchDecisionResult GenerationFailure(
         CandidateGenerationWitness witness) =>
-        RollingCostDecisionResult.Failure(
+        DispatchDecisionResult.Failure(
             new RollingCostWitness(
-                RollingCostFailureCodes.CandidateGenerationFailed,
+                DecisionFailureCodes.CandidateGenerationFailed,
                 witness.Message,
                 witness.VehicleId,
                 witness.RequestId,

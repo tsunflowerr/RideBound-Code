@@ -26,7 +26,7 @@ public sealed class HardVectorFleetSelector
         {
             return FleetSelectionResult.Failure(
                 new RollingCostWitness(
-                    RollingCostFailureCodes.CommitmentAssessmentFailed,
+                    DecisionFailureCodes.CommitmentAssessmentFailed,
                     "Every feasible candidate requires a C1 hard-vector assessment.",
                     missing.VehicleId));
         }
@@ -54,7 +54,7 @@ public sealed class HardVectorFleetSelector
             : FleetSelectionResult.Failure(
                 overflow
                 ?? new RollingCostWitness(
-                    RollingCostFailureCodes.NoVehiclePlan,
+                    DecisionFailureCodes.NoVehiclePlan,
                     "No globally consistent C1 fleet candidate set exists."));
     }
 
@@ -115,7 +115,7 @@ public sealed class HardVectorFleetSelector
             catch (OverflowException)
             {
                 overflow ??= new RollingCostWitness(
-                    RollingCostFailureCodes.OperationalCostOverflow,
+                    DecisionFailureCodes.OperationalCostOverflow,
                     "Fleet operational cost exceeded the integer range.",
                     candidate.VehicleId,
                     CandidateId: candidate.CandidateId,
@@ -130,7 +130,7 @@ public sealed class HardVectorFleetSelector
             if (!nextRevision.IsSuccess)
             {
                 overflow ??= new RollingCostWitness(
-                    RollingCostFailureCodes.CommitmentAssessmentFailed,
+                    DecisionFailureCodes.CommitmentAssessmentFailed,
                     nextRevision.Failure!.Message,
                     candidate.VehicleId,
                     CandidateId: candidate.CandidateId,
@@ -230,7 +230,7 @@ public sealed class RideBoundHardVectorPolicy
 
     public string PolicyId => RidePoolingPolicyRegistry.RideBoundHardVector;
 
-    public RollingCostDecisionResult Decide(
+    public DispatchDecisionResult Decide(
         CommitmentMechanismContext context,
         CandidateGenerationOptions options)
     {
@@ -250,9 +250,9 @@ public sealed class RideBoundHardVectorPolicy
         if (!assessed.IsSuccess)
         {
             var witness = assessed.Witness!;
-            return RollingCostDecisionResult.Failure(
+            return DispatchDecisionResult.Failure(
                 new RollingCostWitness(
-                    RollingCostFailureCodes.CommitmentAssessmentFailed,
+                    DecisionFailureCodes.CommitmentAssessmentFailed,
                     witness.Message,
                     witness.VehicleId,
                     witness.RequestId,

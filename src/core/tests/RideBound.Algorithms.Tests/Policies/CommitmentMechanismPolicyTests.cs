@@ -155,10 +155,10 @@ public sealed class CommitmentMechanismPolicyTests
         var c1 = new HardVectorFleetSelector().Select(sets, hardAssessments);
 
         Assert.Equal(
-            RollingCostFailureCodes.OperationalCostOverflow,
+            DecisionFailureCodes.OperationalCostOverflow,
             b1.Witness?.Code);
         Assert.Equal(
-            RollingCostFailureCodes.OperationalCostOverflow,
+            DecisionFailureCodes.OperationalCostOverflow,
             c1.Witness?.Code);
     }
 

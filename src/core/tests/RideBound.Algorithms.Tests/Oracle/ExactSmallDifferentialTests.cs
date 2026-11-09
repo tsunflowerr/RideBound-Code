@@ -61,7 +61,7 @@ public sealed class ExactSmallDifferentialTests
 
         var oracleSelection = ExactSmallOracle.Select(oracle, productionIds);
         var productionDecision =
-            new RollingCostPolicy().Decide(state, ExactOptions);
+            new SelectionApplier().Decide(state, ExactOptions);
 
         Assert.True(
             productionDecision.IsSuccess,

@@ -13,7 +13,7 @@ namespace RideBound.Runner.Online;
 public static class OnlineDecisionActionMapper
 {
     public static IReadOnlyList<JsonElement> Map(
-        RollingCostDecision decision,
+        DispatchDecision decision,
         OnlineState stateBeforeEvents,
         bool includeEventInducedPlanUpdates)
     {

@@ -19,7 +19,7 @@ public sealed class CandidateFleetSelector
         {
             return FleetSelectionResult.Failure(
                 new RollingCostWitness(
-                    RollingCostFailureCodes.NoVehiclePlan,
+                    DecisionFailureCodes.NoVehiclePlan,
                     "Every vehicle requires at least one feasible plan, including no-op.",
                     missing.VehicleId));
         }
@@ -44,7 +44,7 @@ public sealed class CandidateFleetSelector
         return FleetSelectionResult.Failure(
             overflow
             ?? new RollingCostWitness(
-                RollingCostFailureCodes.NoVehiclePlan,
+                DecisionFailureCodes.NoVehiclePlan,
                 "No globally consistent fleet candidate set exists."));
     }
 
@@ -99,7 +99,7 @@ public sealed class CandidateFleetSelector
             catch (OverflowException)
             {
                 overflow ??= new RollingCostWitness(
-                    RollingCostFailureCodes.OperationalCostOverflow,
+                    DecisionFailureCodes.OperationalCostOverflow,
                     "Fleet operational cost exceeded the integer range.",
                     candidate.VehicleId,
                     CandidateId: candidate.CandidateId,

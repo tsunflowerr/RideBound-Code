@@ -103,7 +103,7 @@ public sealed partial class RunnerSession
                 solved.Witness!.Message);
         }
 
-        var decision = RollingCostDecisionResult.Success(
+        var decision = DispatchDecisionResult.Success(
             solved.Decision!.Decision);
         var validationPolicies = solved.Decision.EffectivePolicies;
 

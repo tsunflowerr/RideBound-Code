@@ -120,7 +120,7 @@ public sealed record SolverBackedRidePoolingPolicyOptions
 }
 
 public sealed record SolverBackedPolicyDecision(
-    RollingCostDecision Decision,
+    DispatchDecision Decision,
     ICommitmentPolicyProvider EffectivePolicies);
 
 public sealed record SolverBackedPolicyDecisionResult
@@ -433,7 +433,7 @@ public sealed class SolverBackedRidePoolingPolicy
         CommitmentAssessmentWitness witness) =>
         SolverBackedPolicyDecisionResult.Failure(
             new RollingCostWitness(
-                RollingCostFailureCodes.CommitmentAssessmentFailed,
+                DecisionFailureCodes.CommitmentAssessmentFailed,
                 witness.Message,
                 witness.VehicleId,
                 witness.RequestId,
@@ -451,7 +451,7 @@ public sealed class SolverBackedRidePoolingPolicy
     {
         public CandidateSelectionValidationResult Validate(FleetSelection selection)
         {
-            var physicalFailure = RollingCostPolicy.ValidateSelection(
+            var physicalFailure = SelectionApplier.ValidateSelection(
                 context.ReducedState,
                 selection,
                 physicalValidator);
@@ -463,7 +463,7 @@ public sealed class SolverBackedRidePoolingPolicy
                     physicalFailure.Message);
             }
 
-            var applied = RollingCostPolicy.ApplySelection(
+            var applied = SelectionApplier.ApplySelection(
                 context.ReducedState,
                 selection,
                 candidates);

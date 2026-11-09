@@ -8,13 +8,13 @@ using RideBound.Domain.Validation;
 
 namespace RideBound.Algorithms.Policies;
 
-public sealed class RollingCostPolicy
+public sealed class SelectionApplier
 {
     private readonly InsertionCandidateGenerator _generator;
     private readonly CandidateFleetSelector _selector;
     private readonly PhysicalPlanValidator _validator;
 
-    public RollingCostPolicy(
+    public SelectionApplier(
         InsertionCandidateGenerator? generator = null,
         CandidateFleetSelector? selector = null,
         PhysicalPlanValidator? validator = null)
@@ -24,7 +24,7 @@ public sealed class RollingCostPolicy
         _validator = validator ?? new PhysicalPlanValidator();
     }
 
-    public RollingCostDecisionResult Decide(
+    public DispatchDecisionResult Decide(
         OnlineState state,
         CandidateGenerationOptions options,
         CommitmentCandidateFilter? commitmentFilter = null)
@@ -36,9 +36,9 @@ public sealed class RollingCostPolicy
 
         if (!generated.IsSuccess)
         {
-            return RollingCostDecisionResult.Failure(
+            return DispatchDecisionResult.Failure(
                 new RollingCostWitness(
-                    RollingCostFailureCodes.CandidateGenerationFailed,
+                    DecisionFailureCodes.CandidateGenerationFailed,
                     generated.Witness!.Message,
                     generated.Witness.VehicleId,
                     generated.Witness.RequestId,
@@ -52,7 +52,7 @@ public sealed class RollingCostPolicy
 
         if (!selection.IsSuccess)
         {
-            return RollingCostDecisionResult.Failure(selection.Witness!);
+            return DispatchDecisionResult.Failure(selection.Witness!);
         }
 
         var validationFailure = ValidateSelection(
@@ -62,7 +62,7 @@ public sealed class RollingCostPolicy
 
         if (validationFailure is not null)
         {
-            return RollingCostDecisionResult.Failure(validationFailure);
+            return DispatchDecisionResult.Failure(validationFailure);
         }
 
         var applied = ApplySelection(
@@ -72,7 +72,7 @@ public sealed class RollingCostPolicy
 
         return applied.IsSuccess
             ? applied
-            : RollingCostDecisionResult.Failure(applied.Witness!);
+            : DispatchDecisionResult.Failure(applied.Witness!);
     }
 
     /// <summary>
@@ -106,7 +106,7 @@ public sealed class RollingCostPolicy
             return (
                 null,
                 new RollingCostWitness(
-                    RollingCostFailureCodes.SelectedCandidateInvalid,
+                    DecisionFailureCodes.SelectedCandidateInvalid,
                     "A selected relocation needs exactly one donor (the rider's vehicle) and one " +
                     "receiver of the same waiting rider.",
                     donors.FirstOrDefault()?.VehicleId ?? receivers[0].VehicleId,
@@ -146,7 +146,7 @@ public sealed class RollingCostPolicy
             if (!validation.IsFeasible)
             {
                 return new RollingCostWitness(
-                    RollingCostFailureCodes.SelectedCandidateInvalid,
+                    DecisionFailureCodes.SelectedCandidateInvalid,
                     validation.Witness!.Message,
                     plan.VehicleId,
                     validation.Witness.RequestId,
@@ -221,7 +221,7 @@ public sealed class RollingCostPolicy
         return (run, null);
     }
 
-    internal static RollingCostDecisionResult ApplySelection(
+    internal static DispatchDecisionResult ApplySelection(
         OnlineState state,
         FleetSelection selection,
         IReadOnlyList<VehicleCandidateSet> generated)
@@ -242,7 +242,7 @@ public sealed class RollingCostPolicy
 
         if (relocationWitness is not null)
         {
-            return RollingCostDecisionResult.Failure(relocationWitness);
+            return DispatchDecisionResult.Failure(relocationWitness);
         }
 
         if (relocation is not null)
@@ -251,7 +251,7 @@ public sealed class RollingCostPolicy
 
             if (moved.Witness is not null)
             {
-                return RollingCostDecisionResult.Failure(moved.Witness);
+                return DispatchDecisionResult.Failure(moved.Witness);
             }
 
             run = moved.Run!;
@@ -362,8 +362,8 @@ public sealed class RollingCostPolicy
                     FindRejectionReason(request.Id, relatedPrunes)));
         }
 
-        return RollingCostDecisionResult.Success(
-            new RollingCostDecision(
+        return DispatchDecisionResult.Success(
+            new DispatchDecision(
                 state with { Run = run },
                 selection.VehiclePlans,
                 actions.AsReadOnly(),
@@ -393,14 +393,14 @@ public sealed class RollingCostPolicy
             : RollingCostReasonCodes.NoFeasibleInsertion;
     }
 
-    private static RollingCostDecisionResult ApplyFailure(
+    private static DispatchDecisionResult ApplyFailure(
         DomainFailure failure,
         VehicleId? vehicleId = null,
         string? candidateId = null,
         RequestId? requestId = null) =>
-        RollingCostDecisionResult.Failure(
+        DispatchDecisionResult.Failure(
             new RollingCostWitness(
-                RollingCostFailureCodes.DecisionApplyFailed,
+                DecisionFailureCodes.DecisionApplyFailed,
                 failure.Message,
                 vehicleId,
                 requestId,

@@ -59,7 +59,7 @@ public sealed record FleetSelectionResult
 /// Null unless recovery was enabled and triggered; the Runner passes it to its own
 /// validation so that the kept route is recorded as a typed breach.
 /// </param>
-public sealed record RollingCostDecision(
+public sealed record DispatchDecision(
     OnlineState ProposedState,
     IReadOnlyList<SelectedVehiclePlan> VehiclePlans,
     IReadOnlyList<RequestDecisionAction> RequestActions,
@@ -277,16 +277,16 @@ public sealed class CandidatePortfolioEvidenceSnapshot
         string dimension,
         string? entityId = null) =>
         DomainResult<CandidatePortfolioEvidenceSnapshot>.Fail(
-            RollingCostFailureCodes.CandidatePortfolioEvidenceInvalid,
+            DecisionFailureCodes.CandidatePortfolioEvidenceInvalid,
             message,
             entityId,
             dimension);
 }
 
-public sealed record RollingCostDecisionResult
+public sealed record DispatchDecisionResult
 {
-    private RollingCostDecisionResult(
-        RollingCostDecision? decision,
+    private DispatchDecisionResult(
+        DispatchDecision? decision,
         RollingCostWitness? witness)
     {
         Decision = decision;
@@ -295,15 +295,15 @@ public sealed record RollingCostDecisionResult
 
     public bool IsSuccess => Decision is not null;
 
-    public RollingCostDecision? Decision { get; }
+    public DispatchDecision? Decision { get; }
 
     public RollingCostWitness? Witness { get; }
 
-    public static RollingCostDecisionResult Success(
-        RollingCostDecision decision) =>
+    public static DispatchDecisionResult Success(
+        DispatchDecision decision) =>
         new(decision, null);
 
-    public static RollingCostDecisionResult Failure(
+    public static DispatchDecisionResult Failure(
         RollingCostWitness witness) =>
         new(null, witness);
 }
@@ -316,7 +316,7 @@ public sealed record RollingCostWitness(
     string? CandidateId = null,
     string? Dimension = null);
 
-public static class RollingCostFailureCodes
+public static class DecisionFailureCodes
 {
     public const string CandidateGenerationFailed =
         "CANDIDATE_GENERATION_FAILED";

@@ -359,7 +359,7 @@ public sealed class ExactSmallCommitmentDifferentialTests
             "c1-unbounded-equivalence",
             1);
 
-        var b1 = new RollingCostPolicy().Decide(
+        var b1 = new SelectionApplier().Decide(
             fixture.State,
             CandidateGenerationOptions.ExactSmall);
         var c1 = new RideBoundHardVectorPolicy().Decide(
@@ -601,7 +601,7 @@ public sealed class ExactSmallCommitmentDifferentialTests
 
         Assert.False(result.IsSuccess);
         Assert.Equal(
-            RollingCostFailureCodes.CommitmentAssessmentFailed,
+            DecisionFailureCodes.CommitmentAssessmentFailed,
             result.Witness!.Code);
         Assert.StartsWith(
             "C1 rejected the safety no-op while other candidates survived. No-op rejection: ",
@@ -911,7 +911,7 @@ public sealed class ExactSmallCommitmentDifferentialTests
             HardVectorOptions(forcedReferenceRecovery: false));
         Assert.False(legacy.IsSuccess);
         Assert.Equal(
-            RollingCostFailureCodes.CommitmentAssessmentFailed,
+            DecisionFailureCodes.CommitmentAssessmentFailed,
             legacy.Witness!.Code);
 
         var result = new SolverBackedRidePoolingPolicy(solver).Decide(
@@ -1688,7 +1688,7 @@ public sealed class ExactSmallCommitmentDifferentialTests
     /// <summary>The validation the Runner applies to a policy decision.</summary>
     private static CommitmentValidationContext RunnerLikeContext(
         CommitmentMechanismContext context,
-        RollingCostDecision decision,
+        DispatchDecision decision,
         IReadOnlySet<VehicleId>? forced,
         bool noWorse = false) =>
         new(
@@ -2204,7 +2204,7 @@ public sealed class ExactSmallCommitmentDifferentialTests
         return 0;
     }
 
-    private static FleetSelection ToFleetSelection(RollingCostDecision decision) =>
+    private static FleetSelection ToFleetSelection(DispatchDecision decision) =>
         new(
             decision.VehiclePlans,
             decision.AcceptedRequestCount,
