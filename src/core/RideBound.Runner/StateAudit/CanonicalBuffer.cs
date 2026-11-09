@@ -3,7 +3,7 @@ using System.Text;
 using RideBound.Contracts.Protocol;
 using RideBound.Contracts.Serialization;
 
-namespace RideBound.Runner.Online;
+namespace RideBound.Runner.StateAudit;
 
 /// <summary>
 /// Writes canonical JSON v1 bytes directly (docs/06 section 10.1; CanonicalJson.cs).

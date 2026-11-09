@@ -11,7 +11,7 @@ using RideBound.Domain.Runs;
 using RideBound.Domain.Validation;
 using RideBound.Domain.Vehicles;
 
-namespace RideBound.Runner.Online;
+namespace RideBound.Runner.StateAudit;
 
 public sealed record OnlineStateCheckpointReadResult(
     OnlineState? State,

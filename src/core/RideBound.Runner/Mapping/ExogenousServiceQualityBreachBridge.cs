@@ -9,7 +9,7 @@ using RideBound.Domain.Common;
 using RideBound.Domain.Incidents;
 using RideBound.Domain.Validation;
 
-namespace RideBound.Runner.Online;
+namespace RideBound.Runner.Mapping;
 
 public sealed record ExogenousServiceQualityBreachBridgeResult(
     OnlineState? State,

@@ -5,7 +5,7 @@ using RideBound.Contracts.Protocol;
 using RideBound.Contracts.Tests.Fixtures;
 using RideBound.Domain.Common;
 using RideBound.Domain.Runs;
-using RideBound.Runner.Online;
+using RideBound.Runner.Mapping;
 
 namespace RideBound.Runner.Tests.Online;
 

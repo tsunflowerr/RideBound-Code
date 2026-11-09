@@ -7,7 +7,8 @@ using RideBound.Application.Optimization;
 using RideBound.Application.State;
 using RideBound.Contracts.Protocol;
 using RideBound.Domain.Commitments;
-using RideBound.Runner.Online;
+using RideBound.Runner.Mapping;
+using RideBound.Runner.StateAudit;
 
 namespace RideBound.Runner.Protocol;
 

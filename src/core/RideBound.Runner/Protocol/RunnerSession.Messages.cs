@@ -4,7 +4,7 @@ using RideBound.Contracts.Protocol;
 using RideBound.Contracts.Serialization;
 using RideBound.Domain.Common;
 using RideBound.Domain.Runs;
-using RideBound.Runner.Online;
+using RideBound.Runner.StateAudit;
 
 namespace RideBound.Runner.Protocol;
 

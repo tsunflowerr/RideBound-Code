@@ -8,7 +8,7 @@ using RideBound.Domain.Routes;
 using ContractRouteStopKind = RideBound.Contracts.Protocol.RouteStopKind;
 using DomainRouteStopKind = RideBound.Domain.Routes.RouteStopKind;
 
-namespace RideBound.Runner.Online;
+namespace RideBound.Runner.Mapping;
 
 public static class OnlineDecisionActionMapper
 {

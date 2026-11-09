@@ -11,7 +11,7 @@ using RideBound.Domain.Requests;
 using RideBound.Domain.Routes;
 using RideBound.Domain.Vehicles;
 
-namespace RideBound.Runner.Online;
+namespace RideBound.Runner.StateAudit;
 
 /// <summary>
 /// Per-entity canonical fragments of immutable domain objects, keyed by object identity.

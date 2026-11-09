@@ -1,6 +1,6 @@
 using System.Security.Cryptography;
 
-namespace RideBound.Runner.Online;
+namespace RideBound.Runner.StateAudit;
 
 /// <summary>
 /// The canonical bytes of one value as an ordered list of immutable byte ranges.

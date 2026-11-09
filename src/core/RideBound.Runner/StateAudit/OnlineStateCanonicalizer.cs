@@ -1,7 +1,7 @@
 using RideBound.Application.State;
 using RideBound.Contracts.Protocol;
 
-namespace RideBound.Runner.Online;
+namespace RideBound.Runner.StateAudit;
 
 /// <summary>
 /// The canonical bytes and the OnlineStateHash.v1 of a whole online state, written by

@@ -10,7 +10,7 @@ using RideBound.Domain.Routes;
 using RideBound.Domain.Runs;
 using RideBound.Domain.Validation;
 using RideBound.Domain.Vehicles;
-using RideBound.Runner.Online;
+using RideBound.Runner.StateAudit;
 
 namespace RideBound.Runner.Tests.Online;
 
