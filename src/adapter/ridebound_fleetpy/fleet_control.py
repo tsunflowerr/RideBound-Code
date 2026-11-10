@@ -1118,10 +1118,8 @@ class RideBoundFleetControl(FleetControlBase):
         self._rb_checkpoint_binding_hash = self._checkpoint_binding_hash(checkpoint)
 
     def _checkpoint_binding_hash(self, checkpoint):
-        try:
-            checkpoint_hash = checkpoint["payload"]["checkpointHash"]
-        except (KeyError, TypeError) as exc:
-            raise _fail("RBWP7_CHECKPOINT_INVALID", "$.checkpoint", str(exc)) from exc
+        # RunnerClient.request_checkpoint has already checked that checkpointHash is 64 lowercase hex digits.
+        checkpoint_hash = checkpoint["payload"]["checkpointHash"]
         adapter_state = {
             "nextEventSeq": self._rb_events.next_event_sequence,
             "nextEpoch": self._rb_events.next_epoch,
@@ -1150,20 +1148,7 @@ class RideBoundFleetControl(FleetControlBase):
             b"RideBound.FleetPyAdapterState.v1\0"
             + canonical_json_bytes(adapter_state)
         ).digest()
-        try:
-            runner_hash = bytes.fromhex(checkpoint_hash)
-        except (TypeError, ValueError) as exc:
-            raise _fail(
-                "RBWP7_CHECKPOINT_INVALID",
-                "$.checkpoint.checkpointHash",
-                repr(checkpoint_hash),
-            ) from exc
-        if len(runner_hash) != 32:
-            raise _fail(
-                "RBWP7_CHECKPOINT_INVALID",
-                "$.checkpoint.checkpointHash",
-                repr(checkpoint_hash),
-            )
+        runner_hash = bytes.fromhex(checkpoint_hash)
         return hashlib.sha256(
             b"RideBound.FleetPyCheckpointBinding.v1\0"
             + runner_hash

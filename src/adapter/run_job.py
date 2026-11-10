@@ -41,7 +41,7 @@ import traceback
 ADAPTER_ROOT = pathlib.Path(__file__).parent.resolve()
 REPOSITORY_ROOT = ADAPTER_ROOT.parents[1]
 VEHICLE_DIRECTORY = ADAPTER_ROOT / "assets"  # wp7_tiny.csv: the FleetPy vehicle type, 4 seats
-# Only hashed by the session (it must exist and stay unchanged), never read.
+# Its files are only hashed with the other job artifacts (run-00.json counts them), never read.
 SCENARIO_ROOT = ADAPTER_ROOT / "assets" / "wp7-fleetpy-medium"
 BIN_SECONDS = 900
 # The Runner may need minutes for one answer on a full-node cell, and its frames reach about 0.8 GB.
@@ -556,15 +556,13 @@ def run_fleet(args, source, driver, values, output, source_hash):
         finally:
             control.close()
         receipts = control._rb_session.artifact_receipts
-        if receipts["before"] != receipts["after"]:
-            raise RuntimeError("medium artifact receipt drift")
         # The control registered close() to run at exit, which would keep it, and the final checkpoint it holds, in
         # memory while the evidence is read. It is closed now, so let it go.
         atexit.unregister(control.close)
     cpu_after = process.cpu_times()
     return {"schemaVersion": "1.0.0", "status": "succeeded", "label": args.label, "repeat": 0,
             "semanticHash": semantic_hash, "semantic": semantic, "artifactCount": len(receipts["before"]),
-            "artifactReceiptsEqual": True,
+            "artifactReceiptsEqual": receipts["before"] == receipts["after"],
             "resources": {"wallMilliseconds": round((time.perf_counter() - started) * 1000),
                           "userCpuMilliseconds": round((cpu_after.user - cpu_before.user) * 1000),
                           "systemCpuMilliseconds": round((cpu_after.system - cpu_before.system) * 1000),

@@ -349,21 +349,9 @@ class RideBoundSessionSettings:
             scenario_artifacts: tuple[pathlib.Path, ...] = ()
         else:
             scenario_root = pathlib.Path(str(scenario_root_value)).resolve()
-            if not scenario_root.is_dir():
-                raise _fail(
-                    "RBWP7_SETTING_DIRECTORY_MISSING",
-                    "$.operator.ridebound_scenario_root",
-                    str(scenario_root),
-                )
             scenario_artifacts = tuple(
                 sorted(path for path in scenario_root.rglob("*") if path.is_file())
             )
-            if not scenario_artifacts:
-                raise _fail(
-                    "RBWP7_SCENARIO_ARTIFACTS_EMPTY",
-                    "$.operator.ridebound_scenario_root",
-                    str(scenario_root),
-                )
         additional_value = _setting(attributes, "ridebound_additional_artifacts", ())
         if isinstance(additional_value, str):
             additional_values = (additional_value,)

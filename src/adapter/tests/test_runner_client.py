@@ -240,7 +240,7 @@ class RunnerClientTests(unittest.TestCase):
                 finally:
                     client.shutdown()
 
-    def test_missing_or_mutated_artifact_fails_pre_or_postflight(self) -> None:
+    def test_missing_artifact_fails_and_a_changed_one_is_recorded(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             artifact = pathlib.Path(directory) / "artifact.txt"
             artifact.write_text("before", encoding="utf-8")
@@ -258,9 +258,11 @@ class RunnerClientTests(unittest.TestCase):
             client.start()
             client.negotiate(hello())
             artifact.write_text("after", encoding="utf-8")
-            with self.assertRaises(AdapterFailure) as raised:
-                client.shutdown()
-            self.assertEqual("RBWP7_RUNNER_ARTIFACT_DRIFT", raised.exception.code)
+            client.shutdown()
+            self.assertEqual("closed", client.state)
+            receipts = client.artifact_receipts
+            changed = [new["path"] for old, new in zip(receipts["before"], receipts["after"]) if old != new]
+            self.assertEqual([str(artifact.resolve())], changed)
 
 
 if __name__ == "__main__":

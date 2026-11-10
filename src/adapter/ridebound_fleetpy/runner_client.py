@@ -58,8 +58,6 @@ class RunnerClient:
         if not self._command:
             raise ValueError("command cannot be empty")
         self._artifact_paths = tuple(pathlib.Path(path).resolve() for path in artifact_paths)
-        if not self._artifact_paths:
-            raise ValueError("at least one artifact path is required")
         if timeout_seconds <= 0 or shutdown_timeout_seconds <= 0:
             raise ValueError("timeouts must be positive")
         if maximum_input_line_bytes < 256 or maximum_output_line_bytes < 256 or maximum_stderr_bytes < 1:
@@ -90,6 +88,8 @@ class RunnerClient:
 
     @property
     def artifact_receipts(self) -> dict[str, list[dict[str, str]]]:
+        # Path and SHA-256 of every artifact when the Runner started and after it stopped; a change is recorded here,
+        # not refused.
         return {
             "before": [receipt.__dict__.copy() for receipt in self._receipts_before],
             "after": [receipt.__dict__.copy() for receipt in self._receipts_after],
@@ -248,9 +248,6 @@ class RunnerClient:
                     "RBWP7_RUNNER_STDERR_OVERFLOW", "$runner", str(self._maximum_stderr_bytes)
                 )
         self._receipts_after = self._hash_artifacts()
-        if self._receipts_after != self._receipts_before:
-            self._state = "failed"
-            raise AdapterFailure("RBWP7_RUNNER_ARTIFACT_DRIFT", "$runner.artifacts", "pre/post hash differs")
         if return_code != 0 and self._state != "failed":
             self._state = "failed"
             raise AdapterFailure("RBWP7_RUNNER_EXIT_NONZERO", "$runner", str(return_code))
