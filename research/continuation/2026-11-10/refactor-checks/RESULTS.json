@@ -1,0 +1,297 @@
+{
+ "g7": {
+  "manifest": {
+   "Code/Report_INT3508/ridebound-scratchpad/fastrun-2026-11-02": {
+    "ok": 6,
+    "bad": [],
+    "missing": []
+   },
+   "RideBoundData/research/fullsys-f14-v2/drivers-run": {
+    "ok": 84,
+    "bad": [],
+    "missing": []
+   },
+   "RideBoundData/research/fullsys-f14-v2/job-configs-v2": {
+    "ok": 174,
+    "bad": [],
+    "missing": []
+   },
+   "RideBoundData/research/fullsys-f14-v2/jobs-bundle-v2": {
+    "ok": 5,
+    "bad": [],
+    "missing": []
+   },
+   "RideBoundData/research/fullsys-f14-v2/predictions-forecast-gate": {
+    "ok": 3,
+    "bad": [],
+    "missing": []
+   },
+   "RideBoundData/research/fullsys-f14-v2/predictions-timed-gate": {
+    "ok": 3,
+    "bad": [],
+    "missing": []
+   },
+   "RideBoundData/research/fullsys-f14-v2/predictions-timed": {
+    "ok": 1,
+    "bad": [],
+    "missing": []
+   },
+   "RideBoundData/research/fullsys-f14-v2/predictions": {
+    "ok": 88,
+    "bad": [],
+    "missing": []
+   },
+   "RideBoundData/research/fullsys-f14-v2/worlds": {
+    "ok": 84,
+    "bad": [],
+    "missing": []
+   },
+   "RideBoundData/research/via-full-v1/shadow-gate": {
+    "ok": 2,
+    "bad": [],
+    "missing": []
+   }
+  },
+  "configsV2": {
+   "fullsys-f14-v2": {
+    "ok": 173,
+    "bad": [],
+    "missing": [],
+    "unlisted": [],
+    "configsV2Sha256": "18ed3c1d048d4bea4d036521c60fe7108b72175000ed9f0229b4b200b32f659b",
+    "commitmentSha256": {
+     "RCE35.json": "35511d472c9eb55baa81918c50635ef06c4bdb17c536e78122a71cd318b7ad83",
+     "SHHZ71.json": "9ca0f4043fd0d32fd708f40bd47349771f8e296f93d8abc3d700bb84ed180d74",
+     "SHRC71.json": "d536e48d61ac857b011af2838030596db4d79c1f3db768862e82f84cba98bc87"
+    }
+   },
+   "fullsys-f16-v2": {
+    "ok": 194,
+    "bad": [],
+    "missing": [],
+    "unlisted": [],
+    "configsV2Sha256": "7a940202c78b9ab74ad9211e876c443f160ff09e15da09f825d41940e77d066e",
+    "commitmentSha256": {
+     "SHHZ71.json": "9ca0f4043fd0d32fd708f40bd47349771f8e296f93d8abc3d700bb84ed180d74",
+     "SHRC71.json": "d536e48d61ac857b011af2838030596db4d79c1f3db768862e82f84cba98bc87"
+    }
+   }
+  },
+  "linux": {
+   "fullsys-f14-v2": {
+    "commitmentSame": 3,
+    "commitmentOther": [],
+    "wp4OnlyNetworkDirectory": 168,
+    "wp4Other": []
+   },
+   "fullsys-f16-v2": {
+    "commitmentSame": 2,
+    "commitmentOther": [],
+    "wp4OnlyNetworkDirectory": 192,
+    "wp4Other": []
+   }
+  },
+  "template": {
+   "name": "wp4-via-g2k8-a1-fast.json",
+   "sha256": "820a4de7ff11f92f4176c9d169e5ca12ed03797389c02da35fbb520fdfa55f52",
+   "bytes": 1005,
+   "equal": 362,
+   "differ": []
+  },
+  "keys": {
+   "stopServiceDurationMs": {
+    "files": 0,
+    "hits": 0,
+    "templateHits": 0
+   },
+   "maximumRidersPerVehicle": {
+    "files": 0,
+    "hits": 0,
+    "templateHits": 0
+   },
+   "skipConstantObjectiveLevels": {
+    "files": 0,
+    "hits": 0,
+    "templateHits": 0
+   },
+   "solverExecutionEvidenceProfile": {
+    "files": 0,
+    "hits": 0,
+    "templateHits": 0
+   },
+   "emitSolverExecutionEvidence": {
+    "files": 723,
+    "hits": 723,
+    "templateHits": 1,
+    "values": [
+     "false"
+    ]
+   },
+   "auditHash": {
+    "files": 723,
+    "hits": 723,
+    "templateHits": 1,
+    "values": [
+     "\"light-v1\""
+    ]
+   }
+  },
+  "pass": true
+ },
+ "v1": {
+  "v1-ebca912-FS-G2-SHHZ71-N-d20190919-vf-r0-w08": {
+   "transcript": "FS-G2-SHHZ71-N-d20190919-vf-r0-w08/transcript-00.ndjson.gz",
+   "runnerDllSha256": "24f1d1f104151d9930b1a4c5b49e554fccfb18793eab068815425ad6512e06f6",
+   "framesSent": 5696,
+   "framesCompared": 2849,
+   "framesIdentical": 2849,
+   "identical": true,
+   "firstDifference": null,
+   "runnerExitCode": 0,
+   "wallSeconds": 508.5,
+   "runnerPeakRssMiB": 4364
+  },
+  "v1-ebca912-FS-G2-SHRC71-CL-d20190919-vf-r0-w08": {
+   "transcript": "FS-G2-SHRC71-CL-d20190919-vf-r0-w08/transcript-00.ndjson.gz",
+   "runnerDllSha256": "24f1d1f104151d9930b1a4c5b49e554fccfb18793eab068815425ad6512e06f6",
+   "framesSent": 5754,
+   "framesCompared": 2878,
+   "framesIdentical": 2878,
+   "identical": true,
+   "firstDifference": null,
+   "runnerExitCode": 0,
+   "wallSeconds": 525.6,
+   "runnerPeakRssMiB": 4117
+  }
+ },
+ "prep": {
+  "prep-9ba5568-FS-G2-SHHZ71-N-d20190919-vf-r0-w08": {
+   "transcript": "FS-G2-SHHZ71-N-d20190919-vf-r0-w08/transcript-00.ndjson.gz",
+   "adapter": "simulators/fleetpy-ridebound/ridebound_fleetpy",
+   "framesChecked": 8545,
+   "initializeRunRebound": true,
+   "identical": true,
+   "firstDifference": null,
+   "job": "exit 0",
+   "jobOk": true,
+   "compare": {
+    "prep-9ba5568-FS-G2-SHHZ71-N-d20190919-vf-r0-w08-job": {
+     "lines": 8545,
+     "sameBytes": 8544,
+     "sameAfterStrip": 1,
+     "differing": 0,
+     "firstDifferingLine": null,
+     "strippedByMessageType": {
+      "initializeRun": 1
+     }
+    }
+   },
+   "meta": {
+    "commit": "9ba55685f368873c5eb71d7703d0acb7391f4388",
+    "recordedCoreCommitSha": "0eb9a6ca7b61bb1ade653bdc178fae5a1f102681",
+    "jobFolder": "FS-G2-SHHZ71-N-d20190919-vf-r0-w08",
+    "label": "FS-G2-SHHZ71-N-d20190919-vf-r0-w08-fin2",
+    "replayExitCode": 0,
+    "compareExitCode": 0,
+    "wallSeconds": 603,
+    "semanticHashEqual": true
+   }
+  },
+  "prep-9ba5568-FS-G2-SHRC71-CL-d20190919-vf-r0-w08": {
+   "transcript": "FS-G2-SHRC71-CL-d20190919-vf-r0-w08/transcript-00.ndjson.gz",
+   "adapter": "simulators/fleetpy-ridebound/ridebound_fleetpy",
+   "framesChecked": 8632,
+   "initializeRunRebound": true,
+   "identical": true,
+   "firstDifference": null,
+   "job": "exit 0",
+   "jobOk": true,
+   "compare": {
+    "prep-9ba5568-FS-G2-SHRC71-CL-d20190919-vf-r0-w08-job": {
+     "lines": 8632,
+     "sameBytes": 8631,
+     "sameAfterStrip": 1,
+     "differing": 0,
+     "firstDifferingLine": null,
+     "strippedByMessageType": {
+      "initializeRun": 1
+     }
+    }
+   },
+   "meta": {
+    "commit": "9ba55685f368873c5eb71d7703d0acb7391f4388",
+    "recordedCoreCommitSha": "0eb9a6ca7b61bb1ade653bdc178fae5a1f102681",
+    "jobFolder": "FS-G2-SHRC71-CL-d20190919-vf-r0-w08",
+    "label": "FS-G2-SHRC71-CL-d20190919-vf-r0-w08-fin2",
+    "replayExitCode": 0,
+    "compareExitCode": 0,
+    "wallSeconds": 630,
+    "semanticHashEqual": true
+   }
+  },
+  "prep-ebca912-FS-G2-SHHZ71-N-d20190919-vf-r0-w08": {
+   "transcript": "FS-G2-SHHZ71-N-d20190919-vf-r0-w08/transcript-00.ndjson.gz",
+   "adapter": "simulators/fleetpy-ridebound/ridebound_fleetpy",
+   "framesChecked": 8545,
+   "initializeRunRebound": true,
+   "identical": true,
+   "firstDifference": null,
+   "job": "exit 0",
+   "jobOk": true,
+   "compare": {
+    "prep-ebca912-FS-G2-SHHZ71-N-d20190919-vf-r0-w08-job": {
+     "lines": 8545,
+     "sameBytes": 8544,
+     "sameAfterStrip": 1,
+     "differing": 0,
+     "firstDifferingLine": null,
+     "strippedByMessageType": {
+      "initializeRun": 1
+     }
+    }
+   },
+   "meta": {
+    "commit": "ebca912223ba423e15d1ec5c8553b838023b8438",
+    "recordedCoreCommitSha": "0eb9a6ca7b61bb1ade653bdc178fae5a1f102681",
+    "jobFolder": "FS-G2-SHHZ71-N-d20190919-vf-r0-w08",
+    "label": "FS-G2-SHHZ71-N-d20190919-vf-r0-w08-fin2",
+    "replayExitCode": 0,
+    "compareExitCode": 0,
+    "wallSeconds": 596,
+    "semanticHashEqual": true
+   }
+  },
+  "prep-ebca912-FS-G2-SHRC71-CL-d20190919-vf-r0-w08": {
+   "transcript": "FS-G2-SHRC71-CL-d20190919-vf-r0-w08/transcript-00.ndjson.gz",
+   "adapter": "simulators/fleetpy-ridebound/ridebound_fleetpy",
+   "framesChecked": 8632,
+   "initializeRunRebound": true,
+   "identical": true,
+   "firstDifference": null,
+   "job": "exit 0",
+   "jobOk": true,
+   "compare": {
+    "prep-ebca912-FS-G2-SHRC71-CL-d20190919-vf-r0-w08-job": {
+     "lines": 8632,
+     "sameBytes": 8631,
+     "sameAfterStrip": 1,
+     "differing": 0,
+     "firstDifferingLine": null,
+     "strippedByMessageType": {
+      "initializeRun": 1
+     }
+    }
+   },
+   "meta": {
+    "commit": "ebca912223ba423e15d1ec5c8553b838023b8438",
+    "recordedCoreCommitSha": "0eb9a6ca7b61bb1ade653bdc178fae5a1f102681",
+    "jobFolder": "FS-G2-SHRC71-CL-d20190919-vf-r0-w08",
+    "label": "FS-G2-SHRC71-CL-d20190919-vf-r0-w08-fin2",
+    "replayExitCode": 0,
+    "compareExitCode": 0,
+    "wallSeconds": 623,
+    "semanticHashEqual": true
+   }
+  }
+ }
+}
