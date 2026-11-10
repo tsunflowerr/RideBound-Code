@@ -1,0 +1,309 @@
+{
+ "pfleet": {
+  "pfleet-dev": {
+   "name": "dev",
+   "commit": "d35b472b9f9af31b8a9da3737ef0e881684b2e50",
+   "adapter": "src/adapter",
+   "exitCode": 0,
+   "wallSeconds": 13,
+   "summary": [
+    "Ran 118 tests in 11.575s",
+    "OK"
+   ],
+   "outcomes": {
+    "ok": 118
+   }
+  },
+  "pfleet-ebca912": {
+   "name": "ebca912",
+   "commit": "ebca912223ba423e15d1ec5c8553b838023b8438",
+   "adapter": "simulators/fleetpy-ridebound",
+   "exitCode": 1,
+   "wallSeconds": 105,
+   "summary": [
+    "Ran 440 tests in 103.633s",
+    "FAILED (failures=4, errors=6)"
+   ],
+   "outcomes": {
+    "ok": 430,
+    "ERROR": 6,
+    "FAIL": 4
+   }
+  }
+ },
+ "jobs": {
+  "pr-legacy-d35b472-FS-G2-SHHZ71-N-d20190919-vf-r0-w08": {
+   "commit": "d35b472b9f9af31b8a9da3737ef0e881684b2e50",
+   "chain": "legacy",
+   "mode": "replay",
+   "recordedCoreCommitSha": "0eb9a6ca7b61bb1ade653bdc178fae5a1f102681",
+   "jobFolder": "FS-G2-SHHZ71-N-d20190919-vf-r0-w08",
+   "label": "FS-G2-SHHZ71-N-d20190919-vf-r0-w08-fin2",
+   "exitCode": 0,
+   "wallSeconds": 635,
+   "peakRssMiB": 5049,
+   "compareExitCode": 0,
+   "semanticHashEqual": true,
+   "jobResources": {
+    "rssAfterBytes": 2493771776,
+    "rssBeforeBytes": 377012224,
+    "systemCpuMilliseconds": 15906,
+    "userCpuMilliseconds": 557750,
+    "wallMilliseconds": 594062
+   },
+   "pass": true,
+   "replay": {
+    "framesChecked": 8545,
+    "initializeRunRebound": true,
+    "identical": true,
+    "firstDifference": null,
+    "job": "exit 0",
+    "jobOk": true
+   },
+   "compare": {
+    "FS-G2-SHHZ71-N-d20190919-vf-r0-w08": {
+     "lines": 8545,
+     "sameBytes": 8544,
+     "sameAfterStrip": 1,
+     "differing": 0,
+     "firstDifferingLine": null,
+     "strippedByMessageType": {
+      "initializeRun": 1
+     }
+    }
+   }
+  },
+  "pr-legacy-d35b472-FS-G2-SHRC71-CL-d20190919-vf-r0-w08": {
+   "commit": "d35b472b9f9af31b8a9da3737ef0e881684b2e50",
+   "chain": "legacy",
+   "mode": "replay",
+   "recordedCoreCommitSha": "0eb9a6ca7b61bb1ade653bdc178fae5a1f102681",
+   "jobFolder": "FS-G2-SHRC71-CL-d20190919-vf-r0-w08",
+   "label": "FS-G2-SHRC71-CL-d20190919-vf-r0-w08-fin2",
+   "exitCode": 0,
+   "wallSeconds": 637,
+   "peakRssMiB": 4991,
+   "compareExitCode": 0,
+   "semanticHashEqual": true,
+   "jobResources": {
+    "rssAfterBytes": 2481446912,
+    "rssBeforeBytes": 376901632,
+    "systemCpuMilliseconds": 15359,
+    "userCpuMilliseconds": 556422,
+    "wallMilliseconds": 592626
+   },
+   "pass": true,
+   "replay": {
+    "framesChecked": 8632,
+    "initializeRunRebound": true,
+    "identical": true,
+    "firstDifference": null,
+    "job": "exit 0",
+    "jobOk": true
+   },
+   "compare": {
+    "FS-G2-SHRC71-CL-d20190919-vf-r0-w08": {
+     "lines": 8632,
+     "sameBytes": 8631,
+     "sameAfterStrip": 1,
+     "differing": 0,
+     "firstDifferingLine": null,
+     "strippedByMessageType": {
+      "initializeRun": 1
+     }
+    }
+   }
+  },
+  "pr-run_job-d35b472-FS-G2-SHHZ71-N-d20190919-vf-r0-w08": {
+   "commit": "d35b472b9f9af31b8a9da3737ef0e881684b2e50",
+   "chain": "run_job",
+   "mode": "replay",
+   "recordedCoreCommitSha": "0eb9a6ca7b61bb1ade653bdc178fae5a1f102681",
+   "jobFolder": "FS-G2-SHHZ71-N-d20190919-vf-r0-w08",
+   "label": "FS-G2-SHHZ71-N-d20190919-vf-r0-w08-fin2",
+   "exitCode": 0,
+   "wallSeconds": 712,
+   "peakRssMiB": 5108,
+   "compareExitCode": 0,
+   "semanticHashEqual": true,
+   "jobResources": {
+    "rssAfterBytes": 2556592128,
+    "rssBeforeBytes": 376725504,
+    "systemCpuMilliseconds": 16688,
+    "userCpuMilliseconds": 577375,
+    "wallMilliseconds": 615813
+   },
+   "run00": {
+    "semanticEqual": true,
+    "semanticHashEqual": true,
+    "otherDifferences": [],
+    "ok": true
+   },
+   "evidence": {
+    "allowedDifferences": [
+     ".audit.summary.transcript",
+     ".transcript.fileBytes",
+     ".transcript.fileSha256",
+     ".transcript.frames[2][3]",
+     ".transcript.uncompressedSha256"
+    ],
+    "otherDifferences": [],
+    "ok": true
+   },
+   "finalize": {
+    "exitCode": 0,
+    "wallSeconds": 270,
+    "sameBytes": true,
+    "ok": true
+   },
+   "pass": true,
+   "replay": {
+    "framesChecked": 8545,
+    "initializeRunRebound": true,
+    "identical": true,
+    "firstDifference": null,
+    "job": "exit 0",
+    "jobOk": true
+   },
+   "compare": {
+    "FS-G2-SHHZ71-N-d20190919-vf-r0-w08": {
+     "lines": 8545,
+     "sameBytes": 8544,
+     "sameAfterStrip": 1,
+     "differing": 0,
+     "firstDifferingLine": null,
+     "strippedByMessageType": {
+      "initializeRun": 1
+     }
+    }
+   }
+  },
+  "pr-run_job-d35b472-FS-G2-SHRC71-CL-d20190919-vf-r0-w08": {
+   "commit": "d35b472b9f9af31b8a9da3737ef0e881684b2e50",
+   "chain": "run_job",
+   "mode": "replay",
+   "recordedCoreCommitSha": "0eb9a6ca7b61bb1ade653bdc178fae5a1f102681",
+   "jobFolder": "FS-G2-SHRC71-CL-d20190919-vf-r0-w08",
+   "label": "FS-G2-SHRC71-CL-d20190919-vf-r0-w08-fin2",
+   "exitCode": 0,
+   "wallSeconds": 695,
+   "peakRssMiB": 4991,
+   "compareExitCode": 0,
+   "semanticHashEqual": true,
+   "jobResources": {
+    "rssAfterBytes": 2482012160,
+    "rssBeforeBytes": 376885248,
+    "systemCpuMilliseconds": 16688,
+    "userCpuMilliseconds": 553703,
+    "wallMilliseconds": 595023
+   },
+   "run00": {
+    "semanticEqual": true,
+    "semanticHashEqual": true,
+    "otherDifferences": [],
+    "ok": true
+   },
+   "evidence": {
+    "allowedDifferences": [
+     ".audit.summary.transcript",
+     ".transcript.fileBytes",
+     ".transcript.fileSha256",
+     ".transcript.frames[2][3]",
+     ".transcript.uncompressedSha256"
+    ],
+    "otherDifferences": [],
+    "ok": true
+   },
+   "finalize": {
+    "exitCode": 0,
+    "wallSeconds": 260,
+    "sameBytes": true,
+    "ok": true
+   },
+   "pass": true,
+   "replay": {
+    "framesChecked": 8632,
+    "initializeRunRebound": true,
+    "identical": true,
+    "firstDifference": null,
+    "job": "exit 0",
+    "jobOk": true
+   },
+   "compare": {
+    "FS-G2-SHRC71-CL-d20190919-vf-r0-w08": {
+     "lines": 8632,
+     "sameBytes": 8631,
+     "sameAfterStrip": 1,
+     "differing": 0,
+     "firstDifferingLine": null,
+     "strippedByMessageType": {
+      "initializeRun": 1
+     }
+    }
+   }
+  },
+  "v3-run_job-d35b472-FS-G2-SHRC71-CL-d20190919-vf-r0-w08": {
+   "commit": "d35b472b9f9af31b8a9da3737ef0e881684b2e50",
+   "chain": "run_job",
+   "mode": "real",
+   "recordedCoreCommitSha": "0eb9a6ca7b61bb1ade653bdc178fae5a1f102681",
+   "jobFolder": "FS-G2-SHRC71-CL-d20190919-vf-r0-w08",
+   "label": "FS-G2-SHRC71-CL-d20190919-vf-r0-w08-fin2",
+   "exitCode": 0,
+   "wallSeconds": 1084,
+   "peakRssMiB": 4629,
+   "compareExitCode": 0,
+   "semanticHashEqual": false,
+   "jobResources": {
+    "rssAfterBytes": 2482458624,
+    "rssBeforeBytes": 378093568,
+    "systemCpuMilliseconds": 12438,
+    "userCpuMilliseconds": 526875,
+    "wallMilliseconds": 989612
+   },
+   "pass": true,
+   "compare": {
+    "FS-G2-SHRC71-CL-d20190919-vf-r0-w08": {
+     "lines": 8632,
+     "sameBytes": 2879,
+     "sameAfterStrip": 5753,
+     "differing": 0,
+     "firstDifferingLine": null,
+     "strippedByMessageType": {
+      "initializeRun": 1,
+      "initialized": 1,
+      "decision": 2875,
+      "decisionApplied": 2875,
+      "checkpoint": 1
+     }
+    }
+   }
+  }
+ },
+ "v1": {
+  "v1-dev-FS-G2-SHHZ71-N-d20190919-vf-r0-w08": {
+   "transcript": "FS-G2-SHHZ71-N-d20190919-vf-r0-w08/transcript-00.ndjson.gz",
+   "runnerDllSha256": "08f6c5c5848493ad9183afffbc7b35052e83d2b34921de6242822532fa954cb4",
+   "framesSent": 5696,
+   "framesCompared": 2849,
+   "framesIdentical": 2849,
+   "identical": true,
+   "firstDifference": null,
+   "runnerExitCode": 0,
+   "wallSeconds": 516.1,
+   "runnerPeakRssMiB": 4505
+  },
+  "v1-dev-FS-G2-SHRC71-CL-d20190919-vf-r0-w08": {
+   "transcript": "FS-G2-SHRC71-CL-d20190919-vf-r0-w08/transcript-00.ndjson.gz",
+   "runnerDllSha256": "08f6c5c5848493ad9183afffbc7b35052e83d2b34921de6242822532fa954cb4",
+   "framesSent": 5754,
+   "framesCompared": 2878,
+   "framesIdentical": 2878,
+   "identical": true,
+   "firstDifference": null,
+   "runnerExitCode": 0,
+   "wallSeconds": 480.4,
+   "runnerPeakRssMiB": 4625
+  }
+ }
+}
