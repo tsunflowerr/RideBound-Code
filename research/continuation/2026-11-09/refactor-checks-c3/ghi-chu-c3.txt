@@ -1,0 +1,11 @@
+Section 3.1, job folders
+- The guessed R14 (runs-linux-2026-11-05/extracted/runs/final) held 1 job; the guessed R16 (runs-linux-2026-11-06/extracted/runs/final-f16) did not exist.
+- No folder on the disk held 168 or 192 jobs (largest: q34-evidence-2026-11-06 with 27 F14 and 34 F16 jobs).
+- R14 = runs/final extracted from runs-linux-2026-11-05/ridebound-results-20261105T064554Z.tar.gz (sha256 d60b9f82d45c1ded1c94add6553235f9df4ac70481001f8df2b154d23d928ae4, OK against its .sha256).
+- R16 = runs/final-f16 extracted from runs-linux-2026-11-06/ridebound-f16-results-20261105T233511Z.tar.gz (sha256 b25fae51e81130c5fe90c548496bd1718f46c1ba4b91c16ce27b5fcef5193a62, OK against its .sha256).
+- Extracted into a new folder inside the C3 output folder; the archives and the fullsys-f14-v2 / fullsys-f16-v2 folders were only read.
+- R14: 168 jobs (84 FS-G2-SHRC71-CL, 84 FS-G2-SHHZ71-N); R16: 192 jobs (96 + 96). Every job has evidence.json.gz, EVIDENCE.sha256 and summary.json and no transcript-00.ndjson(.gz), so riders.py read every job from evidence.
+
+Section 3.2, wall time (Windows 11, Python 3.10.20, one job list after the other)
+- riders F14: 12:46:56 - 13:05:48 (18 min 52 s), 168 "read" lines.
+- riders F16: 13:05:48 - 13:27:57 (22 min 9 s), 192 "read" lines.

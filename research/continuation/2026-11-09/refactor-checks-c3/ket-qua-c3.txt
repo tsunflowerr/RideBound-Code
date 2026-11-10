@@ -1,0 +1,28 @@
+unit rc=0
+make_job_configs F14 rc=0
+commitment/SHRC71.json: OK
+commitment/SHHZ71.json: OK
+commitment/RCE35.json: OK
+wp4/FS-G2-SHRC71-CL/d20190919-vf-r0-w08.json: OK
+wp4/FS-G2-SHRC71-CL/d20190919-vf-r0-w17.json: OK
+wp4/FS-G2-SHHZ71-N/d20190919-vf-r0-w08.json: OK
+wp4/FS-G2-SHHZ71-N/d20190919-vf-r0-w17.json: OK
+wp4/FS-G2-RCE35-CL/d20190919-vf-r0-w08.json: OK
+wp4/FS-G2-RCE35-CL/d20190919-vf-r0-w17.json: OK
+CONFIGS-V2.json: OK
+F14 configs: old 174 new 174
+F14 configs: GIONG HET
+make_job_configs F16 rc=0
+F16 configs: old 195 new 195
+F16 configs: GIONG HET
+F16 CONFIGS-V2.json sealed 7a940202c78b9ab74ad9211e876c443f160ff09e15da09f825d41940e77d066e new 7a940202c78b9ab74ad9211e876c443f160ff09e15da09f825d41940e77d066e
+riders F14 rc=0
+wrote 58033 rider rows from 168 jobs
+786048fb931a66a6f3c3e55bf12bd358203615013c5bc04ea6c510f45bf0a28a *f14.tsv
+68801dc266e7717b4b9e874adb3416449abefeedcbc79b46898674bcd1f8f3f8 *f14-seq.tsv
+F14 riders: GIONG BANG DA GHI
+riders F16 rc=0
+wrote 67922 rider rows from 192 jobs
+fa785fde16310ddbc99723dd4839f156abcc6e7d43df1ee51cb916316ef1e87e *f16.tsv
+eb69ed27b04b7d482f0d672b7f715b9014b60a8ad7601b60ef95222cccac5bd9 *f16-seq.tsv
+F16 riders: GIONG BANG DA GHI
