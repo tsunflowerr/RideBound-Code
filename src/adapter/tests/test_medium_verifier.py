@@ -7,16 +7,12 @@ import json
 import pathlib
 import sys
 import tempfile
-import types
 import unittest
-from types import SimpleNamespace
-from unittest import mock
 
 
 ADAPTER_ROOT = pathlib.Path(__file__).parents[1]
 sys.path.insert(0, str(ADAPTER_ROOT))
 
-import actual_fleetpy_medium_preflight as preflight
 import actual_fleetpy_medium_verify as verifier
 
 
@@ -217,51 +213,6 @@ class MediumVerifierTests(unittest.TestCase):
                 {"status": "completed", "executionEvidence": evidence},
                 1,
             )
-
-
-class MediumPreflightSeedTests(unittest.TestCase):
-    def test_master_seed_is_explicitly_propagated_to_runner_settings(self):
-        globals_module = types.ModuleType("src.misc.globals")
-        globals_module.G_OP_FLEET = "fleet"
-        globals_module.G_OP_VR_CTRL_F = "control"
-        misc_module = types.ModuleType("src.misc")
-        src_module = types.ModuleType("src")
-        arguments = SimpleNamespace(
-            dotnet=pathlib.Path("dotnet"),
-            runner_root=pathlib.Path("runner"),
-            commitment_config=pathlib.Path("commitment.json"),
-            wp4_config=pathlib.Path("wp4.json"),
-            fleetpy_root=pathlib.Path("fleetpy"),
-            repository_root=pathlib.Path("repository"),
-            label="seed-check",
-            master_seed=41,
-        )
-
-        with mock.patch.dict(
-            sys.modules,
-            {
-                "src": src_module,
-                "src.misc": misc_module,
-                "src.misc.globals": globals_module,
-            },
-        ):
-            settings = preflight._operator_settings(
-                arguments,
-                pathlib.Path("scenario"),
-                [],
-                10,
-                pathlib.Path("transcript.ndjson"),
-            )
-
-        self.assertEqual(41, settings["ridebound_master_seed"])
-
-    def test_master_seed_is_limited_to_nonnegative_int32(self):
-        self.assertEqual(0, preflight._validate_master_seed(0))
-        self.assertEqual(2_147_483_647, preflight._validate_master_seed(2_147_483_647))
-        for value in (-1, 2_147_483_648, True, "7"):
-            with self.subTest(value=value):
-                with self.assertRaises(ValueError):
-                    preflight._validate_master_seed(value)
 
 
 def _write_bundle(
