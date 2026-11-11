@@ -2,7 +2,6 @@ using RideBound.Algorithms.Candidates;
 using RideBound.Algorithms.Commitments;
 using RideBound.Algorithms.Policies;
 using RideBound.Application.Optimization;
-using RideBound.Domain.Commitments;
 using RideBound.Domain.Common;
 using RideBound.Domain.Routes;
 using RideBound.Solvers.OrTools;
@@ -42,7 +41,7 @@ public sealed class OrToolsPolicyDifferentialTests
                     accounting,
                     new AllowAllValidator(),
                     hardAssessments: fixture.Assessments);
-            var oracle = SelectIndependent(fixture.Sets, fixture.Assessments);
+            var oracle = SelectIndependent(fixture.Sets);
 
             Assert.True(
                 production.IsSuccess,
@@ -194,24 +193,31 @@ public sealed class OrToolsPolicyDifferentialTests
 
             foreach (var candidate in candidates)
             {
-                assessments.Add(
-                    candidate.CandidateId,
-                    new HardVectorCandidateAssessment(
-                        candidate.CandidateId,
-                        random.Next(0, 1_000_001),
-                        Vector(random),
-                        HasApplicableHardLimit: true));
+                assessments.Add(candidate.CandidateId, new HardVectorCandidateAssessment(candidate.CandidateId));
             }
 
             sets.Add(new VehicleCandidateSet(vehicleId, candidates, [], false));
         }
 
+        // Every third seed adds an idle vehicle with only its no-op, as a full vehicle has. Its
+        // candidate-id rank level is then constant, the case the constant-level skip removes.
+        if (seed % 3 == 0)
+        {
+            var idle = new VehicleId("vehicle-idle");
+            var noOp = Candidate("idle-noop", idle, [], 0);
+            assessments.Add(noOp.CandidateId, new HardVectorCandidateAssessment(noOp.CandidateId));
+            sets.Add(new VehicleCandidateSet(idle, [noOp], [], false));
+        }
+
         return new Fixture(sets.AsReadOnly(), assessments);
     }
 
+    /// <summary>
+    /// Every request-disjoint plan, ranked by the C1 order: more accepted requests, then lower cost,
+    /// then candidate ids vehicle by vehicle.
+    /// </summary>
     private static IReadOnlyList<InsertionCandidate> SelectIndependent(
-        IReadOnlyList<VehicleCandidateSet> sets,
-        IReadOnlyDictionary<string, HardVectorCandidateAssessment> assessments)
+        IReadOnlyList<VehicleCandidateSet> sets)
     {
         IReadOnlyList<InsertionCandidate>? best = null;
         Enumerate(0, [], new HashSet<RequestId>());
@@ -224,7 +230,7 @@ public sealed class OrToolsPolicyDifferentialTests
         {
             if (index == sets.Count)
             {
-                if (best is null || Compare(selected, best, assessments) < 0)
+                if (best is null || Compare(selected, best) < 0)
                 {
                     best = selected.ToArray();
                 }
@@ -249,8 +255,7 @@ public sealed class OrToolsPolicyDifferentialTests
 
     private static int Compare(
         IReadOnlyList<InsertionCandidate> left,
-        IReadOnlyList<InsertionCandidate> right,
-        IReadOnlyDictionary<string, HardVectorCandidateAssessment> assessments)
+        IReadOnlyList<InsertionCandidate> right)
     {
         var leftAccepted = left.Sum(value => value.NewRequestIds.Count);
         var rightAccepted = right.Sum(value => value.NewRequestIds.Count);
@@ -258,33 +263,6 @@ public sealed class OrToolsPolicyDifferentialTests
         if (leftAccepted != rightAccepted)
         {
             return rightAccepted.CompareTo(leftAccepted);
-        }
-
-        var leftWorst = left.Max(
-            value => assessments[value.CandidateId]
-                .WorstHardUtilizationPartsPerMillion);
-        var rightWorst = right.Max(
-            value => assessments[value.CandidateId]
-                .WorstHardUtilizationPartsPerMillion);
-
-        if (leftWorst != rightWorst)
-        {
-            return leftWorst.CompareTo(rightWorst);
-        }
-
-        foreach (var dimension in CommitmentDimensionVocabulary.Ordered)
-        {
-            var leftRevision = left.Sum(
-                value => assessments[value.CandidateId]
-                    .DecisionInducedRevision.Get(dimension));
-            var rightRevision = right.Sum(
-                value => assessments[value.CandidateId]
-                    .DecisionInducedRevision.Get(dimension));
-
-            if (leftRevision != rightRevision)
-            {
-                return leftRevision.CompareTo(rightRevision);
-            }
         }
 
         var leftCost = left.Sum(value => value.Schedule.OperationalCost);
@@ -322,19 +300,6 @@ public sealed class OrToolsPolicyDifferentialTests
             requests,
             new CandidateSchedule([], cost),
             requests.Count == 0);
-
-    private static CommitmentVector Vector(Random random) =>
-        new(
-            random.Next(0, 21),
-            random.Next(0, 21),
-            random.Next(0, 4),
-            random.Next(0, 2),
-            random.Next(0, 21),
-            random.Next(0, 4),
-            random.Next(0, 21),
-            random.Next(0, 4),
-            random.Next(0, 4),
-            random.Next(0, 4));
 
     private sealed class AllowAllValidator : IFleetSelectionValidator
     {

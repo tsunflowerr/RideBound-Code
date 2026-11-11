@@ -367,13 +367,7 @@ public sealed class Wp4RunnerIntegrationTests
     public void Booking_confirmation_C1_ranks_each_vehicle_scope_before_fleet_validation()
     {
         var commitment = CommitmentConfiguration();
-        var wp4 = Wp4RunnerConfiguration.Decode(
-            File.ReadAllBytes(Path.Combine(
-                RepositoryRoot(),
-                "benchmarks",
-                "configurations",
-                "wp7-fleetpy-ridebound-hard-vector-v1.json")),
-            commitment);
+        var wp4 = HardVectorConfiguration(commitment, recovery: null);
         var setup = CreateSession(
             wp4,
             commitmentConfiguration: commitment);
@@ -1248,6 +1242,8 @@ public sealed class Wp4RunnerIntegrationTests
             "benchmarks",
             "configurations",
             "wp7-fleetpy-ridebound-hard-vector-v1.json")))!;
+        // The archived file has no order key, which selected the removed stability-first ranking.
+        json["selectionObjectiveOrder"] = "cost-first";
 
         if (recovery is not null)
         {

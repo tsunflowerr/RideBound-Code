@@ -1,6 +1,5 @@
 using RideBound.Algorithms.Candidates;
 using RideBound.Algorithms.Commitments;
-using RideBound.Domain.Commitments;
 using RideBound.Domain.Common;
 using RideBound.Domain.Validation;
 
@@ -31,21 +30,15 @@ public sealed class HardVectorFleetSelector
                     missing.VehicleId));
         }
 
-        var hardTreatmentActive = assessments.Values.Any(
-            value => value.HasApplicableHardLimit);
         FleetSelection? best = null;
         RollingCostWitness? overflow = null;
         Enumerate(
             0,
             orderedSets,
-            assessments,
-            hardTreatmentActive,
             [],
             new HashSet<RequestId>(),
             0,
             0,
-            0,
-            CommitmentVector.Zero,
             ref best,
             ref overflow);
 
@@ -61,14 +54,10 @@ public sealed class HardVectorFleetSelector
     private static void Enumerate(
         int index,
         IReadOnlyList<VehicleCandidateSet> sets,
-        IReadOnlyDictionary<string, HardVectorCandidateAssessment> assessments,
-        bool hardTreatmentActive,
         IReadOnlyList<SelectedVehiclePlan> selected,
         IReadOnlySet<RequestId> assignedRequests,
         int acceptedCount,
         long operationalCost,
-        long worstUtilization,
-        CommitmentVector revision,
         ref FleetSelection? best,
         ref RollingCostWitness? overflow)
     {
@@ -77,11 +66,9 @@ public sealed class HardVectorFleetSelector
             var fleet = new FleetSelection(
                 selected.ToArray(),
                 acceptedCount,
-                operationalCost,
-                revision,
-                worstUtilization);
+                operationalCost);
 
-            if (best is null || IsBetter(fleet, best, hardTreatmentActive))
+            if (best is null || IsBetter(fleet, best))
             {
                 best = fleet;
             }
@@ -123,69 +110,25 @@ public sealed class HardVectorFleetSelector
                 continue;
             }
 
-            var assessment = assessments[candidate.CandidateId];
-            var nextRevision = revision.Add(
-                assessment.DecisionInducedRevision);
-
-            if (!nextRevision.IsSuccess)
-            {
-                overflow ??= new RollingCostWitness(
-                    DecisionFailureCodes.CommitmentAssessmentFailed,
-                    nextRevision.Failure!.Message,
-                    candidate.VehicleId,
-                    CandidateId: candidate.CandidateId,
-                    Dimension: nextRevision.Failure.Dimension);
-                continue;
-            }
-
             Enumerate(
                 index + 1,
                 sets,
-                assessments,
-                hardTreatmentActive,
                 selected.Append(
                     new SelectedVehiclePlan(set.VehicleId, candidate)).ToArray(),
                 assignedRequests.Concat(candidate.NewRequestIds).ToHashSet(),
                 acceptedCount + candidate.NewRequestIds.Count,
                 nextCost,
-                Math.Max(
-                    worstUtilization,
-                    assessment.WorstHardUtilizationPartsPerMillion),
-                nextRevision.Value!,
                 ref best,
                 ref overflow);
         }
     }
 
-    private static bool IsBetter(
-        FleetSelection candidate,
-        FleetSelection current,
-        bool hardTreatmentActive)
+    /// <summary>The C1 order: more accepted requests, then lower cost, then candidate ids.</summary>
+    private static bool IsBetter(FleetSelection candidate, FleetSelection current)
     {
         if (candidate.AcceptedRequestCount != current.AcceptedRequestCount)
         {
             return candidate.AcceptedRequestCount > current.AcceptedRequestCount;
-        }
-
-        if (hardTreatmentActive)
-        {
-            if (candidate.WorstHardUtilizationPartsPerMillion
-                != current.WorstHardUtilizationPartsPerMillion)
-            {
-                return candidate.WorstHardUtilizationPartsPerMillion
-                    < current.WorstHardUtilizationPartsPerMillion;
-            }
-
-            foreach (var dimension in CommitmentDimensionVocabulary.Ordered)
-            {
-                var candidateValue = candidate.DecisionInducedRevision!.Get(dimension);
-                var currentValue = current.DecisionInducedRevision!.Get(dimension);
-
-                if (candidateValue != currentValue)
-                {
-                    return candidateValue < currentValue;
-                }
-            }
         }
 
         if (candidate.OperationalCost != current.OperationalCost)

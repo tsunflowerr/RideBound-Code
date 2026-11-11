@@ -1,25 +1,19 @@
 using System.Collections.Frozen;
 using RideBound.Algorithms.Candidates;
 using RideBound.Application.Commitments;
-using RideBound.Application.State;
 using RideBound.Domain.Commitments;
 using RideBound.Domain.Common;
-using RideBound.Domain.Requests;
 
 namespace RideBound.Algorithms.Commitments;
 
 /// <param name="IsForcedReference">
 /// True for a candidate kept by forced-reference recovery although a commitment gate rejected
 /// it: the safety no-op (ADR-075) or, under no-worse recovery, a changed route of the same
-/// vehicle. Under kept-route recovery its utilization is reported as zero; under no-worse
-/// recovery only the exempted riders are left unranked. The overrun is counted on the
-/// forced-reference objective level and recorded as a typed breach.
+/// vehicle. The overrun is counted on the forced-reference objective level and recorded as a
+/// typed breach.
 /// </param>
 public sealed record HardVectorCandidateAssessment(
     string CandidateId,
-    long WorstHardUtilizationPartsPerMillion,
-    CommitmentVector DecisionInducedRevision,
-    bool HasApplicableHardLimit,
     bool IsForcedReference = false);
 
 public sealed record HardVectorCandidateAssessmentBatch(
@@ -58,14 +52,12 @@ public sealed record HardVectorCandidateAssessmentResult
 }
 
 /// <summary>
-/// Performs the C1 hard gate and ranking assessment in the same validator pass.
+/// Performs the C1 hard gate with the commitment validator.
 /// Raw candidates are never added or mutated; only validator-invalid candidates
-/// are removed. Normalization is exact ceiling PPM and never decides feasibility.
+/// are removed.
 /// </summary>
 public sealed class HardVectorCandidateAssessor
 {
-    public const long PartsPerMillion = 1_000_000;
-
     private readonly CommitmentDecisionValidator _validator;
 
     public HardVectorCandidateAssessor(
@@ -192,37 +184,8 @@ public sealed class HardVectorCandidateAssessor
                     continue;
                 }
 
-                var revision = AggregateDecisionRevision(validation.Publications);
-
-                if (!revision.IsSuccess)
-                {
-                    return Failure(
-                        revision.Witness!,
-                        candidate,
-                        set.VehicleId);
-                }
-
-                var utilization = CalculateWorstUtilization(
-                    validation.ValidatedState!,
-                    context.Policies,
-                    set.VehicleId,
-                    context.InitialPromiseTrigger);
-
-                if (!utilization.IsSuccess)
-                {
-                    return Failure(
-                        utilization.Witness!,
-                        candidate,
-                        set.VehicleId);
-                }
-
                 retained.Add(candidate);
-                assessments.Add(
-                    new HardVectorCandidateAssessment(
-                        candidate.CandidateId,
-                        utilization.PartsPerMillion,
-                        revision.Value!,
-                        utilization.HasApplicableHardLimit));
+                assessments.Add(new HardVectorCandidateAssessment(candidate.CandidateId));
             }
 
             // The safety no-op is the one candidate whose rejection says why a vehicle
@@ -246,20 +209,14 @@ public sealed class HardVectorCandidateAssessor
                     context,
                     noOps[0],
                     set.VehicleId,
-                    noWorse: false,
-                    rankNonExempt: forcedNoWorse);
+                    noWorse: false);
 
-                if (forced.Witness is not null)
-                {
-                    return Failure(forced.Witness, noOps[0], set.VehicleId);
-                }
-
-                if (forced.Assessment is not null)
+                if (forced is not null)
                 {
                     retained.Add(noOps[0]);
                     pruned.Remove(noOpPrune);
                     hardPruned.Remove(noOpPrune);
-                    assessments.Add(forced.Assessment);
+                    assessments.Add(forced);
                     forcedVehicles.Add(set.VehicleId);
                     noOpPrune = null;
 
@@ -279,15 +236,9 @@ public sealed class HardVectorCandidateAssessor
                                 context,
                                 candidate,
                                 set.VehicleId,
-                                noWorse: true,
-                                rankNonExempt: true);
+                                noWorse: true);
 
-                            if (relaxed.Witness is not null)
-                            {
-                                return Failure(relaxed.Witness, candidate, set.VehicleId);
-                            }
-
-                            if (relaxed.Assessment is null)
+                            if (relaxed is null)
                             {
                                 continue;
                             }
@@ -296,7 +247,7 @@ public sealed class HardVectorCandidateAssessor
                             pruned.Remove(prune);
                             hardPruned.Remove(prune);
                             hardValidationWitnesses.Remove(prune.CandidateId);
-                            assessments.Add(relaxed.Assessment);
+                            assessments.Add(relaxed);
                         }
                     }
 
@@ -388,11 +339,6 @@ public sealed class HardVectorCandidateAssessor
                 context,
                 rawCandidateSets,
                 forcedVehicles.ToHashSet());
-
-            if (relocated.Witness is not null)
-            {
-                return HardVectorCandidateAssessmentResult.Failure(relocated.Witness);
-            }
 
             for (var index = 0; index < outputSets.Count; index++)
             {
@@ -514,11 +460,6 @@ public sealed class HardVectorCandidateAssessor
             var d0 = donorOnly[0];
             var d0Assessment = AssessPair(context, d0, d0, receivers[0]);
 
-            if (d0Assessment.Witness is not null)
-            {
-                return RelocationAssessment.Failure(d0Assessment.Witness);
-            }
-
             if (d0Assessment.Prune is not null)
             {
                 result.Pruned.Add(d0Assessment.Prune);
@@ -534,11 +475,6 @@ public sealed class HardVectorCandidateAssessor
             foreach (var receiver in receivers)
             {
                 var assessed = AssessPair(context, receiver, d0, receiver);
-
-                if (assessed.Witness is not null)
-                {
-                    return RelocationAssessment.Failure(assessed.Witness);
-                }
 
                 if (assessed.Prune is not null)
                 {
@@ -563,11 +499,6 @@ public sealed class HardVectorCandidateAssessor
             foreach (var donor in donors.Where(value => value.CandidateId != d0.CandidateId))
             {
                 var assessed = AssessPair(context, donor, donor, survivingReceivers[0]);
-
-                if (assessed.Witness is not null)
-                {
-                    return RelocationAssessment.Failure(assessed.Witness);
-                }
 
                 if (assessed.Prune is not null)
                 {
@@ -636,43 +567,16 @@ public sealed class HardVectorCandidateAssessor
                     CommitmentWitnesses: validation.Witnesses));
         }
 
-        var revision = AggregateDecisionRevision(validation.Publications);
-
-        if (!revision.IsSuccess)
-        {
-            return PairResult.Failed(revision.Witness!, candidate);
-        }
-
-        var utilization = CalculateWorstUtilization(
-            validation.ValidatedState!,
-            context.Policies,
-            candidate.VehicleId,
-            context.InitialPromiseTrigger);
-
-        if (!utilization.IsSuccess)
-        {
-            return PairResult.Failed(utilization.Witness!, candidate);
-        }
-
-        return PairResult.Kept(
-            new HardVectorCandidateAssessment(
-                candidate.CandidateId,
-                utilization.PartsPerMillion,
-                revision.Value!,
-                utilization.HasApplicableHardLimit));
+        return PairResult.Kept(new HardVectorCandidateAssessment(candidate.CandidateId));
     }
 
     private sealed record PairResult(
         HardVectorCandidateAssessment? Assessment,
-        CandidatePruneWitness? Prune,
-        CommitmentAssessmentWitness? Witness)
+        CandidatePruneWitness? Prune)
     {
-        public static PairResult Kept(HardVectorCandidateAssessment assessment) => new(assessment, null, null);
+        public static PairResult Kept(HardVectorCandidateAssessment assessment) => new(assessment, null);
 
-        public static PairResult Pruned(CandidatePruneWitness prune) => new(null, prune, null);
-
-        public static PairResult Failed(CommitmentAssessmentWitness witness, InsertionCandidate candidate) =>
-            new(null, null, witness with { CandidateId = candidate.CandidateId, VehicleId = candidate.VehicleId });
+        public static PairResult Pruned(CandidatePruneWitness prune) => new(null, prune);
     }
 
     private sealed class RelocationAssessment
@@ -682,11 +586,6 @@ public sealed class HardVectorCandidateAssessor
         public List<CandidatePruneWitness> Pruned { get; } = [];
 
         public List<HardVectorCandidateAssessment> Assessments { get; } = [];
-
-        public CommitmentAssessmentWitness? Witness { get; private init; }
-
-        public static RelocationAssessment Failure(CommitmentAssessmentWitness witness) =>
-            new() { Witness = witness };
 
         public void Prune(InsertionCandidate candidate, string code, string message) =>
             Pruned.Add(
@@ -709,19 +608,13 @@ public sealed class HardVectorCandidateAssessor
     /// <summary>
     /// Validates a rejected candidate again with its vehicle named as forced-reference: the
     /// no-op (kept route, <paramref name="noWorse"/> false) or, under no-worse recovery, a
-    /// changed route of the same vehicle. Returns no assessment when the validator still rejects
-    /// it, and a witness only for a ranking failure.
+    /// changed route of the same vehicle. Returns null when the validator still rejects it.
     /// </summary>
-    /// <param name="rankNonExempt">
-    /// True under no-worse recovery: riders the validator did not exempt keep their normal
-    /// utilization ranking. False under kept-route recovery, which ranks the vehicle at zero.
-    /// </param>
-    private ForcedNoOpResult AssessForcedCandidate(
+    private HardVectorCandidateAssessment? AssessForcedCandidate(
         CommitmentMechanismContext context,
         InsertionCandidate candidate,
         VehicleId vehicleId,
-        bool noWorse,
-        bool rankNonExempt)
+        bool noWorse)
     {
         var updated = CandidateStateApplicator.Apply(
             context.ReducedState.Run,
@@ -729,7 +622,7 @@ public sealed class HardVectorCandidateAssessor
 
         if (!updated.IsSuccess)
         {
-            return ForcedNoOpResult.NotForcible;
+            return null;
         }
 
         var validation = _validator.Validate(
@@ -749,256 +642,8 @@ public sealed class HardVectorCandidateAssessor
                 ForcedReferenceVehicles: new[] { vehicleId }.ToFrozenSet(),
                 ForcedNoWorse: noWorse));
 
-        if (!validation.IsValid || validation.ForcedExemptions.Count == 0)
-        {
-            return ForcedNoOpResult.NotForcible;
-        }
-
-        var revision = AggregateDecisionRevision(validation.Publications);
-
-        if (!revision.IsSuccess)
-        {
-            return ForcedNoOpResult.Failure(revision.Witness!);
-        }
-
-        // Kept-route recovery leaves the whole forced vehicle unranked (ADR-075). Under no-worse
-        // recovery only an exempted rider's dimensions that are over their limit are unranked;
-        // everything else on the vehicle is ranked as on any vehicle, so a forced vehicle does not
-        // look emptier than it is on the utilization level.
-        var utilization = CalculateWorstUtilization(
-            validation.ValidatedState!,
-            context.Policies,
-            vehicleId,
-            context.InitialPromiseTrigger,
-            forcedReference: !rankNonExempt,
-            unrankedRiders: rankNonExempt
-                ? validation.ForcedExemptions.Select(value => value.RequestId).ToFrozenSet()
-                : null);
-
-        if (!utilization.IsSuccess)
-        {
-            return ForcedNoOpResult.Failure(utilization.Witness!);
-        }
-
-        return ForcedNoOpResult.Forced(
-            new HardVectorCandidateAssessment(
-                candidate.CandidateId,
-                utilization.PartsPerMillion,
-                revision.Value!,
-                utilization.HasApplicableHardLimit,
-                IsForcedReference: true));
-    }
-
-    private static VectorResult AggregateDecisionRevision(
-        IReadOnlyList<PromisePublication> publications)
-    {
-        var aggregate = CommitmentVector.Zero;
-
-        foreach (var publication in publications)
-        {
-            var added = aggregate.Add(
-                publication.Entry.Deltas.DecisionInduced);
-
-            if (!added.IsSuccess)
-            {
-                return VectorResult.Failure(
-                    new CommitmentAssessmentWitness(
-                        added.Failure!.Code,
-                        added.Failure.Message,
-                        Dimension: added.Failure.Dimension));
-            }
-
-            aggregate = added.Value!;
-        }
-
-        return VectorResult.Success(aggregate);
-    }
-
-    private static UtilizationResult CalculateWorstUtilization(
-        OnlineState state,
-        ICommitmentPolicyProvider policies,
-        VehicleId scopedVehicleId,
-        InitialPromiseTrigger initialPromiseTrigger,
-        bool forcedReference = false,
-        IReadOnlySet<RequestId>? unrankedRiders = null)
-    {
-        long worst = 0;
-        var hasLimit = false;
-
-        foreach (var request in state.Run.Requests.Values
-                     .Where(
-                         value => value.IsAcceptedActive
-                             && value.AssignedVehicleId == scopedVehicleId)
-                     .OrderBy(value => value.Id.Value, StringComparer.Ordinal))
-        {
-            if (initialPromiseTrigger == InitialPromiseTrigger.BookingConfirmation
-                && request.Lifecycle == RequestLifecycle.Accepted
-                && !state.Commitments.Histories.ContainsKey(request.Id))
-            {
-                continue;
-            }
-
-            // An exempted rider of a no-worse candidate may be over a limit; only the dimensions it
-            // is over are left unranked, and its applicable hard limits still count as present.
-            var unranked = unrankedRiders is not null && unrankedRiders.Contains(request.Id);
-
-            if (!policies.TryGetPolicy(request.CommitmentPolicyId, out var policy)
-                || !StringComparer.Ordinal.Equals(
-                    request.CommitmentPolicyId,
-                    policy.PolicyId)
-                || !state.Commitments.Histories.TryGetValue(
-                    request.Id,
-                    out var history))
-            {
-                return UtilizationResult.Failure(
-                    new CommitmentAssessmentWitness(
-                        "COMMITMENT_POLICY_OR_LEDGER_NOT_FOUND",
-                        "An active request requires an exact policy and ledger " +
-                        "history before hard utilization can be ranked.",
-                        RequestId: request.Id,
-                        Dimension: "commitmentPolicyId"));
-            }
-
-            var phase = ToPhase(request.Lifecycle);
-
-            foreach (var dimension in CommitmentDimensionVocabulary.Ordered)
-            {
-                var configured = policy.Limits[dimension];
-
-                if ((configured.ApplicablePhases & phase) == 0
-                    || configured.HardLimit is not long hardLimit)
-                {
-                    continue;
-                }
-
-                hasLimit = true;
-
-                if (forcedReference)
-                {
-                    // A kept-route forced vehicle may be charged past its limit. Its utilization
-                    // is not ranked, so one forced vehicle cannot flatten the fleet maximum.
-                    continue;
-                }
-
-                var value = history.Current.BudgetAfter.Get(dimension);
-
-                if (unranked && value > hardLimit)
-                {
-                    // An exempted rider over this limit cannot be ranked on it; its dimensions
-                    // within their limits are ranked as on any vehicle.
-                    continue;
-                }
-
-                if (hardLimit == 0)
-                {
-                    if (value != 0)
-                    {
-                        return UtilizationResult.Failure(
-                            new CommitmentAssessmentWitness(
-                                CommitmentFailureCodes.BudgetExceeded,
-                                "A zero hard limit has non-zero validated usage.",
-                                RequestId: request.Id,
-                                Dimension: CommitmentDimensionVocabulary
-                                    .ToProtocolValue(dimension)));
-                    }
-
-                    worst = PartsPerMillion;
-                    continue;
-                }
-
-                worst = Math.Max(
-                    worst,
-                    CeilingPartsPerMillion(value, hardLimit));
-            }
-        }
-
-        return UtilizationResult.Success(worst, hasLimit);
-    }
-
-    public static long CeilingPartsPerMillion(long value, long hardLimit)
-    {
-        if (value < 0
-            || hardLimit < 0
-            || value > hardLimit
-            || value > DomainLimits.MaxCanonicalInteger
-            || hardLimit > DomainLimits.MaxCanonicalInteger)
-        {
-            throw new ArgumentOutOfRangeException(nameof(value));
-        }
-
-        if (hardLimit == 0)
-        {
-            return PartsPerMillion;
-        }
-
-        var scaled = (UInt128)(ulong)value
-            * (UInt128)(ulong)PartsPerMillion;
-        var quotient = scaled / (UInt128)(ulong)hardLimit;
-        var remainder = scaled % (UInt128)(ulong)hardLimit;
-        var ceiling = quotient + (remainder == 0 ? 0u : 1u);
-        return checked((long)ceiling);
-    }
-
-    private static CommitmentPhase ToPhase(RequestLifecycle lifecycle) =>
-        lifecycle switch
-        {
-            RequestLifecycle.Accepted => CommitmentPhase.Accepted,
-            RequestLifecycle.WaitingPickup => CommitmentPhase.WaitingPickup,
-            RequestLifecycle.Onboard => CommitmentPhase.Onboard,
-            _ => CommitmentPhase.None,
-        };
-
-    private static HardVectorCandidateAssessmentResult Failure(
-        CommitmentAssessmentWitness witness,
-        InsertionCandidate candidate,
-        VehicleId vehicleId) =>
-        HardVectorCandidateAssessmentResult.Failure(
-            witness with
-            {
-                CandidateId = candidate.CandidateId,
-                VehicleId = vehicleId,
-            });
-
-    private sealed record ForcedNoOpResult(
-        HardVectorCandidateAssessment? Assessment,
-        CommitmentAssessmentWitness? Witness)
-    {
-        public static ForcedNoOpResult NotForcible { get; } = new(null, null);
-
-        public static ForcedNoOpResult Forced(
-            HardVectorCandidateAssessment assessment) => new(assessment, null);
-
-        public static ForcedNoOpResult Failure(
-            CommitmentAssessmentWitness witness) => new(null, witness);
-    }
-
-    private sealed record VectorResult(
-        CommitmentVector? Value,
-        CommitmentAssessmentWitness? Witness)
-    {
-        public bool IsSuccess => Value is not null;
-
-        public static VectorResult Success(CommitmentVector value) =>
-            new(value, null);
-
-        public static VectorResult Failure(CommitmentAssessmentWitness witness) =>
-            new(null, witness);
-    }
-
-    private sealed record UtilizationResult(
-        long PartsPerMillion,
-        bool HasApplicableHardLimit,
-        CommitmentAssessmentWitness? Witness)
-    {
-        public bool IsSuccess => Witness is null;
-
-        public static UtilizationResult Success(
-            long partsPerMillion,
-            bool hasApplicableHardLimit) =>
-            new(partsPerMillion, hasApplicableHardLimit, null);
-
-        public static UtilizationResult Failure(
-            CommitmentAssessmentWitness witness) =>
-            new(0, false, witness);
+        return validation.IsValid && validation.ForcedExemptions.Count != 0
+            ? new HardVectorCandidateAssessment(candidate.CandidateId, IsForcedReference: true)
+            : null;
     }
 }

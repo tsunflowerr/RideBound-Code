@@ -46,23 +46,9 @@ public sealed record SolverBackedRidePoolingPolicyOptions
         DeterministicCandidateSelectionExecutionBudget executionBudget,
         bool captureCandidatePortfolioEvidence = false,
         bool forcedReferenceRecovery = false,
-        bool forcedNoWorseRecovery = false,
-        SolverBackedSelectionObjectiveOrder selectionObjectiveOrder =
-            SolverBackedSelectionObjectiveOrder.StabilityFirst)
+        bool forcedNoWorseRecovery = false)
     {
         ArgumentNullException.ThrowIfNull(executionBudget);
-
-        if (!Enum.IsDefined(selectionObjectiveOrder))
-        {
-            throw new ArgumentOutOfRangeException(nameof(selectionObjectiveOrder));
-        }
-
-        if (selectionObjectiveOrder == SolverBackedSelectionObjectiveOrder.CostFirst
-            && policyKind != RidePoolingPolicyKind.RideBoundHardVector)
-        {
-            throw new ArgumentException(
-                "The cost-first selection order is only valid for the C1 policy.");
-        }
 
         if (forcedNoWorseRecovery && !forcedReferenceRecovery)
         {
@@ -87,7 +73,6 @@ public sealed record SolverBackedRidePoolingPolicyOptions
         CaptureCandidatePortfolioEvidence = captureCandidatePortfolioEvidence;
         ForcedReferenceRecovery = forcedReferenceRecovery;
         ForcedNoWorseRecovery = forcedNoWorseRecovery;
-        SelectionObjectiveOrder = selectionObjectiveOrder;
     }
 
     public RidePoolingPolicyKind PolicyKind { get; }
@@ -110,13 +95,6 @@ public sealed record SolverBackedRidePoolingPolicyOptions
     /// kept route's gate overruns worse, so it can still serve a new rider.
     /// </summary>
     public bool ForcedNoWorseRecovery { get; }
-
-    /// <summary>
-    /// Exploratory (ADR-078, stability-first by default). Cost-first ranks a C1 selection by
-    /// operational cost right after the accepted-request count; the hard assessment, gates,
-    /// locks and recovery are unchanged.
-    /// </summary>
-    public SolverBackedSelectionObjectiveOrder SelectionObjectiveOrder { get; }
 }
 
 public sealed record SolverBackedPolicyDecision(
@@ -271,8 +249,7 @@ public sealed class SolverBackedRidePoolingPolicy
             policyOptions.ExecutionBudget,
             accounting.Value!,
             validator,
-            hardAssessments,
-            policyOptions.SelectionObjectiveOrder);
+            hardAssessments);
 
         if (!selected.IsSuccess)
         {

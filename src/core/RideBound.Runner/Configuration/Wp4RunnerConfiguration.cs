@@ -100,10 +100,9 @@ public sealed class Wp4RunnerConfiguration
     public const string LightAuditHash = "light-v1";
 
     /// <summary>
-    /// ADR-078 (exploratory). Optional; omitted means stability-first, so every configuration
-    /// written before it keeps its content hash and its behaviour. `cost-first` is C1 only.
+    /// ADR-078. Required, and the only accepted value: the C1 ranking is cost-first. The stability-first
+    /// ranking, which "stability-first" or an absent key selected, is refused.
     /// </summary>
-    public const string StabilityFirstSelectionOrder = "stability-first";
     public const string CostFirstSelectionOrder = "cost-first";
     private static readonly IReadOnlySet<string> GenerationRequiredFields = Fields(
         "maximumCandidatesPerVehicle",
@@ -259,8 +258,7 @@ public sealed class Wp4RunnerConfiguration
             execution.Value!,
             source.CaptureCandidatePortfolioEvidence,
             source.ForcedReferenceRecovery,
-            source.ForcedNoWorseRecovery,
-            source.SelectionObjectiveOrder);
+            source.ForcedNoWorseRecovery);
     }
 
     public static Wp4RunnerConfiguration Decode(
@@ -453,51 +451,23 @@ public sealed class Wp4RunnerConfiguration
             shadowAllocation = ShadowAllocationConfiguration.Read(shadowElement);
         }
 
-        var selectionObjectiveOrder = root.TryGetProperty("selectionObjectiveOrder", out _)
-            ? Text(root, "selectionObjectiveOrder") switch
-            {
-                StabilityFirstSelectionOrder => SolverBackedSelectionObjectiveOrder.StabilityFirst,
-                CostFirstSelectionOrder => SolverBackedSelectionObjectiveOrder.CostFirst,
-                _ => throw new InvalidDataException("Unknown selectionObjectiveOrder."),
-            }
-            : SolverBackedSelectionObjectiveOrder.StabilityFirst;
-
-        if (selectionObjectiveOrder == SolverBackedSelectionObjectiveOrder.CostFirst
-            && (!hasSolver || policyKind != RidePoolingPolicyKind.RideBoundHardVector))
+        // The C1 ranking is cost-first only. Any other value, or no key (which selected
+        // stability-first), is refused instead of silently ranking cost-first.
+        if (!root.TryGetProperty("selectionObjectiveOrder", out var orderElement)
+            || orderElement.ValueKind != JsonValueKind.String
+            || orderElement.GetString() != CostFirstSelectionOrder)
         {
             throw new InvalidDataException(
-                "selectionObjectiveOrder 'cost-first' requires the solver-backed C1 policy.");
-        }
-
-        // Hard utilization reads the fixed hard limit only, so a per-rider drop budget would
-        // silently drop out of the stability-first C1 ranking. Fail closed instead.
-        if (policyKind is RidePoolingPolicyKind.RideBoundHardVector
-            && selectionObjectiveOrder != SolverBackedSelectionObjectiveOrder.CostFirst
-            && commitmentConfiguration.PolicyIds.Any(
-                id => commitmentConfiguration.TryGetPolicy(id, out var policy)
-                    && policy.DropEtaBudgetSlackPermille is not null))
-        {
-            throw new InvalidDataException(
-                "'dropEtaBudgetSlackPermille' is not ranked by hard utilization; the C1 and C2 "
-                + "policies accept it only with selectionObjectiveOrder 'cost-first'.");
+                $"WP4 selectionObjectiveOrder must be '{CostFirstSelectionOrder}'. The stability-first ranking, "
+                + $"which 'stability-first' or an absent key selected: {RemovedFeature}");
         }
 
         // G2 needs both halves: candidates that move a waiting rider, and a policy that lets the
         // rider change vehicle. Either alone would be silently inert, so both are required
-        // together, and only the solver-backed cost-first C1 (the emulator's selection) runs it.
+        // together.
         var relocatingPolicies = commitmentConfiguration.PolicyIds
             .Count(id => commitmentConfiguration.TryGetPolicy(id, out var policy)
                 && policy.WaitingRiderRelocation);
-
-        if (generation.WaitingRiderRelocation is not null
-            && (!hasSolver
-                || policyKind != RidePoolingPolicyKind.RideBoundHardVector
-                || selectionObjectiveOrder != SolverBackedSelectionObjectiveOrder.CostFirst))
-        {
-            throw new InvalidDataException(
-                "'candidateGeneration.waitingRiderRelocation' requires the solver-backed C1 "
-                + "policy with selectionObjectiveOrder 'cost-first'.");
-        }
 
         if (generation.WaitingRiderRelocation is not null
             && relocatingPolicies != commitmentConfiguration.PolicyIds.Count)
@@ -546,8 +516,7 @@ public sealed class Wp4RunnerConfiguration
                 budget,
                 solverExecutionEvidenceProfile is not null,
                 forcedReferenceRecovery,
-                forcedNoWorseRecovery,
-                selectionObjectiveOrder);
+                forcedNoWorseRecovery);
         }
 
         return new Wp4RunnerConfiguration(

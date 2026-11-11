@@ -123,219 +123,85 @@ public sealed class ExactSmallCommitmentDifferentialTests
             reference.Single().Candidates.Select(value => value.CandidateId),
             assessed.Batch.FeasibleCandidateSets.Single().Candidates
                 .Select(value => value.CandidateId));
-        Assert.All(
-            assessed.Batch.Assessments.Values,
-            value => Assert.InRange(
-                value.WorstHardUtilizationPartsPerMillion,
-                0,
-                HardVectorCandidateAssessor.PartsPerMillion));
-        Assert.Contains(
-            assessed.Batch.Assessments.Values,
-            value => value.WorstHardUtilizationPartsPerMillion > 0);
 
         var decision = new RideBoundHardVectorPolicy().Decide(
             context,
             CandidateGenerationOptions.ExactSmall);
         Assert.True(decision.IsSuccess, decision.Witness?.Message);
-        Assert.NotNull(decision.Decision!.WorstHardUtilizationPartsPerMillion);
-    }
-
-    [Fact]
-    public void C1_stability_portfolio_is_no_worse_and_has_a_strict_positive_exact_small_witness()
-    {
-        var retainer = new CandidatePortfolioRetainer();
-        var strictPositive = false;
-
-        for (var seed = 0; seed < 128; seed++)
-        {
-            var fixture = CreateState(seed);
-            var generated = new InsertionCandidateGenerator().Generate(
-                fixture.State,
-                CandidateGenerationOptions.ExactSmall);
-            Assert.True(
-                generated.IsSuccess,
-                $"seed={seed}; {generated.Witness?.Message}");
-            var raw = Assert.Single(generated.VehicleCandidates!);
-            var legacyRetention = retainer.RetainRanked(
-                CandidatePortfolioRetainer.Rank(raw.Candidates).ToArray(),
-                3,
-                CandidateRetentionStrategy.LegacyAcceptedCountCostSlack);
-            var portfolioRetention = retainer.RetainRanked(
-                CandidatePortfolioRetainer.Rank(raw.Candidates).ToArray(),
-                3,
-                CandidateRetentionStrategy.ServiceSetStabilityPortfolioV1);
-            var legacyRaw = new[]
-            {
-                raw with { Candidates = legacyRetention.Retained },
-            };
-            var portfolioRaw = new[]
-            {
-                raw with { Candidates = portfolioRetention.Retained },
-            };
-            var context = MechanismContext(fixture, $"c1-retention-{seed}");
-            var legacyAssessed = new HardVectorCandidateAssessor()
-                .AssessAndFilter(context, legacyRaw);
-            var portfolioAssessed = new HardVectorCandidateAssessor()
-                .AssessAndFilter(context, portfolioRaw);
-
-            Assert.True(
-                legacyAssessed.IsSuccess,
-                $"seed={seed}; {legacyAssessed.Witness?.Message}");
-            Assert.True(
-                portfolioAssessed.IsSuccess,
-                $"seed={seed}; {portfolioAssessed.Witness?.Message}");
-            var legacySelection = new HardVectorFleetSelector().Select(
-                legacyAssessed.Batch!.FeasibleCandidateSets,
-                legacyAssessed.Batch.Assessments);
-            var portfolioSelection = new HardVectorFleetSelector().Select(
-                portfolioAssessed.Batch!.FeasibleCandidateSets,
-                portfolioAssessed.Batch.Assessments);
-            Assert.True(
-                legacySelection.IsSuccess,
-                $"seed={seed}; {legacySelection.Witness?.Message}");
-            Assert.True(
-                portfolioSelection.IsSuccess,
-                $"seed={seed}; {portfolioSelection.Witness?.Message}");
-
-            var comparison = CompareC1(
-                portfolioSelection.Selection!,
-                legacySelection.Selection!);
-            Assert.True(
-                comparison <= 0,
-                $"seed={seed}; portfolio C1 objective regressed.");
-            strictPositive |= comparison < 0;
-
-            var legacyDecision = new RideBoundHardVectorPolicy().Decide(
-                context,
-                new CandidateGenerationOptions(
-                    3,
-                    2,
-                    exactSmallMode: false,
-                    retentionStrategy: CandidateRetentionStrategy
-                        .LegacyAcceptedCountCostSlack));
-            var portfolioDecision = new RideBoundHardVectorPolicy().Decide(
-                context,
-                new CandidateGenerationOptions(
-                    3,
-                    2,
-                    exactSmallMode: false,
-                    retentionStrategy: CandidateRetentionStrategy
-                        .ServiceSetStabilityPortfolioV1));
-            Assert.True(
-                legacyDecision.IsSuccess,
-                $"seed={seed}; {legacyDecision.Witness?.Message}");
-            Assert.True(
-                portfolioDecision.IsSuccess,
-                $"seed={seed}; {portfolioDecision.Witness?.Message}");
-            var productionComparison = CompareC1(
-                ToFleetSelection(portfolioDecision.Decision!),
-                ToFleetSelection(legacyDecision.Decision!));
-            Assert.True(
-                productionComparison <= 0,
-                $"seed={seed}; production portfolio C1 objective regressed.");
-            Assert.Equal(
-                portfolioSelection.Selection!.VehiclePlans
-                    .Select(plan => plan.Candidate.CandidateId),
-                portfolioDecision.Decision!.VehiclePlans
-                    .Select(plan => plan.Candidate.CandidateId));
-            strictPositive |= productionComparison < 0;
-        }
-
-        Assert.True(
-            strictPositive,
-            "At least one published exact-small seed must strictly improve the " +
-            "C1 lexicographic objective; otherwise the strategy stays gated.");
     }
 
     [Fact]
     public void Cost_first_C1_ranks_the_same_gated_candidates_by_cost_and_picks_a_cheaper_plan()
     {
-        // ADR-078, end to end below the Runner: the same generation, hard assessment, gates and
-        // validation run under both orders, so the solver sees the same options and pruned
-        // witnesses; only the ranking differs. At least one published seed must make cost-first
-        // pick a strictly cheaper plan that stability-first does not pick.
-        var strictlyCheaper = 0;
+        // ADR-078, end to end below the Runner: the solver sees exactly the candidates the C1
+        // assessment keeps, ranked with the C1 levels (cost-first), and the decision is the plan an
+        // independent pick over those candidates gives: fewest forced options, then most new
+        // requests, then lowest cost, then lowest candidate id. The Runner's validation accepts it.
+        // In at least one published seed the cost level decides between plans that accept the same
+        // number of requests.
+        var costDecides = 0;
 
         for (var seed = 0; seed < 64; seed++)
         {
             var fixture = CreateState(seed);
             var context = MechanismContext(fixture, $"c1-order-{seed}");
-            var stabilitySolver = new EnumeratingSolver();
-            var costSolver = new EnumeratingSolver();
-            var stability = new SolverBackedRidePoolingPolicy(stabilitySolver).Decide(
+            var generated = new InsertionCandidateGenerator().Generate(
+                fixture.State,
+                CandidateGenerationOptions.ExactSmall);
+            Assert.True(generated.IsSuccess, $"seed={seed}; {generated.Witness?.Message}");
+            var gated = new HardVectorCandidateAssessor().AssessAndFilter(
+                context,
+                generated.VehicleCandidates!,
+                requireSafetyNoOp: true,
+                forcedReferenceRecovery: true);
+            Assert.True(gated.IsSuccess, $"seed={seed}; {gated.Witness?.Message}");
+            var options = gated.Batch!.FeasibleCandidateSets.Single().Candidates;
+            bool IsForced(InsertionCandidate candidate) =>
+                gated.Batch.Assessments[candidate.CandidateId].IsForcedReference;
+            var solver = new EnumeratingSolver();
+
+            var result = new SolverBackedRidePoolingPolicy(solver).Decide(
                 context,
                 CandidateGenerationOptions.ExactSmall,
                 HardVectorOptions(forcedReferenceRecovery: true));
-            var cost = new SolverBackedRidePoolingPolicy(costSolver).Decide(
-                context,
-                CandidateGenerationOptions.ExactSmall,
-                HardVectorOptions(
-                    forcedReferenceRecovery: true,
-                    selectionObjectiveOrder: SolverBackedSelectionObjectiveOrder.CostFirst));
 
-            Assert.True(stability.IsSuccess, $"seed={seed}; {stability.Witness?.Message}");
-            Assert.True(cost.IsSuccess, $"seed={seed}; {cost.Witness?.Message}");
-            var stable = stability.Decision!.Decision;
-            var cheap = cost.Decision!.Decision;
+            Assert.True(result.IsSuccess, $"seed={seed}; {result.Witness?.Message}");
+            var decision = result.Decision!.Decision;
             Assert.Equal(
-                stabilitySolver.LastProblem!.Options.Select(value => value.OptionId),
-                costSolver.LastProblem!.Options.Select(value => value.OptionId));
+                options.Select(value => value.CandidateId).Order(StringComparer.Ordinal),
+                solver.LastProblem!.Options.Select(value => value.OptionId).Order(StringComparer.Ordinal));
             Assert.Equal(
-                stable.PrunedCandidates.Select(value => (value.CandidateId, value.Code)),
-                cheap.PrunedCandidates.Select(value => (value.CandidateId, value.Code)));
-            Assert.Equal(stable.ForcedReferenceVehicles, cheap.ForcedReferenceVehicles);
-            Assert.DoesNotContain(
-                costSolver.LastProblem.ObjectiveLevels,
-                value => value.Name == "worst-hard-utilization-ppm"
-                    || value.Name.StartsWith("revision:", StringComparison.Ordinal));
-            Assert.Contains(
-                stabilitySolver.LastProblem.ObjectiveLevels,
-                value => value.Name == "worst-hard-utilization-ppm");
-            Assert.Equal(stable.AcceptedRequestCount, cheap.AcceptedRequestCount);
-            Assert.True(cheap.OperationalCost <= stable.OperationalCost, $"seed={seed}");
-            Assert.True(
-                CompareC1(ToFleetSelection(stable), ToFleetSelection(cheap)) <= 0,
-                $"seed={seed}; stability-first must stay C1-optimal.");
+                (options.Any(IsForced) ? ["forced-reference-count"] : Array.Empty<string>())
+                    .Concat(["accepted-request-count", "operational-cost", "candidate-id-rank:vehicle-1"]),
+                solver.LastProblem.ObjectiveLevels.Select(value => value.Name));
+            var best = options
+                .OrderBy(value => IsForced(value) ? 1 : 0)
+                .ThenByDescending(value => value.NewRequestIds.Count)
+                .ThenBy(value => value.Schedule.OperationalCost)
+                .ThenBy(value => value.CandidateId, StringComparer.Ordinal)
+                .First();
+            Assert.Equal(best.CandidateId, decision.VehiclePlans.Single().Candidate.CandidateId);
+            Assert.Equal(best.Schedule.OperationalCost, decision.OperationalCost);
 
-            // The cost-first plan passes the validation the Runner applies.
+            // The chosen plan passes the validation the Runner applies.
             var validated = new CommitmentDecisionValidator().Validate(
-                RunnerLikeContext(context, cheap, cheap.ForcedReferenceVehicles));
+                RunnerLikeContext(context, decision, decision.ForcedReferenceVehicles));
             Assert.True(
                 validated.IsValid,
                 $"seed={seed}; {validated.Witnesses.FirstOrDefault()?.Message}");
 
-            if (cheap.OperationalCost < stable.OperationalCost)
+            if (options.Any(
+                    value => IsForced(value) == IsForced(best)
+                        && value.NewRequestIds.Count == best.NewRequestIds.Count
+                        && value.Schedule.OperationalCost > best.Schedule.OperationalCost))
             {
-                // Same accepted count and a lower cost: stability-first passed over the cheaper
-                // plan only because it is strictly better on utilization or revision.
-                strictlyCheaper++;
-                Assert.True(
-                    CompareC1(ToFleetSelection(stable), ToFleetSelection(cheap)) < 0,
-                    $"seed={seed}");
+                costDecides++;
             }
         }
 
         Assert.True(
-            strictlyCheaper > 0,
-            "At least one published exact-small seed must make cost-first strictly cheaper.");
-    }
-
-    [Fact]
-    public void C1_normalization_uses_exact_ceiling_without_long_overflow()
-    {
-        Assert.Equal(
-            333_334,
-            HardVectorCandidateAssessor.CeilingPartsPerMillion(1, 3));
-        Assert.Equal(
-            1_000_000,
-            HardVectorCandidateAssessor.CeilingPartsPerMillion(
-                DomainLimits.MaxCanonicalInteger - 1,
-                DomainLimits.MaxCanonicalInteger));
-        Assert.Equal(
-            1_000_000,
-            HardVectorCandidateAssessor.CeilingPartsPerMillion(0, 0));
-        Assert.Throws<ArgumentOutOfRangeException>(
-            () => HardVectorCandidateAssessor.CeilingPartsPerMillion(2, 1));
+            costDecides > 0,
+            "At least one published exact-small seed must have a dearer plan with the same request count.");
     }
 
     [Fact]
@@ -440,10 +306,33 @@ public sealed class ExactSmallCommitmentDifferentialTests
         // boundary elsewhere.
         Assert.All(
             retained,
-            candidate => Assert.Equal(
-                0,
-                assessed.Batch.Assessments[candidate.CandidateId]
-                    .DecisionInducedRevision.DropEtaTotalMs));
+            candidate => Assert.Equal(0, DecisionInducedDropEtaMs(exhausted, candidate)));
+    }
+
+    /// <summary>
+    /// The decision-induced drop-ETA change a candidate publishes, summed over its riders, from
+    /// the validation the C1 assessment runs for it.
+    /// </summary>
+    private static long DecisionInducedDropEtaMs(
+        CommitmentMechanismContext context,
+        InsertionCandidate candidate)
+    {
+        var updated = CandidateStateApplicator.Apply(context.ReducedState.Run, candidate);
+        Assert.True(updated.IsSuccess, updated.Failure?.Message);
+        var validation = new CommitmentDecisionValidator().Validate(
+            new CommitmentValidationContext(
+                context.BeforeEventState,
+                context.ReducedState,
+                context.ReducedState with { Run = updated.Value! },
+                context.Policies,
+                context.StopDistances,
+                context.PublicationScope,
+                context.SourceEventSequence,
+                RevisionReasonCode: "C1_HARD_VECTOR",
+                ScopedVehicleId: candidate.VehicleId,
+                InitialPromiseTrigger: context.InitialPromiseTrigger));
+        Assert.True(validation.IsValid, validation.Witnesses.FirstOrDefault()?.Message);
+        return validation.Publications.Sum(value => value.Entry.Deltas.DecisionInduced.DropEtaTotalMs);
     }
 
     [Fact]
@@ -726,8 +615,6 @@ public sealed class ExactSmallCommitmentDifferentialTests
         var assessment = batch.Assessments.Single().Value;
         Assert.Equal(noOp.CandidateId, assessment.CandidateId);
         Assert.True(assessment.IsForcedReference);
-        Assert.Equal(0, assessment.WorstHardUtilizationPartsPerMillion);
-        Assert.Equal(CommitmentVector.Zero, assessment.DecisionInducedRevision);
     }
 
     [Fact]
@@ -773,8 +660,8 @@ public sealed class ExactSmallCommitmentDifferentialTests
     public void Forced_recovery_keeps_a_budget_rejected_no_op_without_ranking_its_overrun()
     {
         // The kept route is charged past its drop budget under the customer-visible
-        // basis. Ranking it would divide an over-limit usage; the forced no-op instead
-        // carries zero utilization and still reports that a hard limit applies.
+        // basis. Recovery keeps it as the vehicle's forced option; no ranking reads the
+        // overrun.
         var fixture = CreateState(seed: 3);
         var generated = new InsertionCandidateGenerator().Generate(
             fixture.State,
@@ -803,16 +690,8 @@ public sealed class ExactSmallCommitmentDifferentialTests
             forcedReferenceRecovery: true);
 
         Assert.True(assessed.IsSuccess, assessed.Witness?.Message);
-        var assessment = assessed.Batch!.Assessments[noOp.CandidateId];
-        Assert.True(assessment.IsForcedReference);
-        Assert.True(assessment.HasApplicableHardLimit);
-        Assert.Equal(0, assessment.WorstHardUtilizationPartsPerMillion);
-        Assert.Equal(CommitmentVector.Zero, assessment.DecisionInducedRevision);
-        Assert.Contains(
-            assessed.Batch.Assessments.Values,
-            value => !value.IsForcedReference
-                && value.WorstHardUtilizationPartsPerMillion
-                    <= HardVectorCandidateAssessor.PartsPerMillion);
+        Assert.True(assessed.Batch!.Assessments[noOp.CandidateId].IsForcedReference);
+        Assert.Equal([AlgorithmTestData.VehicleOne], assessed.Batch.ForcedReferenceVehicles);
     }
 
     [Fact]
@@ -1042,19 +921,14 @@ public sealed class ExactSmallCommitmentDifferentialTests
     }
 
     [Fact]
-    public void No_worse_recovery_ranks_a_forced_vehicle_like_any_vehicle_under_a_zero_limit()
+    public void Cost_first_under_no_worse_recovery_keeps_the_forced_treatment_and_the_no_worse_gate()
     {
-        // Every candidate is rejected by a deadline 1 ms before the kept drop, and a zero
-        // vehicle-switch limit saturates the utilization of any vehicle with an active rider.
-        // Kept-route recovery ranks the forced no-op at 0 (ADR-075). No-worse recovery ranks the
-        // no-op and every relaxed insertion at 1,000,000 ppm: the exempted incumbent is within
-        // that limit, so it is ranked as on any vehicle.
+        // ADR-078 with recovery rule (b), as in the Tier-3 configuration: every candidate breaks a
+        // deadline 1 ms before the kept drop, and a zero vehicle-switch limit applies. The vehicle is
+        // forced, the solver sees exactly the candidates the no-worse assessment keeps, ranked with
+        // the forced level first, and the chosen route still passes the no-worse gate as the Runner
+        // validates it.
         var fixture = CreateState(seed: 3);
-        var generated = new InsertionCandidateGenerator().Generate(
-            fixture.State,
-            CandidateGenerationOptions.ExactSmall);
-        Assert.True(generated.IsSuccess, generated.Witness?.Message);
-        var noOp = generated.VehicleCandidates!.Single().Candidates.Single(value => value.IsNoOp);
         var policy = new CommitmentPolicy(
             fixture.Policy.PolicyId,
             CommitmentBudgetBasis.DecisionInduced,
@@ -1066,138 +940,45 @@ public sealed class ExactSmallCommitmentDifferentialTests
             new MaterialRevisionRule(1_000, null),
             dropEtaDeadlineSlack: new Duration(0));
         var context = PromiseContext(fixture, fixture.BaselineDrop.Milliseconds - 1, policy);
-
-        var kept = new HardVectorCandidateAssessor().AssessAndFilter(
-            context,
-            generated.VehicleCandidates!,
-            requireSafetyNoOp: true,
-            forcedReferenceRecovery: true);
-        var relaxed = new HardVectorCandidateAssessor().AssessAndFilter(
+        var generated = new InsertionCandidateGenerator().Generate(
+            fixture.State,
+            CandidateGenerationOptions.ExactSmall);
+        Assert.True(generated.IsSuccess, generated.Witness?.Message);
+        var gated = new HardVectorCandidateAssessor().AssessAndFilter(
             context,
             generated.VehicleCandidates!,
             requireSafetyNoOp: true,
             forcedReferenceRecovery: true,
             forcedNoWorse: true);
+        Assert.True(gated.IsSuccess, gated.Witness?.Message);
+        var solver = new EnumeratingSolver();
 
-        Assert.True(kept.IsSuccess, kept.Witness?.Message);
-        Assert.Equal(0, kept.Batch!.Assessments[noOp.CandidateId].WorstHardUtilizationPartsPerMillion);
-        Assert.True(relaxed.IsSuccess, relaxed.Witness?.Message);
-        var retained = relaxed.Batch!.FeasibleCandidateSets.Single().Candidates;
-        Assert.Contains(retained, value => !value.IsNoOp);
-        Assert.All(
-            retained,
-            value =>
-            {
-                var assessment = relaxed.Batch.Assessments[value.CandidateId];
-                Assert.True(assessment.IsForcedReference);
-                Assert.True(assessment.HasApplicableHardLimit);
-                Assert.Equal(
-                    HardVectorCandidateAssessor.PartsPerMillion,
-                    assessment.WorstHardUtilizationPartsPerMillion);
-            });
-    }
-
-    [Fact]
-    public void Cost_first_under_no_worse_recovery_keeps_the_forced_treatment_and_the_no_worse_gate()
-    {
-        // ADR-078 with recovery rule (b), as in the Tier-3 configuration. This is the state of the
-        // zero-limit ranking test above: every candidate breaks a deadline 1 ms before the kept drop,
-        // and a zero vehicle-switch limit keeps hard treatment active. Cost-first drops only the
-        // utilization and revision levels. The vehicle is still forced, the same options reach the
-        // solver, and the chosen route still passes the no-worse gate as the Runner validates it.
-        var fixture = CreateState(seed: 3);
-        var policy = new CommitmentPolicy(
-            fixture.Policy.PolicyId,
-            CommitmentBudgetBasis.DecisionInduced,
-            CommitmentDimensionVocabulary.Ordered.Select(
-                dimension => new CommitmentDimensionLimit(
-                    dimension,
-                    dimension == CommitmentDimension.VehicleSwitchCount ? 0 : null,
-                    CommitmentPhase.AllActive)),
-            new MaterialRevisionRule(1_000, null),
-            dropEtaDeadlineSlack: new Duration(0));
-        var context = PromiseContext(fixture, fixture.BaselineDrop.Milliseconds - 1, policy);
-        var stabilitySolver = new EnumeratingSolver();
-        var costSolver = new EnumeratingSolver();
-
-        var stability = new SolverBackedRidePoolingPolicy(stabilitySolver).Decide(
+        var result = new SolverBackedRidePoolingPolicy(solver).Decide(
             context,
             CandidateGenerationOptions.ExactSmall,
             HardVectorOptions(forcedReferenceRecovery: true, forcedNoWorseRecovery: true));
-        var cost = new SolverBackedRidePoolingPolicy(costSolver).Decide(
-            context,
-            CandidateGenerationOptions.ExactSmall,
-            HardVectorOptions(
-                forcedReferenceRecovery: true,
-                forcedNoWorseRecovery: true,
-                selectionObjectiveOrder: SolverBackedSelectionObjectiveOrder.CostFirst));
 
-        Assert.True(stability.IsSuccess, stability.Witness?.Message);
-        Assert.True(cost.IsSuccess, cost.Witness?.Message);
-        var stable = stability.Decision!.Decision;
-        var cheap = cost.Decision!.Decision;
+        Assert.True(result.IsSuccess, result.Witness?.Message);
+        var decision = result.Decision!.Decision;
         Assert.Equal(
-            stabilitySolver.LastProblem!.Options.Select(value => value.OptionId),
-            costSolver.LastProblem!.Options.Select(value => value.OptionId));
-        Assert.Equal("forced-reference-count", costSolver.LastProblem.ObjectiveLevels[0].Name);
-        Assert.Contains(
-            stabilitySolver.LastProblem.ObjectiveLevels,
-            value => value.Name == "worst-hard-utilization-ppm");
-        Assert.DoesNotContain(
-            costSolver.LastProblem.ObjectiveLevels,
-            value => value.Name == "worst-hard-utilization-ppm"
-                || value.Name.StartsWith("revision:", StringComparison.Ordinal));
-        Assert.Equal([AlgorithmTestData.VehicleOne], cheap.ForcedReferenceVehicles!);
-        Assert.False(cheap.VehiclePlans.Single().Candidate.IsNoOp);
-        Assert.Equal(stable.AcceptedRequestCount, cheap.AcceptedRequestCount);
-        Assert.True(cheap.OperationalCost <= stable.OperationalCost);
+            gated.Batch!.FeasibleCandidateSets.Single().Candidates
+                .Select(value => value.CandidateId)
+                .Order(StringComparer.Ordinal),
+            solver.LastProblem!.Options.Select(value => value.OptionId).Order(StringComparer.Ordinal));
+        Assert.Equal(
+            ["forced-reference-count", "accepted-request-count", "operational-cost", "candidate-id-rank:vehicle-1"],
+            solver.LastProblem.ObjectiveLevels.Select(value => value.Name));
+        Assert.Equal([AlgorithmTestData.VehicleOne], decision.ForcedReferenceVehicles!);
+        Assert.False(decision.VehiclePlans.Single().Candidate.IsNoOp);
 
         var validated = new CommitmentDecisionValidator().Validate(
-            RunnerLikeContext(context, cheap, cheap.ForcedReferenceVehicles, noWorse: true));
+            RunnerLikeContext(context, decision, decision.ForcedReferenceVehicles, noWorse: true));
         Assert.True(validated.IsValid, validated.Witnesses.FirstOrDefault()?.Message);
         Assert.All(
             validated.ForcedBreaches,
             breach => Assert.True(
                 breach.SafetyProjection.DropEta.Milliseconds
                     <= breach.ExogenousProjection.DropEta.Milliseconds));
-    }
-
-    [Fact]
-    public void No_worse_recovery_does_not_rank_an_exempted_dimension_over_its_limit()
-    {
-        // The kept route is charged past its drop budget under the customer-visible basis. The
-        // exempted incumbent is over that limit, so the dimension is not ranked (ranking it would
-        // divide an over-limit usage and throw); no other dimension has a limit.
-        var fixture = CreateState(seed: 3);
-        var generated = new InsertionCandidateGenerator().Generate(
-            fixture.State,
-            CandidateGenerationOptions.ExactSmall);
-        Assert.True(generated.IsSuccess, generated.Witness?.Message);
-        var noOp = generated.VehicleCandidates!.Single().Candidates.Single(value => value.IsNoOp);
-        var delay = SmallestPositiveDelay(fixture, generated.VehicleCandidates!.Single());
-        var policy = new CommitmentPolicy(
-            fixture.Policy.PolicyId,
-            CommitmentBudgetBasis.CustomerVisible,
-            CommitmentDimensionVocabulary.Ordered.Select(
-                dimension => new CommitmentDimensionLimit(
-                    dimension,
-                    dimension == CommitmentDimension.DropEtaTotalMs ? delay - 1 : null,
-                    CommitmentPhase.AllActive)),
-            new MaterialRevisionRule(1_000, null));
-        var context = PromiseContext(fixture, fixture.BaselineDrop.Milliseconds + delay, policy);
-
-        var assessed = new HardVectorCandidateAssessor().AssessAndFilter(
-            context,
-            generated.VehicleCandidates!,
-            requireSafetyNoOp: true,
-            forcedReferenceRecovery: true,
-            forcedNoWorse: true);
-
-        Assert.True(assessed.IsSuccess, assessed.Witness?.Message);
-        var assessment = assessed.Batch!.Assessments[noOp.CandidateId];
-        Assert.True(assessment.IsForcedReference);
-        Assert.True(assessment.HasApplicableHardLimit);
-        Assert.Equal(0, assessment.WorstHardUtilizationPartsPerMillion);
     }
 
     [Fact]
@@ -1461,29 +1242,26 @@ public sealed class ExactSmallCommitmentDifferentialTests
     public void Zero_switch_limits_give_every_thesis_arm_the_same_selection_problem()
     {
         // Every Tier-3 configuration of the thesis sets a zero hard limit on vehicle_switch_count
-        // in all active phases, and zero stop-switch limits. A zero limit puts any vehicle with a
-        // promised rider at the ceiling of the utilization level, 1,000,000 ppm, so a Rule C drop
-        // budget cannot rank anything. With the same state, no drop limit (U), Rule C, the
-        // revision cap, and the strict or relaxed deadline hand the solver the same levels and the
-        // same contributions under either objective order. With a zero bound, Rule C and the cap
-        // also keep the same candidates. Only without the zero switch limits would the drop budget
-        // rank the candidates (control).
+        // in all active phases, and zero stop-switch limits. With the same state, no drop limit (U),
+        // Rule C, the revision cap, and the strict or relaxed deadline hand the solver the same
+        // levels and the same contributions: no C1 level reads a commitment budget. With a zero
+        // bound, Rule C and the cap also keep the same candidates, and the signature sees the
+        // candidate they prune (control).
         var fixture = CreateState(seed: 3);
         var kept = fixture.BaselineDrop.Milliseconds;
         const long Bound = 30_000;
 
-        static long? HardLimit(CommitmentDimension dimension, bool zeroSwitches, long? dropLimit) =>
+        static long? HardLimit(CommitmentDimension dimension, long? dropLimit) =>
             dimension switch
             {
                 CommitmentDimension.VehicleSwitchCount
                     or CommitmentDimension.PickupStopSwitchCount
-                    or CommitmentDimension.DropStopSwitchCount when zeroSwitches => 0,
+                    or CommitmentDimension.DropStopSwitchCount => 0,
                 CommitmentDimension.DropEtaTotalMs => dropLimit,
                 _ => null,
             };
 
         CommitmentPolicy Arm(
-            bool zeroSwitches = true,
             long? dropLimit = null,
             long? revisionLimit = null,
             long? deadlineSlack = null,
@@ -1494,22 +1272,20 @@ public sealed class ExactSmallCommitmentDifferentialTests
                 CommitmentDimensionVocabulary.Ordered.Select(
                     dimension => new CommitmentDimensionLimit(
                         dimension,
-                        HardLimit(dimension, zeroSwitches, dropLimit),
+                        HardLimit(dimension, dropLimit),
                         CommitmentPhase.AllActive)),
                 new MaterialRevisionRule(1_000, null),
                 dropEtaDeadlineSlack: deadlineSlack is long slack ? new Duration(slack) : null,
                 dropEtaDeadlineRelaxed: relaxed,
                 dropEtaRevisionLimit: revisionLimit is long limit ? new Duration(limit) : null);
 
-        CandidateSelectionProblem Problem(
-            CommitmentPolicy policy,
-            SolverBackedSelectionObjectiveOrder order)
+        CandidateSelectionProblem Problem(CommitmentPolicy policy)
         {
             var solver = new EnumeratingSolver();
             var decided = new SolverBackedRidePoolingPolicy(solver).Decide(
                 PromiseContext(fixture, kept, policy),
                 CandidateGenerationOptions.ExactSmall,
-                HardVectorOptions(forcedReferenceRecovery: false, selectionObjectiveOrder: order));
+                HardVectorOptions(forcedReferenceRecovery: false));
             Assert.True(decided.IsSuccess, decided.Witness?.Message);
             return solver.LastProblem!;
         }
@@ -1522,64 +1298,20 @@ public sealed class ExactSmallCommitmentDifferentialTests
                         value => $"{value.OptionId}={string.Join(",", value.ObjectiveContributions)}"))
                 .ToArray();
 
-        static long[] Level(CandidateSelectionProblem problem, string name)
-        {
-            var index = problem.ObjectiveLevels
-                .Select((value, position) => (value.Name, position))
-                .Single(value => value.Name == name)
-                .position;
-            return problem.Options.Select(value => value.ObjectiveContributions[index]).ToArray();
-        }
+        var unlimited = Problem(Arm());
+        var expected = Signature(unlimited);
 
-        foreach (var order in new[]
-                 {
-                     SolverBackedSelectionObjectiveOrder.StabilityFirst,
-                     SolverBackedSelectionObjectiveOrder.CostFirst,
-                 })
-        {
-            var unlimited = Problem(Arm(), order);
-            var expected = Signature(unlimited);
+        Assert.Equal(expected, Signature(Problem(Arm(dropLimit: Bound))));
+        Assert.Equal(expected, Signature(Problem(Arm(revisionLimit: Bound))));
+        Assert.Equal(expected, Signature(Problem(Arm(deadlineSlack: Bound))));
+        Assert.Equal(expected, Signature(Problem(Arm(deadlineSlack: Bound, relaxed: true))));
+        Assert.Equal(
+            ["accepted-request-count", "operational-cost", "candidate-id-rank:vehicle-1"],
+            unlimited.ObjectiveLevels.Select(value => value.Name));
 
-            Assert.Equal(expected, Signature(Problem(Arm(dropLimit: Bound), order)));
-            Assert.Equal(expected, Signature(Problem(Arm(revisionLimit: Bound), order)));
-            Assert.Equal(expected, Signature(Problem(Arm(deadlineSlack: Bound), order)));
-            Assert.Equal(
-                expected,
-                Signature(Problem(Arm(deadlineSlack: Bound, relaxed: true), order)));
-            Assert.DoesNotContain(
-                unlimited.ObjectiveLevels,
-                value => value.Name == "forced-reference-count");
-
-            var frozen = Signature(Problem(Arm(dropLimit: 0), order));
-            Assert.Equal(frozen, Signature(Problem(Arm(revisionLimit: 0), order)));
-            Assert.True(frozen.Length < expected.Length, "A zero bound must prune a candidate.");
-
-            if (order == SolverBackedSelectionObjectiveOrder.StabilityFirst)
-            {
-                Assert.All(
-                    Level(unlimited, "worst-hard-utilization-ppm"),
-                    value => Assert.Equal(HardVectorCandidateAssessor.PartsPerMillion, value));
-                Assert.Equal(
-                    CommitmentDimensionVocabulary.Ordered.Count,
-                    unlimited.ObjectiveLevels.Count(
-                        value => value.Name.StartsWith("revision:", StringComparison.Ordinal)));
-            }
-            else
-            {
-                Assert.DoesNotContain(
-                    unlimited.ObjectiveLevels,
-                    value => value.Name == "worst-hard-utilization-ppm"
-                        || value.Name.StartsWith("revision:", StringComparison.Ordinal));
-            }
-        }
-
-        // Control: without the zero switch limits Rule C's drop budget ranks the same candidates.
-        var ranked = Level(
-            Problem(
-                Arm(zeroSwitches: false, dropLimit: Bound),
-                SolverBackedSelectionObjectiveOrder.StabilityFirst),
-            "worst-hard-utilization-ppm");
-        Assert.True(ranked.Distinct().Count() > 1, string.Join(",", ranked));
+        var frozen = Signature(Problem(Arm(dropLimit: 0)));
+        Assert.Equal(frozen, Signature(Problem(Arm(revisionLimit: 0))));
+        Assert.True(frozen.Length < expected.Length, "A zero bound must prune a candidate.");
     }
 
     [Fact]
@@ -1672,9 +1404,7 @@ public sealed class ExactSmallCommitmentDifferentialTests
 
     private static SolverBackedRidePoolingPolicyOptions HardVectorOptions(
         bool forcedReferenceRecovery,
-        bool forcedNoWorseRecovery = false,
-        SolverBackedSelectionObjectiveOrder selectionObjectiveOrder =
-            SolverBackedSelectionObjectiveOrder.StabilityFirst) =>
+        bool forcedNoWorseRecovery = false) =>
         new(
             RidePoolingPolicyKind.RideBoundHardVector,
             DeterministicCandidateSelectionExecutionBudget.Create(
@@ -1682,8 +1412,7 @@ public sealed class ExactSmallCommitmentDifferentialTests
                 100_000,
                 DeterministicSolverBudget.Create(100_000, 100_000, 1).Value!).Value!,
             forcedReferenceRecovery: forcedReferenceRecovery,
-            forcedNoWorseRecovery: forcedNoWorseRecovery,
-            selectionObjectiveOrder: selectionObjectiveOrder);
+            forcedNoWorseRecovery: forcedNoWorseRecovery);
 
     /// <summary>The validation the Runner applies to a policy decision.</summary>
     private static CommitmentValidationContext RunnerLikeContext(
@@ -2164,53 +1893,6 @@ public sealed class ExactSmallCommitmentDifferentialTests
 
     private static long Difference(SimTime left, SimTime right) =>
         Math.Abs(left.Milliseconds - right.Milliseconds);
-
-    private static int CompareC1(FleetSelection left, FleetSelection right)
-    {
-        var accepted = right.AcceptedRequestCount.CompareTo(
-            left.AcceptedRequestCount);
-
-        if (accepted != 0)
-        {
-            return accepted;
-        }
-
-        var utilization = left.WorstHardUtilizationPartsPerMillion!.Value.CompareTo(
-            right.WorstHardUtilizationPartsPerMillion!.Value);
-
-        if (utilization != 0)
-        {
-            return utilization;
-        }
-
-        foreach (var dimension in CommitmentDimensionVocabulary.Ordered)
-        {
-            var revision = left.DecisionInducedRevision!.Get(dimension).CompareTo(
-                right.DecisionInducedRevision!.Get(dimension));
-
-            if (revision != 0)
-            {
-                return revision;
-            }
-        }
-
-        var cost = left.OperationalCost.CompareTo(right.OperationalCost);
-
-        if (cost != 0)
-        {
-            return cost;
-        }
-
-        return 0;
-    }
-
-    private static FleetSelection ToFleetSelection(DispatchDecision decision) =>
-        new(
-            decision.VehiclePlans,
-            decision.AcceptedRequestCount,
-            decision.OperationalCost,
-            decision.DecisionInducedRevision,
-            decision.WorstHardUtilizationPartsPerMillion);
 
     private static string SemanticKey(InsertionCandidate candidate) =>
         string.Join(

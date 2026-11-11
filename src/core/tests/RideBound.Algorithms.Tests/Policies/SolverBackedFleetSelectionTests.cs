@@ -184,73 +184,6 @@ public sealed class SolverBackedFleetSelectionTests
     }
 
     [Fact]
-    public void Hard_vector_mapping_uses_maximum_utilization_before_revision_and_cost()
-    {
-        var request = new RequestId("request-1");
-        var vehicle = AlgorithmTestData.VehicleOne;
-        var noOp = Candidate("noop", vehicle, [], 0);
-        var highUtilization = Candidate("high-util", vehicle, [request], 0);
-        var lowUtilization = Candidate("low-util", vehicle, [request], 100);
-        var assessments = new Dictionary<string, HardVectorCandidateAssessment>(
-            StringComparer.Ordinal)
-        {
-            [noOp.CandidateId] = Hard(noOp, 0, CommitmentVector.Zero),
-            [highUtilization.CandidateId] = Hard(highUtilization, 900_000, CommitmentVector.Zero),
-            [lowUtilization.CandidateId] = Hard(lowUtilization, 100_000, Vector(pickup: 999)),
-        };
-
-        var result = Select(
-            [Set(vehicle, noOp, highUtilization, lowUtilization)],
-            SolverBackedObjectiveProfile.HardVector,
-            hardAssessments: assessments);
-
-        Assert.True(result.IsSuccess, result.Witness?.Message);
-        Assert.Equal(
-            "low-util",
-            Assert.Single(result.Selection!.Selection.VehiclePlans)
-                .Candidate.CandidateId);
-        Assert.Equal(100_000, result.Selection.Selection.WorstHardUtilizationPartsPerMillion);
-    }
-
-    [Fact]
-    public void Unbounded_hard_profile_is_semantically_rolling_cost()
-    {
-        var request = new RequestId("request-1");
-        var vehicle = AlgorithmTestData.VehicleOne;
-        var noOp = Candidate("noop", vehicle, [], 0);
-        var cheapHighRevision = Candidate("cheap", vehicle, [request], 1);
-        var expensiveLowRevision = Candidate("expensive", vehicle, [request], 100);
-        var sets = new[] { Set(vehicle, noOp, cheapHighRevision, expensiveLowRevision) };
-        var assessments = new Dictionary<string, HardVectorCandidateAssessment>(
-            StringComparer.Ordinal)
-        {
-            [noOp.CandidateId] = Hard(noOp, 0, CommitmentVector.Zero, hasHard: false),
-            [cheapHighRevision.CandidateId] = Hard(
-                cheapHighRevision,
-                1_000_000,
-                Vector(pickup: 999),
-                hasHard: false),
-            [expensiveLowRevision.CandidateId] = Hard(
-                expensiveLowRevision,
-                0,
-                CommitmentVector.Zero,
-                hasHard: false),
-        };
-
-        var c1 = Select(
-            sets,
-            SolverBackedObjectiveProfile.HardVector,
-            hardAssessments: assessments);
-        var b1 = Select(sets, SolverBackedObjectiveProfile.RollingCost);
-
-        Assert.Equal(
-            Assert.Single(b1.Selection!.Selection.VehiclePlans).Candidate.CandidateId,
-            Assert.Single(c1.Selection!.Selection.VehiclePlans).Candidate.CandidateId);
-        Assert.Equal("cheap", Assert.Single(c1.Selection.Selection.VehiclePlans).Candidate.CandidateId);
-        Assert.Null(c1.Selection.Selection.DecisionInducedRevision);
-    }
-
-    [Fact]
     public void Solver_incumbent_rejected_by_semantic_validator_uses_validated_no_op()
     {
         var request = new RequestId("request-1");
@@ -336,8 +269,7 @@ public sealed class SolverBackedFleetSelectionTests
                     maximumExplorationWorkUnits: 100_000),
                 new SolverBackedRidePoolingPolicyOptions(
                     RidePoolingPolicyKind.RideBoundHardVector,
-                    executionBudget,
-                    selectionObjectiveOrder: SolverBackedSelectionObjectiveOrder.CostFirst));
+                    executionBudget));
 
         Assert.True(result.IsSuccess, result.Witness?.Message);
         Assert.Equal(1, result.Decision!.Decision.GenerationDiagnostics!.OmittedRequestCount);
@@ -352,77 +284,9 @@ public sealed class SolverBackedFleetSelectionTests
             result.Decision.Decision.SelectionExecution.SolveResult.Status);
     }
 
-    [Fact]
-    public void A_forced_vehicle_does_not_flatten_the_fleet_utilization_ranking()
-    {
-        // Vehicle 1 has only its forced no-op. Vehicle 2 can serve the request in two ways:
-        // 30% utilization at cost 20, or 80% at cost 10. The forced option contributes 0 to
-        // the fleet maximum, so vehicle 2 is still ranked by utilization. Had it contributed
-        // the 100% cap, the maximum would tie at 100% and cost would pick the 80% plan.
-        var request = new RequestId("request-1");
-        var first = AlgorithmTestData.VehicleOne;
-        var second = AlgorithmTestData.VehicleTwo;
-        var forced = Candidate("v1-forced", first, [], 0);
-        var noOp = Candidate("v2-noop", second, [], 0);
-        var low = Candidate("v2-low", second, [request], 20);
-        var high = Candidate("v2-high", second, [request], 10);
-        var sets = new[] { Set(first, forced), Set(second, noOp, low, high) };
-        var assessments = new Dictionary<string, HardVectorCandidateAssessment>
-        {
-            [forced.CandidateId] = Hard(forced, 0, Vector()) with { IsForcedReference = true },
-            [noOp.CandidateId] = Hard(noOp, 0, Vector()),
-            [low.CandidateId] = Hard(low, 300_000, Vector()),
-            [high.CandidateId] = Hard(high, 800_000, Vector()),
-        };
-
-        var result = Select(
-            sets,
-            SolverBackedObjectiveProfile.HardVector,
-            hardAssessments: assessments);
-        var capped = Select(
-            sets,
-            SolverBackedObjectiveProfile.HardVector,
-            hardAssessments: new Dictionary<string, HardVectorCandidateAssessment>(assessments)
-            {
-                [forced.CandidateId] = Hard(forced, HardVectorCandidateAssessor.PartsPerMillion, Vector()),
-            });
-
-        Assert.True(result.IsSuccess, result.Witness?.Message);
-        Assert.Equal(
-            ["v1-forced", "v2-low"],
-            result.Selection!.Selection.VehiclePlans.Select(value => value.Candidate.CandidateId));
-        Assert.Equal("forced-reference-count", result.Selection.Problem.ObjectiveLevels[0].Name);
-        Assert.True(capped.IsSuccess, capped.Witness?.Message);
-        Assert.Equal(
-            ["v1-forced", "v2-high"],
-            capped.Selection!.Selection.VehiclePlans.Select(value => value.Candidate.CandidateId));
-        Assert.Equal("accepted-request-count", capped.Selection.Problem.ObjectiveLevels[0].Name);
-    }
-
-    private static readonly string[] StabilityFirstForcedLevels =
-    [
-        "forced-reference-count",
-        "accepted-request-count",
-        "worst-hard-utilization-ppm",
-        "revision:pickup_eta_total_ms",
-        "revision:drop_eta_total_ms",
-        "revision:material_eta_revision_count",
-        "revision:vehicle_switch_count",
-        "revision:pickup_stop_relocation_mm",
-        "revision:pickup_stop_switch_count",
-        "revision:drop_stop_relocation_mm",
-        "revision:drop_stop_switch_count",
-        "revision:incumbent_order_inversion_count",
-        "revision:pre_pickup_inserted_stop_count",
-        "operational-cost",
-        "candidate-id-rank:vehicle-1",
-        "candidate-id-rank:vehicle-2",
-    ];
-
     /// <summary>
-    /// ADR-078. Vehicle 1 has only its forced no-op; vehicle 2 can serve the request at 30%
-    /// utilization for cost 20 or at 80% for cost 10. The same candidates and assessments are
-    /// ranked under both orders.
+    /// ADR-078. Vehicle 1 has only its forced no-op; vehicle 2 can serve the request for cost 20
+    /// (v2-dear) or for cost 10 (v2-cheap).
     /// </summary>
     private static (VehicleCandidateSet[] Sets, Dictionary<string, HardVectorCandidateAssessment> Hard)
         ForcedAndTwoPricedInsertions()
@@ -432,184 +296,64 @@ public sealed class SolverBackedFleetSelectionTests
         var second = AlgorithmTestData.VehicleTwo;
         var forced = Candidate("v1-forced", first, [], 0);
         var noOp = Candidate("v2-noop", second, [], 0);
-        var low = Candidate("v2-low", second, [request], 20);
-        var high = Candidate("v2-high", second, [request], 10);
+        var dear = Candidate("v2-dear", second, [request], 20);
+        var cheap = Candidate("v2-cheap", second, [request], 10);
         return (
-            [Set(first, forced), Set(second, noOp, low, high)],
+            [Set(first, forced), Set(second, noOp, dear, cheap)],
             new Dictionary<string, HardVectorCandidateAssessment>
             {
-                [forced.CandidateId] = Hard(forced, 0, Vector()) with { IsForcedReference = true },
-                [noOp.CandidateId] = Hard(noOp, 0, Vector()),
-                [low.CandidateId] = Hard(low, 300_000, Vector()),
-                [high.CandidateId] = Hard(high, 800_000, Vector(drop: 5)),
+                [forced.CandidateId] = new(forced.CandidateId, IsForcedReference: true),
+                [noOp.CandidateId] = new(noOp.CandidateId),
+                [dear.CandidateId] = new(dear.CandidateId),
+                [cheap.CandidateId] = new(cheap.CandidateId),
             });
-    }
-
-    [Fact]
-    public void Stability_first_keeps_the_exact_hard_vector_level_list_and_is_the_default()
-    {
-        var (sets, hard) = ForcedAndTwoPricedInsertions();
-
-        var byDefault = Select(sets, SolverBackedObjectiveProfile.HardVector, hardAssessments: hard);
-        var explicitly = Select(
-            sets,
-            SolverBackedObjectiveProfile.HardVector,
-            hardAssessments: hard,
-            objectiveOrder: SolverBackedSelectionObjectiveOrder.StabilityFirst);
-
-        Assert.True(byDefault.IsSuccess, byDefault.Witness?.Message);
-        Assert.Equal(
-            StabilityFirstForcedLevels,
-            byDefault.Selection!.Problem.ObjectiveLevels.Select(value => value.Name));
-        Assert.Equal(
-            byDefault.Selection.Problem.ObjectiveLevels,
-            explicitly.Selection!.Problem.ObjectiveLevels);
-        Assert.Equal(
-            byDefault.Selection.Problem.Options.Select(value => value.ObjectiveContributions),
-            explicitly.Selection.Problem.Options.Select(value => value.ObjectiveContributions));
-        Assert.Equal(
-            ["v1-forced", "v2-low"],
-            byDefault.Selection.Selection.VehiclePlans.Select(value => value.Candidate.CandidateId));
     }
 
     [Fact]
     public void Cost_first_drops_only_the_utilization_and_revision_levels()
     {
+        // The C1 levels (cost-first, the only order): the forced level when a forced option
+        // exists, the accepted count, cost, then one candidate-id rank level per vehicle. There is
+        // no utilization or revision level.
         var (sets, hard) = ForcedAndTwoPricedInsertions();
-
-        var stability = Select(sets, SolverBackedObjectiveProfile.HardVector, hardAssessments: hard);
-        var cost = Select(
-            sets,
-            SolverBackedObjectiveProfile.HardVector,
-            hardAssessments: hard,
-            objectiveOrder: SolverBackedSelectionObjectiveOrder.CostFirst);
-
-        Assert.True(cost.IsSuccess, cost.Witness?.Message);
-        Assert.Equal(
-            [
-                "forced-reference-count",
-                "accepted-request-count",
-                "operational-cost",
-                "candidate-id-rank:vehicle-1",
-                "candidate-id-rank:vehicle-2",
-            ],
-            cost.Selection!.Problem.ObjectiveLevels.Select(value => value.Name));
-        // Every kept level is the stability-first level itself (name, sense and aggregation).
-        Assert.Equal(
-            stability.Selection!.Problem.ObjectiveLevels.Where(
-                value => value.Name != "worst-hard-utilization-ppm"
-                    && !value.Name.StartsWith("revision:", StringComparison.Ordinal)),
-            cost.Selection.Problem.ObjectiveLevels);
-        Assert.Equal(
-            stability.Selection.Problem.Options.Select(value => value.OptionId),
-            cost.Selection.Problem.Options.Select(value => value.OptionId));
-        // Each option contributes the same value on every kept level.
-        var keptLevelIndices = stability.Selection.Problem.ObjectiveLevels
-            .Select((level, index) => (level, index))
-            .Where(pair => pair.level.Name != "worst-hard-utilization-ppm"
-                && !pair.level.Name.StartsWith("revision:", StringComparison.Ordinal))
-            .Select(pair => pair.index)
-            .ToArray();
-        Assert.Equal(
-            stability.Selection.Problem.Options.Select(
-                option => keptLevelIndices.Select(index => option.ObjectiveContributions[index]).ToArray()),
-            cost.Selection.Problem.Options.Select(option => option.ObjectiveContributions.ToArray()));
-        // The cheaper 80% plan wins; the forced vehicle and the accepted count are unchanged.
-        Assert.Equal(
-            ["v1-forced", "v2-high"],
-            cost.Selection.Selection.VehiclePlans.Select(value => value.Candidate.CandidateId));
-        Assert.Equal(1, cost.Selection.Selection.AcceptedRequestCount);
-        Assert.Equal(10, cost.Selection.Selection.OperationalCost);
-        Assert.Equal(20, stability.Selection.Selection.OperationalCost);
-        // The selection still reports the utilization and revision it carries.
-        Assert.Equal(800_000, cost.Selection.Selection.WorstHardUtilizationPartsPerMillion);
-        Assert.Equal(5, cost.Selection.Selection.DecisionInducedRevision!.DropEtaTotalMs);
-    }
-
-    [Fact]
-    public void Cost_first_keeps_the_forced_level_condition_and_equals_stability_first_without_hard_limits()
-    {
-        var (sets, hard) = ForcedAndTwoPricedInsertions();
-        var unforced = new Dictionary<string, HardVectorCandidateAssessment>(hard)
-        {
-            ["v1-forced"] = hard["v1-forced"] with { IsForcedReference = false },
-        };
-        var withoutForced = Select(
-            sets,
-            SolverBackedObjectiveProfile.HardVector,
-            hardAssessments: unforced,
-            objectiveOrder: SolverBackedSelectionObjectiveOrder.CostFirst);
-
-        Assert.Equal(
-            "accepted-request-count",
-            withoutForced.Selection!.Problem.ObjectiveLevels[0].Name);
-
-        var unbounded = hard.ToDictionary(
+        var unforcedHard = hard.ToDictionary(
             value => value.Key,
-            value => value.Value with { HasApplicableHardLimit = false, IsForcedReference = false });
-        var stability = Select(sets, SolverBackedObjectiveProfile.HardVector, hardAssessments: unbounded);
-        var cost = Select(
-            sets,
-            SolverBackedObjectiveProfile.HardVector,
-            hardAssessments: unbounded,
-            objectiveOrder: SolverBackedSelectionObjectiveOrder.CostFirst);
+            value => value.Value with { IsForcedReference = false });
 
+        var forced = Select(sets, SolverBackedObjectiveProfile.HardVector, hardAssessments: hard);
+        var unforced = Select(sets, SolverBackedObjectiveProfile.HardVector, hardAssessments: unforcedHard);
+
+        Assert.True(forced.IsSuccess, forced.Witness?.Message);
+        Assert.True(unforced.IsSuccess, unforced.Witness?.Message);
+        CandidateSelectionObjectiveLevel[] levels =
+        [
+            new("forced-reference-count", CandidateSelectionObjectiveSense.Minimize, CandidateSelectionObjectiveAggregation.Sum),
+            new("accepted-request-count", CandidateSelectionObjectiveSense.Maximize, CandidateSelectionObjectiveAggregation.Sum),
+            new("operational-cost", CandidateSelectionObjectiveSense.Minimize, CandidateSelectionObjectiveAggregation.Sum),
+            new("candidate-id-rank:vehicle-1", CandidateSelectionObjectiveSense.Minimize, CandidateSelectionObjectiveAggregation.Sum),
+            new("candidate-id-rank:vehicle-2", CandidateSelectionObjectiveSense.Minimize, CandidateSelectionObjectiveAggregation.Sum),
+        ];
+        Assert.Equal(levels, forced.Selection!.Problem.ObjectiveLevels);
+        Assert.Equal(levels.Skip(1), unforced.Selection!.Problem.ObjectiveLevels);
+
+        // Each option's contribution on every level, in level order (options sorted by vehicle, then id).
+        static string[] Contributions(SolverBackedFleetSelectionResult result) =>
+            result.Selection!.Problem.Options
+                .Select(value => $"{value.OptionId}={string.Join(",", value.ObjectiveContributions)}")
+                .ToArray();
         Assert.Equal(
-            stability.Selection!.Problem.ObjectiveLevels,
-            cost.Selection!.Problem.ObjectiveLevels);
+            ["v1-forced=1,0,0,0,0", "v2-cheap=0,1,10,0,0", "v2-dear=0,1,20,0,1", "v2-noop=0,0,0,0,2"],
+            Contributions(forced));
         Assert.Equal(
-            stability.Selection.Selection.VehiclePlans.Select(value => value.Candidate.CandidateId),
-            cost.Selection.Selection.VehiclePlans.Select(value => value.Candidate.CandidateId));
-    }
+            ["v1-forced=0,0,0,0", "v2-cheap=1,10,0,0", "v2-dear=1,20,0,1", "v2-noop=0,0,0,2"],
+            Contributions(unforced));
 
-    [Fact]
-    public void Cost_first_is_rejected_outside_the_hard_vector_profile()
-    {
-        var (sets, hard) = ForcedAndTwoPricedInsertions();
-
-        Assert.Throws<ArgumentException>(
-            () => Select(
-                sets,
-                SolverBackedObjectiveProfile.RollingCost,
-                hardAssessments: hard,
-                objectiveOrder: SolverBackedSelectionObjectiveOrder.CostFirst));
-
-        Assert.Throws<ArgumentOutOfRangeException>(
-            () => Select(
-                sets,
-                SolverBackedObjectiveProfile.HardVector,
-                hardAssessments: hard,
-                objectiveOrder: (SolverBackedSelectionObjectiveOrder)2));
-    }
-
-    [Fact]
-    public void Cost_first_policy_options_are_valid_only_for_C1_and_default_to_stability_first()
-    {
-        var budget = DeterministicCandidateSelectionExecutionBudget.Create(
-            1_000,
-            1_000,
-            DeterministicSolverBudget.Create(1_000, 1_000, 1).Value!).Value!;
-
+        // The cheaper plan wins; the forced vehicle keeps its only option.
         Assert.Equal(
-            SolverBackedSelectionObjectiveOrder.StabilityFirst,
-            new SolverBackedRidePoolingPolicyOptions(
-                RidePoolingPolicyKind.RideBoundHardVector,
-                budget).SelectionObjectiveOrder);
-        Assert.Equal(
-            SolverBackedSelectionObjectiveOrder.CostFirst,
-            new SolverBackedRidePoolingPolicyOptions(
-                RidePoolingPolicyKind.RideBoundHardVector,
-                budget,
-                forcedReferenceRecovery: true,
-                forcedNoWorseRecovery: true,
-                selectionObjectiveOrder: SolverBackedSelectionObjectiveOrder.CostFirst)
-                .SelectionObjectiveOrder);
-
-        Assert.Throws<ArgumentOutOfRangeException>(
-            () => new SolverBackedRidePoolingPolicyOptions(
-                RidePoolingPolicyKind.RideBoundHardVector,
-                budget,
-                selectionObjectiveOrder: (SolverBackedSelectionObjectiveOrder)2));
+            ["v1-forced", "v2-cheap"],
+            forced.Selection.Selection.VehiclePlans.Select(value => value.Candidate.CandidateId));
+        Assert.Equal(1, forced.Selection.Selection.AcceptedRequestCount);
+        Assert.Equal(10, forced.Selection.Selection.OperationalCost);
     }
 
     private static SolverBackedFleetSelectionResult Select(
@@ -617,9 +361,7 @@ public sealed class SolverBackedFleetSelectionTests
         SolverBackedObjectiveProfile profile,
         IReadOnlyDictionary<string, HardVectorCandidateAssessment>?
             hardAssessments = null,
-        IFleetSelectionValidator? validator = null,
-        SolverBackedSelectionObjectiveOrder objectiveOrder =
-            SolverBackedSelectionObjectiveOrder.StabilityFirst)
+        IFleetSelectionValidator? validator = null)
     {
         var solverBudget = DeterministicSolverBudget.Create(1_000, 1_000, 1).Value!;
         var budget = DeterministicCandidateSelectionExecutionBudget.Create(
@@ -637,8 +379,7 @@ public sealed class SolverBackedFleetSelectionTests
             budget,
             accounting,
             validator ?? new FleetValidator(_ => true),
-            hardAssessments: hardAssessments,
-            objectiveOrder: objectiveOrder);
+            hardAssessments: hardAssessments);
     }
 
     private static VehicleCandidateSet Set(
@@ -658,23 +399,6 @@ public sealed class SolverBackedFleetSelectionTests
             requests,
             new CandidateSchedule([], cost),
             requests.Count == 0);
-
-    private static HardVectorCandidateAssessment Hard(
-        InsertionCandidate candidate,
-        long utilization,
-        CommitmentVector revision,
-        bool hasHard = true) =>
-        new(
-            candidate.CandidateId,
-            utilization,
-            revision,
-            hasHard);
-
-    private static CommitmentVector Vector(
-        long pickup = 0,
-        long drop = 0,
-        long material = 0) =>
-        new(pickup, drop, material, 0, 0, 0, 0, 0, 0, 0);
 
     private sealed class FleetValidator(Func<FleetSelection, bool> validate) :
         IFleetSelectionValidator

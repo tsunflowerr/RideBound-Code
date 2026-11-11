@@ -161,8 +161,7 @@ public sealed class WaitingRiderRelocationPolicyTests
             DeterministicCandidateSelectionExecutionBudget.Create(
                 100_000,
                 100_000,
-                DeterministicSolverBudget.Create(100_000, 100_000, 1).Value!).Value!,
-            selectionObjectiveOrder: SolverBackedSelectionObjectiveOrder.CostFirst);
+                DeterministicSolverBudget.Create(100_000, 100_000, 1).Value!).Value!);
 
     private static (CommitmentMechanismContext Context, CommitmentPolicy Policy) Fixture(
         bool relocation,

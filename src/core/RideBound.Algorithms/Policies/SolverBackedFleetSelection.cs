@@ -1,7 +1,6 @@
 using RideBound.Algorithms.Candidates;
 using RideBound.Algorithms.Commitments;
 using RideBound.Application.Optimization;
-using RideBound.Domain.Commitments;
 using RideBound.Domain.Common;
 using RideBound.Domain.Requests;
 
@@ -11,17 +10,6 @@ public enum SolverBackedObjectiveProfile
 {
     RollingCost,
     HardVector,
-}
-
-/// <summary>
-/// ADR-078 (exploratory, off by default). Order of the C1 ranking levels after the
-/// accepted-request count. Cost-first skips the worst-hard-utilization and revision levels;
-/// gates, locks and recovery act before ranking and are unchanged.
-/// </summary>
-public enum SolverBackedSelectionObjectiveOrder
-{
-    StabilityFirst,
-    CostFirst,
 }
 
 public interface IFleetSelectionValidator
@@ -85,9 +73,7 @@ public sealed class SolverBackedFleetSelector
         CandidateSelectionPreSolveAccounting preSolveAccounting,
         IFleetSelectionValidator validator,
         IReadOnlyDictionary<string, HardVectorCandidateAssessment>?
-            hardAssessments = null,
-        SolverBackedSelectionObjectiveOrder objectiveOrder =
-            SolverBackedSelectionObjectiveOrder.StabilityFirst)
+            hardAssessments = null)
     {
         ArgumentNullException.ThrowIfNull(candidateSets);
         ArgumentNullException.ThrowIfNull(executionBudget);
@@ -99,24 +85,10 @@ public sealed class SolverBackedFleetSelector
             throw new ArgumentOutOfRangeException(nameof(objectiveProfile));
         }
 
-        if (!Enum.IsDefined(objectiveOrder))
-        {
-            throw new ArgumentOutOfRangeException(nameof(objectiveOrder));
-        }
-
-        if (objectiveOrder == SolverBackedSelectionObjectiveOrder.CostFirst
-            && objectiveProfile != SolverBackedObjectiveProfile.HardVector)
-        {
-            throw new ArgumentException(
-                "The cost-first objective order is only defined for the C1 hard-vector profile.",
-                nameof(objectiveOrder));
-        }
-
         var mapping = SelectionModelMapping.Create(
             candidateSets,
             objectiveProfile,
-            hardAssessments,
-            objectiveOrder);
+            hardAssessments);
 
         if (mapping.Witness is not null)
         {
@@ -185,25 +157,14 @@ public sealed class SolverBackedFleetSelector
     private sealed class SelectionModelMapping
     {
         private readonly IReadOnlyDictionary<string, InsertionCandidate> _candidates;
-        private readonly SolverBackedObjectiveProfile _profile;
-        private readonly IReadOnlyDictionary<string, HardVectorCandidateAssessment>?
-            _hardAssessments;
-        private readonly bool _hardTreatmentActive;
 
         private SelectionModelMapping(
             CandidateSelectionProblem? problem,
             IReadOnlyDictionary<string, InsertionCandidate> candidates,
-            SolverBackedObjectiveProfile profile,
-            IReadOnlyDictionary<string, HardVectorCandidateAssessment>?
-                hardAssessments,
-            bool hardTreatmentActive,
             RollingCostWitness? witness)
         {
             Problem = problem;
             _candidates = candidates;
-            _profile = profile;
-            _hardAssessments = hardAssessments;
-            _hardTreatmentActive = hardTreatmentActive;
             Witness = witness;
         }
 
@@ -215,8 +176,7 @@ public sealed class SolverBackedFleetSelector
             IReadOnlyList<VehicleCandidateSet> candidateSets,
             SolverBackedObjectiveProfile profile,
             IReadOnlyDictionary<string, HardVectorCandidateAssessment>?
-                hardAssessments,
-            SolverBackedSelectionObjectiveOrder objectiveOrder)
+                hardAssessments)
         {
             var orderedSets = candidateSets
                 .OrderBy(value => value.VehicleId.Value, StringComparer.Ordinal)
@@ -236,8 +196,6 @@ public sealed class SolverBackedFleetSelector
             {
                 return Failure(
                     candidateMap,
-                    profile,
-                    hardAssessments,
                     "Every vehicle needs at least one feasible candidate.");
             }
 
@@ -245,8 +203,6 @@ public sealed class SolverBackedFleetSelector
             {
                 return Failure(
                     candidateMap,
-                    profile,
-                    hardAssessments,
                     "Candidate IDs must be globally unique across the fleet.");
             }
 
@@ -258,13 +214,9 @@ public sealed class SolverBackedFleetSelector
             {
                 return Failure(
                     candidateMap,
-                    profile,
-                    hardAssessments,
                     "Every C1/C2 candidate needs a hard-vector assessment.");
             }
 
-            var hardTreatmentActive = hardAssessments?.Values.Any(
-                value => value.HasApplicableHardLimit) == true;
             var forcedTreatmentActive = profile
                     is SolverBackedObjectiveProfile.HardVector
                 && allCandidates.Any(
@@ -292,27 +244,6 @@ public sealed class SolverBackedFleetSelector
                         CandidateSelectionObjectiveSense.Maximize,
                         CandidateSelectionObjectiveAggregation.Sum),
                     candidate => candidate.NewRequestIds.Count));
-
-            switch (profile)
-            {
-                // Cost-first (ADR-078) matches no case here, so operational cost follows the
-                // accepted-request count directly; the forced level above is unchanged.
-                case SolverBackedObjectiveProfile.HardVector
-                    when hardTreatmentActive
-                        && objectiveOrder
-                            == SolverBackedSelectionObjectiveOrder.StabilityFirst:
-                    objectives.Add(
-                        MinMaximum(
-                            "worst-hard-utilization-ppm",
-                            candidate => hardAssessments![candidate.CandidateId]
-                                .WorstHardUtilizationPartsPerMillion));
-                    AddRevisionObjectives(
-                        objectives,
-                        candidate => hardAssessments![candidate.CandidateId]
-                            .DecisionInducedRevision,
-                        "revision");
-                    break;
-            }
 
             objectives.Add(
                 MinSum(
@@ -369,18 +300,8 @@ public sealed class SolverBackedFleetSelector
                             : null)));
 
             return problem.IsSuccess
-                ? new SelectionModelMapping(
-                    problem.Value,
-                    candidateMap,
-                    profile,
-                    hardAssessments,
-                    hardTreatmentActive,
-                    null)
-                : Failure(
-                    candidateMap,
-                    profile,
-                    hardAssessments,
-                    problem.Failure!.Message);
+                ? new SelectionModelMapping(problem.Value, candidateMap, null)
+                : Failure(candidateMap, problem.Failure!.Message);
         }
 
         public MappedSelectionResult Map(CandidateSelectionSolution solution)
@@ -398,20 +319,6 @@ public sealed class SolverBackedFleetSelector
                     0L,
                     (total, candidate) => checked(
                         total + candidate.Schedule.OperationalCost));
-                CommitmentVector? revision = null;
-                long? worst = null;
-
-                if (_profile is SolverBackedObjectiveProfile.HardVector
-                    && _hardTreatmentActive)
-                {
-                    revision = SumVector(
-                        selected,
-                        candidate => _hardAssessments![candidate.CandidateId]
-                            .DecisionInducedRevision);
-                    worst = selected.Max(
-                        candidate => _hardAssessments![candidate.CandidateId]
-                            .WorstHardUtilizationPartsPerMillion);
-                }
 
                 return MappedSelectionResult.Success(
                     new FleetSelection(
@@ -420,9 +327,7 @@ public sealed class SolverBackedFleetSelector
                                 candidate.VehicleId,
                                 candidate)).ToArray(),
                         accepted,
-                        cost,
-                        revision,
-                        worst));
+                        cost));
             }
             catch (OverflowException)
             {
@@ -431,41 +336,6 @@ public sealed class SolverBackedFleetSelector
                         SolverBackedSelectionFailureCodes.ModelMappingFailed,
                         "Mapped fleet selection exceeded the canonical integer range.",
                         Dimension: "selectionAggregation"));
-            }
-        }
-
-        private static CommitmentVector SumVector(
-            IReadOnlyList<InsertionCandidate> selected,
-            Func<InsertionCandidate, CommitmentVector> vector)
-        {
-            var sum = CommitmentVector.Zero;
-
-            foreach (var candidate in selected)
-            {
-                var added = sum.Add(vector(candidate));
-
-                if (!added.IsSuccess)
-                {
-                    throw new OverflowException(added.Failure!.Message);
-                }
-
-                sum = added.Value!;
-            }
-
-            return sum;
-        }
-
-        private static void AddRevisionObjectives(
-            ICollection<ObjectiveMapping> objectives,
-            Func<InsertionCandidate, CommitmentVector> vector,
-            string prefix)
-        {
-            foreach (var dimension in CommitmentDimensionVocabulary.Ordered)
-            {
-                objectives.Add(
-                    MinSum(
-                        $"{prefix}:{CommitmentDimensionVocabulary.ToProtocolValue(dimension)}",
-                        candidate => vector(candidate).Get(dimension)));
             }
         }
 
@@ -479,28 +349,12 @@ public sealed class SolverBackedFleetSelector
                     CandidateSelectionObjectiveAggregation.Sum),
                 contribution);
 
-        private static ObjectiveMapping MinMaximum(
-            string name,
-            Func<InsertionCandidate, long> contribution) =>
-            new(
-                new CandidateSelectionObjectiveLevel(
-                    name,
-                    CandidateSelectionObjectiveSense.Minimize,
-                    CandidateSelectionObjectiveAggregation.Maximum),
-                contribution);
-
         private static SelectionModelMapping Failure(
             IReadOnlyDictionary<string, InsertionCandidate> candidates,
-            SolverBackedObjectiveProfile profile,
-            IReadOnlyDictionary<string, HardVectorCandidateAssessment>?
-                hardAssessments,
             string message) =>
             new(
                 null,
                 candidates,
-                profile,
-                hardAssessments,
-                false,
                 new RollingCostWitness(
                     SolverBackedSelectionFailureCodes.ModelMappingFailed,
                     message,

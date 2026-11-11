@@ -2,7 +2,6 @@ using RideBound.Algorithms.Candidates;
 using RideBound.Algorithms.Commitments;
 using RideBound.Algorithms.Policies;
 using RideBound.Application.Commitments;
-using RideBound.Domain.Commitments;
 using RideBound.Domain.Common;
 using RideBound.Domain.Validation;
 
@@ -11,32 +10,26 @@ namespace RideBound.Algorithms.Tests.Policies;
 public sealed class CommitmentMechanismPolicyTests
 {
     [Fact]
-    public void C1_acceptance_then_worst_utilization_dominate_revision_and_cost()
+    public void C1_ranks_by_operational_cost_after_acceptance()
     {
         var request = AlgorithmTestData.PendingRequest();
         var vehicle = AlgorithmTestData.Vehicle();
         var noOp = Candidate("noop", vehicle.Id, [], 0);
-        var highUtilization = Candidate("high-util", vehicle.Id, [request.Id], 0);
-        var lowUtilization = Candidate("low-util", vehicle.Id, [request.Id], 100);
+        var cheap = Candidate("cheap", vehicle.Id, [request.Id], 1);
+        var expensive = Candidate("expensive", vehicle.Id, [request.Id], 100);
         var assessments = new Dictionary<string, HardVectorCandidateAssessment>(
             StringComparer.Ordinal)
         {
-            [noOp.CandidateId] = HardAssessment(noOp, 0, CommitmentVector.Zero),
-            [highUtilization.CandidateId] = HardAssessment(
-                highUtilization,
-                900_000,
-                CommitmentVector.Zero),
-            [lowUtilization.CandidateId] = HardAssessment(
-                lowUtilization,
-                100_000,
-                Vector(pickupEta: 999)),
+            [noOp.CandidateId] = HardAssessment(noOp),
+            [cheap.CandidateId] = HardAssessment(cheap),
+            [expensive.CandidateId] = HardAssessment(expensive),
         };
 
         var result = new HardVectorFleetSelector().Select(
             [
                 new VehicleCandidateSet(
                     vehicle.Id,
-                    [noOp, highUtilization, lowUtilization],
+                    [expensive, noOp, cheap],
                     [],
                     false),
             ],
@@ -44,81 +37,10 @@ public sealed class CommitmentMechanismPolicyTests
 
         Assert.True(result.IsSuccess, result.Witness?.Message);
         Assert.Equal(
-            lowUtilization.CandidateId,
+            cheap.CandidateId,
             Assert.Single(result.Selection!.VehiclePlans).Candidate.CandidateId);
-        Assert.Equal(100_000, result.Selection.WorstHardUtilizationPartsPerMillion);
-    }
-
-    [Fact]
-    public void C1_uses_ten_dimension_order_before_cost_when_hard_treatment_exists()
-    {
-        var request = AlgorithmTestData.PendingRequest();
-        var vehicle = AlgorithmTestData.Vehicle();
-        var lowerPickup = Candidate("lower-pickup", vehicle.Id, [request.Id], 100);
-        var lowerDrop = Candidate("lower-drop", vehicle.Id, [request.Id], 0);
-        var assessments = new Dictionary<string, HardVectorCandidateAssessment>(
-            StringComparer.Ordinal)
-        {
-            [lowerPickup.CandidateId] = HardAssessment(
-                lowerPickup,
-                500_000,
-                Vector(pickupEta: 1, dropEta: 999)),
-            [lowerDrop.CandidateId] = HardAssessment(
-                lowerDrop,
-                500_000,
-                Vector(pickupEta: 2, dropEta: 0)),
-        };
-
-        var result = new HardVectorFleetSelector().Select(
-            [
-                new VehicleCandidateSet(
-                    vehicle.Id,
-                    [lowerDrop, lowerPickup],
-                    [],
-                    false),
-            ],
-            assessments);
-
-        Assert.Equal(
-            lowerPickup.CandidateId,
-            Assert.Single(result.Selection!.VehiclePlans).Candidate.CandidateId);
-    }
-
-    [Fact]
-    public void C1_unbounded_treatment_degenerates_to_operational_cost_order()
-    {
-        var request = AlgorithmTestData.PendingRequest();
-        var vehicle = AlgorithmTestData.Vehicle();
-        var cheapRevision = Candidate("cheap", vehicle.Id, [request.Id], 1);
-        var expensiveStable = Candidate("expensive", vehicle.Id, [request.Id], 100);
-        var assessments = new Dictionary<string, HardVectorCandidateAssessment>(
-            StringComparer.Ordinal)
-        {
-            [cheapRevision.CandidateId] = HardAssessment(
-                cheapRevision,
-                0,
-                Vector(pickupEta: 999),
-                hasHardLimit: false),
-            [expensiveStable.CandidateId] = HardAssessment(
-                expensiveStable,
-                0,
-                CommitmentVector.Zero,
-                hasHardLimit: false),
-        };
-
-        var result = new HardVectorFleetSelector().Select(
-            [
-                new VehicleCandidateSet(
-                    vehicle.Id,
-                    [expensiveStable, cheapRevision],
-                    [],
-                    false),
-            ],
-            assessments);
-
-        Assert.Equal(
-            cheapRevision.CandidateId,
-            Assert.Single(result.Selection!.VehiclePlans).Candidate.CandidateId);
+        Assert.Equal(1, result.Selection.AcceptedRequestCount);
+        Assert.Equal(1, result.Selection.OperationalCost);
     }
 
     [Fact]
@@ -143,14 +65,8 @@ public sealed class CommitmentMechanismPolicyTests
             string,
             HardVectorCandidateAssessment>(StringComparer.Ordinal)
         {
-            [first.CandidateId] = HardAssessment(
-                first,
-                0,
-                CommitmentVector.Zero),
-            [second.CandidateId] = HardAssessment(
-                second,
-                0,
-                CommitmentVector.Zero),
+            [first.CandidateId] = HardAssessment(first),
+            [second.CandidateId] = HardAssessment(second),
         };
         var c1 = new HardVectorFleetSelector().Select(sets, hardAssessments);
 
@@ -175,16 +91,6 @@ public sealed class CommitmentMechanismPolicyTests
             new CandidateSchedule([], cost),
             requestIds.Count == 0);
 
-    private static HardVectorCandidateAssessment HardAssessment(
-        InsertionCandidate candidate,
-        long utilization,
-        CommitmentVector vector,
-        bool hasHardLimit = true) =>
-        new(candidate.CandidateId, utilization, vector, hasHardLimit);
-
-    private static CommitmentVector Vector(
-        long pickupEta = 0,
-        long dropEta = 0,
-        long material = 0) =>
-        new(pickupEta, dropEta, material, 0, 0, 0, 0, 0, 0, 0);
+    private static HardVectorCandidateAssessment HardAssessment(InsertionCandidate candidate) =>
+        new(candidate.CandidateId);
 }

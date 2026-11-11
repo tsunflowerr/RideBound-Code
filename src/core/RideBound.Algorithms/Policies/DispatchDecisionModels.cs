@@ -1,7 +1,6 @@
 using RideBound.Algorithms.Candidates;
 using RideBound.Application.Optimization;
 using RideBound.Application.State;
-using RideBound.Domain.Commitments;
 using RideBound.Domain.Common;
 
 namespace RideBound.Algorithms.Policies;
@@ -27,9 +26,7 @@ public sealed record SelectedVehiclePlan(
 public sealed record FleetSelection(
     IReadOnlyList<SelectedVehiclePlan> VehiclePlans,
     int AcceptedRequestCount,
-    long OperationalCost,
-    CommitmentVector? DecisionInducedRevision = null,
-    long? WorstHardUtilizationPartsPerMillion = null);
+    long OperationalCost);
 
 public sealed record FleetSelectionResult
 {
@@ -66,8 +63,6 @@ public sealed record DispatchDecision(
     IReadOnlyList<CandidatePruneWitness> PrunedCandidates,
     int AcceptedRequestCount,
     long OperationalCost,
-    CommitmentVector? DecisionInducedRevision = null,
-    long? WorstHardUtilizationPartsPerMillion = null,
     CandidateSelectionExecutionResult? SelectionExecution = null,
     CandidateGenerationDiagnostics? GenerationDiagnostics = null,
     CandidatePortfolioEvidenceSnapshot? CandidatePortfolioEvidence = null,

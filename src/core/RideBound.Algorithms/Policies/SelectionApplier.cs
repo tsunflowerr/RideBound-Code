@@ -369,9 +369,7 @@ public sealed class SelectionApplier
                 actions.AsReadOnly(),
                 pruned,
                 selection.AcceptedRequestCount,
-                selection.OperationalCost,
-                selection.DecisionInducedRevision,
-                selection.WorstHardUtilizationPartsPerMillion));
+                selection.OperationalCost));
     }
 
     private static string FindRejectionReason(
