@@ -953,29 +953,13 @@ class RideBoundFleetControl(FleetControlBase):
           - every rider boarding there has its pickup, and every rider alighting there its drop, executed in
             the Runner's route and not remaining.
         """
-        vehicle = self._require_vehicle(vid)
-        if not vehicle.assigned_route:
+        current, new_legs = self._served_leg(vid, plan, simulation_time)
+        if current is None or (new_legs and self._leg_equivalent(current, new_legs[0])):
             return None
-        current = vehicle.assigned_route[0]
-        if not current.locked or current.status != VRL_STATES.BOARDING or current.duration != 0:
+        started = self._stored_started_stop(vid, current)
+        if started is None:
             return None
-        new_legs = self._build_VRLs(plan, vehicle, simulation_time)
-        if new_legs and self._leg_equivalent(current, new_legs[0]):
-            return None
-        stored = getattr(self, "veh_plans", {}).get(vid)
-        if stored is None or not stored.list_plan_stops:
-            return None
-        head = stored.list_plan_stops[0]
-        boarding = {request.get_rid_struct() for request in current.rq_dict.get(1, [])}
-        alighting = {request.get_rid_struct() for request in current.rq_dict.get(-1, [])}
-        if (
-            head.get_pos() != current.destination_pos
-            or not head.is_locked()
-            or head.get_started_at() is None
-            or set(head.get_list_boarding_rids()) != boarding
-            or set(head.get_list_alighting_rids()) != alighting
-        ):
-            return None
+        head, boarding, alighting = started
         executed = route.frozen_prefix[: route.executed_stop_count]
         remaining = route.remaining_stops
 
@@ -988,14 +972,7 @@ class RideBoundFleetControl(FleetControlBase):
             finished(rid, "dropOff") for rid in alighting
         ):
             return None
-        # The stop is being served now, so its latest-time bounds are history: a late boarding there is already
-        # recorded by the Runner (ADR-076). Kept on the copy, they would make the plan infeasible. The earliest
-        # times stay, so the leg built from the copy is the same locked leg. FleetPy's stored stop is unchanged.
-        in_progress = head.copy()
-        in_progress.latest_pickup_time_dict = {}
-        in_progress.latest_arrival_time_dict = {}
-        in_progress.max_trip_time_dict = {}
-        return in_progress
+        return self._without_latest_bounds(head)
 
     def _started_first_stop(self, vid, plan, simulation_time):
         """FleetPy's own started stop to use in place of the Runner's first stop, or None.
@@ -1014,20 +991,33 @@ class RideBoundFleetControl(FleetControlBase):
             start and end);
           - FleetPy's stored plan starts with that started stop (same node, riders, lock, start time).
         """
-        vehicle = self._require_vehicle(vid)
-        if not vehicle.assigned_route:
-            return None
-        current = vehicle.assigned_route[0]
-        if not current.locked or current.status != VRL_STATES.BOARDING or current.duration != 0:
-            return None
-        new_legs = self._build_VRLs(plan, vehicle, simulation_time)
-        if not new_legs or new_legs[0].locked or self._leg_equivalent(current, new_legs[0]):
+        current, new_legs = self._served_leg(vid, plan, simulation_time)
+        if current is None or not new_legs or new_legs[0].locked or self._leg_equivalent(current, new_legs[0]):
             return None
         current_signature, first_signature = self._leg_signature(current), self._leg_signature(new_legs[0])
         lock_field = 4
         if (current_signature[:lock_field] + current_signature[lock_field + 1:]
                 != first_signature[:lock_field] + first_signature[lock_field + 1:]):
             return None
+        started = self._stored_started_stop(vid, current)
+        if started is None:
+            return None
+        return self._without_latest_bounds(started[0])
+
+    def _served_leg(self, vid, plan, simulation_time):
+        """The vehicle's current leg and the legs built from `plan`, when the current leg is a locked BOARDING leg of
+        zero duration (a stop being served now); (None, None) otherwise."""
+        vehicle = self._require_vehicle(vid)
+        if not vehicle.assigned_route:
+            return None, None
+        current = vehicle.assigned_route[0]
+        if not current.locked or current.status != VRL_STATES.BOARDING or current.duration != 0:
+            return None, None
+        return current, self._build_VRLs(plan, vehicle, simulation_time)
+
+    def _stored_started_stop(self, vid, current):
+        """FleetPy's stored first stop and the riders boarding and alighting in `current`, when that stop is the started
+        stop that `current` serves (same node, riders, lock, start time); None otherwise."""
         stored = getattr(self, "veh_plans", {}).get(vid)
         if stored is None or not stored.list_plan_stops:
             return None
@@ -1042,13 +1032,18 @@ class RideBoundFleetControl(FleetControlBase):
             or set(head.get_list_alighting_rids()) != alighting
         ):
             return None
-        # As in _in_progress_service_stop: the stop is being served now, so its latest-time bounds are history (a late
-        # service is recorded by the Runner, ADR-076). The earliest times stay, so the leg is the same locked leg.
-        started = head.copy()
-        started.latest_pickup_time_dict = {}
-        started.latest_arrival_time_dict = {}
-        started.max_trip_time_dict = {}
-        return started
+        return head, boarding, alighting
+
+    @staticmethod
+    def _without_latest_bounds(stop):
+        """A copy of FleetPy's started stop without its latest-time bounds: the stop is being served now, so they are
+        history (a late service there is already recorded by the Runner, ADR-076) and would make the plan infeasible.
+        The earliest times stay, so the leg built from the copy is the same locked leg; the stored stop is unchanged."""
+        copy = stop.copy()
+        copy.latest_pickup_time_dict = {}
+        copy.latest_arrival_time_dict = {}
+        copy.max_trip_time_dict = {}
+        return copy
 
     def _fleetpy_stop(self, stop: ProtocolStop, locked: bool):
         position = (stop.raw_node, None, None)
