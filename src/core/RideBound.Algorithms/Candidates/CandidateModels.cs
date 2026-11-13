@@ -15,12 +15,6 @@ public sealed record CandidateSchedule(
     IReadOnlyList<ScheduledStop> Stops,
     long OperationalCost);
 
-public enum CandidateScheduleStrategy
-{
-    EarliestFeasible,
-    OriginHoldRelocatedWait,
-}
-
 public enum CandidateRetentionStrategy
 {
     LegacyAcceptedCountCostSlack,
@@ -51,9 +45,6 @@ public sealed record InsertionCandidate(
     IReadOnlyList<RequestId> NewRequestIds,
     CandidateSchedule Schedule,
     bool IsNoOp,
-    CandidateScheduleStrategy ScheduleStrategy =
-        CandidateScheduleStrategy.EarliestFeasible,
-    long RelocatedWaitMilliseconds = 0,
     long? CertifiedForwardSlackMilliseconds = null,
     RequestId? RelocatedRequestId = null,
     RelocationRole? RelocationRole = null);
@@ -197,8 +188,6 @@ public sealed record CandidateGenerationOptions
         int maximumCandidatesPerVehicle,
         int maximumNewRequestsPerVehicle,
         bool exactSmallMode,
-        CandidateScheduleStrategy scheduleStrategy =
-            CandidateScheduleStrategy.EarliestFeasible,
         long maximumExplorationWorkUnits = 100_000,
         CandidateRetentionStrategy retentionStrategy =
             CandidateRetentionStrategy.LegacyAcceptedCountCostSlack,
@@ -217,11 +206,6 @@ public sealed record CandidateGenerationOptions
                 nameof(maximumNewRequestsPerVehicle));
         }
 
-        if (!Enum.IsDefined(scheduleStrategy))
-        {
-            throw new ArgumentOutOfRangeException(nameof(scheduleStrategy));
-        }
-
         if (maximumExplorationWorkUnits is < 1
             or > DomainLimits.MaxCanonicalInteger)
         {
@@ -234,20 +218,9 @@ public sealed record CandidateGenerationOptions
             throw new ArgumentOutOfRangeException(nameof(retentionStrategy));
         }
 
-        // G2 candidates use the earliest-feasible schedule only; an origin-hold transform
-        // would change their routes and identities on one side of the move.
-        if (waitingRiderRelocation is not null
-            && scheduleStrategy != CandidateScheduleStrategy.EarliestFeasible)
-        {
-            throw new ArgumentException(
-                "Waiting-rider relocation requires the earliest-feasible schedule strategy.",
-                nameof(waitingRiderRelocation));
-        }
-
         MaximumCandidatesPerVehicle = maximumCandidatesPerVehicle;
         MaximumNewRequestsPerVehicle = maximumNewRequestsPerVehicle;
         ExactSmallMode = exactSmallMode;
-        ScheduleStrategy = scheduleStrategy;
         MaximumExplorationWorkUnits = maximumExplorationWorkUnits;
         if (stopServiceDurationMs is < 0 or > DomainLimits.MaxCanonicalInteger)
         {
@@ -264,8 +237,6 @@ public sealed record CandidateGenerationOptions
     public int MaximumNewRequestsPerVehicle { get; }
 
     public bool ExactSmallMode { get; }
-
-    public CandidateScheduleStrategy ScheduleStrategy { get; }
 
     public long MaximumExplorationWorkUnits { get; }
 
@@ -334,8 +305,6 @@ public static class CandidateGenerationFailureCodes
     public const string PlanVersionOverflow = "PLAN_VERSION_OVERFLOW";
     public const string ScheduleEvaluationFailed = "SCHEDULE_EVALUATION_FAILED";
     public const string SlackProfileFailed = "SLACK_PROFILE_FAILED";
-    public const string ScheduleStrategyEquivalenceFailed =
-        "SCHEDULE_STRATEGY_EQUIVALENCE_FAILED";
     public const string RequestBoundOmission = "REQUEST_BOUND_OMISSION";
     public const string WorkBoundOmission = "WORK_BOUND_OMISSION";
     public const string CandidateCapOmission = "CANDIDATE_CAP_OMISSION";

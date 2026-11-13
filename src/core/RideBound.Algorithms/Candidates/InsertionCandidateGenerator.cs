@@ -12,7 +12,6 @@ public sealed class InsertionCandidateGenerator
 {
     private readonly PhysicalPlanValidator _validator;
     private readonly ForwardSlackProfileCache _slackCache;
-    private readonly OriginHoldCandidateTransformer _originHoldTransformer;
     private readonly CandidatePortfolioRetainer _portfolioRetainer;
     private readonly WaitingRiderRelocationBuilder _relocationBuilder;
 
@@ -20,15 +19,12 @@ public sealed class InsertionCandidateGenerator
         PhysicalPlanValidator? validator = null,
         CandidateScheduleEvaluator? scheduleEvaluator = null,
         ForwardSlackProfileCache? slackCache = null,
-        OriginHoldCandidateTransformer? originHoldTransformer = null,
         CandidatePortfolioRetainer? portfolioRetainer = null,
         WaitingRiderRelocationBuilder? relocationBuilder = null)
     {
         _validator = validator ?? new PhysicalPlanValidator();
         _slackCache = slackCache ?? new ForwardSlackProfileCache(
             new ForwardSlackProfileBuilder(scheduleEvaluator));
-        _originHoldTransformer =
-            originHoldTransformer ?? new OriginHoldCandidateTransformer();
         _portfolioRetainer = portfolioRetainer
             ?? new CandidatePortfolioRetainer();
         _relocationBuilder = relocationBuilder
@@ -250,7 +246,6 @@ public sealed class InsertionCandidateGenerator
                         donorOnly.Value!,
                         [],
                         isNoOp: false,
-                        options,
                         ServiceQualityAllowance.Strict,
                         donorFeasible,
                         donorPruned,
@@ -288,7 +283,6 @@ public sealed class InsertionCandidateGenerator
                             route,
                             [],
                             isNoOp: false,
-                            options,
                             ServiceQualityAllowance.Strict,
                             receiverFeasible,
                             receiverPruned,
@@ -425,7 +419,6 @@ public sealed class InsertionCandidateGenerator
             vehicle.Route,
             [],
             isNoOp: true,
-            options,
             serviceQuality,
             feasibleById,
             prunedById);
@@ -612,7 +605,6 @@ public sealed class InsertionCandidateGenerator
                         routeResult.Value!,
                         node.InsertedRequestIds,
                         isNoOp: false,
-                        options,
                         serviceQuality,
                         feasibleById,
                         prunedById,
@@ -889,7 +881,6 @@ public sealed class InsertionCandidateGenerator
         RoutePlan route,
         IReadOnlyList<RequestId> insertedRequestIds,
         bool isNoOp,
-        CandidateGenerationOptions options,
         ServiceQualityAllowance serviceQuality,
         IDictionary<string, InsertionCandidate> feasibleById,
         IDictionary<string, CandidatePruneWitness> prunedById,
@@ -970,130 +961,19 @@ public sealed class InsertionCandidateGenerator
             return;
         }
 
-        var selectedRoute = route;
-        var selectedCandidateId = candidateId;
-        var selectedProfile = profileLookup.Result.Profile!;
-        var selectedStrategy = CandidateScheduleStrategy.EarliestFeasible;
-        var relocatedWait = 0L;
-
-        if (!isNoOp
-            && options.ScheduleStrategy
-                == CandidateScheduleStrategy.OriginHoldRelocatedWait)
-        {
-            var transformed = _originHoldTransformer.Transform(
-                vehicle,
-                route,
-                selectedProfile,
-                candidateId);
-
-            if (transformed.WasApplied)
-            {
-                var transformedId = CandidateIdentity.Create(
-                    state,
-                    vehicle.Id,
-                    transformed.Route,
-                    orderedRequests);
-                var transformedValidation = _validator.Validate(
-                    new PhysicalValidationContext(
-                        state.Run,
-                        vehicle.Id,
-                        transformed.Route,
-                        state.TravelTimes!,
-                        state.Run.SimulationTime,
-                        serviceQuality,
-                        relocation));
-
-                if (!transformedValidation.IsFeasible)
-                {
-                    prunedById.TryAdd(
-                        transformedId,
-                        new CandidatePruneWitness(
-                            transformedId,
-                            vehicle.Id,
-                            orderedRequests,
-                            transformedValidation.Witness!.Code,
-                            transformedValidation.Witness.Message,
-                            transformedValidation.Witness));
-                    return;
-                }
-
-                var transformedProfile = _slackCache.GetOrBuild(
-                    state,
-                    vehicle,
-                    transformed.Route,
-                    state.TravelTimes!,
-                    state.Run.SimulationTime,
-                    serviceQuality);
-
-                if (!transformedProfile.Result.IsSuccess
-                    || !HasExactServiceEquivalence(
-                        selectedProfile,
-                        transformedProfile.Result.Profile!))
-                {
-                    prunedById.TryAdd(
-                        transformedId,
-                        new CandidatePruneWitness(
-                            transformedId,
-                            vehicle.Id,
-                            orderedRequests,
-                            CandidateGenerationFailureCodes
-                                .ScheduleStrategyEquivalenceFailed,
-                            "Origin-hold transformation did not preserve exact " +
-                            "service/departure times and operational cost."));
-                    return;
-                }
-
-                selectedRoute = transformed.Route;
-                selectedCandidateId = transformedId;
-                selectedProfile = transformedProfile.Result.Profile!;
-                selectedStrategy =
-                    CandidateScheduleStrategy.OriginHoldRelocatedWait;
-                relocatedWait = transformed.RelocatedWaitMilliseconds;
-            }
-        }
-
+        var profile = profileLookup.Result.Profile!;
         feasibleById.TryAdd(
-            selectedCandidateId,
+            candidateId,
             new InsertionCandidate(
-                selectedCandidateId,
+                candidateId,
                 vehicle.Id,
-                selectedRoute,
+                route,
                 orderedRequests,
-                selectedProfile.Schedule,
+                profile.Schedule,
                 isNoOp,
-                selectedStrategy,
-                relocatedWait,
-                selectedProfile.CertifiedDelayAtRouteStartMilliseconds,
+                profile.CertifiedDelayAtRouteStartMilliseconds,
                 relocation?.RequestId,
                 relocationRole));
-    }
-
-    private static bool HasExactServiceEquivalence(
-        ForwardSlackProfile earliest,
-        ForwardSlackProfile originHold)
-    {
-        if (originHold.Stops.Count != earliest.Stops.Count + 1
-            || originHold.Schedule.OperationalCost
-                != earliest.Schedule.OperationalCost)
-        {
-            return false;
-        }
-
-        for (var index = 0; index < earliest.Stops.Count; index++)
-        {
-            var original = earliest.Stops[index];
-            var transformed = originHold.Stops[index + 1];
-
-            if (original.StopId != transformed.StopId
-                || original.ServiceStartTime != transformed.ServiceStartTime
-                || original.DepartureTime != transformed.DepartureTime
-                || index > 0 && original.ArrivalTime != transformed.ArrivalTime)
-            {
-                return false;
-            }
-        }
-
-        return true;
     }
 
     /// <summary>

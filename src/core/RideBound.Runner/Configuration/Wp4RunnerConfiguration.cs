@@ -453,14 +453,6 @@ public sealed class Wp4RunnerConfiguration
                 "'shadowAllocation' and 'dropEtaShadowAllocation' on every commitment policy go together.");
         }
 
-        // Shadow scores a route of rider stops; origin-hold adds waypoints it does not score.
-        if (shadowAllocation is not null
-            && generation.ScheduleStrategy != CandidateScheduleStrategy.EarliestFeasible)
-        {
-            throw new InvalidDataException(
-                "'shadowAllocation' requires scheduleStrategy 'earliest-feasible'.");
-        }
-
         SolverBackedRidePoolingPolicyOptions? solverOptions = null;
 
         if (hasSolver)
@@ -493,14 +485,21 @@ public sealed class Wp4RunnerConfiguration
             GenerationFields,
             GenerationRequiredFields,
             "$.candidateGeneration");
-        var strategy = Text(element, "scheduleStrategy") switch
+
+        // The schedule is always earliest-feasible. The key stays required (the final files set it), and the
+        // origin-hold schedule it could also select is refused.
+        switch (Text(element, "scheduleStrategy"))
         {
-            "earliest-feasible" => CandidateScheduleStrategy.EarliestFeasible,
-            "origin-hold-relocated-wait" =>
-                CandidateScheduleStrategy.OriginHoldRelocatedWait,
-            _ => throw new InvalidDataException(
-                "Unknown candidate scheduleStrategy."),
-        };
+            case "earliest-feasible":
+                break;
+            case "origin-hold-relocated-wait":
+                throw new InvalidDataException(
+                    "WP4 scheduleStrategy 'origin-hold-relocated-wait' (the origin-hold schedule): "
+                    + RemovedFeature);
+            default:
+                throw new InvalidDataException("Unknown candidate scheduleStrategy.");
+        }
+
         var retentionStrategy = element.TryGetProperty(
             "retentionStrategy",
             out _)
@@ -526,12 +525,6 @@ public sealed class Wp4RunnerConfiguration
                 RelocationGenerationFields,
                 Fields(),
                 "$.candidateGeneration.waitingRiderRelocation");
-
-            if (strategy != CandidateScheduleStrategy.EarliestFeasible)
-            {
-                throw new InvalidDataException(
-                    "'waitingRiderRelocation' requires scheduleStrategy 'earliest-feasible'.");
-            }
 
             relocation = new WaitingRiderRelocationGenerationOptions(
                 relocationElement.TryGetProperty("maximumRidersPerVehicle", out var riders)
@@ -567,7 +560,6 @@ public sealed class Wp4RunnerConfiguration
             Boolean(
                 element.GetProperty("exactSmallMode"),
                 "exactSmallMode"),
-            strategy,
             PositiveInteger(
                 element.GetProperty("maximumExplorationWorkUnits"),
                 "maximumExplorationWorkUnits"),

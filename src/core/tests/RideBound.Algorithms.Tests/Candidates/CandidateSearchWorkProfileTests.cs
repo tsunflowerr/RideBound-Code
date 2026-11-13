@@ -89,7 +89,6 @@ public sealed class CandidateSearchWorkProfileTests
             maximumCandidatesPerVehicle: 100,
             maximumNewRequestsPerVehicle: 2,
             exactSmallMode: false,
-            scheduleStrategy: CandidateScheduleStrategy.EarliestFeasible,
             maximumExplorationWorkUnits: 10_000);
 
     private static OnlineState CreateLoadedState(int incumbentCount)

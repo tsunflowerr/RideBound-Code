@@ -29,7 +29,6 @@ public sealed class FinalGenerationLimitsTests
         Assert.Equal(2, generation.MaximumNewRequestsPerVehicle);
         Assert.Equal(10_000, generation.MaximumExplorationWorkUnits);
         Assert.False(generation.ExactSmallMode);
-        Assert.Equal(CandidateScheduleStrategy.EarliestFeasible, generation.ScheduleStrategy);
         Assert.Equal(CandidateRetentionStrategy.ServiceSetStabilityPortfolioV1, generation.RetentionStrategy);
         Assert.Equal(targets, generation.WaitingRiderRelocation?.MaximumTargetVehicles);
         Assert.Null(generation.WaitingRiderRelocation?.MaximumRidersPerVehicle);

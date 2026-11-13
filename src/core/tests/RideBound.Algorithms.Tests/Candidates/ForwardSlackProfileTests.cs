@@ -9,7 +9,7 @@ using RideBound.Domain.Vehicles;
 
 namespace RideBound.Algorithms.Tests.Candidates;
 
-public sealed class ForwardSlackAndScheduleStrategyTests
+public sealed class ForwardSlackProfileTests
 {
     [Fact]
     public void Backward_profile_combines_pickup_deadline_wait_absorption_and_ride_time()
@@ -32,123 +32,6 @@ public sealed class ForwardSlackAndScheduleStrategyTests
         Assert.Equal(900, profile.Stops[1].CertifiedDelayBeforeArrivalMilliseconds);
         Assert.Equal(1800, profile.CertifiedDelayAtRouteStartMilliseconds);
         Assert.Equal(1100, profile.Schedule.OperationalCost);
-    }
-
-    [Fact]
-    public void Origin_hold_is_an_executable_waypoint_with_exact_service_equivalence()
-    {
-        var request = WaitingRequest();
-        var vehicle = AlgorithmTestData.Vehicle();
-        var state = AlgorithmTestData.CreateState(
-            [request],
-            [vehicle],
-            arcs: UnitArcs());
-        var generator = new InsertionCandidateGenerator();
-        var earliest = generator.Generate(
-            state,
-            new CandidateGenerationOptions(
-                100,
-                1,
-                exactSmallMode: true,
-                CandidateScheduleStrategy.EarliestFeasible));
-        var held = generator.Generate(
-            state,
-            new CandidateGenerationOptions(
-                100,
-                1,
-                exactSmallMode: true,
-                CandidateScheduleStrategy.OriginHoldRelocatedWait));
-
-        Assert.True(earliest.IsSuccess, earliest.Witness?.Message);
-        Assert.True(held.IsSuccess, held.Witness?.Message);
-        var earliestInsertion = Assert.Single(
-            earliest.VehicleCandidates!.Single().Candidates,
-            candidate => !candidate.IsNoOp);
-        var heldInsertion = Assert.Single(
-            held.VehicleCandidates!.Single().Candidates,
-            candidate => !candidate.IsNoOp);
-        var hold = heldInsertion.Route.MutableSuffix[0];
-
-        Assert.Equal(CandidateScheduleStrategy.EarliestFeasible,
-            earliestInsertion.ScheduleStrategy);
-        Assert.Equal(CandidateScheduleStrategy.OriginHoldRelocatedWait,
-            heldInsertion.ScheduleStrategy);
-        Assert.Equal(RouteStopKind.Waypoint, hold.Kind);
-        Assert.Equal(AlgorithmTestData.NodeZero, hold.NodeId);
-        Assert.Equal(900, hold.ServiceDuration.Milliseconds);
-        Assert.Equal(900, heldInsertion.RelocatedWaitMilliseconds);
-        Assert.Equal(
-            [RouteStopKind.Waypoint, RouteStopKind.Pickup, RouteStopKind.DropOff],
-            heldInsertion.Route.MutableSuffix.Select(stop => stop.Kind));
-        Assert.Equal(
-            earliestInsertion.Schedule.OperationalCost,
-            heldInsertion.Schedule.OperationalCost);
-
-        var heldOriginalStops = heldInsertion.Schedule.Stops.Skip(1).ToArray();
-        Assert.Equal(
-            earliestInsertion.Schedule.Stops.Select(stop => stop.StopId),
-            heldOriginalStops.Select(stop => stop.StopId));
-        Assert.Equal(
-            earliestInsertion.Schedule.Stops.Select(stop => stop.ServiceStartTime),
-            heldOriginalStops.Select(stop => stop.ServiceStartTime));
-        Assert.Equal(
-            earliestInsertion.Schedule.Stops.Select(stop => stop.DepartureTime),
-            heldOriginalStops.Select(stop => stop.DepartureTime));
-
-        var physical = new PhysicalPlanValidator().Validate(
-            new PhysicalValidationContext(
-                state.Run,
-                vehicle.Id,
-                heldInsertion.Route,
-                state.TravelTimes!,
-                state.Run.SimulationTime));
-        Assert.True(physical.IsFeasible, physical.Witness?.Message);
-        Assert.Single(
-            held.VehicleCandidates!.Single().Candidates,
-            candidate => candidate.IsNoOp);
-    }
-
-    [Fact]
-    public void Origin_hold_never_operates_from_edge_progress()
-    {
-        var request = WaitingRequest();
-        var baseVehicle = AlgorithmTestData.Vehicle();
-        var edgeVehicle = VehicleState.Create(
-            baseVehicle.Id,
-            baseVehicle.Capacity,
-            baseVehicle.OccupiedSeats,
-            new EdgeProgressPosition(
-                AlgorithmTestData.NodeZero,
-                AlgorithmTestData.NodeOne,
-                "edge-0-1",
-                500),
-            baseVehicle.OnboardRequestIds,
-            baseVehicle.AcceptedRequestIds,
-            baseVehicle.Route,
-            baseVehicle.LastObservedEpoch).Value!;
-        var state = AlgorithmTestData.CreateState(
-            [request],
-            [edgeVehicle],
-            arcs: UnitArcs());
-
-        var result = new InsertionCandidateGenerator().Generate(
-            state,
-            new CandidateGenerationOptions(
-                100,
-                1,
-                exactSmallMode: true,
-                CandidateScheduleStrategy.OriginHoldRelocatedWait));
-
-        Assert.True(result.IsSuccess, result.Witness?.Message);
-        var insertion = Assert.Single(
-            result.VehicleCandidates!.Single().Candidates,
-            candidate => !candidate.IsNoOp);
-        Assert.Equal(
-            CandidateScheduleStrategy.EarliestFeasible,
-            insertion.ScheduleStrategy);
-        Assert.DoesNotContain(
-            insertion.Route.MutableSuffix,
-            stop => stop.Kind == RouteStopKind.Waypoint);
     }
 
     [Fact]

@@ -20,9 +20,6 @@ internal static class CandidateIdentity
     private static readonly byte[] RouteDomain =
         "RideBound.ScheduleRoute.v1\0"u8.ToArray();
 
-    private static readonly byte[] HoldStopDomain =
-        "RideBound.OriginHoldStop.v1\0"u8.ToArray();
-
     private static readonly byte[] OmissionDomain =
         "RideBound.CandidateOmission.v1\0"u8.ToArray();
 
@@ -118,17 +115,6 @@ internal static class CandidateIdentity
         }
 
         return Convert.ToHexStringLower(SHA256.HashData(buffer.WrittenSpan));
-    }
-
-    public static StopId CreateHoldStopId(string sourceCandidateId)
-    {
-        ArgumentException.ThrowIfNullOrEmpty(sourceCandidateId);
-        var buffer = new ArrayBufferWriter<byte>();
-        buffer.Write(HoldStopDomain);
-        WriteFrame(buffer, "sourceCandidateId", sourceCandidateId);
-        return new StopId(
-            $"rb-h-{Convert.ToHexStringLower(
-                SHA256.HashData(buffer.WrittenSpan))}");
     }
 
     public static string CreateOmissionDigest(IEnumerable<string> stableIds)

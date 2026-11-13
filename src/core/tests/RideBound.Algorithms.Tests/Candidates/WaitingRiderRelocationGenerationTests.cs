@@ -218,7 +218,7 @@ public sealed class WaitingRiderRelocationGenerationTests
     }
 
     [Fact]
-    public void Relocation_options_reject_origin_hold_and_non_positive_caps()
+    public void Relocation_options_reject_non_positive_caps()
     {
         var options = new CandidateGenerationOptions(
             100,
@@ -228,13 +228,6 @@ public sealed class WaitingRiderRelocationGenerationTests
 
         Assert.Equal(2, options.WaitingRiderRelocation!.MaximumRidersPerVehicle);
         Assert.Equal(3, options.WaitingRiderRelocation.MaximumTargetVehicles);
-        Assert.Throws<ArgumentException>(
-            () => new CandidateGenerationOptions(
-                100,
-                2,
-                exactSmallMode: false,
-                CandidateScheduleStrategy.OriginHoldRelocatedWait,
-                waitingRiderRelocation: new WaitingRiderRelocationGenerationOptions()));
         Assert.Throws<ArgumentOutOfRangeException>(() => new WaitingRiderRelocationGenerationOptions(0, null));
         Assert.Throws<ArgumentOutOfRangeException>(() => new WaitingRiderRelocationGenerationOptions(null, 0));
     }

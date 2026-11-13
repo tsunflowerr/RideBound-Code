@@ -111,47 +111,6 @@ public sealed class ShadowAllocationConfigurationTests : IDisposable
     }
 
     [Fact]
-    public void Shadow_is_refused_with_the_origin_hold_schedule()
-    {
-        var root = Path.GetDirectoryName(typeof(ShadowAllocationConfigurationTests).Assembly.Location)!;
-        while (!File.Exists(Path.Combine(root, "RideBound.slnx")))
-        {
-            root = Path.GetDirectoryName(root)!;
-        }
-
-        string Read(string name) =>
-            File.ReadAllText(Path.Combine(root, "benchmarks", "configurations", name));
-        var shadowCommitment = CommitmentPolicyConfiguration.Decode(Encoding.UTF8.GetBytes(
-            Read("wp3-boundary-test-v1.json").Replace(
-                "\"budgetBasis\": \"decisionInduced\",",
-                "\"budgetBasis\": \"decisionInduced\",\n      \"dropEtaBudgetSlackPermille\": 1000,\n"
-                    + "      \"dropEtaShadowAllocation\": true,",
-                StringComparison.Ordinal)));
-        var plainCommitment = CommitmentPolicyConfiguration.Decode(
-            Encoding.UTF8.GetBytes(Read("wp3-boundary-test-v1.json")));
-        string Wp4(string strategy, bool shadow)
-        {
-            // The final C1 configuration with this schedule strategy and this test's Shadow block, or none.
-            var json = Final.FinalRuns.FinalC1Wp4WithoutShadow();
-            json["candidateGeneration"]!["scheduleStrategy"] = strategy;
-
-            if (shadow)
-            {
-                json["shadowAllocation"] = Block(new JsonObject { ["node-a"] = 0 });
-            }
-
-            return json.ToJsonString();
-        }
-
-        Wp4RunnerConfiguration.Decode(Encoding.UTF8.GetBytes(Wp4("earliest-feasible", shadow: true)), shadowCommitment);
-        Wp4RunnerConfiguration.Decode(Encoding.UTF8.GetBytes(Wp4("origin-hold-relocated-wait", shadow: false)), plainCommitment);
-        Assert.Contains("earliest-feasible", Assert.Throws<InvalidDataException>(
-            () => Wp4RunnerConfiguration.Decode(
-                Encoding.UTF8.GetBytes(Wp4("origin-hold-relocated-wait", shadow: true)),
-                shadowCommitment)).Message);
-    }
-
-    [Fact]
     public void A_repeated_node_identifier_is_refused()
     {
         var json = Block(new JsonObject { ["node-a"] = 0 }).ToJsonString()

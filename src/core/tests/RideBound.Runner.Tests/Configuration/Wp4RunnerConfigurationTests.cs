@@ -537,6 +537,58 @@ public sealed class Wp4RunnerConfigurationTests
                     commitment)).Message);
     }
 
+    [Fact]
+    public void The_removed_origin_hold_schedule_is_refused_with_a_pointer_to_the_archive()
+    {
+        const string refusal =
+            "WP4 scheduleStrategy 'origin-hold-relocated-wait' (the origin-hold schedule): "
+            + "removed; see commit ebca912 (branch research/final-real-runs-2026-11-06)";
+        var commitment = CommitmentConfiguration();
+        static void OriginHold(JsonObject json) =>
+            json["candidateGeneration"]!["scheduleStrategy"] = "origin-hold-relocated-wait";
+        static string Refused(string json, CommitmentPolicyConfiguration configuration) =>
+            Assert.Throws<InvalidDataException>(
+                () => Wp4RunnerConfiguration.Decode(Encoding.UTF8.GetBytes(json), configuration)).Message;
+        Assert.NotNull(Wp4RunnerConfiguration.Decode(Encoding.UTF8.GetBytes(FinalJson()), commitment));
+
+        // The final C1 file with the origin-hold schedule (decoded before), and with a G2 block added (refused before,
+        // because G2 needed the earliest-feasible schedule).
+        Assert.Equal(refusal, Refused(FinalJson(OriginHold), commitment));
+        Assert.Equal(
+            refusal,
+            Refused(
+                FinalJson(json =>
+                {
+                    OriginHold(json);
+                    json["candidateGeneration"]!["waitingRiderRelocation"] =
+                        new JsonObject { ["maximumTargetVehicles"] = 8 };
+                }),
+                commitment));
+
+        // The final INS file with its Shadow block decodes. With the origin-hold schedule it is refused (before,
+        // because Shadow needed the earliest-feasible schedule).
+        var shadowFile = JsonNode.Parse(File.ReadAllText(
+            Path.Combine(Final.FinalRuns.FixtureDirectory, "wp4", "INS-CL-light-v1.json")))!.AsObject();
+        shadowFile["shadowAllocation"]!["networkDirectory"] =
+            Path.Combine(Final.FinalRuns.FixtureDirectory, "network");
+        var shadowCommitment = CommitmentPolicyConfiguration.Decode(
+            File.ReadAllBytes(Path.Combine(Final.FinalRuns.FixtureDirectory, "commitment", "INS-SHRC.json")));
+        Assert.NotNull(
+            Wp4RunnerConfiguration.Decode(Encoding.UTF8.GetBytes(shadowFile.ToJsonString()), shadowCommitment));
+        OriginHold(shadowFile);
+        Assert.Equal(refusal, Refused(shadowFile.ToJsonString(), shadowCommitment));
+
+        // An unknown value and a missing key keep their own errors.
+        Assert.Equal(
+            "Unknown candidate scheduleStrategy.",
+            Refused(FinalJson(json => json["candidateGeneration"]!["scheduleStrategy"] = "origin-hold"), commitment));
+        Assert.Equal(
+            "Missing field 'scheduleStrategy' at '$.candidateGeneration'.",
+            Refused(
+                FinalJson(json => Assert.True(json["candidateGeneration"]!.AsObject().Remove("scheduleStrategy"))),
+                commitment));
+    }
+
     /// <summary>The refusal of every selectionObjectiveOrder other than cost-first, and of an absent key.</summary>
     private const string StabilityFirstRefusal =
         "WP4 selectionObjectiveOrder must be 'cost-first'. The stability-first ranking, which 'stability-first' or an "
