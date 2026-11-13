@@ -240,22 +240,6 @@ public sealed class CommitmentRevisionCapValidatorTests
     }
 
     [Fact]
-    public void Collecting_every_witness_reports_the_cap_next_to_a_budget_overrun()
-    {
-        var context = WithCandidateRoute(
-                Decision(Policy(revisionLimit: Cap, dropBudget: Cap)),
-                route => WaitBeforeDrop(route, "added", Cap + 1))
-            with { CollectAllCommitmentWitnesses = true };
-
-        var result = new CommitmentDecisionValidator().Validate(context);
-
-        Assert.False(result.IsValid);
-        Assert.Equal(
-            [CommitmentFailureCodes.RevisionLimitExceeded, CommitmentFailureCodes.BudgetExceeded],
-            result.Witnesses.Select(value => value.Code));
-    }
-
-    [Fact]
     public void A_relaxed_deadline_keeps_the_no_op_under_drift_that_the_strict_deadline_rejects()
     {
         // First promise 1200 ms, kept route 1700 ms, slack 400 ms: past the deadline.

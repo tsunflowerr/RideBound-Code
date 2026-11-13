@@ -44,7 +44,6 @@ public sealed record SolverBackedRidePoolingPolicyOptions
     public SolverBackedRidePoolingPolicyOptions(
         RidePoolingPolicyKind policyKind,
         DeterministicCandidateSelectionExecutionBudget executionBudget,
-        bool captureCandidatePortfolioEvidence = false,
         bool forcedReferenceRecovery = false,
         bool forcedNoWorseRecovery = false)
     {
@@ -70,7 +69,6 @@ public sealed record SolverBackedRidePoolingPolicyOptions
 
         PolicyKind = policyKind;
         ExecutionBudget = executionBudget;
-        CaptureCandidatePortfolioEvidence = captureCandidatePortfolioEvidence;
         ForcedReferenceRecovery = forcedReferenceRecovery;
         ForcedNoWorseRecovery = forcedNoWorseRecovery;
     }
@@ -78,8 +76,6 @@ public sealed record SolverBackedRidePoolingPolicyOptions
     public RidePoolingPolicyKind PolicyKind { get; }
 
     public DeterministicCandidateSelectionExecutionBudget ExecutionBudget { get; }
-
-    public bool CaptureCandidatePortfolioEvidence { get; }
 
     /// <summary>
     /// Exploratory (ADR-075, off by default). A C1 vehicle whose safety no-op is
@@ -267,37 +263,10 @@ public sealed class SolverBackedRidePoolingPolicy
             return SolverBackedPolicyDecisionResult.Failure(finished.Witness!);
         }
 
-        CandidatePortfolioEvidenceSnapshot? portfolioEvidence = null;
-
-        if (policyOptions.CaptureCandidatePortfolioEvidence)
-        {
-            var captured = CandidatePortfolioEvidenceSnapshot.Create(
-                profile,
-                generated.VehicleCandidates!,
-                candidates,
-                selected.Selection.Problem,
-                selected.Selection.Selection.VehiclePlans
-                    .Select(value => value.Candidate.CandidateId)
-                    .ToArray());
-
-            if (!captured.IsSuccess)
-            {
-                return SolverBackedPolicyDecisionResult.Failure(
-                    new RollingCostWitness(
-                        captured.Failure!.Code,
-                        captured.Failure.Message,
-                        CandidateId: captured.Failure.EntityId,
-                        Dimension: captured.Failure.Dimension));
-            }
-
-            portfolioEvidence = captured.Value;
-        }
-
         var decision = finished.Decision! with
         {
             SelectionExecution = selected.Selection.Execution,
             GenerationDiagnostics = generated.Diagnostics,
-            CandidatePortfolioEvidence = portfolioEvidence,
             ForcedReferenceVehicles = SelectedForcedVehicles(
                 selected.Selection.Selection,
                 hardAssessments,

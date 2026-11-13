@@ -19,24 +19,7 @@ namespace RideBound.Application.Tests.Commitments;
 /// </summary>
 internal static class CommitmentValidatorFixtures
 {
-    internal static Fixture OverBudget() => WithHardLimit(0);
-
-    /// <summary>
-    /// Same candidate, but the policy freezes the drop ETA inside a horizon that
-    /// certainly covers this run and also gives it a zero budget. The candidate
-    /// therefore breaks the lock layer and the budget layer at once, which is the
-    /// case fail-fast can only ever report half of.
-    /// </summary>
-    internal static Fixture LockAndBudget() =>
-        WithHardLimit(
-            0,
-            freezeHorizon: new Duration(3_600_000),
-            freezeLocks: PromiseLock.DropEta);
-
-    internal static Fixture WithHardLimit(
-        long? hardLimit,
-        Duration? freezeHorizon = null,
-        PromiseLock freezeLocks = PromiseLock.None)
+    internal static Fixture WithHardLimit(long? hardLimit)
     {
         var request = ApplicationTestData.Request();
         var route = RoutePlan.Create(
@@ -131,9 +114,7 @@ internal static class CommitmentValidatorFixtures
                     dimension,
                     hardLimit,
                     CommitmentPhase.AllActive)),
-            new MaterialRevisionRule(1, null),
-            freezeHorizon,
-            freezeLocks);
+            new MaterialRevisionRule(1, null));
 
         return new Fixture(
             new CommitmentValidationContext(

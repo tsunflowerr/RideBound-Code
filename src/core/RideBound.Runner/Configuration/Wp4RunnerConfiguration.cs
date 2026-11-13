@@ -16,19 +16,10 @@ namespace RideBound.Runner.Configuration;
 
 public sealed class Wp4RunnerConfiguration
 {
-    public const string RetainedPortfolioEvidenceProfile =
-        "retained-portfolio-v1";
-
     /// <summary>
-    /// RB-WP14-003. Everything `retained-portfolio-v1` records, plus the complete
-    /// commitment witness set. It is a separate profile on purpose: the frozen E1
-    /// configurations declare `retained-portfolio-v1`, and widening that profile
-    /// in place would change their recorded evidence and therefore their decision
-    /// hashes, breaking the E1 freeze chain.
+    /// The allowed root keys. `solverExecutionEvidenceProfile` belongs to the removed solver execution evidence; it
+    /// stays here only so that a file with it gets the removal refusal in <see cref="Decode"/>.
     /// </summary>
-    public const string RetainedPortfolioFullWitnessEvidenceProfile =
-        "retained-portfolio-full-witness-v1";
-
     private static readonly IReadOnlySet<string> RootFields = Fields(
         "configurationVersion",
         "policyId",
@@ -151,8 +142,6 @@ public sealed class Wp4RunnerConfiguration
         InitialPromiseTrigger initialPromiseTrigger,
         CandidateGenerationOptions candidateGeneration,
         SolverBackedRidePoolingPolicyOptions? solverPolicyOptions,
-        bool emitSolverExecutionEvidence,
-        string? solverExecutionEvidenceProfile,
         bool recordsLateBoarding,
         bool usesLightAuditHash,
         TravelTimeForecast? planningForecast,
@@ -166,8 +155,6 @@ public sealed class Wp4RunnerConfiguration
         InitialPromiseTrigger = initialPromiseTrigger;
         CandidateGeneration = candidateGeneration;
         SolverPolicyOptions = solverPolicyOptions;
-        EmitSolverExecutionEvidence = emitSolverExecutionEvidence;
-        SolverExecutionEvidenceProfile = solverExecutionEvidenceProfile;
         RecordsLateBoarding = recordsLateBoarding;
         UsesLightAuditHash = usesLightAuditHash;
     }
@@ -184,10 +171,6 @@ public sealed class Wp4RunnerConfiguration
 
     public SolverBackedRidePoolingPolicyOptions? SolverPolicyOptions { get; }
 
-    public bool EmitSolverExecutionEvidence { get; }
-
-    public string? SolverExecutionEvidenceProfile { get; }
-
     /// <summary>True only for `lateBoarding: record-v1` (ADR-076).</summary>
     public bool RecordsLateBoarding { get; }
 
@@ -202,17 +185,6 @@ public sealed class Wp4RunnerConfiguration
     /// commitment policy with `dropEtaShadowAllocation` needs them, and they need such a policy.
     /// </summary>
     public ShadowAllocationInputs? ShadowAllocation { get; }
-
-    /// <summary>
-    /// RB-WP14-003. The retained-portfolio evidence profile is the only caller
-    /// that needs a complete prune attribution, so the extra validator work is
-    /// tied to it. With the profile off the validator keeps its fail-fast path
-    /// and its cost unchanged.
-    /// </summary>
-    public bool CollectAllCommitmentWitnesses =>
-        StringComparer.Ordinal.Equals(
-            SolverExecutionEvidenceProfile,
-            RetainedPortfolioFullWitnessEvidenceProfile);
 
     public Sha256Hex BindToCommitmentConfiguration(
         Sha256Hex commitmentConfigurationHash)
@@ -256,7 +228,6 @@ public sealed class Wp4RunnerConfiguration
         return new SolverBackedRidePoolingPolicyOptions(
             source.PolicyKind,
             execution.Value!,
-            source.CaptureCandidatePortfolioEvidence,
             source.ForcedReferenceRecovery,
             source.ForcedNoWorseRecovery);
     }
@@ -320,36 +291,10 @@ public sealed class Wp4RunnerConfiguration
 
         var generation = ReadGeneration(root.GetProperty("candidateGeneration"));
         var hasSolver = root.TryGetProperty("solverExecution", out var solverElement);
-        var emitSolverExecutionEvidence = root.TryGetProperty(
+        var emitsSolverExecutionEvidence = root.TryGetProperty(
             "emitSolverExecutionEvidence",
             out var evidenceElement)
                 && Boolean(evidenceElement, "emitSolverExecutionEvidence");
-        var solverExecutionEvidenceProfile = root.TryGetProperty(
-            "solverExecutionEvidenceProfile",
-            out _)
-                ? Text(root, "solverExecutionEvidenceProfile")
-                : null;
-
-        if (solverExecutionEvidenceProfile is not null
-            && !StringComparer.Ordinal.Equals(
-                solverExecutionEvidenceProfile,
-                RetainedPortfolioEvidenceProfile)
-            && !StringComparer.Ordinal.Equals(
-                solverExecutionEvidenceProfile,
-                RetainedPortfolioFullWitnessEvidenceProfile))
-        {
-            throw new InvalidDataException(
-                "Unknown solverExecutionEvidenceProfile.");
-        }
-
-        if (solverExecutionEvidenceProfile is not null
-            && (!emitSolverExecutionEvidence || !hasSolver))
-        {
-            throw new InvalidDataException(
-                "A retained-portfolio evidence profile requires solver-backed "
-                + "execution and emitSolverExecutionEvidence=true.");
-        }
-
         RequireVariantFields(hasSolver);
 
         var (forcedReferenceRecovery, forcedNoWorseRecovery) = root.TryGetProperty(
@@ -462,6 +407,16 @@ public sealed class Wp4RunnerConfiguration
                 + $"which 'stability-first' or an absent key selected: {RemovedFeature}");
         }
 
+        // Solver execution evidence is removed. emitSolverExecutionEvidence stays (the final files set it to false,
+        // and an absent key meant false), so true is refused, and so is any solverExecutionEvidenceProfile. Checked
+        // after the order check, so a file that check refuses keeps its message.
+        if (emitsSolverExecutionEvidence || root.TryGetProperty("solverExecutionEvidenceProfile", out _))
+        {
+            throw new InvalidDataException(
+                "WP4 emitSolverExecutionEvidence true and the 'solverExecutionEvidenceProfile' key "
+                + $"(solver execution evidence): {RemovedFeature}");
+        }
+
         // G2 needs both halves: candidates that move a waiting rider, and a policy that lets the
         // rider change vehicle. Either alone would be silently inert, so both are required
         // together.
@@ -514,7 +469,6 @@ public sealed class Wp4RunnerConfiguration
             solverOptions = new SolverBackedRidePoolingPolicyOptions(
                 policyKind,
                 budget,
-                solverExecutionEvidenceProfile is not null,
                 forcedReferenceRecovery,
                 forcedNoWorseRecovery);
         }
@@ -526,8 +480,6 @@ public sealed class Wp4RunnerConfiguration
             initialPromiseTrigger,
             generation,
             solverOptions,
-            emitSolverExecutionEvidence,
-            solverExecutionEvidenceProfile,
             recordsLateBoarding,
             usesLightAuditHash,
             planningForecast,

@@ -39,26 +39,6 @@ public sealed class Wp4RunnerConfigurationTests
                 commitment.ContentHash));
     }
 
-    [Theory]
-    [InlineData(
-        "wp9-fleetpy-ridebound-hard-vector-audited-v1.json",
-        "ridebound-hard-vector")]
-    public void Wp9_primary_configs_require_audited_solver_evidence(
-        string fileName,
-        string policyId)
-    {
-        var configuration = Wp4RunnerConfiguration.Decode(
-            Encoding.UTF8.GetBytes(ArchivedCostFirst(fileName)),
-            CommitmentConfiguration());
-
-        Assert.Equal(policyId, configuration.PolicyId);
-        Assert.Equal("wp9-confirmatory-audited-v1", configuration.PolicyVersion);
-        Assert.True(configuration.EmitSolverExecutionEvidence);
-        Assert.Equal(
-            CandidateRetentionStrategy.ServiceSetStabilityPortfolioV1,
-            configuration.CandidateGeneration.RetentionStrategy);
-    }
-
     [Fact]
     public void Published_configuration_is_strict_and_binds_both_configuration_hashes()
     {
@@ -82,180 +62,11 @@ public sealed class Wp4RunnerConfigurationTests
         Assert.Equal(
             InitialPromiseTrigger.BookingConfirmation,
             first.InitialPromiseTrigger);
-        Assert.False(first.EmitSolverExecutionEvidence);
         Assert.Equal(first.ContentHash, second.ContentHash);
         Assert.NotEqual(first.ContentHash, binding);
         Assert.NotEqual(commitment.ContentHash, binding);
         Assert.Equal(64, binding.Value.Length);
     }
-
-    [Fact]
-    public void Solver_execution_evidence_is_explicit_opt_in_and_hash_bound()
-    {
-        var commitment = CommitmentConfiguration();
-        var legacy = Wp4RunnerConfiguration.Decode(
-            Encoding.UTF8.GetBytes(FinalJson(json => json.Remove("emitSolverExecutionEvidence"))),
-            commitment);
-        var optedInJson = FinalJson(json => json["emitSolverExecutionEvidence"] = true);
-        var optedIn = Wp4RunnerConfiguration.Decode(
-            Encoding.UTF8.GetBytes(optedInJson),
-            commitment);
-
-        Assert.False(legacy.EmitSolverExecutionEvidence);
-        Assert.True(optedIn.EmitSolverExecutionEvidence);
-        Assert.NotEqual(legacy.ContentHash, optedIn.ContentHash);
-
-        var invalid = Edit(optedInJson, json => json["emitSolverExecutionEvidence"] = 1);
-        Assert.Throws<InvalidDataException>(
-            () => Wp4RunnerConfiguration.Decode(
-                Encoding.UTF8.GetBytes(invalid),
-                commitment));
-    }
-
-    [Fact]
-    public void Retained_portfolio_profile_is_strict_solver_only_and_seed_preserving()
-    {
-        var commitment = CommitmentConfiguration();
-        var baseJson = FinalJson();
-        var optedInJson = WithProfile(baseJson, "retained-portfolio-v1");
-
-        var configuration = Wp4RunnerConfiguration.Decode(
-            Encoding.UTF8.GetBytes(optedInJson),
-            commitment);
-
-        Assert.Equal(
-            Wp4RunnerConfiguration.RetainedPortfolioEvidenceProfile,
-            configuration.SolverExecutionEvidenceProfile);
-        Assert.True(configuration.EmitSolverExecutionEvidence);
-        Assert.True(
-            configuration.SolverPolicyOptions!
-                .CaptureCandidatePortfolioEvidence);
-        var seeded = configuration.CreateSolverPolicyOptionsForRun(19);
-        Assert.True(seeded.CaptureCandidatePortfolioEvidence);
-        Assert.Equal(19, seeded.ExecutionBudget.SolverBudget.RandomSeed);
-        Assert.NotEqual(
-            Wp4RunnerConfiguration.Decode(
-                Encoding.UTF8.GetBytes(baseJson),
-                commitment).ContentHash,
-            configuration.ContentHash);
-
-        var noBaseEvidence = Edit(optedInJson, json => json.Remove("emitSolverExecutionEvidence"));
-        Assert.Contains(
-            "emitSolverExecutionEvidence=true",
-            Assert.Throws<InvalidDataException>(
-                () => Wp4RunnerConfiguration.Decode(
-                    Encoding.UTF8.GetBytes(noBaseEvidence),
-                    commitment)).Message);
-
-        var unknown = optedInJson.Replace(
-            "retained-portfolio-v1",
-            "unknown-portfolio",
-            StringComparison.Ordinal);
-        Assert.Contains(
-            "Unknown solverExecutionEvidenceProfile",
-            Assert.Throws<InvalidDataException>(
-                () => Wp4RunnerConfiguration.Decode(
-                    Encoding.UTF8.GetBytes(unknown),
-                    commitment)).Message);
-
-        const string nonSolver =
-            """
-            {
-              "configurationVersion":"1.0.0",
-              "policyId":"ridebound-hard-vector",
-              "policyVersion":"wp13-evidence-negative-v1",
-              "candidateGeneration":{
-                "maximumCandidatesPerVehicle":10,
-                "maximumNewRequestsPerVehicle":1,
-                "exactSmallMode":false,
-                "scheduleStrategy":"earliest-feasible",
-                "maximumExplorationWorkUnits":100
-              },
-              "emitSolverExecutionEvidence":true,
-              "solverExecutionEvidenceProfile":"retained-portfolio-v1"
-            }
-            """;
-        Assert.Contains(
-            "solver-backed execution",
-            Assert.Throws<InvalidDataException>(
-                () => Wp4RunnerConfiguration.Decode(
-                    Encoding.UTF8.GetBytes(nonSolver),
-                    commitment)).Message);
-    }
-
-    [Fact]
-    public void Full_witness_collection_needs_its_own_profile()
-    {
-        var commitment = CommitmentConfiguration();
-        var baseJson = FinalJson();
-
-        // Off by default, so the validator keeps its fail-fast path and its cost.
-        Assert.False(
-            Wp4RunnerConfiguration.Decode(
-                Encoding.UTF8.GetBytes(baseJson),
-                commitment).CollectAllCommitmentWitnesses);
-
-        // The frozen E1 configurations declare retained-portfolio-v1. Widening
-        // that profile in place would change their recorded witnesses and so
-        // their decision hashes, so it must never collect the full set.
-        var retained = Wp4RunnerConfiguration.Decode(
-            Encoding.UTF8.GetBytes(
-                WithProfile(
-                    baseJson,
-                    Wp4RunnerConfiguration.RetainedPortfolioEvidenceProfile)),
-            commitment);
-        Assert.False(retained.CollectAllCommitmentWitnesses);
-        Assert.True(
-            retained.SolverPolicyOptions!.CaptureCandidatePortfolioEvidence);
-
-        var fullWitness = Wp4RunnerConfiguration.Decode(
-            Encoding.UTF8.GetBytes(
-                WithProfile(
-                    baseJson,
-                    Wp4RunnerConfiguration
-                        .RetainedPortfolioFullWitnessEvidenceProfile)),
-            commitment);
-        Assert.True(fullWitness.CollectAllCommitmentWitnesses);
-        Assert.True(
-            fullWitness.SolverPolicyOptions!.CaptureCandidatePortfolioEvidence);
-        Assert.NotEqual(retained.ContentHash, fullWitness.ContentHash);
-
-        Assert.Throws<InvalidDataException>(
-            () => Wp4RunnerConfiguration.Decode(
-                Encoding.UTF8.GetBytes(
-                    WithProfile(baseJson, "retained-portfolio-v9")),
-                commitment));
-    }
-
-    [Fact]
-    public void Frozen_e1_configurations_do_not_collect_the_full_witness_set()
-    {
-        var commitment = CommitmentConfiguration();
-
-        foreach (var name in new[]
-                 {
-                     "wp13-e1-fleetpy-ridebound-hard-vector-retained-v1.json",
-                 })
-        {
-            var configuration = Wp4RunnerConfiguration.Decode(
-                Encoding.UTF8.GetBytes(ArchivedCostFirst(name)),
-                commitment);
-
-            Assert.Equal(
-                Wp4RunnerConfiguration.RetainedPortfolioEvidenceProfile,
-                configuration.SolverExecutionEvidenceProfile);
-            Assert.False(
-                configuration.CollectAllCommitmentWitnesses,
-                $"{name} must keep the evidence its freeze receipt recorded");
-        }
-    }
-
-    private static string WithProfile(string baseJson, string profile) =>
-        Edit(baseJson, json =>
-        {
-            json["emitSolverExecutionEvidence"] = true;
-            json["solverExecutionEvidenceProfile"] = profile;
-        });
 
     [Fact]
     public void Constant_level_skip_is_optional_and_off_unless_declared()
@@ -661,6 +472,71 @@ public sealed class Wp4RunnerConfigurationTests
                     commitment)).Message);
     }
 
+    [Fact]
+    public void The_removed_solver_execution_evidence_is_refused_with_a_pointer_to_the_archive()
+    {
+        const string refusal =
+            "WP4 emitSolverExecutionEvidence true and the 'solverExecutionEvidenceProfile' key (solver execution "
+            + "evidence): removed; see commit ebca912 (branch research/final-real-runs-2026-11-06)";
+        var commitment = CommitmentConfiguration();
+
+        // false, as in every final file, and an absent key, which meant false, still decode.
+        Assert.NotNull(Wp4RunnerConfiguration.Decode(Encoding.UTF8.GetBytes(FinalJson()), commitment));
+        Assert.NotNull(
+            Wp4RunnerConfiguration.Decode(
+                Encoding.UTF8.GetBytes(FinalJson(json => Assert.True(json.Remove("emitSolverExecutionEvidence")))),
+                commitment));
+
+        // Files that were decoded before with evidence on: the archived audited and retained-portfolio C1 files, and
+        // the final C1 file with evidence on, with each profile, or with a profile alone (any value).
+        foreach (var json in new[]
+                 {
+                     ArchivedCostFirst("wp9-fleetpy-ridebound-hard-vector-audited-v1.json"),
+                     ArchivedCostFirst("wp13-e1-fleetpy-ridebound-hard-vector-retained-v1.json"),
+                     FinalJson(json => json["emitSolverExecutionEvidence"] = true),
+                     FinalJson(json =>
+                     {
+                         json["emitSolverExecutionEvidence"] = true;
+                         json["solverExecutionEvidenceProfile"] = "retained-portfolio-v1";
+                     }),
+                     FinalJson(json =>
+                     {
+                         json["emitSolverExecutionEvidence"] = true;
+                         json["solverExecutionEvidenceProfile"] = "retained-portfolio-full-witness-v1";
+                     }),
+                     FinalJson(json => json["solverExecutionEvidenceProfile"] = "retained-portfolio-v1"),
+                     FinalJson(json => json["solverExecutionEvidenceProfile"] = "unknown-portfolio"),
+                     FinalJson(json => json["solverExecutionEvidenceProfile"] = 1),
+                 })
+        {
+            Assert.Equal(
+                refusal,
+                Assert.Throws<InvalidDataException>(
+                    () => Wp4RunnerConfiguration.Decode(
+                        Encoding.UTF8.GetBytes(json),
+                        commitment)).Message);
+        }
+
+        // A value that is not a boolean keeps its own error, and a file that the order check refuses keeps its message.
+        Assert.Equal(
+            "'emitSolverExecutionEvidence' must be a boolean.",
+            Assert.Throws<InvalidDataException>(
+                () => Wp4RunnerConfiguration.Decode(
+                    Encoding.UTF8.GetBytes(FinalJson(json => json["emitSolverExecutionEvidence"] = 1)),
+                    commitment)).Message);
+        Assert.Equal(
+            StabilityFirstRefusal,
+            Assert.Throws<InvalidDataException>(
+                () => Wp4RunnerConfiguration.Decode(
+                    Encoding.UTF8.GetBytes(FinalJson(json =>
+                    {
+                        Assert.True(json.Remove("selectionObjectiveOrder"));
+                        json["emitSolverExecutionEvidence"] = true;
+                        json["solverExecutionEvidenceProfile"] = "retained-portfolio-v1";
+                    })),
+                    commitment)).Message);
+    }
+
     /// <summary>The refusal of every selectionObjectiveOrder other than cost-first, and of an absent key.</summary>
     private const string StabilityFirstRefusal =
         "WP4 selectionObjectiveOrder must be 'cost-first'. The stability-first ranking, which 'stability-first' or an "
@@ -671,7 +547,7 @@ public sealed class Wp4RunnerConfigurationTests
     /// (file SHA-256 66e9b59249d9491d520f3ed592e8c878a0d3b100e39432d5f4b73321617b4518), the one
     /// every archived T3.8 run used. The binding hashes its canonical form, so the whitespace of
     /// this copy does not matter. It has no `selectionObjectiveOrder` key, so the Runner refuses it;
-    /// <see cref="Tier3CostFirstJson"/> adds cost-first.
+    /// <see cref="Tier3CostFirstJson"/> adds cost-first and turns the solver execution evidence off.
     /// </summary>
     private const string Tier3Wp4V2Json =
         """
@@ -702,11 +578,19 @@ public sealed class Wp4RunnerConfigurationTests
         }
         """;
 
-    /// <summary>The tier-3 text with `"selectionObjectiveOrder": "cost-first"`, the only order the Runner accepts.</summary>
-    private static readonly string Tier3CostFirstJson = Tier3Wp4V2Json.Replace(
-        "\"lateBoarding\": \"record-v1\"",
-        "\"lateBoarding\": \"record-v1\",\n  \"selectionObjectiveOrder\": \"cost-first\"",
-        StringComparison.Ordinal);
+    /// <summary>
+    /// The tier-3 text with `"selectionObjectiveOrder": "cost-first"` and `"emitSolverExecutionEvidence": false`, the
+    /// only values of these keys the Runner accepts.
+    /// </summary>
+    private static readonly string Tier3CostFirstJson = Tier3Wp4V2Json
+        .Replace(
+            "\"lateBoarding\": \"record-v1\"",
+            "\"lateBoarding\": \"record-v1\",\n  \"selectionObjectiveOrder\": \"cost-first\"",
+            StringComparison.Ordinal)
+        .Replace(
+            "\"emitSolverExecutionEvidence\": true",
+            "\"emitSolverExecutionEvidence\": false",
+            StringComparison.Ordinal);
 
     [Fact]
     public void A_per_rider_drop_budget_is_accepted_by_C1_only_under_cost_first()
@@ -808,7 +692,7 @@ public sealed class Wp4RunnerConfigurationTests
     public void Stop_service_duration_is_optional_bounded_and_off_by_default()
     {
         // Bridge step 1.3: the dwell of the stops the generator inserts. Absent means 0, so a file
-        // without the key keeps its content hash (pinned for the tier-3 text with cost-first).
+        // without the key keeps its content hash (pinned for the tier-3 text with cost-first and evidence off).
         var reference = File.ReadAllText(Path.Combine(
             RepositoryRoot(),
             "benchmarks",
@@ -827,7 +711,7 @@ public sealed class Wp4RunnerConfigurationTests
 
         Assert.Equal(0, off.CandidateGeneration.StopServiceDuration.Milliseconds);
         Assert.Equal(
-            "16dcb7e3337763aab7889f7528365dced2aa49028db6dbf390f8b3dce79b3140",
+            "e1a41d4502036da6c911e9375b65be646253f8f5d140929faaf12e6c3acc68f2",
             off.ContentHash.Value);
         Assert.Equal(24_000, dwell.CandidateGeneration.StopServiceDuration.Milliseconds);
         Assert.Equal(0, zero.CandidateGeneration.StopServiceDuration.Milliseconds);

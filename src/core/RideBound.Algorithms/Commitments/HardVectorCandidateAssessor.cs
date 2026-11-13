@@ -162,9 +162,7 @@ public sealed class HardVectorCandidateAssessor
                         context.SourceEventSequence,
                         RevisionReasonCode: "C1_HARD_VECTOR",
                         ScopedVehicleId: set.VehicleId,
-                        InitialPromiseTrigger: context.InitialPromiseTrigger,
-                        CollectAllCommitmentWitnesses:
-                            context.CollectAllCommitmentWitnesses));
+                        InitialPromiseTrigger: context.InitialPromiseTrigger));
 
                 if (!validation.IsValid)
                 {
@@ -551,8 +549,7 @@ public sealed class HardVectorCandidateAssessor
                 context.SourceEventSequence,
                 RevisionReasonCode: "C1_HARD_VECTOR",
                 ScopedVehicleId: candidate.VehicleId,
-                InitialPromiseTrigger: context.InitialPromiseTrigger,
-                CollectAllCommitmentWitnesses: context.CollectAllCommitmentWitnesses));
+                InitialPromiseTrigger: context.InitialPromiseTrigger));
 
         if (!validation.IsValid)
         {
@@ -637,8 +634,6 @@ public sealed class HardVectorCandidateAssessor
                 RevisionReasonCode: "C1_HARD_VECTOR",
                 ScopedVehicleId: vehicleId,
                 InitialPromiseTrigger: context.InitialPromiseTrigger,
-                CollectAllCommitmentWitnesses:
-                    context.CollectAllCommitmentWitnesses,
                 ForcedReferenceVehicles: new[] { vehicleId }.ToFrozenSet(),
                 ForcedNoWorse: noWorse));
 

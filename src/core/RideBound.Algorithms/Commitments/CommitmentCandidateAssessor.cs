@@ -13,8 +13,7 @@ public sealed record CommitmentMechanismContext(
     string PublicationScope,
     long SourceEventSequence,
     InitialPromiseTrigger InitialPromiseTrigger =
-        InitialPromiseTrigger.InitialAcceptance,
-    bool CollectAllCommitmentWitnesses = false);
+        InitialPromiseTrigger.InitialAcceptance);
 
 /// <summary>
 /// A machine-readable assessment failure. The optional fields mirror the

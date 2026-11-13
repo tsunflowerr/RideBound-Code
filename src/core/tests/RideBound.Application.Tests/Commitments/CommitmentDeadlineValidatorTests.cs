@@ -316,26 +316,6 @@ public sealed class CommitmentDeadlineValidatorTests
     }
 
     [Fact]
-    public void Collecting_every_witness_does_not_change_a_forced_reference_decision()
-    {
-        var forced = new HashSet<VehicleId> { ApplicationTestData.VehicleId };
-        var failFast = NoOpUnderDrift(promiseAt: Early, reducedAt: Late, Policy(slack: 400))
-            with { ForcedReferenceVehicles = forced };
-        var collectAll = failFast with { CollectAllCommitmentWitnesses = true };
-
-        var expected = new CommitmentDecisionValidator().Validate(failFast);
-        var actual = new CommitmentDecisionValidator().Validate(collectAll);
-
-        Assert.True(actual.IsValid, string.Join("; ", actual.Witnesses.Select(w => w.Message)));
-        Assert.Equal(
-            expected.ForcedBreaches.Select(value => (value.BreachId, string.Join(",", value.WitnessCodes))),
-            actual.ForcedBreaches.Select(value => (value.BreachId, string.Join(",", value.WitnessCodes))));
-        Assert.Equal(
-            expected.Publications.Select(value => value.PublicationId),
-            actual.Publications.Select(value => value.PublicationId));
-    }
-
-    [Fact]
     public void Without_forced_vehicles_the_validated_state_and_breaches_are_unchanged()
     {
         var context = NoOpUnderDrift(promiseAt: Early, reducedAt: Early, Policy(slack: 400));
@@ -501,36 +481,6 @@ public sealed class CommitmentDeadlineValidatorTests
         Assert.True(normal.IsValid, string.Join("; ", normal.Witnesses.Select(w => w.Message)));
         Assert.Empty(normal.ForcedBreaches);
         Assert.Empty(normal.ForcedExemptions);
-    }
-
-    [Fact]
-    public void Collecting_every_witness_does_not_change_a_no_worse_decision()
-    {
-        var forced = new HashSet<VehicleId> { ApplicationTestData.VehicleId };
-        var failFast = WithCandidateRoute(
-                NoOpUnderDrift(promiseAt: Early, reducedAt: Late, Policy(slack: 400)),
-                AppendAfterDrop)
-            with { ForcedReferenceVehicles = forced, ForcedNoWorse = true };
-        var collectAll = failFast with { CollectAllCommitmentWitnesses = true };
-        var worseFailFast = WithCandidateRoute(
-                NoOpUnderDrift(promiseAt: Early, reducedAt: Late, Policy(slack: 400)),
-                DelayBeforeDrop)
-            with { ForcedReferenceVehicles = forced, ForcedNoWorse = true };
-
-        var expected = new CommitmentDecisionValidator().Validate(failFast);
-        var actual = new CommitmentDecisionValidator().Validate(collectAll);
-        var worse = new CommitmentDecisionValidator().Validate(
-            worseFailFast with { CollectAllCommitmentWitnesses = true });
-
-        Assert.True(actual.IsValid, string.Join("; ", actual.Witnesses.Select(w => w.Message)));
-        Assert.Equal(
-            expected.ForcedBreaches.Select(value => (value.BreachId, value.Kind)),
-            actual.ForcedBreaches.Select(value => (value.BreachId, value.Kind)));
-        Assert.Equal(
-            expected.Publications.Select(value => value.PublicationId),
-            actual.Publications.Select(value => value.PublicationId));
-        Assert.False(worse.IsValid);
-        Assert.Equal(CommitmentFailureCodes.DeadlineExceeded, Assert.Single(worse.Witnesses).Code);
     }
 
     [Fact]

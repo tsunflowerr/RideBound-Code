@@ -15,7 +15,6 @@ public sealed class CommitmentCandidateFilter
     private readonly string _publicationScope;
     private readonly long _sourceEventSequence;
     private readonly InitialPromiseTrigger _initialPromiseTrigger;
-    private readonly bool _collectAllWitnesses;
     private readonly CommitmentDecisionValidator _validator;
 
     public CommitmentCandidateFilter(
@@ -26,8 +25,7 @@ public sealed class CommitmentCandidateFilter
         long sourceEventSequence,
         CommitmentDecisionValidator? validator = null,
         InitialPromiseTrigger initialPromiseTrigger =
-            InitialPromiseTrigger.InitialAcceptance,
-        bool collectAllWitnesses = false)
+            InitialPromiseTrigger.InitialAcceptance)
     {
         _beforeEventState = beforeEventState
             ?? throw new ArgumentNullException(nameof(beforeEventState));
@@ -38,7 +36,6 @@ public sealed class CommitmentCandidateFilter
         _publicationScope = publicationScope;
         _sourceEventSequence = sourceEventSequence;
         _initialPromiseTrigger = initialPromiseTrigger;
-        _collectAllWitnesses = collectAllWitnesses;
         _validator = validator ?? new CommitmentDecisionValidator();
     }
 
@@ -84,8 +81,7 @@ public sealed class CommitmentCandidateFilter
                         _publicationScope,
                         _sourceEventSequence,
                         ScopedVehicleId: set.VehicleId,
-                        InitialPromiseTrigger: _initialPromiseTrigger,
-                        CollectAllCommitmentWitnesses: _collectAllWitnesses));
+                        InitialPromiseTrigger: _initialPromiseTrigger));
 
                 if (validation.IsValid)
                 {

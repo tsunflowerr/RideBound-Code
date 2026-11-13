@@ -56,7 +56,6 @@ public sealed record CommitmentValidationContext(
     VehicleId? ScopedVehicleId = null,
     InitialPromiseTrigger InitialPromiseTrigger =
         InitialPromiseTrigger.InitialAcceptance,
-    bool CollectAllCommitmentWitnesses = false,
     IReadOnlySet<VehicleId>? ForcedReferenceVehicles = null,
     bool ForcedNoWorse = false);
 
@@ -218,17 +217,6 @@ public sealed class CommitmentDecisionValidator
         var incidents = context.CandidateState.Incidents;
         var forcedBreaches = new List<CommitmentBreachRecord>();
         var forcedExemptions = new List<ForcedReferenceExemption>();
-
-        // RB-WP14-003. Fail-fast is correct on the hot path, but it makes the
-        // recorded prune witness depend on request order: the first failing
-        // request and, inside it, the first failing layer are the only ones ever
-        // reported. When an evidence profile asks for the full set, the lock and
-        // budget layers are evaluated for every request before the candidate is
-        // rejected. Structural failures still stop immediately, because there is
-        // nothing meaningful to keep scanning with.
-        var collected = context.CollectAllCommitmentWitnesses
-            ? new List<CommitmentValidationWitness>()
-            : null;
 
         foreach (var request in context.CandidateState.Run.Requests.Values
                      .Where(
@@ -505,13 +493,9 @@ public sealed class CommitmentDecisionValidator
                 {
                     forcedCodes!.AddRange(lockFailures.Select(value => value.Code));
                 }
-                else if (collected is null)
-                {
-                    return CommitmentDecisionValidationResult.Invalid(lockFailures);
-                }
                 else
                 {
-                    collected.AddRange(lockFailures);
+                    return CommitmentDecisionValidationResult.Invalid(lockFailures);
                 }
             }
 
@@ -567,21 +551,10 @@ public sealed class CommitmentDecisionValidator
                 {
                     forcedCodes!.AddRange(budgetFailures.Select(value => value.Code));
                 }
-                else if (collected is null)
+                else
                 {
                     return CommitmentDecisionValidationResult.Invalid(budgetFailures);
                 }
-                else
-                {
-                    collected.AddRange(budgetFailures);
-                }
-            }
-
-            if (collected is { Count: > 0 })
-            {
-                // This request already failed, so its revision must not be
-                // appended. Keep scanning only to complete the witness set.
-                continue;
             }
 
             var budgetBefore = priorHistory.Current.BudgetAfter;
@@ -730,13 +703,11 @@ public sealed class CommitmentDecisionValidator
             }
         }
 
-        return collected is { Count: > 0 }
-            ? CommitmentDecisionValidationResult.Invalid(collected)
-            : CommitmentDecisionValidationResult.Valid(
-                context.CandidateState with { Commitments = ledger, Incidents = incidents },
-                publications.AsReadOnly(),
-                forcedBreaches.AsReadOnly(),
-                forcedExemptions.AsReadOnly());
+        return CommitmentDecisionValidationResult.Valid(
+            context.CandidateState with { Commitments = ledger, Incidents = incidents },
+            publications.AsReadOnly(),
+            forcedBreaches.AsReadOnly(),
+            forcedExemptions.AsReadOnly());
     }
 
     /// <summary>
