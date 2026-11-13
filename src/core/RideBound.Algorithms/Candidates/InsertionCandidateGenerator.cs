@@ -557,7 +557,7 @@ public sealed class InsertionCandidateGenerator
                 continue;
             }
 
-            var children = Expand(node, requests[node.RequestIndex], options.StopServiceDuration)
+            var children = Expand(node, requests[node.RequestIndex])
                 .Select(
                     child => new PrioritizedNode(
                         child,
@@ -618,27 +618,26 @@ public sealed class InsertionCandidateGenerator
 
     private static IEnumerable<ExplorationNode> Expand(
         ExplorationNode node,
-        RideRequest request,
-        Duration serviceDuration)
+        RideRequest request)
     {
         yield return CreateNode(
             node.RequestIndex + 1,
             node.Suffix,
             node.InsertedRequestIds);
 
-        // The dwell of an inserted stop is CandidateGenerationOptions.StopServiceDuration (0 by default).
+        // An inserted pickup or drop stop has no service duration (dwell).
         var pickup = new RouteStop(
             CandidateIdentity.CreateStopId(request.Id, RouteStopKind.Pickup),
             request.OriginNodeId,
             RouteStopKind.Pickup,
             request.Id,
-            serviceDuration);
+            new Duration(0));
         var dropOff = new RouteStop(
             CandidateIdentity.CreateStopId(request.Id, RouteStopKind.DropOff),
             request.DestinationNodeId,
             RouteStopKind.DropOff,
             request.Id,
-            serviceDuration);
+            new Duration(0));
 
         var baseStops = node.Suffix;
 

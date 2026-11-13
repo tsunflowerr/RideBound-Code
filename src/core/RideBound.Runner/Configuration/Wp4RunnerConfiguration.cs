@@ -108,6 +108,11 @@ public sealed class Wp4RunnerConfiguration
         "exactSmallMode",
         "scheduleStrategy",
         "maximumExplorationWorkUnits");
+
+    /// <summary>
+    /// The allowed candidateGeneration keys. `stopServiceDurationMs` belongs to the removed dwell of inserted stops; it
+    /// stays here only so that a file with it gets the removal refusal in <see cref="ReadGeneration"/>.
+    /// </summary>
     private static readonly IReadOnlySet<string> GenerationFields = Fields(
         "maximumCandidatesPerVehicle",
         "maximumNewRequestsPerVehicle",
@@ -547,19 +552,14 @@ public sealed class Wp4RunnerConfiguration
                     : null);
         }
 
-        // Dwell of inserted stops (bridge step 1.3). Absent means 0, so every earlier configuration
-        // keeps its canonical bytes, content hash and candidates.
-        var stopServiceDurationMs = 0;
-
-        if (element.TryGetProperty("stopServiceDurationMs", out var dwellElement))
+        // The dwell of inserted stops is removed: they always have none, which is what an absent key meant. The key is
+        // refused with any value, 0 included. Checked in the same place as the old read, so the checks before it keep
+        // their messages; with the key, the checks after it are not reached.
+        if (element.TryGetProperty("stopServiceDurationMs", out _))
         {
-            stopServiceDurationMs = NonNegativeInt32(dwellElement, "stopServiceDurationMs");
-
-            if (stopServiceDurationMs > MaximumStopServiceDurationMs)
-            {
-                throw new InvalidDataException(
-                    "'candidateGeneration.stopServiceDurationMs' must be at most 3600000 (one hour).");
-            }
+            throw new InvalidDataException(
+                "WP4 'candidateGeneration.stopServiceDurationMs' key (the dwell of inserted stops): "
+                + RemovedFeature);
         }
 
         var maximumCandidatesPerVehicle = PositiveInt32(
@@ -584,11 +584,8 @@ public sealed class Wp4RunnerConfiguration
             PositiveInteger(
                 element.GetProperty("maximumExplorationWorkUnits"),
                 "maximumExplorationWorkUnits"),
-            waitingRiderRelocation: relocation,
-            stopServiceDurationMs: stopServiceDurationMs);
+            waitingRiderRelocation: relocation);
     }
-
-    private const int MaximumStopServiceDurationMs = 3_600_000;
 
     private static DeterministicCandidateSelectionExecutionBudget
         ReadSolverBudget(JsonElement element)

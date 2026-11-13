@@ -182,8 +182,7 @@ public sealed record CandidateGenerationOptions
         int maximumCandidatesPerVehicle,
         int maximumNewRequestsPerVehicle,
         long maximumExplorationWorkUnits = 100_000,
-        WaitingRiderRelocationGenerationOptions? waitingRiderRelocation = null,
-        long stopServiceDurationMs = 0)
+        WaitingRiderRelocationGenerationOptions? waitingRiderRelocation = null)
     {
         if (maximumCandidatesPerVehicle < 1)
         {
@@ -207,13 +206,7 @@ public sealed record CandidateGenerationOptions
         MaximumCandidatesPerVehicle = maximumCandidatesPerVehicle;
         MaximumNewRequestsPerVehicle = maximumNewRequestsPerVehicle;
         MaximumExplorationWorkUnits = maximumExplorationWorkUnits;
-        if (stopServiceDurationMs is < 0 or > DomainLimits.MaxCanonicalInteger)
-        {
-            throw new ArgumentOutOfRangeException(nameof(stopServiceDurationMs));
-        }
-
         WaitingRiderRelocation = waitingRiderRelocation;
-        StopServiceDuration = new Duration(stopServiceDurationMs);
     }
 
     public int MaximumCandidatesPerVehicle { get; }
@@ -227,13 +220,6 @@ public sealed record CandidateGenerationOptions
     /// and receiver candidates after the ordinary per-vehicle search.
     /// </summary>
     public WaitingRiderRelocationGenerationOptions? WaitingRiderRelocation { get; }
-
-    /// <summary>
-    /// Service duration of every pickup and drop stop the generator inserts (dwell). Zero, the
-    /// default, keeps every earlier candidate, route and identity unchanged; a positive value lets
-    /// the Runner plan a non-zero boarding time (bridge step 1.3, opt-in).
-    /// </summary>
-    public Duration StopServiceDuration { get; }
 }
 
 /// <summary>

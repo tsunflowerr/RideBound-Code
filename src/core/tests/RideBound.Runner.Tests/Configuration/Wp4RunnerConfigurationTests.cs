@@ -686,6 +686,93 @@ public sealed class Wp4RunnerConfigurationTests
             Refused(FinalJson(json => Assert.True(json["candidateGeneration"]!.AsObject().Remove("exactSmallMode")))));
     }
 
+    [Fact]
+    public void The_removed_stop_service_duration_is_refused_with_a_pointer_to_the_archive()
+    {
+        const string refusal =
+            "WP4 'candidateGeneration.stopServiceDurationMs' key (the dwell of inserted stops): "
+            + "removed; see commit ebca912 (branch research/final-real-runs-2026-11-06)";
+        var commitment = CommitmentConfiguration();
+        static void Dwell(JsonObject json) =>
+            json["candidateGeneration"]!["stopServiceDurationMs"] = 24_000;
+        string Refused(string json) =>
+            Assert.Throws<InvalidDataException>(
+                () => Wp4RunnerConfiguration.Decode(Encoding.UTF8.GetBytes(json), commitment)).Message;
+        Assert.NotNull(Wp4RunnerConfiguration.Decode(Encoding.UTF8.GetBytes(FinalJson()), commitment));
+
+        // The final C1 file with the key, whatever its value: 24000 and 0 were decoded before, the others were refused
+        // by the old reader with their own messages.
+        foreach (var value in new JsonNode[] { 24_000, 0, -1, 3_600_001, "24000", true })
+        {
+            Assert.Equal(
+                refusal,
+                Refused(FinalJson(json => json["candidateGeneration"]!["stopServiceDurationMs"] = value)));
+        }
+
+        // Checks that run later no longer get to such a file: the candidate limit, the exact-small refusal, and the
+        // evidence check in Decode.
+        Assert.Equal(
+            refusal,
+            Refused(FinalJson(json =>
+            {
+                Dwell(json);
+                json["candidateGeneration"]!["maximumCandidatesPerVehicle"] = 0;
+            })));
+        Assert.Equal(
+            refusal,
+            Refused(FinalJson(json =>
+            {
+                Dwell(json);
+                json["candidateGeneration"]!["exactSmallMode"] = true;
+            })));
+        Assert.Equal(
+            refusal,
+            Refused(FinalJson(json =>
+            {
+                Dwell(json);
+                json["emitSolverExecutionEvidence"] = true;
+            })));
+
+        // Checks that run before it keep their messages: the origin-hold refusal and a G2 target cap of 0.
+        Assert.Equal(
+            "WP4 scheduleStrategy 'origin-hold-relocated-wait' (the origin-hold schedule): "
+            + "removed; see commit ebca912 (branch research/final-real-runs-2026-11-06)",
+            Refused(FinalJson(json =>
+            {
+                Dwell(json);
+                json["candidateGeneration"]!["scheduleStrategy"] = "origin-hold-relocated-wait";
+            })));
+        Assert.Equal(
+            "'maximumTargetVehicles' must be positive.",
+            Refused(FinalJson(json =>
+            {
+                Dwell(json);
+                json["candidateGeneration"]!["waitingRiderRelocation"] =
+                    new JsonObject { ["maximumTargetVehicles"] = 0 };
+            })));
+
+        // A fraction never reaches the field reader: canonical JSON refuses it first, at the same path.
+        Assert.Contains(
+            "$.candidateGeneration.stopServiceDurationMs",
+            Assert.Throws<RideBound.Contracts.Serialization.CanonicalJsonException>(
+                () => Wp4RunnerConfiguration.Decode(
+                    Encoding.UTF8.GetBytes(FinalJson(json =>
+                        json["candidateGeneration"]!["stopServiceDurationMs"] = 1.5)),
+                    commitment)).Message);
+
+        // A file without the key decodes as before and keeps its content hash (the tier-3 cost-first text).
+        var reference = File.ReadAllText(Path.Combine(
+            RepositoryRoot(),
+            "benchmarks",
+            "configurations",
+            "wp14-c1-h6-reference-v1.json"));
+        Assert.Equal(
+            "e1a41d4502036da6c911e9375b65be646253f8f5d140929faaf12e6c3acc68f2",
+            Wp4RunnerConfiguration.Decode(
+                Encoding.UTF8.GetBytes(Tier3CostFirstJson),
+                CommitmentPolicyConfiguration.Decode(Encoding.UTF8.GetBytes(reference))).ContentHash.Value);
+    }
+
     /// <summary>The refusal of every selectionObjectiveOrder other than cost-first, and of an absent key.</summary>
     private const string StabilityFirstRefusal =
         "WP4 selectionObjectiveOrder must be 'cost-first'. The stability-first ranking, which 'stability-first' or an "
@@ -835,54 +922,6 @@ public sealed class Wp4RunnerConfigurationTests
                 Assert.Throws<InvalidDataException>(
                     () => Wp4RunnerConfiguration.Decode(Encoding.UTF8.GetBytes(wp4), commitment)).Message);
         }
-    }
-
-    [Fact]
-    public void Stop_service_duration_is_optional_bounded_and_off_by_default()
-    {
-        // Bridge step 1.3: the dwell of the stops the generator inserts. Absent means 0, so a file
-        // without the key keeps its content hash (pinned for the tier-3 text with cost-first and evidence off).
-        var reference = File.ReadAllText(Path.Combine(
-            RepositoryRoot(),
-            "benchmarks",
-            "configurations",
-            "wp14-c1-h6-reference-v1.json"));
-        var commitment = CommitmentPolicyConfiguration.Decode(Encoding.UTF8.GetBytes(reference));
-        string WithDwell(string value) => Tier3CostFirstJson.Replace(
-            "\"retentionStrategy\": \"service-set-stability-portfolio-v1\"",
-            "\"retentionStrategy\": \"service-set-stability-portfolio-v1\",\n"
-                + "    \"stopServiceDurationMs\": " + value,
-            StringComparison.Ordinal);
-
-        var off = Wp4RunnerConfiguration.Decode(Encoding.UTF8.GetBytes(Tier3CostFirstJson), commitment);
-        var dwell = Wp4RunnerConfiguration.Decode(Encoding.UTF8.GetBytes(WithDwell("24000")), commitment);
-        var zero = Wp4RunnerConfiguration.Decode(Encoding.UTF8.GetBytes(WithDwell("0")), commitment);
-
-        Assert.Equal(0, off.CandidateGeneration.StopServiceDuration.Milliseconds);
-        Assert.Equal(
-            "e1a41d4502036da6c911e9375b65be646253f8f5d140929faaf12e6c3acc68f2",
-            off.ContentHash.Value);
-        Assert.Equal(24_000, dwell.CandidateGeneration.StopServiceDuration.Milliseconds);
-        Assert.Equal(0, zero.CandidateGeneration.StopServiceDuration.Milliseconds);
-        Assert.NotEqual(off.ContentHash, dwell.ContentHash);
-
-        foreach (var value in new[] { "-1", "3600001", "\"24000\"", "true" })
-        {
-            Assert.Contains(
-                "stopServiceDurationMs",
-                Assert.Throws<InvalidDataException>(
-                    () => Wp4RunnerConfiguration.Decode(
-                        Encoding.UTF8.GetBytes(WithDwell(value)),
-                        commitment)).Message);
-        }
-
-        // A fraction never reaches the field reader: canonical JSON refuses it first, at the same path.
-        Assert.Contains(
-            "$.candidateGeneration.stopServiceDurationMs",
-            Assert.Throws<RideBound.Contracts.Serialization.CanonicalJsonException>(
-                () => Wp4RunnerConfiguration.Decode(
-                    Encoding.UTF8.GetBytes(WithDwell("1.5")),
-                    commitment)).Message);
     }
 
     [Fact]
