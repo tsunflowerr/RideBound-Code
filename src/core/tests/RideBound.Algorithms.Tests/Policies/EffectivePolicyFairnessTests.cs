@@ -180,7 +180,6 @@ public sealed class EffectivePolicyFairnessTests
                 new CandidateGenerationOptions(
                     maximumCandidatesPerVehicle: 100,
                     maximumNewRequestsPerVehicle: 1,
-                    exactSmallMode: false,
                     maximumExplorationWorkUnits: 100_000),
                 new SolverBackedRidePoolingPolicyOptions(kind, executionBudget));
 

@@ -88,7 +88,6 @@ public sealed class CandidateSearchWorkProfileTests
         new(
             maximumCandidatesPerVehicle: 100,
             maximumNewRequestsPerVehicle: 2,
-            exactSmallMode: false,
             maximumExplorationWorkUnits: 10_000);
 
     private static OnlineState CreateLoadedState(int incumbentCount)

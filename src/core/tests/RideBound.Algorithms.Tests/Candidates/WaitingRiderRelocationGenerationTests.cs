@@ -144,7 +144,7 @@ public sealed class WaitingRiderRelocationGenerationTests
     }
 
     [Fact]
-    public void A_rider_cap_omits_later_riders_with_a_witness_and_exact_small_fails()
+    public void A_rider_cap_omits_later_riders_with_a_witness()
     {
         var second = AlgorithmTestData.PendingRequest("waiting-2", AlgorithmTestData.NodeOne, AlgorithmTestData.NodeTwo);
         var state = Fixture(secondWaiting: second);
@@ -161,17 +161,6 @@ public sealed class WaitingRiderRelocationGenerationTests
             Relocation(capped, RelocationRole.Donor),
             value => value.RelocatedRequestId == second.Id);
         Assert.True(capped.VehicleCandidates!.Single(set => set.VehicleId == AlgorithmTestData.VehicleOne).WasTruncated);
-
-        var exact = new InsertionCandidateGenerator().Generate(
-            state,
-            new CandidateGenerationOptions(
-                100_000,
-                2,
-                exactSmallMode: true,
-                waitingRiderRelocation: new WaitingRiderRelocationGenerationOptions(maximumRidersPerVehicle: 1)));
-
-        Assert.False(exact.IsSuccess);
-        Assert.Equal(CandidateGenerationFailureCodes.ExactSmallRelocationRiderBoundExceeded, exact.Witness!.Code);
     }
 
     /// <summary>
@@ -223,7 +212,6 @@ public sealed class WaitingRiderRelocationGenerationTests
         var options = new CandidateGenerationOptions(
             100,
             2,
-            exactSmallMode: false,
             waitingRiderRelocation: new WaitingRiderRelocationGenerationOptions(2, 3));
 
         Assert.Equal(2, options.WaitingRiderRelocation!.MaximumRidersPerVehicle);
@@ -240,7 +228,6 @@ public sealed class WaitingRiderRelocationGenerationTests
             new CandidateGenerationOptions(
                 100,
                 2,
-                exactSmallMode: false,
                 waitingRiderRelocation: relocation));
 
     private static InsertionCandidate[] Relocation(CandidateGenerationResult result, RelocationRole role) =>

@@ -258,9 +258,10 @@ public sealed class ForwardSlackProfileTests
 
         var result = generator.Generate(
             state,
-            new CandidateGenerationOptions(100, 1, exactSmallMode: true));
+            new CandidateGenerationOptions(100, 1));
 
         Assert.True(result.IsSuccess, result.Witness?.Message);
+        Assert.True(result.Diagnostics!.IsComplete);
         var set = Assert.Single(result.VehicleCandidates!);
         Assert.Single(set.Candidates, candidate => candidate.IsNoOp);
         Assert.Contains(set.PrunedCandidates, prune => prune.Code == "CAPACITY");
@@ -279,7 +280,7 @@ public sealed class ForwardSlackProfileTests
         var builder = new CountingProfileBuilder();
         var cache = new ForwardSlackProfileCache(builder);
         var generator = new InsertionCandidateGenerator(slackCache: cache);
-        var options = new CandidateGenerationOptions(100, 1, exactSmallMode: true);
+        var options = new CandidateGenerationOptions(100, 1);
 
         var first = generator.Generate(state, options);
         var buildsAfterFirst = builder.BuildCount;
@@ -288,6 +289,8 @@ public sealed class ForwardSlackProfileTests
 
         Assert.True(first.IsSuccess, first.Witness?.Message);
         Assert.True(second.IsSuccess, second.Witness?.Message);
+        Assert.True(first.Diagnostics!.IsComplete);
+        Assert.True(second.Diagnostics!.IsComplete);
         Assert.True(buildsAfterFirst > 0);
         Assert.Equal(buildsAfterFirst, builder.BuildCount);
         Assert.True(cache.HitCount > hitsBefore);
@@ -311,9 +314,10 @@ public sealed class ForwardSlackProfileTests
 
         var result = generator.Generate(
             state,
-            new CandidateGenerationOptions(100, 1, exactSmallMode: true));
+            new CandidateGenerationOptions(100, 1));
 
         Assert.True(result.IsSuccess, result.Witness?.Message);
+        Assert.True(result.Diagnostics!.IsComplete);
         var candidates = Assert.Single(result.VehicleCandidates!);
         Assert.Single(candidates.Candidates, candidate => candidate.IsNoOp);
         Assert.Contains(

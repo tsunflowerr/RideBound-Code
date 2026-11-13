@@ -19,14 +19,15 @@ public sealed class StopServiceDurationTests
         {
             var result = generator.Generate(state, options);
             Assert.True(result.IsSuccess, result.Witness?.Message);
+            Assert.True(result.Diagnostics!.IsComplete);
             return Assert.Single(
                 result.VehicleCandidates!.Single().Candidates,
                 candidate => !candidate.IsNoOp);
         }
 
-        var byDefault = Insert(new CandidateGenerationOptions(100, 1, exactSmallMode: true));
-        var zero = Insert(new CandidateGenerationOptions(100, 1, exactSmallMode: true, stopServiceDurationMs: 0));
-        var dwell = Insert(new CandidateGenerationOptions(100, 1, exactSmallMode: true, stopServiceDurationMs: 24));
+        var byDefault = Insert(new CandidateGenerationOptions(100, 1));
+        var zero = Insert(new CandidateGenerationOptions(100, 1, stopServiceDurationMs: 0));
+        var dwell = Insert(new CandidateGenerationOptions(100, 1, stopServiceDurationMs: 24));
 
         Assert.Equal(byDefault.CandidateId, zero.CandidateId);
         Assert.All(zero.Route.MutableSuffix, stop => Assert.Equal(0, stop.ServiceDuration.Milliseconds));
@@ -52,10 +53,10 @@ public sealed class StopServiceDurationTests
     public void A_negative_dwell_is_refused()
     {
         Assert.Throws<ArgumentOutOfRangeException>(
-            () => new CandidateGenerationOptions(100, 1, exactSmallMode: false, stopServiceDurationMs: -1));
-        Assert.Equal(0, new CandidateGenerationOptions(100, 1, exactSmallMode: false).StopServiceDuration.Milliseconds);
+            () => new CandidateGenerationOptions(100, 1, stopServiceDurationMs: -1));
+        Assert.Equal(0, new CandidateGenerationOptions(100, 1).StopServiceDuration.Milliseconds);
 
-        var options = new CandidateGenerationOptions(100, 1, exactSmallMode: false, stopServiceDurationMs: 24_000);
+        var options = new CandidateGenerationOptions(100, 1, stopServiceDurationMs: 24_000);
 
         Assert.Equal(24_000, options.StopServiceDuration.Milliseconds);
     }

@@ -152,7 +152,6 @@ public sealed class WaitingRiderRelocationPolicyTests
         new(
             100,
             2,
-            exactSmallMode: false,
             waitingRiderRelocation: relocation ? new WaitingRiderRelocationGenerationOptions() : null);
 
     private static SolverBackedRidePoolingPolicyOptions CostFirst() =>

@@ -8,8 +8,9 @@ namespace RideBound.Algorithms.Tests.Policies;
 
 public sealed class SelectionApplierTests
 {
-    private static readonly CandidateGenerationOptions ExactOptions =
-        new(10_000, 4, exactSmallMode: true);
+    // Limits these small states fit in (10,000 candidates, 4 new requests); each test checks that
+    // generation cut nothing.
+    private static readonly CandidateGenerationOptions Options = new(10_000, 4);
 
     [Fact]
     public void Lower_integer_operational_cost_wins_across_two_vehicles()
@@ -23,7 +24,8 @@ public sealed class SelectionApplierTests
             position: AlgorithmTestData.NodeThree);
         var state = AlgorithmTestData.CreateState([request], [near, far]);
 
-        var result = new SelectionApplier().Decide(state, ExactOptions);
+        AlgorithmTestData.AssertGeneratedInFull(state, Options);
+        var result = new SelectionApplier().Decide(state, Options);
 
         Assert.True(result.IsSuccess, result.Witness?.Message);
         var accepted = Assert.Single(
@@ -47,7 +49,8 @@ public sealed class SelectionApplierTests
         var second = AlgorithmTestData.Vehicle(AlgorithmTestData.VehicleTwo);
         var state = AlgorithmTestData.CreateState([request], [second, first]);
         var generator = new InsertionCandidateGenerator();
-        var generated = generator.Generate(state, ExactOptions);
+        var generated = generator.Generate(state, Options);
+        Assert.True(generated.Diagnostics!.IsComplete);
         var sets = generated.VehicleCandidates!
             .OrderBy(value => value.VehicleId.Value, StringComparer.Ordinal)
             .ToArray();
@@ -67,7 +70,7 @@ public sealed class SelectionApplierTests
             ? AlgorithmTestData.VehicleOne
             : AlgorithmTestData.VehicleTwo;
 
-        var result = new SelectionApplier().Decide(state, ExactOptions);
+        var result = new SelectionApplier().Decide(state, Options);
 
         Assert.True(result.IsSuccess, result.Witness?.Message);
         var selected = result.Decision!.VehiclePlans.Single(
@@ -86,7 +89,8 @@ public sealed class SelectionApplierTests
                 AlgorithmTestData.Vehicle(AlgorithmTestData.VehicleTwo),
             ]);
 
-        var result = new SelectionApplier().Decide(state, ExactOptions);
+        AlgorithmTestData.AssertGeneratedInFull(state, Options);
+        var result = new SelectionApplier().Decide(state, Options);
 
         Assert.True(result.IsSuccess, result.Witness?.Message);
         Assert.Equal(2, result.Decision!.VehiclePlans.Count);
@@ -106,7 +110,8 @@ public sealed class SelectionApplierTests
             [request],
             [AlgorithmTestData.Vehicle(capacity: 4)]);
 
-        var result = new SelectionApplier().Decide(state, ExactOptions);
+        AlgorithmTestData.AssertGeneratedInFull(state, Options);
+        var result = new SelectionApplier().Decide(state, Options);
 
         Assert.True(result.IsSuccess, result.Witness?.Message);
         var action = Assert.Single(result.Decision!.RequestActions);
@@ -137,7 +142,8 @@ public sealed class SelectionApplierTests
                     position: AlgorithmTestData.NodeThree),
             ]);
 
-        var result = new SelectionApplier().Decide(state, ExactOptions);
+        AlgorithmTestData.AssertGeneratedInFull(state, Options);
+        var result = new SelectionApplier().Decide(state, Options);
 
         Assert.True(result.IsSuccess, result.Witness?.Message);
         var action = Assert.Single(result.Decision!.RequestActions);
@@ -166,7 +172,8 @@ public sealed class SelectionApplierTests
             [first, second],
             [AlgorithmTestData.Vehicle()]);
 
-        var result = new SelectionApplier().Decide(state, ExactOptions);
+        AlgorithmTestData.AssertGeneratedInFull(state, Options);
+        var result = new SelectionApplier().Decide(state, Options);
 
         Assert.True(result.IsSuccess, result.Witness?.Message);
         Assert.Single(
@@ -230,7 +237,8 @@ public sealed class SelectionApplierTests
             travel.SnapshotHash,
             RideBound.Domain.Commitments.CommitmentLedger.Empty);
 
-        var result = new SelectionApplier().Decide(state, ExactOptions);
+        AlgorithmTestData.AssertGeneratedInFull(state, Options);
+        var result = new SelectionApplier().Decide(state, Options);
 
         Assert.True(result.IsSuccess, result.Witness?.Message);
         Assert.Equal(

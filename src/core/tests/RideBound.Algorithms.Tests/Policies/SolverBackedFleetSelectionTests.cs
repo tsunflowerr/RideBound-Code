@@ -178,7 +178,6 @@ public sealed class SolverBackedFleetSelectionTests
                 new CandidateGenerationOptions(
                     maximumCandidatesPerVehicle: 100,
                     maximumNewRequestsPerVehicle: 1,
-                    exactSmallMode: false,
                     maximumExplorationWorkUnits: 100_000),
                 new SolverBackedRidePoolingPolicyOptions(
                     RidePoolingPolicyKind.RideBoundHardVector,

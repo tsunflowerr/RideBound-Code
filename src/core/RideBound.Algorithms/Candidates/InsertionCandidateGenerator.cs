@@ -54,19 +54,6 @@ public sealed class InsertionCandidateGenerator
             .ThenBy(value => value.Id.Value, StringComparer.Ordinal)
             .ToArray();
 
-        if (options.ExactSmallMode
-            && pendingRequests.Length > options.MaximumNewRequestsPerVehicle)
-        {
-            return CandidateGenerationResult.Failure(
-                new CandidateGenerationWitness(
-                    CandidateGenerationFailureCodes.ExactSmallRequestBoundExceeded,
-                    "Exact-small mode cannot omit pending requests above its " +
-                    "published request bound.",
-                    RequestId: pendingRequests[
-                        options.MaximumNewRequestsPerVehicle].Id,
-                    Dimension: "maximumNewRequestsPerVehicle"));
-        }
-
         var requests = pendingRequests
             .Take(options.MaximumNewRequestsPerVehicle)
             .ToArray();
@@ -117,11 +104,6 @@ public sealed class InsertionCandidateGenerator
         if (options.WaitingRiderRelocation is { } relocationOptions)
         {
             var relocated = GenerateRelocations(state, requests, options, relocationOptions);
-
-            if (relocated.Witness is not null)
-            {
-                return CandidateGenerationResult.Failure(relocated.Witness);
-            }
 
             for (var index = 0; index < vehicleSets.Count; index++)
             {
@@ -177,18 +159,6 @@ public sealed class InsertionCandidateGenerator
             if (eligibility.EligibleRequestIds.Count == 0)
             {
                 continue;
-            }
-
-            if (options.ExactSmallMode && eligibility.OmittedRequestIds.Count > 0)
-            {
-                return RelocationGenerationResult.Failure(
-                    new CandidateGenerationWitness(
-                        CandidateGenerationFailureCodes.ExactSmallRelocationRiderBoundExceeded,
-                        "Exact-small G2 cannot omit an eligible waiting rider above its " +
-                        "explicit rider cap.",
-                        donor.Id,
-                        eligibility.OmittedRequestIds[0],
-                        "maximumRidersPerVehicle"));
             }
 
             if (eligibility.OmittedRequestIds.Count > 0)
@@ -306,17 +276,6 @@ public sealed class InsertionCandidateGenerator
                     donorFeasible,
                     donorPruned,
                     new RelocationRoot(donorContext, seed.DonorSuffix));
-
-                if (exploration.Witness is not null)
-                {
-                    return RelocationGenerationResult.Failure(
-                        exploration.Witness with
-                        {
-                            Code = CandidateGenerationFailureCodes
-                                .ExactSmallRelocationWorkCapExceeded,
-                            RequestId = seed.Request.Id,
-                        });
-                }
 
                 work = SaturatingAdd(work, exploration.WorkUnits);
                 omittedDonorPaths = SaturatingAdd(
@@ -457,11 +416,6 @@ public sealed class InsertionCandidateGenerator
             feasibleById,
             prunedById);
 
-        if (exploration.Witness is not null)
-        {
-            return VehicleGenerationResult.Failure(exploration.Witness);
-        }
-
         var beforeCap = feasibleById.Values.ToArray();
 
         // Rank once and hand the ordered result to the retainer. Ranking is the
@@ -473,18 +427,6 @@ public sealed class InsertionCandidateGenerator
 
         if (ranked.Count > options.MaximumCandidatesPerVehicle)
         {
-            if (options.ExactSmallMode)
-            {
-                return VehicleGenerationResult.Failure(
-                    new CandidateGenerationWitness(
-                        CandidateGenerationFailureCodes
-                            .ExactSmallCandidateCapExceeded,
-                        "Exact-small candidate count exceeded the configured " +
-                        "cap; no candidate was silently omitted.",
-                        vehicle.Id,
-                        Dimension: "maximumCandidatesPerVehicle"));
-            }
-
             var retention = _portfolioRetainer.RetainRanked(
                 rankedCandidates,
                 options.MaximumCandidatesPerVehicle);
@@ -661,23 +603,12 @@ public sealed class InsertionCandidateGenerator
             }
         }
 
-        if (omittedCount > 0 && options.ExactSmallMode)
-        {
-            return ExplorationResult.Failure(
-                new CandidateGenerationWitness(
-                    CandidateGenerationFailureCodes.ExactSmallWorkCapExceeded,
-                    "Exact-small exploration exceeded the deterministic work " +
-                    "cap; no raw candidate path was silently omitted.",
-                    vehicle.Id,
-                    Dimension: "maximumExplorationWorkUnits"));
-        }
-
         var saturated = omittedCount > DomainLimits.MaxCanonicalInteger;
         var canonicalOmitted = saturated
             ? DomainLimits.MaxCanonicalInteger
             : (long)omittedCount;
 
-        return ExplorationResult.Success(
+        return new ExplorationResult(
             workUnits,
             evaluatedPaths,
             canonicalOmitted,
@@ -1084,27 +1015,7 @@ public sealed class InsertionCandidateGenerator
         long EvaluatedCandidatePathCount,
         long OmittedCandidatePathCount,
         IReadOnlyList<string> OmittedSubtreeIds,
-        bool OmissionCountWasSaturated,
-        CandidateGenerationWitness? Witness)
-    {
-        public static ExplorationResult Success(
-            long workUnits,
-            long evaluatedCandidatePathCount,
-            long omittedCandidatePathCount,
-            IReadOnlyList<string> omittedSubtreeIds,
-            bool omissionCountWasSaturated) =>
-            new(
-                workUnits,
-                evaluatedCandidatePathCount,
-                omittedCandidatePathCount,
-                omittedSubtreeIds,
-                omissionCountWasSaturated,
-                null);
-
-        public static ExplorationResult Failure(
-            CandidateGenerationWitness witness) =>
-            new(0, 0, 0, [], false, witness);
-    }
+        bool OmissionCountWasSaturated);
 
     /// <summary>The root of a G2 donor search: D0's suffix and the declared move.</summary>
     private sealed record RelocationRoot(
@@ -1119,16 +1030,11 @@ public sealed class InsertionCandidateGenerator
         private readonly Dictionary<VehicleId, List<InsertionCandidate>> _candidates = [];
         private readonly Dictionary<VehicleId, List<CandidatePruneWitness>> _pruned = [];
 
-        public CandidateGenerationWitness? Witness { get; private init; }
-
         public List<CandidateOmissionWitness> Omissions { get; } = [];
 
         public List<RelocationCandidateLoss> Losses { get; } = [];
 
         public HashSet<VehicleId> Truncated { get; } = [];
-
-        public static RelocationGenerationResult Failure(CandidateGenerationWitness witness) =>
-            new() { Witness = witness };
 
         public void Add(
             IEnumerable<InsertionCandidate> candidates,

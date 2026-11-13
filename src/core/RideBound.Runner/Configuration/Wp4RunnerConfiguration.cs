@@ -562,16 +562,25 @@ public sealed class Wp4RunnerConfiguration
             }
         }
 
+        var maximumCandidatesPerVehicle = PositiveInt32(
+            element.GetProperty("maximumCandidatesPerVehicle"),
+            "maximumCandidatesPerVehicle");
+        var maximumNewRequestsPerVehicle = NonNegativeInt32(
+            element.GetProperty("maximumNewRequestsPerVehicle"),
+            "maximumNewRequestsPerVehicle");
+
+        // The exact-small mode is removed. The key stays required (the final files set it to false), and true is
+        // refused. Read in the same place as before, so the checks before it keep their messages; with true, the
+        // checks after it are not reached.
+        if (Boolean(element.GetProperty("exactSmallMode"), "exactSmallMode"))
+        {
+            throw new InvalidDataException(
+                "WP4 exactSmallMode true (the exact-small mode): " + RemovedFeature);
+        }
+
         return new CandidateGenerationOptions(
-            PositiveInt32(
-                element.GetProperty("maximumCandidatesPerVehicle"),
-                "maximumCandidatesPerVehicle"),
-            NonNegativeInt32(
-                element.GetProperty("maximumNewRequestsPerVehicle"),
-                "maximumNewRequestsPerVehicle"),
-            Boolean(
-                element.GetProperty("exactSmallMode"),
-                "exactSmallMode"),
+            maximumCandidatesPerVehicle,
+            maximumNewRequestsPerVehicle,
             PositiveInteger(
                 element.GetProperty("maximumExplorationWorkUnits"),
                 "maximumExplorationWorkUnits"),

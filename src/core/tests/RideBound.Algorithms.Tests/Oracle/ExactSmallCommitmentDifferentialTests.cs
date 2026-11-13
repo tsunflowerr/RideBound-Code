@@ -25,10 +25,11 @@ public sealed class ExactSmallCommitmentDifferentialTests
             var fixture = CreateState(seed);
             var generated = new InsertionCandidateGenerator().Generate(
                 fixture.State,
-                CandidateGenerationOptions.ExactSmall);
+                AlgorithmTestData.SmallGeneration);
             Assert.True(
                 generated.IsSuccess,
                 $"seed={seed}; {generated.Witness?.Message}");
+            Assert.True(generated.Diagnostics!.IsComplete, $"seed={seed}");
             var oracleCandidates = ExactSmallOracle.Generate(fixture.State)
                 [AlgorithmTestData.VehicleOne];
             var expected = oracleCandidates
@@ -75,8 +76,9 @@ public sealed class ExactSmallCommitmentDifferentialTests
             var fixture = CreateState(seed);
             var generated = new InsertionCandidateGenerator().Generate(
                 fixture.State,
-                CandidateGenerationOptions.ExactSmall);
+                AlgorithmTestData.SmallGeneration);
             Assert.True(generated.IsSuccess, generated.Witness?.Message);
+            Assert.True(generated.Diagnostics!.IsComplete);
             var candidateSets = generated.VehicleCandidates!;
             var tight = RetainedKeys(
                 fixture,
@@ -99,8 +101,9 @@ public sealed class ExactSmallCommitmentDifferentialTests
         var fixture = CreateState(seed: 3);
         var generated = new InsertionCandidateGenerator().Generate(
             fixture.State,
-            CandidateGenerationOptions.ExactSmall);
+            AlgorithmTestData.SmallGeneration);
         Assert.True(generated.IsSuccess, generated.Witness?.Message);
+        Assert.True(generated.Diagnostics!.IsComplete);
         var raw = generated.VehicleCandidates!;
         var context = MechanismContext(fixture, "c1-assessment");
 
@@ -124,9 +127,10 @@ public sealed class ExactSmallCommitmentDifferentialTests
             assessed.Batch.FeasibleCandidateSets.Single().Candidates
                 .Select(value => value.CandidateId));
 
+        AlgorithmTestData.AssertGeneratedInFull(context.ReducedState, AlgorithmTestData.SmallGeneration);
         var decision = new RideBoundHardVectorPolicy().Decide(
             context,
-            CandidateGenerationOptions.ExactSmall);
+            AlgorithmTestData.SmallGeneration);
         Assert.True(decision.IsSuccess, decision.Witness?.Message);
     }
 
@@ -147,8 +151,9 @@ public sealed class ExactSmallCommitmentDifferentialTests
             var context = MechanismContext(fixture, $"c1-order-{seed}");
             var generated = new InsertionCandidateGenerator().Generate(
                 fixture.State,
-                CandidateGenerationOptions.ExactSmall);
+                AlgorithmTestData.SmallGeneration);
             Assert.True(generated.IsSuccess, $"seed={seed}; {generated.Witness?.Message}");
+            Assert.True(generated.Diagnostics!.IsComplete, $"seed={seed}");
             var gated = new HardVectorCandidateAssessor().AssessAndFilter(
                 context,
                 generated.VehicleCandidates!,
@@ -160,9 +165,10 @@ public sealed class ExactSmallCommitmentDifferentialTests
                 gated.Batch.Assessments[candidate.CandidateId].IsForcedReference;
             var solver = new EnumeratingSolver();
 
+            AlgorithmTestData.AssertGeneratedInFull(context.ReducedState, AlgorithmTestData.SmallGeneration);
             var result = new SolverBackedRidePoolingPolicy(solver).Decide(
                 context,
-                CandidateGenerationOptions.ExactSmall,
+                AlgorithmTestData.SmallGeneration,
                 HardVectorOptions(forcedReferenceRecovery: true));
 
             Assert.True(result.IsSuccess, $"seed={seed}; {result.Witness?.Message}");
@@ -225,12 +231,14 @@ public sealed class ExactSmallCommitmentDifferentialTests
             "c1-unbounded-equivalence",
             1);
 
+        AlgorithmTestData.AssertGeneratedInFull(fixture.State, AlgorithmTestData.SmallGeneration);
         var b1 = new SelectionApplier().Decide(
             fixture.State,
-            CandidateGenerationOptions.ExactSmall);
+            AlgorithmTestData.SmallGeneration);
+        AlgorithmTestData.AssertGeneratedInFull(context.ReducedState, AlgorithmTestData.SmallGeneration);
         var c1 = new RideBoundHardVectorPolicy().Decide(
             context,
-            CandidateGenerationOptions.ExactSmall);
+            AlgorithmTestData.SmallGeneration);
 
         Assert.True(b1.IsSuccess, b1.Witness?.Message);
         Assert.True(c1.IsSuccess, c1.Witness?.Message);
@@ -257,8 +265,9 @@ public sealed class ExactSmallCommitmentDifferentialTests
         var fixture = CreateState(seed: 3);
         var generated = new InsertionCandidateGenerator().Generate(
             fixture.State,
-            CandidateGenerationOptions.ExactSmall);
+            AlgorithmTestData.SmallGeneration);
         Assert.True(generated.IsSuccess, generated.Witness?.Message);
+        Assert.True(generated.Diagnostics!.IsComplete);
         Assert.True(
             generated.VehicleCandidates!.Single().Candidates.Count > 1,
             "The fixture must offer more than the no-op for this to prove anything.");
@@ -346,8 +355,9 @@ public sealed class ExactSmallCommitmentDifferentialTests
         var fixture = CreateState(seed: 3);
         var generated = new InsertionCandidateGenerator().Generate(
             fixture.State,
-            CandidateGenerationOptions.ExactSmall);
+            AlgorithmTestData.SmallGeneration);
         Assert.True(generated.IsSuccess, generated.Witness?.Message);
+        Assert.True(generated.Diagnostics!.IsComplete);
         var undeclared = new CommitmentPolicy(
             "undeclared-policy-v1",
             CommitmentBudgetBasis.DecisionInduced,
@@ -481,9 +491,10 @@ public sealed class ExactSmallCommitmentDifferentialTests
             100_000,
             solverBudget).Value!;
 
+        AlgorithmTestData.AssertGeneratedInFull(context.ReducedState, AlgorithmTestData.SmallGeneration);
         var result = new SolverBackedRidePoolingPolicy(new UnreachableSolver()).Decide(
             context,
-            CandidateGenerationOptions.ExactSmall,
+            AlgorithmTestData.SmallGeneration,
             new SolverBackedRidePoolingPolicyOptions(
                 RidePoolingPolicyKind.RideBoundHardVector,
                 executionBudget));
@@ -510,8 +521,9 @@ public sealed class ExactSmallCommitmentDifferentialTests
         var fixture = CreateState(seed: 3);
         var generated = new InsertionCandidateGenerator().Generate(
             fixture.State,
-            CandidateGenerationOptions.ExactSmall);
+            AlgorithmTestData.SmallGeneration);
         Assert.True(generated.IsSuccess, generated.Witness?.Message);
+        Assert.True(generated.Diagnostics!.IsComplete);
         var noOp = generated.VehicleCandidates!.Single().Candidates.Single(value => value.IsNoOp);
         var delay = SmallestPositiveDelay(fixture, generated.VehicleCandidates!.Single());
         var policy = new CommitmentPolicy(
@@ -665,8 +677,9 @@ public sealed class ExactSmallCommitmentDifferentialTests
         var fixture = CreateState(seed: 3);
         var generated = new InsertionCandidateGenerator().Generate(
             fixture.State,
-            CandidateGenerationOptions.ExactSmall);
+            AlgorithmTestData.SmallGeneration);
         Assert.True(generated.IsSuccess, generated.Witness?.Message);
+        Assert.True(generated.Diagnostics!.IsComplete);
         var noOp = generated.VehicleCandidates!.Single().Candidates.Single(value => value.IsNoOp);
         var delay = SmallestPositiveDelay(fixture, generated.VehicleCandidates!.Single());
         var policy = new CommitmentPolicy(
@@ -703,8 +716,9 @@ public sealed class ExactSmallCommitmentDifferentialTests
         var fixture = CreateState(seed: 3);
         var generated = new InsertionCandidateGenerator().Generate(
             fixture.State,
-            CandidateGenerationOptions.ExactSmall);
+            AlgorithmTestData.SmallGeneration);
         Assert.True(generated.IsSuccess, generated.Witness?.Message);
+        Assert.True(generated.Diagnostics!.IsComplete);
         var undeclared = new CommitmentPolicy(
             "undeclared-policy-v1",
             CommitmentBudgetBasis.DecisionInduced,
@@ -745,8 +759,9 @@ public sealed class ExactSmallCommitmentDifferentialTests
         var fixture = CreateState(seed: 3);
         var generated = new InsertionCandidateGenerator().Generate(
             fixture.State,
-            CandidateGenerationOptions.ExactSmall);
+            AlgorithmTestData.SmallGeneration);
         Assert.True(generated.IsSuccess, generated.Witness?.Message);
+        Assert.True(generated.Diagnostics!.IsComplete);
         var context = MechanismContext(fixture, "c1-forced-inert");
         var legacy = new HardVectorCandidateAssessor().AssessAndFilter(
             context,
@@ -784,9 +799,10 @@ public sealed class ExactSmallCommitmentDifferentialTests
         // validating the decision the way the Runner does records one typed breach.
         var (_, _, _, _, context) = EveryCandidateRejected();
         var solver = new EnumeratingSolver();
+        AlgorithmTestData.AssertGeneratedInFull(context.ReducedState, AlgorithmTestData.SmallGeneration);
         var legacy = new SolverBackedRidePoolingPolicy(solver).Decide(
             context,
-            CandidateGenerationOptions.ExactSmall,
+            AlgorithmTestData.SmallGeneration,
             HardVectorOptions(forcedReferenceRecovery: false));
         Assert.False(legacy.IsSuccess);
         Assert.Equal(
@@ -795,7 +811,7 @@ public sealed class ExactSmallCommitmentDifferentialTests
 
         var result = new SolverBackedRidePoolingPolicy(solver).Decide(
             context,
-            CandidateGenerationOptions.ExactSmall,
+            AlgorithmTestData.SmallGeneration,
             HardVectorOptions(forcedReferenceRecovery: true));
 
         Assert.True(result.IsSuccess, result.Witness?.Message);
@@ -824,9 +840,10 @@ public sealed class ExactSmallCommitmentDifferentialTests
         var (_, _, noOp, context) = NoOpRejectedWhileAnInsertionSurvives();
         var solver = new EnumeratingSolver();
 
+        AlgorithmTestData.AssertGeneratedInFull(context.ReducedState, AlgorithmTestData.SmallGeneration);
         var result = new SolverBackedRidePoolingPolicy(solver).Decide(
             context,
-            CandidateGenerationOptions.ExactSmall,
+            AlgorithmTestData.SmallGeneration,
             HardVectorOptions(forcedReferenceRecovery: true));
 
         Assert.True(result.IsSuccess, result.Witness?.Message);
@@ -886,16 +903,17 @@ public sealed class ExactSmallCommitmentDifferentialTests
         // the way the Runner does records one no-worse breach for the incumbent.
         var (_, _, _, _, context) = EveryCandidateRejected();
         var solver = new EnumeratingSolver();
+        AlgorithmTestData.AssertGeneratedInFull(context.ReducedState, AlgorithmTestData.SmallGeneration);
         var frozen = new SolverBackedRidePoolingPolicy(solver).Decide(
             context,
-            CandidateGenerationOptions.ExactSmall,
+            AlgorithmTestData.SmallGeneration,
             HardVectorOptions(forcedReferenceRecovery: true));
         Assert.True(frozen.IsSuccess, frozen.Witness?.Message);
         Assert.True(frozen.Decision!.Decision.VehiclePlans.Single().Candidate.IsNoOp);
 
         var result = new SolverBackedRidePoolingPolicy(solver).Decide(
             context,
-            CandidateGenerationOptions.ExactSmall,
+            AlgorithmTestData.SmallGeneration,
             HardVectorOptions(forcedReferenceRecovery: true, forcedNoWorseRecovery: true));
 
         Assert.True(result.IsSuccess, result.Witness?.Message);
@@ -942,8 +960,9 @@ public sealed class ExactSmallCommitmentDifferentialTests
         var context = PromiseContext(fixture, fixture.BaselineDrop.Milliseconds - 1, policy);
         var generated = new InsertionCandidateGenerator().Generate(
             fixture.State,
-            CandidateGenerationOptions.ExactSmall);
+            AlgorithmTestData.SmallGeneration);
         Assert.True(generated.IsSuccess, generated.Witness?.Message);
+        Assert.True(generated.Diagnostics!.IsComplete);
         var gated = new HardVectorCandidateAssessor().AssessAndFilter(
             context,
             generated.VehicleCandidates!,
@@ -953,9 +972,10 @@ public sealed class ExactSmallCommitmentDifferentialTests
         Assert.True(gated.IsSuccess, gated.Witness?.Message);
         var solver = new EnumeratingSolver();
 
+        AlgorithmTestData.AssertGeneratedInFull(context.ReducedState, AlgorithmTestData.SmallGeneration);
         var result = new SolverBackedRidePoolingPolicy(solver).Decide(
             context,
-            CandidateGenerationOptions.ExactSmall,
+            AlgorithmTestData.SmallGeneration,
             HardVectorOptions(forcedReferenceRecovery: true, forcedNoWorseRecovery: true));
 
         Assert.True(result.IsSuccess, result.Witness?.Message);
@@ -992,8 +1012,9 @@ public sealed class ExactSmallCommitmentDifferentialTests
         var fixture = CreateState(seed: 3);
         var generated = new InsertionCandidateGenerator().Generate(
             fixture.State,
-            CandidateGenerationOptions.ExactSmall);
+            AlgorithmTestData.SmallGeneration);
         Assert.True(generated.IsSuccess, generated.Witness?.Message);
+        Assert.True(generated.Diagnostics!.IsComplete);
         var set = generated.VehicleCandidates!.Single();
         var kept = fixture.BaselineDrop.Milliseconds;
         var drops = set.Candidates.ToDictionary(
@@ -1102,13 +1123,15 @@ public sealed class ExactSmallCommitmentDifferentialTests
         var relaxedSolver = new EnumeratingSolver();
         var options = HardVectorOptions(forcedReferenceRecovery: true, forcedNoWorseRecovery: true);
 
+        AlgorithmTestData.AssertGeneratedInFull(strictContext.ReducedState, AlgorithmTestData.SmallGeneration);
+        AlgorithmTestData.AssertGeneratedInFull(relaxedContext.ReducedState, AlgorithmTestData.SmallGeneration);
         var strict = new SolverBackedRidePoolingPolicy(strictSolver).Decide(
             strictContext,
-            CandidateGenerationOptions.ExactSmall,
+            AlgorithmTestData.SmallGeneration,
             options);
         var relaxed = new SolverBackedRidePoolingPolicy(relaxedSolver).Decide(
             relaxedContext,
-            CandidateGenerationOptions.ExactSmall,
+            AlgorithmTestData.SmallGeneration,
             options);
 
         Assert.True(strict.IsSuccess, strict.Witness?.Message);
@@ -1165,8 +1188,9 @@ public sealed class ExactSmallCommitmentDifferentialTests
         var fixture = CreateState(seed: 3);
         var generated = new InsertionCandidateGenerator().Generate(
             fixture.State,
-            CandidateGenerationOptions.ExactSmall);
+            AlgorithmTestData.SmallGeneration);
         Assert.True(generated.IsSuccess, generated.Witness?.Message);
+        Assert.True(generated.Diagnostics!.IsComplete);
         var set = generated.VehicleCandidates!.Single();
         var cap = SmallestPositiveDelay(fixture, set) - 1;
         var kept = fixture.BaselineDrop.Milliseconds;
@@ -1282,9 +1306,11 @@ public sealed class ExactSmallCommitmentDifferentialTests
         CandidateSelectionProblem Problem(CommitmentPolicy policy)
         {
             var solver = new EnumeratingSolver();
+            var promiseContext = PromiseContext(fixture, kept, policy);
+            AlgorithmTestData.AssertGeneratedInFull(promiseContext.ReducedState, AlgorithmTestData.SmallGeneration);
             var decided = new SolverBackedRidePoolingPolicy(solver).Decide(
-                PromiseContext(fixture, kept, policy),
-                CandidateGenerationOptions.ExactSmall,
+                promiseContext,
+                AlgorithmTestData.SmallGeneration,
                 HardVectorOptions(forcedReferenceRecovery: false));
             Assert.True(decided.IsSuccess, decided.Witness?.Message);
             return solver.LastProblem!;
@@ -1357,8 +1383,9 @@ public sealed class ExactSmallCommitmentDifferentialTests
         var fixture = CreateState(seed: 3);
         var generated = new InsertionCandidateGenerator().Generate(
             fixture.State,
-            CandidateGenerationOptions.ExactSmall);
+            AlgorithmTestData.SmallGeneration);
         Assert.True(generated.IsSuccess, generated.Witness?.Message);
+        Assert.True(generated.Diagnostics!.IsComplete);
         var set = generated.VehicleCandidates!.Single();
         var noOp = set.Candidates.Single(value => value.IsNoOp);
         var context = DeadlineContext(
@@ -1378,8 +1405,9 @@ public sealed class ExactSmallCommitmentDifferentialTests
         var fixture = CreateState(seed: 3);
         var generated = new InsertionCandidateGenerator().Generate(
             fixture.State,
-            CandidateGenerationOptions.ExactSmall);
+            AlgorithmTestData.SmallGeneration);
         Assert.True(generated.IsSuccess, generated.Witness?.Message);
+        Assert.True(generated.Diagnostics!.IsComplete);
         var set = generated.VehicleCandidates!.Single();
         var noOp = set.Candidates.Single(value => value.IsNoOp);
         var ordinalFirst = set.Candidates

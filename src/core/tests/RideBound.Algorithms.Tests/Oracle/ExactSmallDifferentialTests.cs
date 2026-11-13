@@ -12,9 +12,6 @@ namespace RideBound.Algorithms.Tests.Oracle;
 
 public sealed class ExactSmallDifferentialTests
 {
-    private static readonly CandidateGenerationOptions ExactOptions =
-        CandidateGenerationOptions.ExactSmall;
-
     [Theory]
     [MemberData(nameof(PublishedSeeds))]
     public void Production_generator_and_selector_match_independent_oracle(
@@ -22,10 +19,12 @@ public sealed class ExactSmallDifferentialTests
     {
         var state = CreateGeneratedState(seed);
         var generator = new InsertionCandidateGenerator();
-        var generated = generator.Generate(state, ExactOptions);
+        var generated = generator.Generate(state, AlgorithmTestData.SmallGeneration);
         Assert.True(
             generated.IsSuccess,
             $"seed={seed}; generator={generated.Witness}");
+        // The oracle enumerates every candidate, so no generation limit may cut one.
+        Assert.True(generated.Diagnostics!.IsComplete, $"seed={seed}; generation is not complete");
         var oracle = ExactSmallOracle.Generate(state);
         var productionIds =
             new Dictionary<(VehicleId, string), string>();
@@ -61,7 +60,7 @@ public sealed class ExactSmallDifferentialTests
 
         var oracleSelection = ExactSmallOracle.Select(oracle, productionIds);
         var productionDecision =
-            new SelectionApplier().Decide(state, ExactOptions);
+            new SelectionApplier().Decide(state, AlgorithmTestData.SmallGeneration);
 
         Assert.True(
             productionDecision.IsSuccess,

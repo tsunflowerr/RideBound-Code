@@ -636,6 +636,56 @@ public sealed class Wp4RunnerConfigurationTests
             Refused(FinalJson(json => json["candidateGeneration"]!["retentionStrategy"] = 1)));
     }
 
+    [Fact]
+    public void The_removed_exact_small_mode_is_refused_with_a_pointer_to_the_archive()
+    {
+        const string refusal =
+            "WP4 exactSmallMode true (the exact-small mode): "
+            + "removed; see commit ebca912 (branch research/final-real-runs-2026-11-06)";
+        var commitment = CommitmentConfiguration();
+        static void ExactSmall(JsonObject json) =>
+            json["candidateGeneration"]!["exactSmallMode"] = true;
+        string Refused(string json) =>
+            Assert.Throws<InvalidDataException>(
+                () => Wp4RunnerConfiguration.Decode(Encoding.UTF8.GetBytes(json), commitment)).Message;
+        Assert.NotNull(Wp4RunnerConfiguration.Decode(Encoding.UTF8.GetBytes(FinalJson()), commitment));
+
+        // The final C1 file with exactSmallMode true (decoded before).
+        Assert.Equal(refusal, Refused(FinalJson(ExactSmall)));
+
+        // Checks that run later no longer get to such a file: the work limit, and the evidence check in Decode.
+        Assert.Equal(
+            refusal,
+            Refused(FinalJson(json =>
+            {
+                ExactSmall(json);
+                json["candidateGeneration"]!["maximumExplorationWorkUnits"] = 0;
+            })));
+        Assert.Equal(
+            refusal,
+            Refused(FinalJson(json =>
+            {
+                ExactSmall(json);
+                json["emitSolverExecutionEvidence"] = true;
+            })));
+
+        // Checks that run before it keep their messages: the candidate limit, a value that is not a boolean, and a
+        // missing key.
+        Assert.Equal(
+            "'maximumCandidatesPerVehicle' must be positive.",
+            Refused(FinalJson(json =>
+            {
+                ExactSmall(json);
+                json["candidateGeneration"]!["maximumCandidatesPerVehicle"] = 0;
+            })));
+        Assert.Equal(
+            "'exactSmallMode' must be a boolean.",
+            Refused(FinalJson(json => json["candidateGeneration"]!["exactSmallMode"] = "false")));
+        Assert.Equal(
+            "Missing field 'exactSmallMode' at '$.candidateGeneration'.",
+            Refused(FinalJson(json => Assert.True(json["candidateGeneration"]!.AsObject().Remove("exactSmallMode")))));
+    }
+
     /// <summary>The refusal of every selectionObjectiveOrder other than cost-first, and of an absent key.</summary>
     private const string StabilityFirstRefusal =
         "WP4 selectionObjectiveOrder must be 'cost-first'. The stability-first ranking, which 'stability-first' or an "

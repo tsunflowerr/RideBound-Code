@@ -181,7 +181,6 @@ public sealed record CandidateGenerationOptions
     public CandidateGenerationOptions(
         int maximumCandidatesPerVehicle,
         int maximumNewRequestsPerVehicle,
-        bool exactSmallMode,
         long maximumExplorationWorkUnits = 100_000,
         WaitingRiderRelocationGenerationOptions? waitingRiderRelocation = null,
         long stopServiceDurationMs = 0)
@@ -207,7 +206,6 @@ public sealed record CandidateGenerationOptions
 
         MaximumCandidatesPerVehicle = maximumCandidatesPerVehicle;
         MaximumNewRequestsPerVehicle = maximumNewRequestsPerVehicle;
-        ExactSmallMode = exactSmallMode;
         MaximumExplorationWorkUnits = maximumExplorationWorkUnits;
         if (stopServiceDurationMs is < 0 or > DomainLimits.MaxCanonicalInteger)
         {
@@ -221,8 +219,6 @@ public sealed record CandidateGenerationOptions
     public int MaximumCandidatesPerVehicle { get; }
 
     public int MaximumNewRequestsPerVehicle { get; }
-
-    public bool ExactSmallMode { get; }
 
     public long MaximumExplorationWorkUnits { get; }
 
@@ -238,12 +234,6 @@ public sealed record CandidateGenerationOptions
     /// the Runner plan a non-zero boarding time (bridge step 1.3, opt-in).
     /// </summary>
     public Duration StopServiceDuration { get; }
-
-    public static CandidateGenerationOptions ExactSmall { get; } =
-        new(
-            maximumCandidatesPerVehicle: 100_000,
-            maximumNewRequestsPerVehicle: 2,
-            exactSmallMode: true);
 }
 
 /// <summary>
@@ -280,12 +270,6 @@ public static class CandidateGenerationFailureCodes
 {
     public const string ActiveRouteInfeasible = "ACTIVE_ROUTE_INFEASIBLE";
     public const string TravelSnapshotRequired = "TRAVEL_SNAPSHOT_REQUIRED";
-    public const string ExactSmallRequestBoundExceeded =
-        "EXACT_SMALL_REQUEST_BOUND_EXCEEDED";
-    public const string ExactSmallCandidateCapExceeded =
-        "EXACT_SMALL_CANDIDATE_CAP_EXCEEDED";
-    public const string ExactSmallWorkCapExceeded =
-        "EXACT_SMALL_WORK_CAP_EXCEEDED";
     public const string PlanVersionOverflow = "PLAN_VERSION_OVERFLOW";
     public const string ScheduleEvaluationFailed = "SCHEDULE_EVALUATION_FAILED";
     public const string SlackProfileFailed = "SLACK_PROFILE_FAILED";
@@ -296,8 +280,4 @@ public static class CandidateGenerationFailureCodes
         "RELOCATION_RIDER_BOUND_OMISSION";
     public const string RelocationWorkBoundOmission =
         "RELOCATION_WORK_BOUND_OMISSION";
-    public const string ExactSmallRelocationRiderBoundExceeded =
-        "EXACT_SMALL_RELOCATION_RIDER_BOUND_EXCEEDED";
-    public const string ExactSmallRelocationWorkCapExceeded =
-        "EXACT_SMALL_RELOCATION_WORK_CAP_EXCEEDED";
 }

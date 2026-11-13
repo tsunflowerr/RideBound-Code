@@ -17,9 +17,10 @@ public sealed class InsertionCandidateGeneratorTests
 
         var result = _generator.Generate(
             state,
-            new CandidateGenerationOptions(100, 1, exactSmallMode: true));
+            new CandidateGenerationOptions(100, 1));
 
         Assert.True(result.IsSuccess, result.Witness?.Message);
+        Assert.True(result.Diagnostics!.IsComplete);
         var candidates = Assert.Single(result.VehicleCandidates!).Candidates;
         Assert.Equal(2, candidates.Count);
         Assert.Single(candidates, value => value.IsNoOp);
@@ -45,9 +46,10 @@ public sealed class InsertionCandidateGeneratorTests
 
         var result = _generator.Generate(
             state,
-            new CandidateGenerationOptions(100, 1, exactSmallMode: true));
+            new CandidateGenerationOptions(100, 1));
 
         Assert.True(result.IsSuccess, result.Witness?.Message);
+        Assert.True(result.Diagnostics!.IsComplete);
         var candidates = Assert.Single(result.VehicleCandidates!).Candidates;
         Assert.Equal(4, candidates.Count);
         Assert.Equal(
@@ -86,13 +88,15 @@ public sealed class InsertionCandidateGeneratorTests
 
         var first = _generator.Generate(
             state,
-            new CandidateGenerationOptions(100, 1, exactSmallMode: true));
+            new CandidateGenerationOptions(100, 1));
         var second = _generator.Generate(
             state,
-            new CandidateGenerationOptions(100, 1, exactSmallMode: true));
+            new CandidateGenerationOptions(100, 1));
 
         Assert.True(first.IsSuccess, first.Witness?.Message);
         Assert.True(second.IsSuccess, second.Witness?.Message);
+        Assert.True(first.Diagnostics!.IsComplete);
+        Assert.True(second.Diagnostics!.IsComplete);
         Assert.Same(route, vehicle.Route);
         Assert.Equal([frozen], route.FrozenPrefix);
         Assert.All(
@@ -114,9 +118,10 @@ public sealed class InsertionCandidateGeneratorTests
 
         var result = _generator.Generate(
             state,
-            new CandidateGenerationOptions(100, 1, exactSmallMode: true));
+            new CandidateGenerationOptions(100, 1));
 
         Assert.True(result.IsSuccess, result.Witness?.Message);
+        Assert.True(result.Diagnostics!.IsComplete);
         var set = Assert.Single(result.VehicleCandidates!);
         Assert.Single(set.Candidates);
         Assert.True(set.Candidates[0].IsNoOp);
@@ -145,7 +150,7 @@ public sealed class InsertionCandidateGeneratorTests
 
         var result = _generator.Generate(
             state,
-            new CandidateGenerationOptions(100, 1, exactSmallMode: true));
+            new CandidateGenerationOptions(100, 1));
 
         Assert.False(result.IsSuccess);
         Assert.Equal(
@@ -154,30 +159,6 @@ public sealed class InsertionCandidateGeneratorTests
         Assert.Equal(AlgorithmTestData.VehicleOne, result.Witness?.VehicleId);
         Assert.Equal("routeConnectivity", result.Witness?.Dimension);
         Assert.Contains("ROUTE_CONNECTIVITY", result.Witness?.Message);
-    }
-
-    [Fact]
-    public void Exact_mode_fails_instead_of_silently_truncating()
-    {
-        var request = AlgorithmTestData.PendingRequest();
-        var waypoint = new RouteStop(
-            new StopId("waypoint"),
-            AlgorithmTestData.NodeThree,
-            RouteStopKind.Waypoint,
-            null,
-            new Duration(0));
-        var state = AlgorithmTestData.CreateState(
-            [request],
-            [AlgorithmTestData.Vehicle(mutableSuffix: [waypoint])]);
-
-        var result = _generator.Generate(
-            state,
-            new CandidateGenerationOptions(2, 1, exactSmallMode: true));
-
-        Assert.False(result.IsSuccess);
-        Assert.Equal(
-            CandidateGenerationFailureCodes.ExactSmallCandidateCapExceeded,
-            result.Witness?.Code);
     }
 
     [Fact]
@@ -194,7 +175,7 @@ public sealed class InsertionCandidateGeneratorTests
             [request],
             [AlgorithmTestData.Vehicle(mutableSuffix: [waypoint])]);
         var options =
-            new CandidateGenerationOptions(2, 1, exactSmallMode: false);
+            new CandidateGenerationOptions(2, 1);
 
         var first = _generator.Generate(state, options);
         var second = _generator.Generate(state, options);
@@ -224,7 +205,7 @@ public sealed class InsertionCandidateGeneratorTests
 
         var result = _generator.Generate(
             state,
-            new CandidateGenerationOptions(100, 2, exactSmallMode: true));
+            new CandidateGenerationOptions(100, 2));
 
         Assert.True(result.IsSuccess, result.Witness?.Message);
         var candidates = Assert.Single(result.VehicleCandidates!).Candidates;
@@ -255,8 +236,7 @@ public sealed class InsertionCandidateGeneratorTests
             state,
             new CandidateGenerationOptions(
                 100,
-                1,
-                exactSmallMode: false));
+                1));
 
         Assert.True(result.IsSuccess, result.Witness?.Message);
         Assert.All(
@@ -277,30 +257,6 @@ public sealed class InsertionCandidateGeneratorTests
     }
 
     [Fact]
-    public void Exact_mode_fails_when_deterministic_work_cap_would_omit_a_path()
-    {
-        var state = AlgorithmTestData.CreateState(
-            [AlgorithmTestData.PendingRequest()],
-            [AlgorithmTestData.Vehicle()]);
-
-        var result = _generator.Generate(
-            state,
-            new CandidateGenerationOptions(
-                100,
-                1,
-                exactSmallMode: true,
-                maximumExplorationWorkUnits: 1));
-
-        Assert.False(result.IsSuccess);
-        Assert.Equal(
-            CandidateGenerationFailureCodes.ExactSmallWorkCapExceeded,
-            result.Witness?.Code);
-        Assert.Equal(
-            "maximumExplorationWorkUnits",
-            result.Witness?.Dimension);
-    }
-
-    [Fact]
     public void Bounded_best_first_work_keeps_higher_acceptance_and_counts_unknown_paths()
     {
         var first = AlgorithmTestData.PendingRequest("request-1");
@@ -314,7 +270,6 @@ public sealed class InsertionCandidateGeneratorTests
         var options = new CandidateGenerationOptions(
             100,
             2,
-            exactSmallMode: false,
             maximumExplorationWorkUnits: 3);
 
         var firstRun = _generator.Generate(state, options);
@@ -362,15 +317,15 @@ public sealed class InsertionCandidateGeneratorTests
             [AlgorithmTestData.Vehicle()]);
         var full = _generator.Generate(
             state,
-            new CandidateGenerationOptions(100, 2, exactSmallMode: true));
+            new CandidateGenerationOptions(100, 2));
         var boundedOptions = new CandidateGenerationOptions(
             2,
-            2,
-            exactSmallMode: false);
+            2);
         var bounded = _generator.Generate(state, boundedOptions);
         var repeated = _generator.Generate(state, boundedOptions);
 
         Assert.True(full.IsSuccess, full.Witness?.Message);
+        Assert.True(full.Diagnostics!.IsComplete);
         Assert.True(bounded.IsSuccess, bounded.Witness?.Message);
         var fullTwoRequest = full.VehicleCandidates!.Single().Candidates
             .Where(candidate => candidate.NewRequestIds.Count == 2)
@@ -428,7 +383,6 @@ public sealed class InsertionCandidateGeneratorTests
                 new CandidateGenerationOptions(
                     100,
                     2,
-                    exactSmallMode: false,
                     maximumExplorationWorkUnits: work));
 
             Assert.True(result.IsSuccess, result.Witness?.Message);

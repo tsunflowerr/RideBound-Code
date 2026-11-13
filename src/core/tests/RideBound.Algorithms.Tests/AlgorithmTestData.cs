@@ -1,3 +1,4 @@
+using RideBound.Algorithms.Candidates;
 using RideBound.Application.State;
 using RideBound.Application.Travel;
 using RideBound.Domain.Common;
@@ -19,6 +20,24 @@ internal static class AlgorithmTestData
     public static readonly NodeId NodeOne = new("node-1");
     public static readonly NodeId NodeTwo = new("node-2");
     public static readonly NodeId NodeThree = new("node-3");
+
+    /// <summary>
+    /// Generation limits the small test states fit in (100,000 candidates, 2 new requests); callers assert that
+    /// nothing was cut.
+    /// </summary>
+    public static CandidateGenerationOptions SmallGeneration { get; } = new(100_000, 2);
+
+    /// <summary>
+    /// Checks that generating <paramref name="state"/> with <paramref name="options"/> leaves nothing out: no request,
+    /// search path or candidate is cut by a limit. A test that hands the state to a policy calls it first, so the
+    /// policy decides over the complete candidate sets.
+    /// </summary>
+    public static void AssertGeneratedInFull(OnlineState state, CandidateGenerationOptions options)
+    {
+        var generated = new InsertionCandidateGenerator().Generate(state, options);
+        Assert.True(generated.IsSuccess, generated.Witness?.Message);
+        Assert.True(generated.Diagnostics!.IsComplete, "A generation limit left part of the candidates out.");
+    }
 
     public static OnlineState CreateState(
         IEnumerable<RideRequest> requests,

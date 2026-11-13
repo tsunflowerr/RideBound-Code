@@ -22,8 +22,9 @@ public sealed class CommitmentCandidateFilterTests
         };
         var generated = new InsertionCandidateGenerator().Generate(
             reduced,
-            CandidateGenerationOptions.ExactSmall);
+            AlgorithmTestData.SmallGeneration);
         Assert.True(generated.IsSuccess, generated.Witness?.Message);
+        Assert.True(generated.Diagnostics!.IsComplete);
         var candidateSets = generated.VehicleCandidates!;
         Assert.Contains(
             candidateSets.Single().Candidates,
