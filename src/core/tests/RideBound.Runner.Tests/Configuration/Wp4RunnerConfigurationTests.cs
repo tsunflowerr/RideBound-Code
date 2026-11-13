@@ -1,7 +1,6 @@
 using System.Reflection;
 using System.Text;
 using System.Text.Json.Nodes;
-using RideBound.Algorithms.Candidates;
 using RideBound.Algorithms.Policies;
 using RideBound.Application.Commitments;
 using RideBound.Domain.Commitments;
@@ -20,6 +19,7 @@ public sealed class Wp4RunnerConfigurationTests
         string fileName,
         string policyId)
     {
+        // The file names the portfolio retention, the only one the decoder accepts.
         var commitment = CommitmentConfiguration();
         var configuration = Wp4RunnerConfiguration.Decode(
             Encoding.UTF8.GetBytes(ArchivedCostFirst(fileName)),
@@ -30,9 +30,6 @@ public sealed class Wp4RunnerConfigurationTests
         Assert.Equal(
             InitialPromiseTrigger.BookingConfirmation,
             configuration.InitialPromiseTrigger);
-        Assert.Equal(
-            CandidateRetentionStrategy.ServiceSetStabilityPortfolioV1,
-            configuration.CandidateGeneration.RetentionStrategy);
         Assert.NotEqual(
             configuration.ContentHash,
             configuration.BindToCommitmentConfiguration(
@@ -56,9 +53,6 @@ public sealed class Wp4RunnerConfigurationTests
             OrToolsCandidateSelectionSolver.AdapterVersion,
             "google-ortools-9.15.6755");
         Assert.NotNull(first.SolverPolicyOptions);
-        Assert.Equal(
-            CandidateRetentionStrategy.ServiceSetStabilityPortfolioV1,
-            first.CandidateGeneration.RetentionStrategy);
         Assert.Equal(
             InitialPromiseTrigger.BookingConfirmation,
             first.InitialPromiseTrigger);
@@ -120,31 +114,15 @@ public sealed class Wp4RunnerConfigurationTests
     }
 
     [Fact]
-    public void Candidate_retention_strategy_is_explicit_for_new_configs_and_legacy_when_absent()
+    public void An_absent_initial_promise_trigger_is_initial_acceptance_and_unknown_values_are_refused()
     {
-        // The final configuration without the two keys whose absence selects the archived defaults.
+        // The final configuration without initialPromiseTrigger, whose absence selects initial-acceptance.
         var commitment = CommitmentConfiguration();
-        var legacyJson = FinalJson(json =>
-        {
-            json.Remove("initialPromiseTrigger");
-            json["candidateGeneration"]!.AsObject().Remove("retentionStrategy");
-        });
-        var legacy = Wp4RunnerConfiguration.Decode(
-            Encoding.UTF8.GetBytes(legacyJson),
-            commitment);
-        var portfolioJson = Edit(
-            legacyJson,
-            json => json["candidateGeneration"]!["retentionStrategy"] = "service-set-stability-portfolio-v1");
+        var portfolioJson = FinalJson(json => Assert.True(json.Remove("initialPromiseTrigger")));
         var portfolio = Wp4RunnerConfiguration.Decode(
             Encoding.UTF8.GetBytes(portfolioJson),
             commitment);
 
-        Assert.Equal(
-            CandidateRetentionStrategy.LegacyAcceptedCountCostSlack,
-            legacy.CandidateGeneration.RetentionStrategy);
-        Assert.Equal(
-            CandidateRetentionStrategy.ServiceSetStabilityPortfolioV1,
-            portfolio.CandidateGeneration.RetentionStrategy);
         Assert.Equal(
             InitialPromiseTrigger.InitialAcceptance,
             portfolio.InitialPromiseTrigger);
@@ -587,6 +565,75 @@ public sealed class Wp4RunnerConfigurationTests
             Refused(
                 FinalJson(json => Assert.True(json["candidateGeneration"]!.AsObject().Remove("scheduleStrategy"))),
                 commitment));
+    }
+
+    [Fact]
+    public void The_removed_legacy_retention_is_refused_with_a_pointer_to_the_archive()
+    {
+        const string refusal =
+            "WP4 retentionStrategy must be 'service-set-stability-portfolio-v1'. The legacy retention, which "
+            + "'legacy-accepted-count-cost-slack' or an absent key selected: removed; see commit ebca912 (branch "
+            + "research/final-real-runs-2026-11-06)";
+        const string evidenceRefusal =
+            "WP4 emitSolverExecutionEvidence true and the 'solverExecutionEvidenceProfile' key (solver execution "
+            + "evidence): removed; see commit ebca912 (branch research/final-real-runs-2026-11-06)";
+        var commitment = CommitmentConfiguration();
+        static void Legacy(JsonObject json) =>
+            json["candidateGeneration"]!["retentionStrategy"] = "legacy-accepted-count-cost-slack";
+        static void Absent(JsonObject json) =>
+            Assert.True(json["candidateGeneration"]!.AsObject().Remove("retentionStrategy"));
+        string Refused(string json) =>
+            Assert.Throws<InvalidDataException>(
+                () => Wp4RunnerConfiguration.Decode(Encoding.UTF8.GetBytes(json), commitment)).Message;
+        Assert.NotNull(Wp4RunnerConfiguration.Decode(Encoding.UTF8.GetBytes(FinalJson()), commitment));
+
+        // Files that were decoded before with the legacy retention: the final C1 file with the legacy value or without
+        // the key, and the archived boundary C1 file (no key) made cost-first.
+        Assert.Equal(refusal, Refused(FinalJson(Legacy)));
+        Assert.Equal(refusal, Refused(FinalJson(Absent)));
+        Assert.Equal(refusal, Refused(ArchivedCostFirst("wp4-ridebound-hard-vector-boundary-v1.json")));
+
+        // A check that runs later (here the G2 pairing) no longer gets to a legacy file.
+        Assert.Equal(
+            refusal,
+            Refused(FinalJson(json =>
+            {
+                Legacy(json);
+                json["candidateGeneration"]!["waitingRiderRelocation"] =
+                    new JsonObject { ["maximumTargetVehicles"] = 8 };
+            })));
+
+        // A file that the order or the evidence check refuses keeps its message: the archived boundary file as it is,
+        // and the final file without both keys, or with the legacy value and evidence on.
+        Assert.Equal(
+            StabilityFirstRefusal,
+            Refused(File.ReadAllText(Path.Combine(
+                RepositoryRoot(),
+                "benchmarks",
+                "configurations",
+                "wp4-ridebound-hard-vector-boundary-v1.json"))));
+        Assert.Equal(
+            StabilityFirstRefusal,
+            Refused(FinalJson(json =>
+            {
+                Absent(json);
+                Assert.True(json.Remove("selectionObjectiveOrder"));
+            })));
+        Assert.Equal(
+            evidenceRefusal,
+            Refused(FinalJson(json =>
+            {
+                Legacy(json);
+                json["emitSolverExecutionEvidence"] = true;
+            })));
+
+        // An unknown value and a value that is not a string keep their own errors.
+        Assert.Equal(
+            "Unknown candidate retentionStrategy.",
+            Refused(FinalJson(json => json["candidateGeneration"]!["retentionStrategy"] = "legacy")));
+        Assert.Equal(
+            "'retentionStrategy' must be a non-empty string.",
+            Refused(FinalJson(json => json["candidateGeneration"]!["retentionStrategy"] = 1)));
     }
 
     /// <summary>The refusal of every selectionObjectiveOrder other than cost-first, and of an absent key.</summary>

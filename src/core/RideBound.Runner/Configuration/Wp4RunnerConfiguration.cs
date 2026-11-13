@@ -95,6 +95,13 @@ public sealed class Wp4RunnerConfiguration
     /// ranking, which "stability-first" or an absent key selected, is refused.
     /// </summary>
     public const string CostFirstSelectionOrder = "cost-first";
+
+    /// <summary>
+    /// Required, and the only accepted value: candidates are kept by the service-set stability portfolio. The
+    /// legacy retention, which "legacy-accepted-count-cost-slack" or an absent key selected, is refused.
+    /// </summary>
+    private const string PortfolioRetention = "service-set-stability-portfolio-v1";
+    private const string LegacyRetention = "legacy-accepted-count-cost-slack";
     private static readonly IReadOnlySet<string> GenerationRequiredFields = Fields(
         "maximumCandidatesPerVehicle",
         "maximumNewRequestsPerVehicle",
@@ -417,6 +424,17 @@ public sealed class Wp4RunnerConfiguration
                 + $"(solver execution evidence): {RemovedFeature}");
         }
 
+        // The legacy retention is removed, so retentionStrategy must name the portfolio. An absent key selected the
+        // legacy retention and is refused too. Checked after the order and evidence checks, so a file that those
+        // checks refuse keeps its message.
+        if (!root.GetProperty("candidateGeneration").TryGetProperty("retentionStrategy", out var retentionElement)
+            || retentionElement.GetString() != PortfolioRetention)
+        {
+            throw new InvalidDataException(
+                $"WP4 retentionStrategy must be '{PortfolioRetention}'. The legacy retention, "
+                + $"which '{LegacyRetention}' or an absent key selected: {RemovedFeature}");
+        }
+
         // G2 needs both halves: candidates that move a waiting rider, and a policy that lets the
         // rider change vehicle. Either alone would be silently inert, so both are required
         // together.
@@ -500,19 +518,13 @@ public sealed class Wp4RunnerConfiguration
                 throw new InvalidDataException("Unknown candidate scheduleStrategy.");
         }
 
-        var retentionStrategy = element.TryGetProperty(
-            "retentionStrategy",
-            out _)
-                ? Text(element, "retentionStrategy") switch
-                {
-                    "legacy-accepted-count-cost-slack" =>
-                        CandidateRetentionStrategy.LegacyAcceptedCountCostSlack,
-                    "service-set-stability-portfolio-v1" =>
-                        CandidateRetentionStrategy.ServiceSetStabilityPortfolioV1,
-                    _ => throw new InvalidDataException(
-                        "Unknown candidate retentionStrategy."),
-                }
-                : CandidateRetentionStrategy.LegacyAcceptedCountCostSlack;
+        // Retention is always the service-set stability portfolio. Here only an unknown value is refused; the legacy
+        // value and an absent key are refused in Decode, after the order and evidence checks.
+        if (element.TryGetProperty("retentionStrategy", out _)
+            && Text(element, "retentionStrategy") is not (PortfolioRetention or LegacyRetention))
+        {
+            throw new InvalidDataException("Unknown candidate retentionStrategy.");
+        }
 
         // G2 (waiting-rider relocation). Absent means off, so every earlier configuration keeps
         // its canonical bytes and content hash. Each cap is optional: absent means unbounded.
@@ -563,7 +575,6 @@ public sealed class Wp4RunnerConfiguration
             PositiveInteger(
                 element.GetProperty("maximumExplorationWorkUnits"),
                 "maximumExplorationWorkUnits"),
-            retentionStrategy: retentionStrategy,
             waitingRiderRelocation: relocation,
             stopServiceDurationMs: stopServiceDurationMs);
     }

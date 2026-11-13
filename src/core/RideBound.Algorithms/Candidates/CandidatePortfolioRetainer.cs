@@ -23,19 +23,13 @@ public sealed class CandidatePortfolioRetainer
     /// </summary>
     public CandidateRetentionResult RetainRanked(
         IReadOnlyList<InsertionCandidate> rankedCandidates,
-        int maximumCandidates,
-        CandidateRetentionStrategy strategy)
+        int maximumCandidates)
     {
         ArgumentNullException.ThrowIfNull(rankedCandidates);
 
         if (maximumCandidates < 1)
         {
             throw new ArgumentOutOfRangeException(nameof(maximumCandidates));
-        }
-
-        if (!Enum.IsDefined(strategy))
-        {
-            throw new ArgumentOutOfRangeException(nameof(strategy));
         }
 
         if (rankedCandidates.Count == 0)
@@ -48,16 +42,6 @@ public sealed class CandidatePortfolioRetainer
         var ranked = rankedCandidates as InsertionCandidate[]
             ?? rankedCandidates.ToArray();
         RequireRankOrder(ranked);
-
-        // The published WP1–WP6 path is intentionally a fast legacy cap.  It
-        // already receives physically/schedule-validated candidates from the
-        // generator, and must not pay the portfolio proof scans on every
-        // rolling epoch.  The additional shape/no-op relationship proof is
-        // required only when the new strategy can rely on it.
-        if (strategy == CandidateRetentionStrategy.LegacyAcceptedCountCostSlack)
-        {
-            return RetainLegacy(ranked, maximumCandidates);
-        }
 
         var vehicleId = ranked[0].VehicleId;
 
@@ -128,34 +112,6 @@ public sealed class CandidatePortfolioRetainer
                     nameof(rankedCandidates));
             }
         }
-    }
-
-    private static CandidateRetentionResult RetainLegacy(
-        IReadOnlyList<InsertionCandidate> ranked,
-        int maximumCandidates)
-    {
-        if (ranked.Count <= maximumCandidates)
-        {
-            return new CandidateRetentionResult(ranked, []);
-        }
-
-        // The legacy path deliberately keeps its historical failure behavior: an
-        // absent or duplicated no-op throws from Single rather than producing a
-        // typed portfolio message. Changing it would change published WP1–WP6
-        // semantics for a case the generator cannot produce.
-        var noOp = ranked.Single(candidate => candidate.IsNoOp);
-        var retained = ranked
-            .Where(candidate => !candidate.IsNoOp)
-            .Take(maximumCandidates - 1)
-            .Append(noOp)
-            .ToArray();
-        var retainedIds = retained
-            .Select(candidate => candidate.CandidateId)
-            .ToHashSet(StringComparer.Ordinal);
-        var omitted = ranked
-            .Where(candidate => !retainedIds.Contains(candidate.CandidateId))
-            .ToArray();
-        return new CandidateRetentionResult(retained, omitted);
     }
 
     private static void ValidateCandidateShape(
@@ -322,9 +278,7 @@ public sealed class CandidatePortfolioRetainer
         InsertionCandidate noOp,
         int slotCount)
     {
-        // This relationship is a proof obligation of the service-set portfolio:
-        // it is not part of the legacy cap, whose published timing and behavior
-        // must remain untouched for WP1–WP6 configurations.
+        // This relationship is a proof obligation of the service-set portfolio.
         ValidateRelationToNoOp(ranked, noOp, ranked);
         var retained = new List<InsertionCandidate>(slotCount);
         var retainedIds = new HashSet<string>(StringComparer.Ordinal);
@@ -363,7 +317,7 @@ public sealed class CandidatePortfolioRetainer
                 .OrderBy(group => rankById[group[0].CandidateId])
                 .ToArray();
 
-            // Phase A preserves the cheapest legacy representative of every
+            // Phase A preserves the best-ranked (cheapest) representative of every
             // service set before spending slots on duplicate route variants.
             foreach (var serviceSet in serviceSets)
             {
@@ -383,7 +337,7 @@ public sealed class CandidatePortfolioRetainer
                 AddIfRoom(retained, retainedIds, stabilityAnchor, slotCount);
             }
 
-            // Phase C retains the old ranking for all still-unused slots.
+            // Phase C fills all still-unused slots in rank order.
             foreach (var candidate in cardinalityTier.OrderBy(
                          candidate => rankById[candidate.CandidateId]))
             {

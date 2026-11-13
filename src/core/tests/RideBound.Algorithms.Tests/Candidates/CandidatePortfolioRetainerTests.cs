@@ -31,16 +31,12 @@ public sealed class CandidatePortfolioRetainerTests
 
         for (var cap = 1; cap <= candidates.Length; cap++)
         {
-            var legacy = RankAndRetain(
-                candidates,
-                cap,
-                CandidateRetentionStrategy.LegacyAcceptedCountCostSlack);
+            var legacy = LegacyCut(candidates, cap);
             var portfolio = RankAndRetain(
                 candidates.Reverse().ToArray(),
-                cap,
-                CandidateRetentionStrategy.ServiceSetStabilityPortfolioV1);
+                cap);
 
-            foreach (var legacyCandidate in legacy.Retained.Where(
+            foreach (var legacyCandidate in legacy.Where(
                          candidate => !candidate.IsNoOp))
             {
                 var anchor = Assert.Single(
@@ -83,10 +79,12 @@ public sealed class CandidatePortfolioRetainerTests
             Candidate("v2-ab-2", VehicleTwo, [RequestA, RequestB], 7),
             Candidate("v2-bc-2", VehicleTwo, [RequestB, RequestC], 9),
         };
-        var legacy = SelectFleet(vehicleOne, vehicleTwo, 3,
-            CandidateRetentionStrategy.LegacyAcceptedCountCostSlack);
-        var portfolio = SelectFleet(vehicleOne, vehicleTwo, 3,
-            CandidateRetentionStrategy.ServiceSetStabilityPortfolioV1);
+        var legacy = SelectFleet(
+            LegacyCut(vehicleOne, 3),
+            LegacyCut(vehicleTwo, 3));
+        var portfolio = SelectFleet(
+            RankAndRetain(vehicleOne, 3).Retained,
+            RankAndRetain(vehicleTwo, 3).Retained);
 
         Assert.Equal(2, legacy.AcceptedRequestCount);
         Assert.Equal(4, portfolio.AcceptedRequestCount);
@@ -153,18 +151,12 @@ public sealed class CandidatePortfolioRetainerTests
             [1_000, 2_000, 2_100, 2_200]);
         var candidates = new[] { noOp, cheapest, secondCheapest, stable };
 
-        var legacy = RankAndRetain(
-            candidates,
-            3,
-            CandidateRetentionStrategy.LegacyAcceptedCountCostSlack);
-        var portfolio = RankAndRetain(
-            candidates,
-            3,
-            CandidateRetentionStrategy.ServiceSetStabilityPortfolioV1);
+        var legacy = LegacyCut(candidates, 3);
+        var portfolio = RankAndRetain(candidates, 3);
 
         Assert.Equal(
             ["new-before-all", "new-between-incumbent", "noop"],
-            legacy.Retained.Select(candidate => candidate.CandidateId));
+            legacy.Select(candidate => candidate.CandidateId));
         Assert.Equal(
             ["new-before-all", "incumbent-prefix-anchor", "noop"],
             portfolio.Retained.Select(candidate => candidate.CandidateId));
@@ -181,10 +173,7 @@ public sealed class CandidatePortfolioRetainerTests
             Candidate("ab-1", VehicleOne, [RequestA, RequestB], 4),
             Candidate("cd-2", VehicleOne, [RequestC, RequestD], 14),
         };
-        var expected = RankAndRetain(
-            candidates,
-            3,
-            CandidateRetentionStrategy.ServiceSetStabilityPortfolioV1);
+        var expected = RankAndRetain(candidates, 3);
 
         foreach (var permutation in new[]
                  {
@@ -192,10 +181,7 @@ public sealed class CandidatePortfolioRetainerTests
                      candidates.Skip(2).Concat(candidates.Take(2)).ToArray(),
                  })
         {
-            var actual = RankAndRetain(
-                permutation,
-                3,
-                CandidateRetentionStrategy.ServiceSetStabilityPortfolioV1);
+            var actual = RankAndRetain(permutation, 3);
             Assert.Equal(
                 expected.Retained.Select(candidate => candidate.CandidateId),
                 actual.Retained.Select(candidate => candidate.CandidateId));
@@ -252,15 +238,12 @@ public sealed class CandidatePortfolioRetainerTests
             var legacySets = sets.Select(
                     set =>
                     {
-                        var retained = RankAndRetain(
-                            set,
-                            Math.Min(cap, set.Count),
-                            CandidateRetentionStrategy.LegacyAcceptedCountCostSlack);
+                        var retained = LegacyCut(set, Math.Min(cap, set.Count));
                         return new VehicleCandidateSet(
-                            retained.Retained[0].VehicleId,
-                            retained.Retained,
+                            retained[0].VehicleId,
+                            retained,
                             [],
-                            retained.Omitted.Count > 0);
+                            retained.Length < set.Count);
                     })
                 .ToArray();
             var portfolioSets = sets.Select(
@@ -268,8 +251,7 @@ public sealed class CandidatePortfolioRetainerTests
                     {
                         var retained = RankAndRetain(
                             set.Reverse().ToArray(),
-                            Math.Min(cap, set.Count),
-                            CandidateRetentionStrategy.ServiceSetStabilityPortfolioV1);
+                            Math.Min(cap, set.Count));
                         return new VehicleCandidateSet(
                             retained.Retained[0].VehicleId,
                             retained.Retained,
@@ -331,16 +313,12 @@ public sealed class CandidatePortfolioRetainerTests
 
                     for (var cap = 1; cap <= candidates.Count; cap++)
                     {
-                        var legacy = RankAndRetain(
-                            candidates,
-                            cap,
-                            CandidateRetentionStrategy.LegacyAcceptedCountCostSlack);
+                        var legacy = LegacyCut(candidates, cap);
                         var portfolio = RankAndRetain(
                             candidates.AsEnumerable().Reverse().ToArray(),
-                            cap,
-                            CandidateRetentionStrategy.ServiceSetStabilityPortfolioV1);
+                            cap);
 
-                        foreach (var legacyCandidate in legacy.Retained.Where(
+                        foreach (var legacyCandidate in legacy.Where(
                                      candidate => !candidate.IsNoOp))
                         {
                             Assert.Contains(
@@ -365,33 +343,27 @@ public sealed class CandidatePortfolioRetainerTests
         Assert.Throws<ArgumentException>(
             () => RankAndRetain(
                 [candidate],
-                1,
-                CandidateRetentionStrategy.ServiceSetStabilityPortfolioV1));
+                1));
         Assert.Throws<ArgumentException>(
             () => RankAndRetain(
                 [noOp, candidate, duplicate],
-                2,
-                CandidateRetentionStrategy.ServiceSetStabilityPortfolioV1));
+                2));
         Assert.Throws<ArgumentException>(
             () => RankAndRetain(
                 [noOp, Candidate("v2", VehicleTwo, [RequestA], 1)],
-                2,
-                CandidateRetentionStrategy.ServiceSetStabilityPortfolioV1));
+                2));
         Assert.Throws<ArgumentException>(
             () => RankAndRetain(
                 [noOp with { NewRequestIds = [RequestA] }],
-                1,
-                CandidateRetentionStrategy.ServiceSetStabilityPortfolioV1));
+                1));
         Assert.Throws<ArgumentException>(
             () => RankAndRetain(
                 [noOp, candidate with { NewRequestIds = [RequestA, RequestA] }],
-                2,
-                CandidateRetentionStrategy.ServiceSetStabilityPortfolioV1));
+                2));
         Assert.Throws<ArgumentException>(
             () => RankAndRetain(
                 [noOp, candidate with { NewRequestIds = [RequestB] }],
-                2,
-                CandidateRetentionStrategy.ServiceSetStabilityPortfolioV1));
+                2));
         var hiddenRequestStops = new[]
         {
             Stop("hidden-a-pickup", "hidden-a-origin", RouteStopKind.Pickup, RequestA),
@@ -402,8 +374,7 @@ public sealed class CandidatePortfolioRetainerTests
         Assert.Throws<ArgumentException>(
             () => RankAndRetain(
                 [noOp, Candidate("hidden-request", VehicleOne, [RequestA], 1, hiddenRequestStops)],
-                1,
-                CandidateRetentionStrategy.ServiceSetStabilityPortfolioV1));
+                1));
         Assert.Throws<ArgumentException>(
             () => RankAndRetain(
                 [
@@ -413,66 +384,41 @@ public sealed class CandidatePortfolioRetainerTests
                         Schedule = new CandidateSchedule([], 1),
                     },
                 ],
-                2,
-                CandidateRetentionStrategy.ServiceSetStabilityPortfolioV1));
-    }
-
-    [Fact]
-    public void Candidate_generation_options_require_explicit_portfolio_opt_in()
-    {
-        var options = new CandidateGenerationOptions(10, 2, exactSmallMode: false);
-
-        Assert.Equal(
-            CandidateRetentionStrategy.LegacyAcceptedCountCostSlack,
-            options.RetentionStrategy);
-    }
-
-    [Fact]
-    public void Legacy_cap_preserves_historical_fast_path_without_portfolio_shape_proof()
-    {
-        var noOp = NoOp(VehicleOne);
-        var malformedOnlyForThePortfolioProof = Candidate(
-            "legacy-shape-not-read",
-            VehicleOne,
-            [RequestA],
-            1) with
-        {
-            Schedule = new CandidateSchedule([], 1),
-        };
-
-        var retained = RankAndRetain(
-            [noOp, malformedOnlyForThePortfolioProof],
-            1,
-            CandidateRetentionStrategy.LegacyAcceptedCountCostSlack);
-
-        Assert.Equal([noOp.CandidateId], retained.Retained.Select(candidate => candidate.CandidateId));
-        Assert.Equal(
-            [malformedOnlyForThePortfolioProof.CandidateId],
-            retained.Omitted.Select(candidate => candidate.CandidateId));
+                2));
     }
 
     // Rank first, then retain: the order the candidate generator uses.
     private CandidateRetentionResult RankAndRetain(
         IReadOnlyCollection<InsertionCandidate> candidates,
-        int maximumCandidates,
-        CandidateRetentionStrategy strategy) =>
+        int maximumCandidates) =>
         _retainer.RetainRanked(
             CandidatePortfolioRetainer.Rank(candidates).ToArray(),
-            maximumCandidates,
-            strategy);
+            maximumCandidates);
 
-    private FleetSelection SelectFleet(
-        IReadOnlyCollection<InsertionCandidate> vehicleOne,
-        IReadOnlyCollection<InsertionCandidate> vehicleTwo,
-        int cap,
-        CandidateRetentionStrategy strategy)
+    // The legacy retention, kept here only as the reference the portfolio is measured against:
+    // a plain cut of the ranking to the maximumCandidates - 1 best-ranked candidates and the no-op.
+    private static InsertionCandidate[] LegacyCut(
+        IReadOnlyCollection<InsertionCandidate> candidates,
+        int maximumCandidates)
     {
-        var first = RankAndRetain(vehicleOne, cap, strategy);
-        var second = RankAndRetain(vehicleTwo, cap, strategy);
+        var ranked = CandidatePortfolioRetainer.Rank(candidates).ToArray();
+        return ranked.Length <= maximumCandidates
+            ? ranked
+            : ranked
+                .Where(candidate => !candidate.IsNoOp)
+                .Take(maximumCandidates - 1)
+                .Append(ranked.Single(candidate => candidate.IsNoOp))
+                .ToArray();
+    }
+
+    private static FleetSelection SelectFleet(
+        IReadOnlyList<InsertionCandidate> vehicleOne,
+        IReadOnlyList<InsertionCandidate> vehicleTwo)
+    {
         var selected = new CandidateFleetSelector().Select(
         [
-            new VehicleCandidateSet(VehicleOne, first.Retained, [], true),
-            new VehicleCandidateSet(VehicleTwo, second.Retained, [], true),
+            new VehicleCandidateSet(VehicleOne, vehicleOne, [], true),
+            new VehicleCandidateSet(VehicleTwo, vehicleTwo, [], true),
         ]);
         Assert.True(selected.IsSuccess, selected.Witness?.Message);
         return selected.Selection!;

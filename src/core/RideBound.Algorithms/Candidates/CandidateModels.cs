@@ -15,12 +15,6 @@ public sealed record CandidateSchedule(
     IReadOnlyList<ScheduledStop> Stops,
     long OperationalCost);
 
-public enum CandidateRetentionStrategy
-{
-    LegacyAcceptedCountCostSlack,
-    ServiceSetStabilityPortfolioV1,
-}
-
 /// <summary>
 /// The side of a waiting-rider relocation (G2) a candidate stands for: the donor route
 /// drops the rider, the receiver route carries it. Only a donor and a receiver of the
@@ -189,8 +183,6 @@ public sealed record CandidateGenerationOptions
         int maximumNewRequestsPerVehicle,
         bool exactSmallMode,
         long maximumExplorationWorkUnits = 100_000,
-        CandidateRetentionStrategy retentionStrategy =
-            CandidateRetentionStrategy.LegacyAcceptedCountCostSlack,
         WaitingRiderRelocationGenerationOptions? waitingRiderRelocation = null,
         long stopServiceDurationMs = 0)
     {
@@ -213,11 +205,6 @@ public sealed record CandidateGenerationOptions
                 nameof(maximumExplorationWorkUnits));
         }
 
-        if (!Enum.IsDefined(retentionStrategy))
-        {
-            throw new ArgumentOutOfRangeException(nameof(retentionStrategy));
-        }
-
         MaximumCandidatesPerVehicle = maximumCandidatesPerVehicle;
         MaximumNewRequestsPerVehicle = maximumNewRequestsPerVehicle;
         ExactSmallMode = exactSmallMode;
@@ -227,7 +214,6 @@ public sealed record CandidateGenerationOptions
             throw new ArgumentOutOfRangeException(nameof(stopServiceDurationMs));
         }
 
-        RetentionStrategy = retentionStrategy;
         WaitingRiderRelocation = waitingRiderRelocation;
         StopServiceDuration = new Duration(stopServiceDurationMs);
     }
@@ -239,8 +225,6 @@ public sealed record CandidateGenerationOptions
     public bool ExactSmallMode { get; }
 
     public long MaximumExplorationWorkUnits { get; }
-
-    public CandidateRetentionStrategy RetentionStrategy { get; }
 
     /// <summary>
     /// Null disables G2. Otherwise every eligible waiting rider (up to the cap) seeds donor

@@ -487,8 +487,7 @@ public sealed class InsertionCandidateGenerator
 
             var retention = _portfolioRetainer.RetainRanked(
                 rankedCandidates,
-                options.MaximumCandidatesPerVehicle,
-                options.RetentionStrategy);
+                options.MaximumCandidatesPerVehicle);
             omittedByCap = retention.Omitted.ToArray();
             ranked = retention.Retained.ToList();
         }
