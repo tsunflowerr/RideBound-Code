@@ -151,26 +151,11 @@ public sealed class InsertionCandidateGenerator
                      value => value.Id.Value,
                      StringComparer.Ordinal))
         {
-            var eligibility = _relocationBuilder.Eligible(
-                state,
-                donor,
-                relocationOptions.MaximumRidersPerVehicle);
+            var seeds = _relocationBuilder.Eligible(state, donor);
 
-            if (eligibility.EligibleRequestIds.Count == 0)
+            if (seeds.Count == 0)
             {
                 continue;
-            }
-
-            if (eligibility.OmittedRequestIds.Count > 0)
-            {
-                result.Omissions.Add(
-                    new CandidateOmissionWitness(
-                        CandidateGenerationFailureCodes.RelocationRiderBoundOmission,
-                        eligibility.OmittedRequestIds.Count,
-                        CandidateIdentity.CreateOmissionDigest(
-                            eligibility.OmittedRequestIds.Select(id => id.Value)),
-                        eligibility.OmittedRequestIds));
-                result.Truncated.Add(donor.Id);
             }
 
             var work = 0L;
@@ -181,7 +166,7 @@ public sealed class InsertionCandidateGenerator
             var saturated = false;
             var withoutReceiver = 0L;
 
-            foreach (var seed in eligibility.Considered)
+            foreach (var seed in seeds)
             {
                 var targets = _relocationBuilder.Targets(
                     state,
@@ -305,9 +290,7 @@ public sealed class InsertionCandidateGenerator
             result.Losses.Add(
                 new RelocationCandidateLoss(
                     donor.Id,
-                    eligibility.EligibleRequestIds.Count,
-                    eligibility.Considered.Count,
-                    eligibility.OmittedRequestIds.Count,
+                    seeds.Count,
                     work,
                     evaluatedReceivers,
                     feasibleReceivers,

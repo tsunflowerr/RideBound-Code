@@ -64,7 +64,7 @@ public sealed class WaitingRiderRelocationGenerationTests
 
         var loss = Assert.Single(result.Diagnostics!.RelocationLosses!);
         Assert.Equal(AlgorithmTestData.VehicleOne, loss.DonorVehicleId);
-        Assert.Equal((1, 1, 0), (loss.EligibleRiderCount, loss.ConsideredRiderCount, loss.OmittedRiderCount));
+        Assert.Equal(1, loss.EligibleRiderCount);
         Assert.Equal(1, loss.EvaluatedReceiverRouteCount);
         Assert.Equal(1, loss.FeasibleReceiverCount);
         Assert.Equal(1, loss.FeasibleDonorCount);
@@ -143,26 +143,6 @@ public sealed class WaitingRiderRelocationGenerationTests
         Assert.Equal(0, loss.FeasibleReceiverCount);
     }
 
-    [Fact]
-    public void A_rider_cap_omits_later_riders_with_a_witness()
-    {
-        var second = AlgorithmTestData.PendingRequest("waiting-2", AlgorithmTestData.NodeOne, AlgorithmTestData.NodeTwo);
-        var state = Fixture(secondWaiting: second);
-        var capped = Generate(state, new WaitingRiderRelocationGenerationOptions(maximumRidersPerVehicle: 1));
-
-        Assert.True(capped.IsSuccess, capped.Witness?.Message);
-        var omission = Assert.Single(
-            capped.Diagnostics!.Omissions,
-            value => value.Code == CandidateGenerationFailureCodes.RelocationRiderBoundOmission);
-        Assert.Equal(1, omission.Count);
-        Assert.Equal([second.Id], omission.RequestIds);
-        Assert.False(capped.Diagnostics.IsComplete);
-        Assert.DoesNotContain(
-            Relocation(capped, RelocationRole.Donor),
-            value => value.RelocatedRequestId == second.Id);
-        Assert.True(capped.VehicleCandidates!.Single(set => set.VehicleId == AlgorithmTestData.VehicleOne).WasTruncated);
-    }
-
     /// <summary>
     /// A donor seed needs the rider's whole pickup and drop-off pair in the mutable suffix: a rider whose pair
     /// sits in the frozen prefix, or who is on board, is never eligible.
@@ -178,7 +158,7 @@ public sealed class WaitingRiderRelocationGenerationTests
         var donor = state.Run.Vehicles[AlgorithmTestData.VehicleOne];
         var builder = new WaitingRiderRelocationBuilder();
 
-        Assert.Equal([Waiting, second.Id], builder.Eligible(state, donor, null).EligibleRequestIds);
+        Assert.Equal([Waiting, second.Id], builder.Eligible(state, donor).Select(seed => seed.Request.Id));
 
         // The waiting rider's pair moves to the frozen prefix, not yet executed.
         var frozen = VehicleState.Create(
@@ -194,7 +174,7 @@ public sealed class WaitingRiderRelocationGenerationTests
                 donor.Route.MutableSuffix.Where(stop => stop.RequestId == Waiting).ToArray(),
                 donor.Route.MutableSuffix.Where(stop => stop.RequestId == second.Id).ToArray()).Value!,
             donor.LastObservedEpoch).Value!;
-        Assert.Equal([second.Id], builder.Eligible(state, frozen, null).EligibleRequestIds);
+        Assert.Equal([second.Id], builder.Eligible(state, frozen).Select(seed => seed.Request.Id));
 
         // The waiting rider boards.
         var boarded = state with
@@ -203,21 +183,19 @@ public sealed class WaitingRiderRelocationGenerationTests
         };
         Assert.Equal(
             [second.Id],
-            builder.Eligible(boarded, boarded.Run.Vehicles[donor.Id], null).EligibleRequestIds);
+            builder.Eligible(boarded, boarded.Run.Vehicles[donor.Id]).Select(seed => seed.Request.Id));
     }
 
     [Fact]
-    public void Relocation_options_reject_non_positive_caps()
+    public void Relocation_options_reject_a_non_positive_target_cap()
     {
         var options = new CandidateGenerationOptions(
             100,
             2,
-            waitingRiderRelocation: new WaitingRiderRelocationGenerationOptions(2, 3));
+            waitingRiderRelocation: new WaitingRiderRelocationGenerationOptions(3));
 
-        Assert.Equal(2, options.WaitingRiderRelocation!.MaximumRidersPerVehicle);
-        Assert.Equal(3, options.WaitingRiderRelocation.MaximumTargetVehicles);
-        Assert.Throws<ArgumentOutOfRangeException>(() => new WaitingRiderRelocationGenerationOptions(0, null));
-        Assert.Throws<ArgumentOutOfRangeException>(() => new WaitingRiderRelocationGenerationOptions(null, 0));
+        Assert.Equal(3, options.WaitingRiderRelocation!.MaximumTargetVehicles);
+        Assert.Throws<ArgumentOutOfRangeException>(() => new WaitingRiderRelocationGenerationOptions(0));
     }
 
     private static CandidateGenerationResult Generate(

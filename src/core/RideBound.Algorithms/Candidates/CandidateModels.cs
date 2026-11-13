@@ -85,8 +85,6 @@ public sealed record VehicleCandidateLoss(
 public sealed record RelocationCandidateLoss(
     VehicleId DonorVehicleId,
     long EligibleRiderCount,
-    long ConsideredRiderCount,
-    long OmittedRiderCount,
     long WorkUnits,
     long EvaluatedReceiverRouteCount,
     long FeasibleReceiverCount,
@@ -134,9 +132,7 @@ public sealed record CandidateGenerationDiagnostics(
             loss => loss.OmittedUnexpandedCandidatePathCount == 0
                 && loss.OmittedFeasibleCandidateCountByCap == 0)
         && (RelocationLosses is null
-            || RelocationLosses.All(
-                loss => loss.OmittedRiderCount == 0
-                    && loss.OmittedUnexpandedDonorPathCount == 0));
+            || RelocationLosses.All(loss => loss.OmittedUnexpandedDonorPathCount == 0));
 }
 
 public sealed record CandidateGenerationResult
@@ -216,38 +212,28 @@ public sealed record CandidateGenerationOptions
     public long MaximumExplorationWorkUnits { get; }
 
     /// <summary>
-    /// Null disables G2. Otherwise every eligible waiting rider (up to the cap) seeds donor
-    /// and receiver candidates after the ordinary per-vehicle search.
+    /// Null disables G2. Otherwise every eligible waiting rider seeds donor and receiver
+    /// candidates after the ordinary per-vehicle search.
     /// </summary>
     public WaitingRiderRelocationGenerationOptions? WaitingRiderRelocation { get; }
 }
 
 /// <summary>
-/// G2 generation bounds. A null cap means every eligible waiting rider of a donor, and every
-/// other vehicle as a receiver; the k nearest targets are ranked by travel time from the
-/// vehicle's schedule start node to the rider's origin, ties by ordinal vehicle id.
+/// G2 generation bounds. Every eligible waiting rider of a donor is considered. A null target cap
+/// means every other vehicle as a receiver; the k nearest targets are ranked by travel time from
+/// the vehicle's schedule start node to the rider's origin, ties by ordinal vehicle id.
 /// </summary>
 public sealed record WaitingRiderRelocationGenerationOptions
 {
-    public WaitingRiderRelocationGenerationOptions(
-        int? maximumRidersPerVehicle = null,
-        int? maximumTargetVehicles = null)
+    public WaitingRiderRelocationGenerationOptions(int? maximumTargetVehicles = null)
     {
-        if (maximumRidersPerVehicle is < 1)
-        {
-            throw new ArgumentOutOfRangeException(nameof(maximumRidersPerVehicle));
-        }
-
         if (maximumTargetVehicles is < 1)
         {
             throw new ArgumentOutOfRangeException(nameof(maximumTargetVehicles));
         }
 
-        MaximumRidersPerVehicle = maximumRidersPerVehicle;
         MaximumTargetVehicles = maximumTargetVehicles;
     }
-
-    public int? MaximumRidersPerVehicle { get; }
 
     public int? MaximumTargetVehicles { get; }
 }
@@ -262,8 +248,6 @@ public static class CandidateGenerationFailureCodes
     public const string RequestBoundOmission = "REQUEST_BOUND_OMISSION";
     public const string WorkBoundOmission = "WORK_BOUND_OMISSION";
     public const string CandidateCapOmission = "CANDIDATE_CAP_OMISSION";
-    public const string RelocationRiderBoundOmission =
-        "RELOCATION_RIDER_BOUND_OMISSION";
     public const string RelocationWorkBoundOmission =
         "RELOCATION_WORK_BOUND_OMISSION";
 }

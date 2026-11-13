@@ -17,11 +17,6 @@ public sealed record WaitingRiderRelocationSeed(
     RouteStop DropOff,
     IReadOnlyList<RouteStop> DonorSuffix);
 
-public sealed record WaitingRiderRelocationEligibility(
-    IReadOnlyList<WaitingRiderRelocationSeed> Considered,
-    IReadOnlyList<RequestId> EligibleRequestIds,
-    IReadOnlyList<RequestId> OmittedRequestIds);
-
 /// <summary>
 /// Builds the G2 neighbourhood (waiting-rider relocation). It only builds routes; validation,
 /// work accounting and identities stay in <see cref="InsertionCandidateGenerator"/>.
@@ -34,10 +29,10 @@ public sealed record WaitingRiderRelocationEligibility(
 /// </summary>
 public sealed class WaitingRiderRelocationBuilder
 {
-    public WaitingRiderRelocationEligibility Eligible(
+    /// <summary>The seed of every eligible waiting rider of the donor, by pickup index then ordinal id.</summary>
+    public IReadOnlyList<WaitingRiderRelocationSeed> Eligible(
         OnlineState state,
-        VehicleState donor,
-        int? maximumRiders)
+        VehicleState donor)
     {
         ArgumentNullException.ThrowIfNull(state);
         ArgumentNullException.ThrowIfNull(donor);
@@ -59,23 +54,18 @@ public sealed class WaitingRiderRelocationBuilder
             .ThenBy(value => value.Request.Id.Value, StringComparer.Ordinal)
             .Select(value => value.Request)
             .ToArray();
-        var considered = maximumRiders is int cap ? eligible.Take(cap).ToArray() : eligible;
-        var omitted = eligible.Skip(considered.Length).ToArray();
         var suffix = donor.Route.MutableSuffix;
 
-        return new WaitingRiderRelocationEligibility(
-            considered
-                .Select(
-                    request => new WaitingRiderRelocationSeed(
-                        request,
-                        donor,
-                        suffix[IndexOf(suffix, request.Id, RouteStopKind.Pickup)],
-                        suffix[IndexOf(suffix, request.Id, RouteStopKind.DropOff)],
-                        Array.AsReadOnly(
-                            suffix.Where(stop => stop.RequestId != request.Id).ToArray())))
-                .ToArray(),
-            eligible.Select(request => request.Id).ToArray(),
-            omitted.Select(request => request.Id).ToArray());
+        return eligible
+            .Select(
+                request => new WaitingRiderRelocationSeed(
+                    request,
+                    donor,
+                    suffix[IndexOf(suffix, request.Id, RouteStopKind.Pickup)],
+                    suffix[IndexOf(suffix, request.Id, RouteStopKind.DropOff)],
+                    Array.AsReadOnly(
+                        suffix.Where(stop => stop.RequestId != request.Id).ToArray())))
+            .ToArray();
     }
 
     /// <summary>

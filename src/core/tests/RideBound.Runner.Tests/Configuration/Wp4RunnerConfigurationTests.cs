@@ -773,6 +773,88 @@ public sealed class Wp4RunnerConfigurationTests
                 CommitmentPolicyConfiguration.Decode(Encoding.UTF8.GetBytes(reference))).ContentHash.Value);
     }
 
+    [Fact]
+    public void The_removed_relocation_rider_cap_is_refused_with_a_pointer_to_the_archive()
+    {
+        const string refusal =
+            "WP4 'candidateGeneration.waitingRiderRelocation.maximumRidersPerVehicle' key (the G2 rider cap): "
+            + "removed; see commit ebca912 (branch research/final-real-runs-2026-11-06)";
+        var commitment = CommitmentConfiguration();
+        // The final file with a G2 block (k = 8, as the final G2 files) that also has the rider cap key.
+        static void G2(JsonObject json, JsonNode? riders) =>
+            json["candidateGeneration"]!["waitingRiderRelocation"] = new JsonObject
+            {
+                ["maximumTargetVehicles"] = 8,
+                ["maximumRidersPerVehicle"] = riders,
+            };
+        string Refused(string json) =>
+            Assert.Throws<InvalidDataException>(
+                () => Wp4RunnerConfiguration.Decode(Encoding.UTF8.GetBytes(json), commitment)).Message;
+
+        // Any value: 1 to Int32.MaxValue were read before, the others were refused by the old reader with its own
+        // messages.
+        foreach (var value in new JsonNode[] { 1, 2, int.MaxValue, 0, -1, 2_147_483_648L, "2", true })
+        {
+            Assert.Equal(refusal, Refused(FinalJson(json => G2(json, value))));
+        }
+
+        // Checks that run later no longer get to such a file: the target cap, the dwell refusal, the exact-small
+        // refusal, and the evidence check in Decode.
+        Assert.Equal(
+            refusal,
+            Refused(FinalJson(json =>
+            {
+                G2(json, 2);
+                json["candidateGeneration"]!["waitingRiderRelocation"]!["maximumTargetVehicles"] = 0;
+            })));
+        Assert.Equal(
+            refusal,
+            Refused(FinalJson(json =>
+            {
+                G2(json, 2);
+                json["candidateGeneration"]!["stopServiceDurationMs"] = 24_000;
+            })));
+        Assert.Equal(
+            refusal,
+            Refused(FinalJson(json =>
+            {
+                G2(json, 2);
+                json["candidateGeneration"]!["exactSmallMode"] = true;
+            })));
+        Assert.Equal(
+            refusal,
+            Refused(FinalJson(json =>
+            {
+                G2(json, 2);
+                json["emitSolverExecutionEvidence"] = true;
+            })));
+
+        // Checks that run before it keep their messages: the origin-hold refusal and an unknown key in the G2 block.
+        Assert.Equal(
+            "WP4 scheduleStrategy 'origin-hold-relocated-wait' (the origin-hold schedule): "
+            + "removed; see commit ebca912 (branch research/final-real-runs-2026-11-06)",
+            Refused(FinalJson(json =>
+            {
+                G2(json, 2);
+                json["candidateGeneration"]!["scheduleStrategy"] = "origin-hold-relocated-wait";
+            })));
+        Assert.Equal(
+            "Unknown field 'targets' at '$.candidateGeneration.waitingRiderRelocation'.",
+            Refused(FinalJson(json =>
+            {
+                G2(json, 2);
+                json["candidateGeneration"]!["waitingRiderRelocation"]!["targets"] = 8;
+            })));
+
+        // A fraction never reaches the field reader: canonical JSON refuses it first, at the same path.
+        Assert.Contains(
+            "$.candidateGeneration.waitingRiderRelocation.maximumRidersPerVehicle",
+            Assert.Throws<RideBound.Contracts.Serialization.CanonicalJsonException>(
+                () => Wp4RunnerConfiguration.Decode(
+                    Encoding.UTF8.GetBytes(FinalJson(json => G2(json, 1.5))),
+                    commitment)).Message);
+    }
+
     /// <summary>The refusal of every selectionObjectiveOrder other than cost-first, and of an absent key.</summary>
     private const string StabilityFirstRefusal =
         "WP4 selectionObjectiveOrder must be 'cost-first'. The stability-first ranking, which 'stability-first' or an "
@@ -897,7 +979,6 @@ public sealed class Wp4RunnerConfigurationTests
         var off = Wp4RunnerConfiguration.Decode(Encoding.UTF8.GetBytes(costFirst), plain);
 
         Assert.NotNull(g2.CandidateGeneration.WaitingRiderRelocation);
-        Assert.Null(g2.CandidateGeneration.WaitingRiderRelocation!.MaximumRidersPerVehicle);
         Assert.Equal(8, g2.CandidateGeneration.WaitingRiderRelocation.MaximumTargetVehicles);
         Assert.Null(off.CandidateGeneration.WaitingRiderRelocation);
         Assert.NotEqual(off.ContentHash, g2.ContentHash);

@@ -122,6 +122,11 @@ public sealed class Wp4RunnerConfiguration
         "retentionStrategy",
         "waitingRiderRelocation",
         "stopServiceDurationMs");
+
+    /// <summary>
+    /// The allowed waitingRiderRelocation keys. `maximumRidersPerVehicle` belongs to the removed G2 rider cap; it stays
+    /// here only so that a file with it gets the removal refusal in <see cref="ReadGeneration"/>.
+    /// </summary>
     private static readonly IReadOnlySet<string> RelocationGenerationFields = Fields(
         "maximumRidersPerVehicle",
         "maximumTargetVehicles");
@@ -532,7 +537,7 @@ public sealed class Wp4RunnerConfiguration
         }
 
         // G2 (waiting-rider relocation). Absent means off, so every earlier configuration keeps
-        // its canonical bytes and content hash. Each cap is optional: absent means unbounded.
+        // its canonical bytes and content hash. The target cap is optional: absent means every other vehicle.
         WaitingRiderRelocationGenerationOptions? relocation = null;
 
         if (element.TryGetProperty("waitingRiderRelocation", out var relocationElement))
@@ -543,10 +548,17 @@ public sealed class Wp4RunnerConfiguration
                 Fields(),
                 "$.candidateGeneration.waitingRiderRelocation");
 
+            // The G2 rider cap is removed: every eligible waiting rider is considered, which is what an absent key
+            // meant. The key is refused with any value. Checked in the same place as the old read, so the checks before
+            // it keep their messages; with the key, the checks after it are not reached.
+            if (relocationElement.TryGetProperty("maximumRidersPerVehicle", out _))
+            {
+                throw new InvalidDataException(
+                    "WP4 'candidateGeneration.waitingRiderRelocation.maximumRidersPerVehicle' key (the G2 rider cap): "
+                    + RemovedFeature);
+            }
+
             relocation = new WaitingRiderRelocationGenerationOptions(
-                relocationElement.TryGetProperty("maximumRidersPerVehicle", out var riders)
-                    ? PositiveInt32(riders, "maximumRidersPerVehicle")
-                    : null,
                 relocationElement.TryGetProperty("maximumTargetVehicles", out var targets)
                     ? PositiveInt32(targets, "maximumTargetVehicles")
                     : null);

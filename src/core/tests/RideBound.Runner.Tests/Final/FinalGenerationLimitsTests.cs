@@ -28,6 +28,5 @@ public sealed class FinalGenerationLimitsTests
         Assert.Equal(2, generation.MaximumNewRequestsPerVehicle);
         Assert.Equal(10_000, generation.MaximumExplorationWorkUnits);
         Assert.Equal(targets, generation.WaitingRiderRelocation?.MaximumTargetVehicles);
-        Assert.Null(generation.WaitingRiderRelocation?.MaximumRidersPerVehicle);
     }
 }
