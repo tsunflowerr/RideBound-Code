@@ -89,8 +89,6 @@ public sealed class InsertionCandidateGenerator
                     omittedRequests.Length,
                     CandidateIdentity.CreateOmissionDigest(
                         omittedRequests.Select(request => request.Id.Value)),
-                    "Pending requests beyond the deterministic " +
-                    "(latestPickup, arrivalTime, requestId) bound were omitted.",
                     RequestIds: Array.AsReadOnly(
                         omittedRequests.Select(request => request.Id).ToArray())));
         }
@@ -205,9 +203,6 @@ public sealed class InsertionCandidateGenerator
                         eligibility.OmittedRequestIds.Count,
                         CandidateIdentity.CreateOmissionDigest(
                             eligibility.OmittedRequestIds.Select(id => id.Value)),
-                        "Eligible waiting riders beyond the G2 rider cap were not " +
-                        "considered for relocation.",
-                        donor.Id,
                         eligibility.OmittedRequestIds));
                 result.Truncated.Add(donor.Id);
             }
@@ -215,12 +210,10 @@ public sealed class InsertionCandidateGenerator
             var work = 0L;
             var evaluatedReceivers = 0L;
             var feasibleReceivers = 0L;
-            var evaluatedDonorPaths = 0L;
             var feasibleDonors = 0L;
             var omittedDonorPaths = 0L;
             var saturated = false;
             var withoutReceiver = 0L;
-            var donorInfeasible = 0L;
 
             foreach (var seed in eligibility.Considered)
             {
@@ -248,7 +241,6 @@ public sealed class InsertionCandidateGenerator
                     new Dictionary<string, CandidatePruneWitness>(StringComparer.Ordinal);
                 var donorOnly = donor.Route.ReplaceMutableSuffix(seed.DonorSuffix);
                 work = SaturatingAdd(work, 1);
-                evaluatedDonorPaths = SaturatingAdd(evaluatedDonorPaths, 1);
 
                 if (donorOnly.IsSuccess)
                 {
@@ -268,7 +260,6 @@ public sealed class InsertionCandidateGenerator
 
                 if (donorFeasible.Count == 0)
                 {
-                    donorInfeasible++;
                     continue;
                 }
 
@@ -334,9 +325,6 @@ public sealed class InsertionCandidateGenerator
                 }
 
                 work = SaturatingAdd(work, exploration.WorkUnits);
-                evaluatedDonorPaths = SaturatingAdd(
-                    evaluatedDonorPaths,
-                    exploration.EvaluatedCandidatePathCount);
                 omittedDonorPaths = SaturatingAdd(
                     omittedDonorPaths,
                     exploration.OmittedCandidatePathCount);
@@ -350,9 +338,6 @@ public sealed class InsertionCandidateGenerator
                             exploration.OmittedCandidatePathCount,
                             CandidateIdentity.CreateOmissionDigest(
                                 exploration.OmittedSubtreeIds),
-                            "Deterministic work cap left G2 donor exploration paths " +
-                            "unexpanded; their feasibility is unknown.",
-                            donor.Id,
                             [seed.Request.Id],
                             exploration.OmissionCountWasSaturated));
                     result.Truncated.Add(donor.Id);
@@ -373,12 +358,10 @@ public sealed class InsertionCandidateGenerator
                     work,
                     evaluatedReceivers,
                     feasibleReceivers,
-                    evaluatedDonorPaths,
                     feasibleDonors,
                     omittedDonorPaths,
                     saturated,
-                    withoutReceiver,
-                    donorInfeasible));
+                    withoutReceiver));
         }
 
         return result;
@@ -527,9 +510,6 @@ public sealed class InsertionCandidateGenerator
                     exploration.OmittedCandidatePathCount,
                     CandidateIdentity.CreateOmissionDigest(
                         exploration.OmittedSubtreeIds),
-                    "Deterministic work cap left raw candidate exploration " +
-                    "paths unexpanded; their feasibility is unknown.",
-                    vehicle.Id,
                     CountWasSaturated: exploration.OmissionCountWasSaturated));
         }
 
@@ -540,10 +520,7 @@ public sealed class InsertionCandidateGenerator
                     CandidateGenerationFailureCodes.CandidateCapOmission,
                     omittedByCap.Length,
                     CandidateIdentity.CreateOmissionDigest(
-                        omittedByCap.Select(candidate => candidate.CandidateId)),
-                    "Feasible candidates were omitted by the deterministic " +
-                    $"'{options.RetentionStrategy}' cap.",
-                    vehicle.Id));
+                        omittedByCap.Select(candidate => candidate.CandidateId))));
         }
 
         var loss = new VehicleCandidateLoss(
@@ -556,8 +533,7 @@ public sealed class InsertionCandidateGenerator
             omittedByCap.Length,
             exploration.OmittedCandidatePathCount > 0,
             omittedByCap.Length > 0,
-            exploration.OmissionCountWasSaturated,
-            vehicle.Id);
+            exploration.OmissionCountWasSaturated);
         var wasTruncated = requestsWereOmitted
             || loss.WorkBudgetExhausted
             || loss.CandidateCapApplied;

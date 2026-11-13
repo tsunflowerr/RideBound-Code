@@ -78,8 +78,6 @@ public sealed record CandidateOmissionWitness(
     string Code,
     long Count,
     string StableDigest,
-    string Message,
-    VehicleId? VehicleId = null,
     IReadOnlyList<RequestId>? RequestIds = null,
     bool CountWasSaturated = false);
 
@@ -93,8 +91,7 @@ public sealed record VehicleCandidateLoss(
     long OmittedFeasibleCandidateCountByCap,
     bool WorkBudgetExhausted,
     bool CandidateCapApplied,
-    bool OmissionCountWasSaturated = false,
-    VehicleId? VehicleId = null);
+    bool OmissionCountWasSaturated = false);
 
 /// <summary>
 /// G2 accounting for one donor vehicle with at least one eligible waiting rider. Kept apart
@@ -108,12 +105,10 @@ public sealed record RelocationCandidateLoss(
     long WorkUnits,
     long EvaluatedReceiverRouteCount,
     long FeasibleReceiverCount,
-    long EvaluatedDonorPathCount,
     long FeasibleDonorCount,
     long OmittedUnexpandedDonorPathCount,
     bool OmissionCountWasSaturated,
-    long RidersWithoutFeasibleReceiver,
-    long RidersWithInfeasibleDonorRoute);
+    long RidersWithoutFeasibleReceiver);
 
 /// <summary>
 /// A service-quality deadline the vehicle's unchanged active route can no longer
