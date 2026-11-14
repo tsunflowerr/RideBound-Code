@@ -107,50 +107,16 @@ public sealed class CommitmentDeadlineLockTests
         Assert.Equal("anchor", error.ParamName);
     }
 
-    [Theory]
-    [InlineData(Anchor - Slack, null)]                  // exactly on the floor: allowed
-    [InlineData(Anchor - Slack - 1, "deadline_floor")]  // one millisecond early: floor
-    [InlineData(Anchor + Slack, null)]                  // exactly on the cap: allowed
-    [InlineData(Anchor + Slack + 1, "deadline_cap")]    // one millisecond late: cap only
-    [InlineData(Anchor, null)]
-    public void Two_sided_deadline_is_a_window_around_the_initial_promise(
-        long candidateDropMs,
-        string? expectedRule)
-    {
-        var exogenous = Projection(Anchor);
-        var candidate = Projection(candidateDropMs);
-
-        var witnesses = Evaluate(
-            Policy(Slack, twoSided: true),
-            exogenous,
-            candidate,
-            Projection(Anchor));
-
-        if (expectedRule is null)
-        {
-            Assert.Empty(witnesses);
-        }
-        else
-        {
-            var witness = Assert.Single(witnesses);
-            Assert.Equal("drop_eta_ms", witness.Dimension);
-            Assert.Equal(expectedRule, witness.Rule);
-        }
-    }
-
     [Fact]
-    public void Favourable_drift_trips_only_the_two_sided_deadline_on_the_no_op()
+    public void Favourable_drift_never_trips_the_deadline_on_the_no_op()
     {
         // Corollary on drift direction: when the kept route has become EARLIER than
-        // the initial promise by more than the slack, the two-sided deadline rejects
-        // the no-op, while the one-sided deadline stays safe in the same state.
+        // the initial promise by more than the slack, the deadline still keeps the no-op.
         var early = Projection(Anchor - Slack - 1);
 
-        var twoSided = Evaluate(Policy(Slack, twoSided: true), early, early, Projection(Anchor));
-        var oneSided = Evaluate(Policy(Slack), early, early, Projection(Anchor));
+        var witnesses = Evaluate(Policy(Slack), early, early, Projection(Anchor));
 
-        Assert.Equal("deadline_floor", Assert.Single(twoSided).Rule);
-        Assert.Empty(oneSided);
+        Assert.Empty(witnesses);
     }
 
     [Fact]
@@ -215,18 +181,6 @@ public sealed class CommitmentDeadlineLockTests
     }
 
     [Fact]
-    public void A_zero_slack_two_sided_deadline_rejects_one_millisecond_early()
-    {
-        var anchor = Projection(Anchor);
-
-        Assert.Equal(
-            CommitmentLockEvaluator.DeadlineFloorRule,
-            Assert.Single(
-                Evaluate(Policy(0, twoSided: true), anchor, Projection(Anchor - 1), anchor))
-                .Rule);
-    }
-
-    [Fact]
     public void Extreme_canonical_times_do_not_overflow()
     {
         var zero = Projection(0);
@@ -235,9 +189,6 @@ public sealed class CommitmentDeadlineLockTests
         Assert.Equal(
             CommitmentLockEvaluator.DeadlineCapRule,
             Assert.Single(Evaluate(Policy(Slack), zero, max, zero)).Rule);
-        Assert.Equal(
-            CommitmentLockEvaluator.DeadlineFloorRule,
-            Assert.Single(Evaluate(Policy(Slack, twoSided: true), max, zero, max)).Rule);
         Assert.Empty(Evaluate(Policy(Slack), max, zero, max));
     }
 
@@ -256,7 +207,6 @@ public sealed class CommitmentDeadlineLockTests
 
     private static CommitmentPolicy Policy(
         long? slack,
-        bool twoSided = false,
         PromiseLock finalConfirmationLocks = PromiseLock.None) =>
         new(
             "policy-1",
@@ -267,8 +217,7 @@ public sealed class CommitmentDeadlineLockTests
                     CommitmentPhase.AllActive)),
             new MaterialRevisionRule(1, null),
             finalConfirmationLocks: finalConfirmationLocks,
-            dropEtaDeadlineSlack: slack is long value ? new Duration(value) : null,
-            dropEtaDeadlineTwoSided: twoSided);
+            dropEtaDeadlineSlack: slack is long value ? new Duration(value) : null);
 
     private static RideRequest WaitingRequest()
     {

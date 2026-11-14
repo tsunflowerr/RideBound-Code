@@ -29,32 +29,21 @@ public sealed class CommitmentPolicyTests
         var policy = CreatePolicy();
 
         Assert.Null(policy.DropEtaDeadlineSlack);
-        Assert.False(policy.DropEtaDeadlineTwoSided);
     }
 
     [Fact]
     public void Policy_keeps_the_configured_deadline()
     {
-        var policy = CreateDeadlinePolicy(new Duration(30_000), twoSided: true);
+        var policy = CreateDeadlinePolicy(new Duration(30_000));
 
         Assert.Equal(new Duration(30_000), policy.DropEtaDeadlineSlack);
-        Assert.True(policy.DropEtaDeadlineTwoSided);
-    }
-
-    [Fact]
-    public void Policy_rejects_a_two_sided_deadline_without_a_slack()
-    {
-        var error = Assert.Throws<ArgumentException>(
-            () => CreateDeadlinePolicy(null, twoSided: true));
-
-        Assert.Equal("dropEtaDeadlineTwoSided", error.ParamName);
     }
 
     [Fact]
     public void Policy_has_no_relaxed_deadline_by_default()
     {
         var policy = CreatePolicy();
-        var deadline = CreateDeadlinePolicy(new Duration(30_000), twoSided: false);
+        var deadline = CreateDeadlinePolicy(new Duration(30_000));
 
         Assert.False(policy.DropEtaDeadlineRelaxed);
         Assert.False(deadline.DropEtaDeadlineRelaxed);
@@ -63,37 +52,23 @@ public sealed class CommitmentPolicyTests
     [Fact]
     public void Policy_keeps_a_configured_relaxed_deadline()
     {
-        var policy = CreateDeadlinePolicy(
-            new Duration(30_000),
-            twoSided: false,
-            relaxed: true);
+        var policy = CreateDeadlinePolicy(new Duration(30_000), relaxed: true);
 
         Assert.Equal(new Duration(30_000), policy.DropEtaDeadlineSlack);
         Assert.True(policy.DropEtaDeadlineRelaxed);
-        Assert.False(policy.DropEtaDeadlineTwoSided);
     }
 
     [Fact]
     public void Policy_rejects_a_relaxed_deadline_without_a_slack()
     {
         var error = Assert.Throws<ArgumentException>(
-            () => CreateDeadlinePolicy(null, twoSided: false, relaxed: true));
-
-        Assert.Equal("dropEtaDeadlineRelaxed", error.ParamName);
-    }
-
-    [Fact]
-    public void Policy_rejects_a_relaxed_two_sided_deadline()
-    {
-        var error = Assert.Throws<ArgumentException>(
-            () => CreateDeadlinePolicy(new Duration(30_000), twoSided: true, relaxed: true));
+            () => CreateDeadlinePolicy(null, relaxed: true));
 
         Assert.Equal("dropEtaDeadlineRelaxed", error.ParamName);
     }
 
     private static CommitmentPolicy CreateDeadlinePolicy(
         Duration? slack,
-        bool twoSided,
         bool relaxed = false) =>
         new(
             "validated-policy",
@@ -104,7 +79,6 @@ public sealed class CommitmentPolicyTests
                     CommitmentPhase.AllActive)),
             new MaterialRevisionRule(1, null),
             dropEtaDeadlineSlack: slack,
-            dropEtaDeadlineTwoSided: twoSided,
             dropEtaDeadlineRelaxed: relaxed);
 
     private static CommitmentPolicy CreatePolicy(

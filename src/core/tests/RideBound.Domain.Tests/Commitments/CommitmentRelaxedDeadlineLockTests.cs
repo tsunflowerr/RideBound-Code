@@ -147,9 +147,9 @@ public sealed class CommitmentRelaxedDeadlineLockTests
     }
 
     [Fact]
-    public void A_relaxed_deadline_never_produces_a_floor_witness()
+    public void A_relaxed_deadline_never_rejects_an_early_drop()
     {
-        // Relaxed deadlines are one-sided: being early is never a violation.
+        // Being early is never a violation.
         Assert.Empty(Evaluate(RelaxedPolicy(Slack), Projection(Anchor), Projection(0)));
         Assert.Empty(Evaluate(RelaxedPolicy(Slack), Projection(0), Projection(0)));
     }

@@ -143,39 +143,19 @@ public sealed class CommitmentSlackProportionalValidatorTests
     }
 
     [Fact]
-    public void A_two_sided_rider_deadline_holds_the_floor_at_drop0_minus_the_rider_budget()
+    public void A_rider_deadline_allows_an_earlier_drop()
     {
         // A 500 ms dwell before the drop makes the first promise 1100/1700 ms, so the rider's slack is
-        // 1100 + 1000 - 1700 = 400 ms and 35% of it is 140 ms: window 1560..1840 ms. Shortening the
-        // dwell by 140 ms drops at 1560 ms (allowed); by 141 ms, at 1559 ms (too early). A one-sided
-        // deadline allows both, and a fixed two-sided 140 ms slack decides the same way.
-        foreach (var (cut, expectValid) in new[] { (1L, true), (140L, true), (141L, false), (500L, false) })
+        // 1100 + 1000 - 1700 = 400 ms and 35% of it is 140 ms. Shortening the dwell drops the rider
+        // earlier than the first promise, by less or more than 140 ms; the deadline allows both.
+        foreach (var cut in new[] { 1L, 140L, 141L, 500L })
         {
-            var proportional = new CommitmentDecisionValidator().Validate(
-                WithCandidateRoute(
-                    Decision(Policy(deadlinePermille: 350, twoSided: true), initialDwell: 500),
-                    route => ShortenDwell(route, cut)));
-            var fixedSlack = new CommitmentDecisionValidator().Validate(
-                WithCandidateRoute(
-                    Decision(Policy(deadlineSlack: 140, twoSided: true), initialDwell: 500),
-                    route => ShortenDwell(route, cut)));
-            var oneSided = new CommitmentDecisionValidator().Validate(
+            var result = new CommitmentDecisionValidator().Validate(
                 WithCandidateRoute(
                     Decision(Policy(deadlinePermille: 350), initialDwell: 500),
                     route => ShortenDwell(route, cut)));
 
-            Assert.True(expectValid == proportional.IsValid, $"cut {cut}: " + string.Join("; ", proportional.Witnesses.Select(w => $"{w.Code} {w.Rule} {w.Limit} {w.After} {w.Message}")));
-            Assert.Equal(
-                fixedSlack.Witnesses.Select(w => (w.Code, w.Rule, w.Limit, w.After)),
-                proportional.Witnesses.Select(w => (w.Code, w.Rule, w.Limit, w.After)));
-            Assert.Equal(fixedSlack.IsValid, proportional.IsValid);
-            Assert.True(oneSided.IsValid, string.Join("; ", oneSided.Witnesses.Select(w => w.Message)));
-
-            if (!expectValid)
-            {
-                var witness = Assert.Single(proportional.Witnesses);
-                Assert.Equal(CommitmentFailureCodes.DeadlineExceeded, witness.Code);
-            }
+            Assert.True(result.IsValid, $"cut {cut}: " + string.Join("; ", result.Witnesses.Select(w => w.Message)));
         }
     }
 
@@ -215,8 +195,7 @@ public sealed class CommitmentSlackProportionalValidatorTests
         int? deadlinePermille = null,
         long? dropBudget = null,
         long? deadlineSlack = null,
-        bool relaxed = false,
-        bool twoSided = false) =>
+        bool relaxed = false) =>
         new(
             ApplicationTestData.Request().CommitmentPolicyId,
             CommitmentDimensionVocabulary.Ordered.Select(
@@ -226,7 +205,6 @@ public sealed class CommitmentSlackProportionalValidatorTests
                     CommitmentPhase.AllActive)),
             new MaterialRevisionRule(1, null),
             dropEtaDeadlineSlack: deadlineSlack is long slack ? new Duration(slack) : null,
-            dropEtaDeadlineTwoSided: twoSided,
             dropEtaDeadlineRelaxed: relaxed,
             dropEtaBudgetSlackPermille: budgetPermille,
             dropEtaDeadlineSlackPermille: deadlinePermille);

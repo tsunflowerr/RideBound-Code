@@ -100,22 +100,10 @@ public sealed class CommitmentPolicyConfigurationTests
     public void Drop_eta_deadline_is_read_when_present()
     {
         var configuration = CommitmentPolicyConfiguration.Decode(
-            PolicyJson("\"dropEtaDeadlineSlackMs\":30000,\"dropEtaDeadlineTwoSided\":true"));
+            PolicyJson("\"dropEtaDeadlineSlackMs\":30000"));
 
         Assert.True(configuration.TryGetPolicy("uniform-v1", out var policy));
         Assert.Equal(new Duration(30_000), policy.DropEtaDeadlineSlack);
-        Assert.True(policy.DropEtaDeadlineTwoSided);
-    }
-
-    [Fact]
-    public void Drop_eta_deadline_is_one_sided_unless_asked()
-    {
-        var configuration = CommitmentPolicyConfiguration.Decode(
-            PolicyJson("\"dropEtaDeadlineSlackMs\":60000"));
-
-        Assert.True(configuration.TryGetPolicy("uniform-v1", out var policy));
-        Assert.Equal(new Duration(60_000), policy.DropEtaDeadlineSlack);
-        Assert.False(policy.DropEtaDeadlineTwoSided);
     }
 
     [Fact]
@@ -125,21 +113,11 @@ public sealed class CommitmentPolicyConfigurationTests
 
         Assert.True(configuration.TryGetPolicy("uniform-v1", out var policy));
         Assert.Null(policy.DropEtaDeadlineSlack);
-        Assert.False(policy.DropEtaDeadlineTwoSided);
     }
 
     [Theory]
     [InlineData("\"dropEtaDeadlineSlackMs\":0", "must be positive")]
     [InlineData("\"dropEtaDeadlineSlackMs\":-1", "canonical non-negative integer")]
-    [InlineData(
-        "\"dropEtaDeadlineSlackMs\":30000,\"dropEtaDeadlineTwoSided\":\"yes\"",
-        "must be a boolean")]
-    [InlineData(
-        "\"dropEtaDeadlineSlackMs\":30000,\"dropEtaDeadlineTwoSided\":1",
-        "must be a boolean")]
-    [InlineData(
-        "\"dropEtaDeadlineTwoSided\":true",
-        "requires 'dropEtaDeadlineSlackMs'")]
     [InlineData(
         "\"dropEtaDeadlineSlack\":30000",
         "Unknown field 'dropEtaDeadlineSlack'")]
@@ -167,7 +145,6 @@ public sealed class CommitmentPolicyConfigurationTests
 
     [Theory]
     [InlineData("\"dropEtaDeadlineSlackMs\":null")]
-    [InlineData("\"dropEtaDeadlineSlackMs\":30000,\"dropEtaDeadlineTwoSided\":null")]
     public void A_null_deadline_field_is_rejected_by_canonical_json(string extraFields)
     {
         // Canonicalisation rejects every JSON null before any field is read.
@@ -178,32 +155,14 @@ public sealed class CommitmentPolicyConfigurationTests
     }
 
     [Fact]
-    public void A_one_sided_flag_without_a_slack_leaves_the_deadline_disabled()
-    {
-        var configuration = CommitmentPolicyConfiguration.Decode(
-            PolicyJson("\"dropEtaDeadlineTwoSided\":false"));
-
-        Assert.True(configuration.TryGetPolicy("uniform-v1", out var policy));
-        Assert.Null(policy.DropEtaDeadlineSlack);
-        Assert.False(policy.DropEtaDeadlineTwoSided);
-    }
-
-    [Fact]
     public void Relaxed_deadline_is_read_when_present()
     {
         var relaxed = CommitmentPolicyConfiguration.Decode(
             PolicyJson("\"dropEtaDeadlineSlackMs\":30000,\"dropEtaDeadlineRelaxed\":true"));
-        var explicitOneSided = CommitmentPolicyConfiguration.Decode(
-            PolicyJson(
-                "\"dropEtaDeadlineSlackMs\":30000,\"dropEtaDeadlineTwoSided\":false," +
-                "\"dropEtaDeadlineRelaxed\":true"));
 
         Assert.True(relaxed.TryGetPolicy("uniform-v1", out var deadline));
         Assert.Equal(new Duration(30_000), deadline.DropEtaDeadlineSlack);
         Assert.True(deadline.DropEtaDeadlineRelaxed);
-        Assert.False(deadline.DropEtaDeadlineTwoSided);
-        Assert.True(explicitOneSided.TryGetPolicy("uniform-v1", out var oneSided));
-        Assert.True(oneSided.DropEtaDeadlineRelaxed);
     }
 
     [Fact]
@@ -232,10 +191,6 @@ public sealed class CommitmentPolicyConfigurationTests
     [InlineData(
         "\"dropEtaDeadlineRelaxed\":true",
         "'dropEtaDeadlineRelaxed' requires 'dropEtaDeadlineSlackMs'")]
-    [InlineData(
-        "\"dropEtaDeadlineSlackMs\":30000,\"dropEtaDeadlineTwoSided\":true," +
-        "\"dropEtaDeadlineRelaxed\":true",
-        "'dropEtaDeadlineRelaxed' cannot be combined with 'dropEtaDeadlineTwoSided'")]
     [InlineData(
         "\"dropEtaDeadlineRelaxedMs\":30000",
         "Unknown field 'dropEtaDeadlineRelaxedMs'")]
@@ -326,9 +281,6 @@ public sealed class CommitmentPolicyConfigurationTests
     [InlineData(
         "\"dropEtaDeadlineSlackMs\":30000,\"dropEtaDeadlineSlackPermille\":350",
         "'dropEtaDeadlineSlackMs' cannot be combined with 'dropEtaDeadlineSlackPermille'")]
-    [InlineData(
-        "\"dropEtaDeadlineTwoSided\":true,\"dropEtaBudgetSlackPermille\":350",
-        "'dropEtaDeadlineTwoSided' requires 'dropEtaDeadlineSlackMs' or 'dropEtaDeadlineSlackPermille'")]
     [InlineData("\"dropEtaSlackPermille\":350", "Unknown field 'dropEtaSlackPermille'")]
     public void Invalid_slack_proportional_settings_are_rejected(string extraFields, string expectedMessage)
     {
@@ -535,6 +487,57 @@ public sealed class CommitmentPolicyConfigurationTests
                             "\"budgetBasis\":\"decisionInduced\"",
                             "\"budgetBasis\":\"visible\"",
                             StringComparison.Ordinal)))).Message);
+    }
+
+    [Fact]
+    public void The_removed_two_sided_deadline_is_refused_with_a_pointer_to_the_archive()
+    {
+        // The key is refused, whatever its value; without it the deadline is one-sided. The check
+        // runs last in the policy, so a check that runs before it keeps its message.
+        const string Removed =
+            "Commitment 'dropEtaDeadlineTwoSided' (the two-sided deadline): removed; see commit "
+            + "ebca912 (branch research/final-real-runs-2026-11-06)";
+        const string TwoSided = "\"dropEtaDeadlineTwoSided\":true";
+        const string Slack = "\"dropEtaDeadlineSlackMs\":30000,";
+        string Message(string extraFields) =>
+            Assert.ThrowsAny<Exception>(
+                () => CommitmentPolicyConfiguration.Decode(PolicyJson(extraFields))).Message;
+
+        Assert.Equal(Removed, Message(Slack + TwoSided));
+        Assert.Equal(Removed, Message("\"dropEtaDeadlineSlackPermille\":350," + TwoSided));
+        Assert.Equal(Removed, Message(Slack + "\"dropEtaDeadlineTwoSided\":false"));
+        Assert.Equal(Removed, Message("\"dropEtaDeadlineTwoSided\":false"));
+        Assert.Equal(Removed, Message(Slack + "\"dropEtaDeadlineTwoSided\":\"yes\""));
+        Assert.Equal(Removed, Message(Slack + "\"dropEtaDeadlineTwoSided\":1"));
+        Assert.Equal(Removed, Message(TwoSided));
+        Assert.Equal(Removed, Message(TwoSided + ",\"dropEtaBudgetSlackPermille\":350"));
+        Assert.Equal(Removed, Message(Slack + "\"dropEtaDeadlineRelaxed\":true," + TwoSided));
+
+        Assert.Contains("Null is not permitted", Message("\"dropEtaDeadlineTwoSided\":null"));
+        Assert.StartsWith(
+            "'dropEtaDeadlineRelaxed' requires",
+            Message(TwoSided + ",\"dropEtaDeadlineRelaxed\":true"),
+            StringComparison.Ordinal);
+        Assert.StartsWith(
+            "'dropEtaDeadlineSlackMs' cannot be combined with 'dropEtaDeadlineSlackPermille'",
+            Message(Slack + "\"dropEtaDeadlineSlackPermille\":350," + TwoSided),
+            StringComparison.Ordinal);
+        Assert.StartsWith(
+            "Commitment 'dropEtaRevisionLimitMs' (the per-decision revision cap): removed",
+            Message(Slack + TwoSided + ",\"dropEtaRevisionLimitMs\":60000"),
+            StringComparison.Ordinal);
+        Assert.Equal(
+            "Unknown commitment budgetBasis.",
+            Assert.Throws<InvalidDataException>(
+                () => CommitmentPolicyConfiguration.Decode(
+                    Encoding.UTF8.GetBytes(
+                        Encoding.UTF8.GetString(PolicyJson(Slack + TwoSided)).Replace(
+                            "\"budgetBasis\":\"decisionInduced\"",
+                            "\"budgetBasis\":\"visible\"",
+                            StringComparison.Ordinal)))).Message);
+        Assert.True(
+            CommitmentPolicyConfiguration.Decode(PolicyJson(Slack + "\"dropEtaDeadlineRelaxed\":true"))
+                .TryGetPolicy("uniform-v1", out _));
     }
 
     private static byte[] PolicyJson(string? extraFields)

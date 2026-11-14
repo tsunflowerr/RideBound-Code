@@ -127,7 +127,6 @@ public sealed class CommitmentPolicy
         PromiseLock finalConfirmationLocks = PromiseLock.None,
         PromiseLock ratchetLocks = PromiseLock.None,
         Duration? dropEtaDeadlineSlack = null,
-        bool dropEtaDeadlineTwoSided = false,
         bool dropEtaDeadlineRelaxed = false,
         int? dropEtaBudgetSlackPermille = null,
         int? dropEtaDeadlineSlackPermille = null,
@@ -201,26 +200,10 @@ public sealed class CommitmentPolicy
         var hasDeadline = dropEtaDeadlineSlack is not null
             || dropEtaDeadlineSlackPermille is not null;
 
-        if (dropEtaDeadlineTwoSided && !hasDeadline)
-        {
-            throw new ArgumentException(
-                "A two-sided deadline requires a deadline slack.",
-                nameof(dropEtaDeadlineTwoSided));
-        }
-
         if (dropEtaDeadlineRelaxed && !hasDeadline)
         {
             throw new ArgumentException(
                 "A relaxed deadline requires a deadline slack.",
-                nameof(dropEtaDeadlineRelaxed));
-        }
-
-        // The relaxation lifts only the cap side to the kept route; a floor relaxed the
-        // same way is not defined, so the two options are exclusive.
-        if (dropEtaDeadlineRelaxed && dropEtaDeadlineTwoSided)
-        {
-            throw new ArgumentException(
-                "A relaxed deadline is one-sided and cannot be two-sided.",
                 nameof(dropEtaDeadlineRelaxed));
         }
 
@@ -270,7 +253,6 @@ public sealed class CommitmentPolicy
         FinalConfirmationLocks = finalConfirmationLocks;
         RatchetLocks = ratchetLocks;
         DropEtaDeadlineSlack = dropEtaDeadlineSlack;
-        DropEtaDeadlineTwoSided = dropEtaDeadlineTwoSided;
         DropEtaDeadlineRelaxed = dropEtaDeadlineRelaxed;
         DropEtaBudgetSlackPermille = dropEtaBudgetSlackPermille;
         DropEtaDeadlineSlackPermille = dropEtaDeadlineSlackPermille;
@@ -436,18 +418,13 @@ public sealed class CommitmentPolicy
     /// (the deadline style of Schulz and Pfeiffer, 2026). Unlike every lock, this
     /// compares the candidate with the initial promise rather than with the
     /// exogenous projection, so exogenous drift alone can trip it, including on the
-    /// safety no-op. Research probe; null disables the rule.
+    /// safety no-op. Only a later drop ETA can break it, never an earlier one.
+    /// Research probe; null disables the rule.
     /// </summary>
     public Duration? DropEtaDeadlineSlack { get; }
 
     /// <summary>
-    /// When true the deadline is a window: the drop ETA may not move earlier than
-    /// the initial promise by more than the slack either. Requires a slack.
-    /// </summary>
-    public bool DropEtaDeadlineTwoSided { get; }
-
-    /// <summary>
-    /// When true the one-sided deadline is relaxed to the later of the initial promise
+    /// When true the deadline is relaxed to the later of the initial promise
     /// plus the slack and the exogenous (kept-route) projection: a candidate fails only
     /// if its drop ETA is later than both (DL-HZ in the study notation). Drift alone
     /// never trips it, so the safety no-op is never rejected by it and it never
@@ -456,7 +433,7 @@ public sealed class CommitmentPolicy
     /// under no-worse-than-reference recovery, but without forced vehicles or breach
     /// records. No-worse recovery also exempts budget overruns of the kept route, and its
     /// forced options add a ranking level, so beyond that case, and for the selection
-    /// itself, the two can differ. Requires a slack; cannot be two-sided.
+    /// itself, the two can differ. Requires a slack.
     /// </summary>
     public bool DropEtaDeadlineRelaxed { get; }
 

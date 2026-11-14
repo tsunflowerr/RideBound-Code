@@ -59,28 +59,12 @@ public sealed class CommitmentDeadlineValidatorTests
     }
 
     [Fact]
-    public void Favourable_drift_rejects_the_no_op_only_under_a_two_sided_deadline()
+    public void Favourable_drift_keeps_the_no_op()
     {
-        var twoSided = NoOpUnderDrift(
-            promiseAt: Late,
-            reducedAt: Early,
-            Policy(slack: 400, twoSided: true));
-        var oneSided = NoOpUnderDrift(
-            promiseAt: Late,
-            reducedAt: Early,
-            Policy(slack: 400));
+        // The kept route drops 500 ms earlier than the first promise, more than the slack.
+        var context = NoOpUnderDrift(promiseAt: Late, reducedAt: Early, Policy(slack: 400));
 
-        var rejected = new CommitmentDecisionValidator().Validate(twoSided);
-        var kept = new CommitmentDecisionValidator().Validate(oneSided);
-
-        Assert.False(rejected.IsValid);
-        var witness = Assert.Single(rejected.Witnesses);
-        Assert.Equal(CommitmentFailureCodes.DeadlineExceeded, witness.Code);
-        Assert.Equal(
-            "The candidate moves the drop ETA outside the initial-promise window.",
-            witness.Message);
-        Assert.Equal("deadline_floor", witness.Rule);
-        Assert.True(kept.IsValid);
+        Assert.True(new CommitmentDecisionValidator().Validate(context).IsValid);
     }
 
     [Fact]
@@ -327,41 +311,6 @@ public sealed class CommitmentDeadlineValidatorTests
     }
 
     [Fact]
-    public void No_worse_recovery_under_a_two_sided_deadline_compares_on_the_floor_side()
-    {
-        // Favourable drift: first promise 1700 ms, kept route 1200 ms, window 1700 +/- 400 ms, so the
-        // kept route is too early. A changed route that keeps 1200 ms is no worse on the floor side
-        // and is exempted; one that delays the drop to 1500 ms is back inside the window and needs
-        // no exemption at all.
-        var forced = new HashSet<VehicleId> { ApplicationTestData.VehicleId };
-        var baseline = NoOpUnderDrift(promiseAt: Late, reducedAt: Early, Policy(slack: 400, twoSided: true));
-        var same = WithCandidateRoute(baseline, AppendAfterDrop)
-            with { ForcedReferenceVehicles = forced, ForcedNoWorse = true };
-        var inside = WithCandidateRoute(baseline, DelayBeforeDrop)
-            with { ForcedReferenceVehicles = forced, ForcedNoWorse = true };
-        // 1250 ms: still below the 1300 ms floor, but later (less far out) than the kept 1200 ms.
-        var better = WithCandidateRoute(baseline, route => DelayBeforeDropBy(route, 50))
-            with { ForcedReferenceVehicles = forced, ForcedNoWorse = true };
-
-        var exempted = new CommitmentDecisionValidator().Validate(same);
-        var normal = new CommitmentDecisionValidator().Validate(inside);
-        var closer = new CommitmentDecisionValidator().Validate(better);
-
-        Assert.True(exempted.IsValid, string.Join("; ", exempted.Witnesses.Select(w => w.Message)));
-        var breach = Assert.Single(exempted.ForcedBreaches);
-        Assert.Equal(CommitmentBreachKind.ForcedNoWorse, breach.Kind);
-        Assert.Equal([CommitmentFailureCodes.DeadlineExceeded], breach.WitnessCodes);
-        Assert.True(closer.IsValid, string.Join("; ", closer.Witnesses.Select(w => w.Message)));
-        Assert.Equal(
-            new SimTime(1_250),
-            Assert.Single(closer.Publications).Entry.PublishedPromise.Projection.DropEta);
-        Assert.Equal(CommitmentBreachKind.ForcedNoWorse, Assert.Single(closer.ForcedBreaches).Kind);
-        Assert.True(normal.IsValid, string.Join("; ", normal.Witnesses.Select(w => w.Message)));
-        Assert.Empty(normal.ForcedBreaches);
-        Assert.Empty(normal.ForcedExemptions);
-    }
-
-    [Fact]
     public void No_worse_recovery_applies_only_to_a_named_forced_vehicle()
     {
         var context = WithCandidateRoute(
@@ -401,10 +350,7 @@ public sealed class CommitmentDeadlineValidatorTests
                     new Duration(0)))).Value!;
 
     /// <summary>A 300 ms waypoint at the pickup node just before the drop: the drop is 300 ms later.</summary>
-    private static RoutePlan DelayBeforeDrop(RoutePlan route) => DelayBeforeDropBy(route, 300);
-
-    /// <summary>A waypoint of <paramref name="milliseconds"/> at the pickup node just before the drop.</summary>
-    private static RoutePlan DelayBeforeDropBy(RoutePlan route, long milliseconds)
+    private static RoutePlan DelayBeforeDrop(RoutePlan route)
     {
         var stops = route.MutableSuffix.ToList();
         var drop = stops.FindIndex(value => value.Kind == RouteStopKind.DropOff);
@@ -415,7 +361,7 @@ public sealed class CommitmentDeadlineValidatorTests
                 ApplicationTestData.NodeOne,
                 RouteStopKind.Waypoint,
                 null,
-                new Duration(milliseconds)));
+                new Duration(300)));
         return RoutePlan.Create(
             new PlanVersion(route.Version.Value + 1),
             route.ExecutedStopCount,
@@ -423,7 +369,7 @@ public sealed class CommitmentDeadlineValidatorTests
             stops).Value!;
     }
 
-    private static CommitmentPolicy Policy(long? slack, bool twoSided = false) =>
+    private static CommitmentPolicy Policy(long? slack) =>
         new(
             ApplicationTestData.Request().CommitmentPolicyId,
             CommitmentDimensionVocabulary.Ordered.Select(
@@ -432,8 +378,7 @@ public sealed class CommitmentDeadlineValidatorTests
                     null,
                     CommitmentPhase.AllActive)),
             new MaterialRevisionRule(1, null),
-            dropEtaDeadlineSlack: slack is long value ? new Duration(value) : null,
-            dropEtaDeadlineTwoSided: twoSided);
+            dropEtaDeadlineSlack: slack is long value ? new Duration(value) : null);
 
     private static CommitmentValidationContext NoOpUnderDrift(
         long promiseAt,

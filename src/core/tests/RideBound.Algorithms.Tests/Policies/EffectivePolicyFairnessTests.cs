@@ -50,13 +50,10 @@ public sealed class EffectivePolicyFairnessTests
     [InlineData(RidePoolingPolicyKind.RideBoundHardVector)]
     public void A_commitment_arm_keeps_a_configured_deadline(RidePoolingPolicyKind kind)
     {
-        var policy = EffectivePolicyFor(
-            kind,
-            deadlineSlackMs: 30_000,
-            deadlineTwoSided: true);
+        var policy = EffectivePolicyFor(kind, deadlineSlackMs: 30_000);
 
         Assert.Equal(
-            Fingerprint(ConfiguredPolicy(DropEtaHardLimit, 30_000, true)),
+            Fingerprint(ConfiguredPolicy(DropEtaHardLimit, 30_000)),
             Fingerprint(policy));
     }
 
@@ -110,7 +107,6 @@ public sealed class EffectivePolicyFairnessTests
                 policy.MaterialRevisionRule.DisplayBucketWidthMs?.ToString() ?? "none",
                 ((int)policy.FinalConfirmationLocks).ToString(),
                 policy.DropEtaDeadlineSlack?.Milliseconds.ToString() ?? "none",
-                policy.DropEtaDeadlineTwoSided.ToString(),
                 policy.DropEtaDeadlineRelaxed.ToString(),
             }.Concat(
                 CommitmentDimensionVocabulary.Ordered.Select(
@@ -127,7 +123,6 @@ public sealed class EffectivePolicyFairnessTests
         RidePoolingPolicyKind kind,
         long? dropEtaHardLimit = DropEtaHardLimit,
         long? deadlineSlackMs = null,
-        bool deadlineTwoSided = false,
         bool deadlineRelaxed = false)
     {
         var request = AlgorithmTestData.PendingRequest("request-1");
@@ -150,7 +145,6 @@ public sealed class EffectivePolicyFairnessTests
         var configured = ConfiguredPolicy(
             dropEtaHardLimit,
             deadlineSlackMs,
-            deadlineTwoSided,
             deadlineRelaxed);
         var solverBudget = DeterministicSolverBudget.Create(1000, 1000, 1).Value!;
         var executionBudget =
@@ -182,7 +176,6 @@ public sealed class EffectivePolicyFairnessTests
     private static CommitmentPolicy ConfiguredPolicy(
         long? dropEtaHardLimit,
         long? deadlineSlackMs = null,
-        bool deadlineTwoSided = false,
         bool deadlineRelaxed = false) =>
         new(
             PolicyId,
@@ -197,7 +190,6 @@ public sealed class EffectivePolicyFairnessTests
                         : CommitmentPhase.AllActive)),
             new MaterialRevisionRule(1, 30_000),
             dropEtaDeadlineSlack: deadlineSlackMs is long slack ? new Duration(slack) : null,
-            dropEtaDeadlineTwoSided: deadlineTwoSided,
             dropEtaDeadlineRelaxed: deadlineRelaxed);
 
     /// <summary>

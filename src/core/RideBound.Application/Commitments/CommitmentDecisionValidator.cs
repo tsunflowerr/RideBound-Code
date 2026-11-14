@@ -438,14 +438,6 @@ public sealed class CommitmentDecisionValidator
                             value.RequestId,
                             value.Dimension,
                             value.Rule),
-                        CommitmentLockEvaluator.DeadlineFloorRule => new CommitmentValidationWitness(
-                            CommitmentValidationStage.Lock,
-                            CommitmentFailureCodes.DeadlineExceeded,
-                            "The candidate moves the drop ETA outside the initial-promise window.",
-                            request.AssignedVehicleId,
-                            value.RequestId,
-                            value.Dimension,
-                            value.Rule),
                         _ => new CommitmentValidationWitness(
                             CommitmentValidationStage.Lock,
                             CommitmentFailureCodes.PhaseLock,
@@ -754,9 +746,9 @@ public sealed class CommitmentDecisionValidator
     }
 
     /// <summary>
-    /// The kept route's gate overruns for one rider. A changed route may be exempted for a
-    /// deadline only if the kept route overruns the same side and the changed route is not
-    /// further out on that side; for a budget dimension only if the kept route also exceeds it
+    /// The kept route's gate overruns for one rider. A changed route may be exempted for the
+    /// deadline only if the kept route also overruns it and the changed route's drop ETA is not
+    /// later; for a budget dimension only if the kept route also exceeds it
     /// and the changed route's total is not larger. Phase locks are never exempted: they compare
     /// with the kept route, which therefore never overruns them.
     /// </summary>
@@ -771,9 +763,6 @@ public sealed class CommitmentDecisionValidator
                 CommitmentLockEvaluator.DeadlineCapRule =>
                     keptLocks.Any(value => value.Rule == CommitmentLockEvaluator.DeadlineCapRule)
                     && candidate.DropEta.Milliseconds <= kept.DropEta.Milliseconds,
-                CommitmentLockEvaluator.DeadlineFloorRule =>
-                    keptLocks.Any(value => value.Rule == CommitmentLockEvaluator.DeadlineFloorRule)
-                    && candidate.DropEta.Milliseconds >= kept.DropEta.Milliseconds,
                 _ => false,
             };
 

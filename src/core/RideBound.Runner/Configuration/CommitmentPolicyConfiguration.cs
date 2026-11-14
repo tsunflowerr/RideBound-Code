@@ -27,10 +27,10 @@ public sealed class CommitmentPolicyConfiguration :
         "freezeHorizonMs",
         "freezeHorizonLocks",
         "dropEtaRevisionLimitMs",
+        "dropEtaDeadlineTwoSided",
         "finalConfirmationLocks",
         "ratchetLocks",
         "dropEtaDeadlineSlackMs",
-        "dropEtaDeadlineTwoSided",
         "dropEtaDeadlineRelaxed",
         "dropEtaBudgetSlackPermille",
         "dropEtaDeadlineSlackPermille",
@@ -176,7 +176,6 @@ public sealed class CommitmentPolicyConfiguration :
         var deadlineSlack = OptionalPositiveInteger(
             element,
             "dropEtaDeadlineSlackMs");
-        var deadlineTwoSided = OptionalBoolean(element, "dropEtaDeadlineTwoSided");
         var deadlineRelaxed = OptionalBoolean(element, "dropEtaDeadlineRelaxed");
         var budgetPermille = OptionalPermille(element, "dropEtaBudgetSlackPermille");
         var deadlinePermille = OptionalPermille(element, "dropEtaDeadlineSlackPermille");
@@ -201,12 +200,6 @@ public sealed class CommitmentPolicyConfiguration :
 
         var hasDeadline = deadlineSlack is not null || deadlinePermille is not null;
 
-        if (deadlineTwoSided && !hasDeadline)
-        {
-            throw new InvalidDataException(
-                "'dropEtaDeadlineTwoSided' requires 'dropEtaDeadlineSlackMs' or 'dropEtaDeadlineSlackPermille'.");
-        }
-
         if (deadlineRelaxed && !hasDeadline)
         {
             throw new InvalidDataException(
@@ -219,12 +212,6 @@ public sealed class CommitmentPolicyConfiguration :
         {
             throw new InvalidDataException(
                 "'dropEtaBudgetSlackPermille' replaces the drop_eta_total_ms hardLimit; remove one.");
-        }
-
-        if (deadlineRelaxed && deadlineTwoSided)
-        {
-            throw new InvalidDataException(
-                "'dropEtaDeadlineRelaxed' cannot be combined with 'dropEtaDeadlineTwoSided'.");
         }
 
         if (relocation
@@ -265,7 +252,6 @@ public sealed class CommitmentPolicyConfiguration :
             ReadLocks(element, "finalConfirmationLocks"),
             ReadLocks(element, "ratchetLocks"),
             deadlineSlack is long slack ? new Duration(slack) : null,
-            deadlineTwoSided,
             deadlineRelaxed,
             budgetPermille,
             deadlinePermille,
@@ -285,6 +271,12 @@ public sealed class CommitmentPolicyConfiguration :
         {
             throw new InvalidDataException(
                 "Commitment 'dropEtaRevisionLimitMs' (the per-decision revision cap): " + RemovedFeature);
+        }
+
+        if (element.TryGetProperty("dropEtaDeadlineTwoSided", out _))
+        {
+            throw new InvalidDataException(
+                "Commitment 'dropEtaDeadlineTwoSided' (the two-sided deadline): " + RemovedFeature);
         }
 
         return policy;

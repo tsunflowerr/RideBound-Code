@@ -425,89 +425,6 @@ public sealed class ExactSmallCommitmentDifferentialTests
     }
 
     [Fact]
-    public void C1_reports_a_rejected_safety_no_op_that_leaves_other_candidates_alive()
-    {
-        // The no-op keeps the route, so its drop ETA is the baseline. The rider's
-        // initial promise is placed exactly one insertion's delay LATER than that,
-        // and a zero-slack two-sided deadline then rejects the no-op (too early)
-        // while the insertion that causes exactly that delay survives. Before the
-        // diagnostic change the solver-backed path died later with a generic
-        // mapping error.
-        var (generated, set, noOp, context) = NoOpRejectedWhileAnInsertionSurvives();
-
-        var assessed = new HardVectorCandidateAssessor().AssessAndFilter(
-            context,
-            generated.VehicleCandidates!,
-            requireSafetyNoOp: true);
-
-        Assert.False(assessed.IsSuccess);
-        var witness = assessed.Witness!;
-        Assert.Equal(CommitmentFailureCodes.SafetyNoOpRejected, witness.Code);
-        Assert.Equal(noOp.CandidateId, witness.CandidateId);
-        Assert.Equal(AlgorithmTestData.VehicleOne, witness.VehicleId);
-        Assert.Equal(CommitmentFailureCodes.DeadlineExceeded, witness.UnderlyingCode);
-        Assert.Equal(CreateState(seed: 3).IncumbentId, witness.RequestId);
-        Assert.Equal("drop_eta_ms", witness.Dimension);
-        Assert.Equal(set.Candidates.Count, witness.GeneratedCandidateCount);
-        Assert.True(witness.GeneratedCandidateCount > witness.RejectedCandidateCount);
-        Assert.StartsWith(
-            "C1 rejected the safety no-op while other candidates survived. No-op rejection: ",
-            witness.Message,
-            StringComparison.Ordinal);
-        Assert.EndsWith(
-            "outside the initial-promise window.",
-            witness.Message,
-            StringComparison.Ordinal);
-        Assert.DoesNotContain("firstCode=", witness.Message, StringComparison.Ordinal);
-    }
-
-    [Fact]
-    public void A_caller_that_does_not_require_the_no_op_keeps_the_surviving_candidates()
-    {
-        // The legacy policies select without a no-op, so for them the same state is
-        // not a failure: the assessor returns what survived, exactly as before.
-        var (generated, _, noOp, context) = NoOpRejectedWhileAnInsertionSurvives();
-
-        var assessed = new HardVectorCandidateAssessor().AssessAndFilter(
-            context,
-            generated.VehicleCandidates!);
-
-        Assert.True(assessed.IsSuccess, assessed.Witness?.Message);
-        var retained = assessed.Batch!.FeasibleCandidateSets.Single().Candidates;
-        Assert.NotEmpty(retained);
-        Assert.DoesNotContain(retained, value => value.CandidateId == noOp.CandidateId);
-    }
-
-    [Fact]
-    public void The_solver_backed_policy_reports_the_rejected_no_op_instead_of_a_mapping_error()
-    {
-        var (_, _, _, context) = NoOpRejectedWhileAnInsertionSurvives();
-        var solverBudget = DeterministicSolverBudget.Create(1000, 1000, 1).Value!;
-        var executionBudget = DeterministicCandidateSelectionExecutionBudget.Create(
-            100_000,
-            100_000,
-            solverBudget).Value!;
-
-        AlgorithmTestData.AssertGeneratedInFull(context.ReducedState, AlgorithmTestData.SmallGeneration);
-        var result = new SolverBackedRidePoolingPolicy(new UnreachableSolver()).Decide(
-            context,
-            AlgorithmTestData.SmallGeneration,
-            new SolverBackedRidePoolingPolicyOptions(
-                RidePoolingPolicyKind.RideBoundHardVector,
-                executionBudget));
-
-        Assert.False(result.IsSuccess);
-        Assert.Equal(
-            DecisionFailureCodes.CommitmentAssessmentFailed,
-            result.Witness!.Code);
-        Assert.StartsWith(
-            "C1 rejected the safety no-op while other candidates survived. No-op rejection: ",
-            result.Witness.Message,
-            StringComparison.Ordinal);
-        Assert.DoesNotContain("exactly one no-op option", result.Witness.Message, StringComparison.Ordinal);
-    }
-
-    [Fact]
     public void C1_fail_closed_cites_the_safety_no_op_when_every_candidate_is_rejected()
     {
         // An initial promise one millisecond EARLIER than the kept route and a
@@ -578,45 +495,6 @@ public sealed class ExactSmallCommitmentDifferentialTests
         var assessment = batch.Assessments.Single().Value;
         Assert.Equal(noOp.CandidateId, assessment.CandidateId);
         Assert.True(assessment.IsForcedReference);
-    }
-
-    [Fact]
-    public void Forced_recovery_keeps_the_no_op_beside_the_surviving_insertions()
-    {
-        var (generated, _, noOp, context) = NoOpRejectedWhileAnInsertionSurvives();
-        var legacy = new HardVectorCandidateAssessor().AssessAndFilter(
-            context,
-            generated.VehicleCandidates!);
-
-        var assessed = new HardVectorCandidateAssessor().AssessAndFilter(
-            context,
-            generated.VehicleCandidates!,
-            requireSafetyNoOp: true,
-            forcedReferenceRecovery: true);
-
-        Assert.True(assessed.IsSuccess, assessed.Witness?.Message);
-        var batch = assessed.Batch!;
-        var retained = batch.FeasibleCandidateSets.Single().Candidates
-            .Select(value => value.CandidateId)
-            .ToArray();
-        var expected = legacy.Batch!.FeasibleCandidateSets.Single().Candidates
-            .Select(value => value.CandidateId)
-            .Append(noOp.CandidateId)
-            .Order(StringComparer.Ordinal)
-            .ToArray();
-        Assert.Equal(expected, retained);
-        Assert.Equal([AlgorithmTestData.VehicleOne], batch.ForcedReferenceVehicles);
-        Assert.Equal(
-            [noOp.CandidateId],
-            batch.Assessments.Values
-                .Where(value => value.IsForcedReference)
-                .Select(value => value.CandidateId));
-
-        // The surviving insertions keep exactly the assessment they had without recovery.
-        foreach (var (candidateId, value) in legacy.Batch.Assessments)
-        {
-            Assert.Equal(value, batch.Assessments[candidateId]);
-        }
     }
 
     [Fact]
@@ -743,28 +621,6 @@ public sealed class ExactSmallCommitmentDifferentialTests
         Assert.Equal(CreateState(seed: 3).IncumbentId, breach.RequestId);
         Assert.Equal([CommitmentFailureCodes.DeadlineExceeded], breach.WitnessCodes);
         Assert.Contains(breach, validated.ValidatedState!.Incidents.Breaches);
-    }
-
-    [Fact]
-    public void The_solver_backed_policy_prefers_a_surviving_insertion_over_the_forced_no_op()
-    {
-        var (_, _, noOp, context) = NoOpRejectedWhileAnInsertionSurvives();
-        var solver = new EnumeratingSolver();
-
-        AlgorithmTestData.AssertGeneratedInFull(context.ReducedState, AlgorithmTestData.SmallGeneration);
-        var result = new SolverBackedRidePoolingPolicy(solver).Decide(
-            context,
-            AlgorithmTestData.SmallGeneration,
-            HardVectorOptions(forcedReferenceRecovery: true));
-
-        Assert.True(result.IsSuccess, result.Witness?.Message);
-        var decision = result.Decision!.Decision;
-        Assert.NotEqual(noOp.CandidateId, decision.VehiclePlans.Single().Candidate.CandidateId);
-        Assert.Null(decision.ForcedReferenceVehicles);
-        Assert.Equal("forced-reference-count", solver.LastProblem!.ObjectiveLevels[0].Name);
-        Assert.Contains(
-            solver.LastProblem.Options,
-            value => value.OptionId == noOp.CandidateId);
     }
 
     [Fact]
@@ -1163,7 +1019,7 @@ public sealed class ExactSmallCommitmentDifferentialTests
     [Fact]
     public void No_worse_recovery_requires_forced_reference_recovery()
     {
-        var (generated, _, _, context) = NoOpRejectedWhileAnInsertionSurvives();
+        var (generated, _, _, _, context) = EveryCandidateRejected();
         var budget = DeterministicCandidateSelectionExecutionBudget.Create(
             100_000,
             100_000,
@@ -1185,34 +1041,13 @@ public sealed class ExactSmallCommitmentDifferentialTests
     [Fact]
     public void Forced_recovery_requires_the_safety_no_op()
     {
-        var (generated, _, _, context) = NoOpRejectedWhileAnInsertionSurvives();
+        var (generated, _, _, _, context) = EveryCandidateRejected();
 
         Assert.Throws<ArgumentException>(
             () => new HardVectorCandidateAssessor().AssessAndFilter(
                 context,
                 generated.VehicleCandidates!,
                 forcedReferenceRecovery: true));
-    }
-
-    private static (
-        CandidateGenerationResult Generated,
-        VehicleCandidateSet Set,
-        InsertionCandidate NoOp,
-        CommitmentMechanismContext Context) NoOpRejectedWhileAnInsertionSurvives()
-    {
-        var fixture = CreateState(seed: 3);
-        var generated = new InsertionCandidateGenerator().Generate(
-            fixture.State,
-            AlgorithmTestData.SmallGeneration);
-        Assert.True(generated.IsSuccess, generated.Witness?.Message);
-        Assert.True(generated.Diagnostics!.IsComplete);
-        var set = generated.VehicleCandidates!.Single();
-        var noOp = set.Candidates.Single(value => value.IsNoOp);
-        var context = DeadlineContext(
-            fixture,
-            initialDropMs: fixture.BaselineDrop.Milliseconds + SmallestPositiveDelay(fixture, set),
-            twoSided: true);
-        return (generated, set, noOp, context);
     }
 
     private static (
@@ -1237,18 +1072,9 @@ public sealed class ExactSmallCommitmentDifferentialTests
         Assert.NotEqual(ordinalFirst.CandidateId, noOp.CandidateId);
         var context = DeadlineContext(
             fixture,
-            initialDropMs: fixture.BaselineDrop.Milliseconds - 1,
-            twoSided: false);
+            initialDropMs: fixture.BaselineDrop.Milliseconds - 1);
         return (generated, set, noOp, ordinalFirst, context);
     }
-
-    private static long SmallestPositiveDelay(Fixture fixture, VehicleCandidateSet set) =>
-        set.Candidates
-            .Where(value => !value.IsNoOp)
-            .Select(value => OracleEtas(fixture.State, SemanticKey(value), fixture.IncumbentId)
-                .Drop.Milliseconds - fixture.BaselineDrop.Milliseconds)
-            .Where(value => value > 0)
-            .Min();
 
     private static SolverBackedRidePoolingPolicyOptions HardVectorOptions(
         bool forcedReferenceRecovery,
@@ -1359,19 +1185,9 @@ public sealed class ExactSmallCommitmentDifferentialTests
                 bounds).Value!;
     }
 
-    /// <summary>The assessment fails before selection, so the solver is never called.</summary>
-    private sealed class UnreachableSolver : ICandidateSelectionSolver
-    {
-        public CandidateSelectionSolveResult Solve(
-            CandidateSelectionProblem problem,
-            DeterministicSolverBudget budget) =>
-            throw new InvalidOperationException("The solver must not be reached.");
-    }
-
     private static CommitmentMechanismContext DeadlineContext(
         Fixture fixture,
-        long initialDropMs,
-        bool twoSided) =>
+        long initialDropMs) =>
         PromiseContext(
             fixture,
             initialDropMs,
@@ -1383,8 +1199,7 @@ public sealed class ExactSmallCommitmentDifferentialTests
                         null,
                         CommitmentPhase.AllActive)),
                 new MaterialRevisionRule(1_000, null),
-                dropEtaDeadlineSlack: new Duration(0),
-                dropEtaDeadlineTwoSided: twoSided));
+                dropEtaDeadlineSlack: new Duration(0)));
 
     /// <summary>
     /// A one-sided deadline of <paramref name="slack"/> from the given first promise, strict or

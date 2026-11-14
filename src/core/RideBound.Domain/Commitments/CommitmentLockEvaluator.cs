@@ -16,9 +16,6 @@ public sealed class CommitmentLockEvaluator
     /// </summary>
     public const string DeadlineCapRule = "deadline_cap";
 
-    /// <summary>Rule of a drop ETA earlier than the initial promise minus the slack.</summary>
-    public const string DeadlineFloorRule = "deadline_floor";
-
     public IReadOnlyList<CommitmentLockWitness> Evaluate(
         RideRequest request,
         PublishedPromise previous,
@@ -196,7 +193,7 @@ public sealed class CommitmentLockEvaluator
             ?? throw new InvalidOperationException("A deadline rule has no slack.");
 
         // Both values are canonical non-negative integers below 2^53, so the
-        // difference and its negation fit in a long.
+        // difference fits in a long.
         var shift = candidate.DropEta.Milliseconds - anchor.DropEta.Milliseconds;
 
         if (shift > slack.Milliseconds)
@@ -209,11 +206,6 @@ public sealed class CommitmentLockEvaluator
                 witnesses.Add(
                     new CommitmentLockWitness(request.Id, "drop_eta_ms", DeadlineCapRule));
             }
-        }
-        else if (policy.DropEtaDeadlineTwoSided && -shift > slack.Milliseconds)
-        {
-            witnesses.Add(
-                new CommitmentLockWitness(request.Id, "drop_eta_ms", DeadlineFloorRule));
         }
     }
 
