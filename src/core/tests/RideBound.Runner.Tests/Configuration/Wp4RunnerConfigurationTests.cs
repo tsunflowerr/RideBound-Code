@@ -63,57 +63,6 @@ public sealed class Wp4RunnerConfigurationTests
     }
 
     [Fact]
-    public void Constant_level_skip_is_optional_and_off_unless_declared()
-    {
-        var commitment = CommitmentConfiguration();
-        var baseJson = FinalJson();
-
-        // Every configuration written before RB-WP14-002 omits the field and must
-        // keep the solver work, and therefore the decision hash, it recorded.
-        var published = Wp4RunnerConfiguration.Decode(
-            Encoding.UTF8.GetBytes(baseJson),
-            commitment);
-
-        Assert.False(
-            published.SolverPolicyOptions!.ExecutionBudget.SolverBudget
-                .SkipConstantObjectiveLevels);
-        Assert.False(
-            published.CreateSolverPolicyOptionsForRun(19).ExecutionBudget
-                .SolverBudget.SkipConstantObjectiveLevels);
-
-        var optedInJson = Edit(baseJson, json => json["solverExecution"]!["skipConstantObjectiveLevels"] = true);
-        var optedIn = Wp4RunnerConfiguration.Decode(
-            Encoding.UTF8.GetBytes(optedInJson),
-            commitment);
-
-        Assert.True(
-            optedIn.SolverPolicyOptions!.ExecutionBudget.SolverBudget
-                .SkipConstantObjectiveLevels);
-        Assert.True(
-            optedIn.CreateSolverPolicyOptionsForRun(19).ExecutionBudget
-                .SolverBudget.SkipConstantObjectiveLevels);
-
-        // Opting in is a different configuration and must not share a hash.
-        Assert.NotEqual(published.ContentHash, optedIn.ContentHash);
-
-        var explicitlyOff = Edit(baseJson, json => json["solverExecution"]!["skipConstantObjectiveLevels"] = false);
-
-        Assert.False(
-            Wp4RunnerConfiguration.Decode(
-                    Encoding.UTF8.GetBytes(explicitlyOff),
-                    commitment)
-                .SolverPolicyOptions!.ExecutionBudget.SolverBudget
-                .SkipConstantObjectiveLevels);
-
-        var wrongType = Edit(baseJson, json => json["solverExecution"]!["skipConstantObjectiveLevels"] = "yes");
-
-        Assert.Throws<InvalidDataException>(
-            () => Wp4RunnerConfiguration.Decode(
-                Encoding.UTF8.GetBytes(wrongType),
-                commitment));
-    }
-
-    [Fact]
     public void An_absent_initial_promise_trigger_is_initial_acceptance_and_unknown_values_are_refused()
     {
         // The final configuration without initialPromiseTrigger, whose absence selects initial-acceptance.
@@ -852,6 +801,86 @@ public sealed class Wp4RunnerConfigurationTests
             Assert.Throws<RideBound.Contracts.Serialization.CanonicalJsonException>(
                 () => Wp4RunnerConfiguration.Decode(
                     Encoding.UTF8.GetBytes(FinalJson(json => G2(json, 1.5))),
+                    commitment)).Message);
+    }
+
+    [Fact]
+    public void The_removed_constant_level_skip_is_refused_with_a_pointer_to_the_archive()
+    {
+        const string refusal =
+            "WP4 'solverExecution.skipConstantObjectiveLevels' key (the constant-level skip): "
+            + "removed; see commit ebca912 (branch research/final-real-runs-2026-11-06)";
+        var commitment = CommitmentConfiguration();
+        static void Skip(JsonObject json) =>
+            json["solverExecution"]!["skipConstantObjectiveLevels"] = true;
+        string Refused(string json) =>
+            Assert.Throws<InvalidDataException>(
+                () => Wp4RunnerConfiguration.Decode(Encoding.UTF8.GetBytes(json), commitment)).Message;
+
+        // The final C1 file with the key, whatever its value: true and false were decoded before, the others were
+        // refused by the old reader with its own message.
+        foreach (var value in new JsonNode[] { true, false, "yes", 1 })
+        {
+            Assert.Equal(
+                refusal,
+                Refused(FinalJson(json => json["solverExecution"]!["skipConstantObjectiveLevels"] = value)));
+        }
+
+        // Checks that run later no longer get to such a file: the generation and validation work limits.
+        Assert.Equal(
+            refusal,
+            Refused(FinalJson(json =>
+            {
+                Skip(json);
+                json["solverExecution"]!["maximumGenerationWorkUnits"] = 0;
+            })));
+        Assert.Equal(
+            refusal,
+            Refused(FinalJson(json =>
+            {
+                Skip(json);
+                json["solverExecution"]!["maximumValidationWorkUnits"] = 0;
+            })));
+
+        // Checks that run before it keep their messages: the solver work limit, the seed, an unknown solver key, and
+        // the evidence check in Decode.
+        Assert.Equal(
+            "'maximumSolverWorkUnits' must be positive.",
+            Refused(FinalJson(json =>
+            {
+                Skip(json);
+                json["solverExecution"]!["maximumSolverWorkUnits"] = 0;
+            })));
+        Assert.Equal(
+            "'randomSeed' exceeds Int32.",
+            Refused(FinalJson(json =>
+            {
+                Skip(json);
+                json["solverExecution"]!["randomSeed"] = 2_147_483_648L;
+            })));
+        Assert.Equal(
+            "Unknown field 'seed' at '$.solverExecution'.",
+            Refused(FinalJson(json =>
+            {
+                Skip(json);
+                json["solverExecution"]!["seed"] = 7;
+            })));
+        Assert.Equal(
+            "WP4 emitSolverExecutionEvidence true and the 'solverExecutionEvidenceProfile' key "
+            + "(solver execution evidence): removed; see commit ebca912 (branch research/final-real-runs-2026-11-06)",
+            Refused(FinalJson(json =>
+            {
+                Skip(json);
+                json["emitSolverExecutionEvidence"] = true;
+            })));
+
+        // A fraction never reaches the field reader: canonical JSON refuses it first, at the same path.
+        Assert.Contains(
+            "$.solverExecution.skipConstantObjectiveLevels",
+            Assert.Throws<RideBound.Contracts.Serialization.CanonicalJsonException>(
+                () => Wp4RunnerConfiguration.Decode(
+                    Encoding.UTF8.GetBytes(FinalJson(json =>
+                        json["solverExecution"]!["skipConstantObjectiveLevels"] = 1.5)),
                     commitment)).Message);
     }
 

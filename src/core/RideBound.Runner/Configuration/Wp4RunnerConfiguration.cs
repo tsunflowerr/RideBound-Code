@@ -139,9 +139,8 @@ public sealed class Wp4RunnerConfiguration
         "randomSeed");
 
     /// <summary>
-    /// `skipConstantObjectiveLevels` is allowed but not required, so every
-    /// configuration written before RB-WP14-002 keeps parsing unchanged and keeps
-    /// the solver work it recorded.
+    /// The allowed solverExecution keys. `skipConstantObjectiveLevels` belongs to the removed constant-level skip; it
+    /// stays here only so that a file with it gets the removal refusal in <see cref="ReadSolverBudget"/>.
     /// </summary>
     private static readonly IReadOnlySet<string> SolverFields = Fields(
         "adapterVersion",
@@ -223,8 +222,7 @@ public sealed class Wp4RunnerConfiguration
         var solver = DeterministicSolverBudget.Create(
             sourceSolver.MaximumWorkUnits,
             sourceSolver.MaximumDeterministicTimeMicros,
-            manifestSolverSeed,
-            sourceSolver.SkipConstantObjectiveLevels);
+            manifestSolverSeed);
 
         if (!solver.IsSuccess)
         {
@@ -624,12 +622,21 @@ public sealed class Wp4RunnerConfiguration
                 "maximumSolverDeterministicTimeMicros"),
             NonNegativeInt32(
                 element.GetProperty("randomSeed"),
-                "randomSeed"),
-            OptionalBoolean(element, "skipConstantObjectiveLevels"));
+                "randomSeed"));
 
         if (!solverBudget.IsSuccess)
         {
             throw new InvalidDataException(solverBudget.Failure!.Message);
+        }
+
+        // The constant-level skip is removed: every lexicographic level is solved, which is what an absent key meant.
+        // The key is refused with any value, false included. Checked right after the three solver values are read,
+        // where the old read was (the budget check above never fails for values these readers return), so the checks
+        // before it keep their messages; with the key, the checks after it are not reached.
+        if (element.TryGetProperty("skipConstantObjectiveLevels", out _))
+        {
+            throw new InvalidDataException(
+                "WP4 'solverExecution.skipConstantObjectiveLevels' key (the constant-level skip): " + RemovedFeature);
         }
 
         var execution = DeterministicCandidateSelectionExecutionBudget.Create(

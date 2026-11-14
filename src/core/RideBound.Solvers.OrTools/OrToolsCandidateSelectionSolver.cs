@@ -22,10 +22,6 @@ public sealed class OrToolsCandidateSelectionSolver : ICandidateSelectionSolver
         var fixedBounds = new List<ObjectiveSolveBound>();
         long consumedWork = 0;
         long consumedDeterministicMicros = 0;
-        var constants = budget.SkipConstantObjectiveLevels
-            ? ConstantsToSkip(problem)
-            : null;
-        var skippedLevels = 0;
         ModelContext? context = null;
         var boundsInModel = 0;
 
@@ -33,38 +29,6 @@ public sealed class OrToolsCandidateSelectionSolver : ICandidateSelectionSolver
              levelIndex < problem.ObjectiveLevels.Count;
              levelIndex++)
         {
-            if (constants?[levelIndex] is long constantValue)
-            {
-                // The level is the same number for every feasible assignment, so
-                // the pass would only prove the optimum of a constant and the
-                // equality it contributes to later passes is vacuous. Report the
-                // exact optimum and do not build a model. The bound is not added
-                // to the fixed set precisely because it constrains nothing.
-                var constantBound = ObjectiveSolveBound.Create(
-                    levelIndex,
-                    problem.ObjectiveLevels[levelIndex],
-                    constantValue,
-                    constantValue);
-
-                if (!constantBound.IsSuccess)
-                {
-                    return NoSolution(
-                        problem,
-                        budget,
-                        stopwatch,
-                        CandidateSelectionSolveStatus.ModelInvalid,
-                        "ORTOOLS_BOUND_INVALID",
-                        constantBound.Failure!.Message,
-                        consumedWork,
-                        consumedDeterministicMicros,
-                        bounds);
-                }
-
-                bounds.Add(constantBound.Value!);
-                skippedLevels++;
-                continue;
-            }
-
             var remainingWork = budget.MaximumWorkUnits - consumedWork;
             var remainingMicros = budget.MaximumDeterministicTimeMicros
                 - consumedDeterministicMicros;
@@ -256,18 +220,8 @@ public sealed class OrToolsCandidateSelectionSolver : ICandidateSelectionSolver
             consumedWork,
             consumedDeterministicMicros,
             bounds,
-            skippedLevels == 0
-                ? "ORTOOLS_OPTIMAL"
-                : "ORTOOLS_OPTIMAL_CONSTANT_LEVELS_SKIPPED",
-            skippedLevels == 0
-                ? AdapterVersion
-                : string.Format(
-                    CultureInfo.InvariantCulture,
-                    "{0}; {1} of {2} lexicographic levels were constant over the " +
-                    "feasible set and were reported without a solve.",
-                    AdapterVersion,
-                    skippedLevels,
-                    problem.ObjectiveLevels.Count));
+            "ORTOOLS_OPTIMAL",
+            AdapterVersion);
         return CandidateSelectionSolveResult.Optimal(incumbent!, diagnostics);
 
         // Ends the solve without a solution, reporting the work and bounds counted so far.
@@ -285,24 +239,6 @@ public sealed class OrToolsCandidateSelectionSolver : ICandidateSelectionSolver
                 consumedWork,
                 consumedDeterministicMicros,
                 bounds);
-    }
-
-    /// <summary>
-    /// Returns the constant value per level, or <c>null</c> where the level must
-    /// still be solved. At least one level is always left to solve so the pass
-    /// loop still produces an incumbent assignment.
-    /// </summary>
-    private static IReadOnlyList<long?> ConstantsToSkip(
-        CandidateSelectionProblem problem)
-    {
-        var constants = problem.ConstantObjectiveLevelValues().ToArray();
-
-        if (constants.All(value => value is not null))
-        {
-            constants[0] = null;
-        }
-
-        return constants;
     }
 
     /// <summary>
