@@ -361,12 +361,10 @@ public static class OnlineStateCanonicalWriter
         var item = new CanonicalObject(buffer);
         WriteVector(item.Member("budgetAfter"u8), entry.BudgetAfter);
 
-        if (entry.BudgetBasis is CommitmentBudgetBasis budgetBasis)
+        // A revision names the basis it was charged by, which is always the decision-induced delta.
+        if (entry.Kind == CommitmentLedgerEntryKind.Revision)
         {
-            item.Member("budgetBasis"u8).String(
-                budgetBasis == CommitmentBudgetBasis.DecisionInduced
-                    ? "decisionInduced"
-                    : "customerVisible");
+            item.Member("budgetBasis"u8).String("decisionInduced");
         }
 
         WriteVector(item.Member("budgetBefore"u8), entry.BudgetBefore);

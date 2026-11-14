@@ -98,7 +98,6 @@ public sealed class WaitingRiderRelocationLockTests
             Assert.Throws<ArgumentException>(
                 () => new CommitmentPolicy(
                     "test-boundary-v1",
-                    CommitmentBudgetBasis.DecisionInduced,
                     CommitmentDimensionVocabulary.Ordered.Select(
                         dimension => new CommitmentDimensionLimit(dimension, null, CommitmentPhase.AllActive)),
                     new MaterialRevisionRule(1_000, 60_000),
@@ -135,7 +134,6 @@ public sealed class WaitingRiderRelocationLockTests
         CommitmentPhase switchPhases = CommitmentPhase.AllActive) =>
         new(
             "test-boundary-v1",
-            CommitmentBudgetBasis.DecisionInduced,
             CommitmentDimensionVocabulary.Ordered.Select(
                 dimension => dimension == CommitmentDimension.VehicleSwitchCount
                     ? new CommitmentDimensionLimit(dimension, switchLimit, switchPhases)

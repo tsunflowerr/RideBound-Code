@@ -216,7 +216,6 @@ public sealed class ExactSmallCommitmentDifferentialTests
         var fixture = CreateState(seed: 2);
         var policy = new CommitmentPolicy(
             "uniform-v1",
-            CommitmentBudgetBasis.DecisionInduced,
             CommitmentDimensionVocabulary.Ordered.Select(
                 dimension => new CommitmentDimensionLimit(
                     dimension,
@@ -360,7 +359,6 @@ public sealed class ExactSmallCommitmentDifferentialTests
         Assert.True(generated.Diagnostics!.IsComplete);
         var undeclared = new CommitmentPolicy(
             "undeclared-policy-v1",
-            CommitmentBudgetBasis.DecisionInduced,
             CommitmentDimensionVocabulary.Ordered.Select(
                 dimension => new CommitmentDimensionLimit(
                     dimension,
@@ -511,52 +509,6 @@ public sealed class ExactSmallCommitmentDifferentialTests
     }
 
     [Fact]
-    public void A_budget_rule_can_reject_the_no_op_while_an_insertion_survives()
-    {
-        // Under the customer-visible basis the kept route is charged for moving the
-        // drop ETA away from the published promise. The promise sits one insertion's
-        // delay after the kept route, and the drop budget is one millisecond short of
-        // that delay: the no-op is over budget, the insertion that lands exactly on
-        // the promise is not.
-        var fixture = CreateState(seed: 3);
-        var generated = new InsertionCandidateGenerator().Generate(
-            fixture.State,
-            AlgorithmTestData.SmallGeneration);
-        Assert.True(generated.IsSuccess, generated.Witness?.Message);
-        Assert.True(generated.Diagnostics!.IsComplete);
-        var noOp = generated.VehicleCandidates!.Single().Candidates.Single(value => value.IsNoOp);
-        var delay = SmallestPositiveDelay(fixture, generated.VehicleCandidates!.Single());
-        var policy = new CommitmentPolicy(
-            fixture.Policy.PolicyId,
-            CommitmentBudgetBasis.CustomerVisible,
-            CommitmentDimensionVocabulary.Ordered.Select(
-                dimension => new CommitmentDimensionLimit(
-                    dimension,
-                    dimension == CommitmentDimension.DropEtaTotalMs ? delay - 1 : null,
-                    CommitmentPhase.AllActive)),
-            new MaterialRevisionRule(1_000, null));
-        var context = PromiseContext(
-            fixture,
-            fixture.BaselineDrop.Milliseconds + delay,
-            policy);
-
-        var assessed = new HardVectorCandidateAssessor().AssessAndFilter(
-            context,
-            generated.VehicleCandidates!,
-            requireSafetyNoOp: true);
-
-        Assert.False(assessed.IsSuccess);
-        var witness = assessed.Witness!;
-        Assert.Equal(CommitmentFailureCodes.SafetyNoOpRejected, witness.Code);
-        Assert.Equal(noOp.CandidateId, witness.CandidateId);
-        Assert.Equal(CommitmentFailureCodes.BudgetExceeded, witness.UnderlyingCode);
-        Assert.EndsWith(
-            "No-op rejection: The candidate exceeds a hard commitment dimension.",
-            witness.Message,
-            StringComparison.Ordinal);
-    }
-
-    [Fact]
     public void C1_fail_closed_cites_the_safety_no_op_when_every_candidate_is_rejected()
     {
         // An initial promise one millisecond EARLIER than the kept route and a
@@ -669,45 +621,6 @@ public sealed class ExactSmallCommitmentDifferentialTests
     }
 
     [Fact]
-    public void Forced_recovery_keeps_a_budget_rejected_no_op_without_ranking_its_overrun()
-    {
-        // The kept route is charged past its drop budget under the customer-visible
-        // basis. Recovery keeps it as the vehicle's forced option; no ranking reads the
-        // overrun.
-        var fixture = CreateState(seed: 3);
-        var generated = new InsertionCandidateGenerator().Generate(
-            fixture.State,
-            AlgorithmTestData.SmallGeneration);
-        Assert.True(generated.IsSuccess, generated.Witness?.Message);
-        Assert.True(generated.Diagnostics!.IsComplete);
-        var noOp = generated.VehicleCandidates!.Single().Candidates.Single(value => value.IsNoOp);
-        var delay = SmallestPositiveDelay(fixture, generated.VehicleCandidates!.Single());
-        var policy = new CommitmentPolicy(
-            fixture.Policy.PolicyId,
-            CommitmentBudgetBasis.CustomerVisible,
-            CommitmentDimensionVocabulary.Ordered.Select(
-                dimension => new CommitmentDimensionLimit(
-                    dimension,
-                    dimension == CommitmentDimension.DropEtaTotalMs ? delay - 1 : null,
-                    CommitmentPhase.AllActive)),
-            new MaterialRevisionRule(1_000, null));
-        var context = PromiseContext(
-            fixture,
-            fixture.BaselineDrop.Milliseconds + delay,
-            policy);
-
-        var assessed = new HardVectorCandidateAssessor().AssessAndFilter(
-            context,
-            generated.VehicleCandidates!,
-            requireSafetyNoOp: true,
-            forcedReferenceRecovery: true);
-
-        Assert.True(assessed.IsSuccess, assessed.Witness?.Message);
-        Assert.True(assessed.Batch!.Assessments[noOp.CandidateId].IsForcedReference);
-        Assert.Equal([AlgorithmTestData.VehicleOne], assessed.Batch.ForcedReferenceVehicles);
-    }
-
-    [Fact]
     public void Forced_recovery_does_not_rescue_a_no_op_rejected_outside_the_gates()
     {
         // The requests were booked under a policy the catalog does not declare. That
@@ -721,7 +634,6 @@ public sealed class ExactSmallCommitmentDifferentialTests
         Assert.True(generated.Diagnostics!.IsComplete);
         var undeclared = new CommitmentPolicy(
             "undeclared-policy-v1",
-            CommitmentBudgetBasis.DecisionInduced,
             CommitmentDimensionVocabulary.Ordered.Select(
                 dimension => new CommitmentDimensionLimit(
                     dimension,
@@ -949,7 +861,6 @@ public sealed class ExactSmallCommitmentDifferentialTests
         var fixture = CreateState(seed: 3);
         var policy = new CommitmentPolicy(
             fixture.Policy.PolicyId,
-            CommitmentBudgetBasis.DecisionInduced,
             CommitmentDimensionVocabulary.Ordered.Select(
                 dimension => new CommitmentDimensionLimit(
                     dimension,
@@ -1199,7 +1110,6 @@ public sealed class ExactSmallCommitmentDifferentialTests
             kept + 500,
             new CommitmentPolicy(
                 fixture.Policy.PolicyId,
-                CommitmentBudgetBasis.DecisionInduced,
                 CommitmentDimensionVocabulary.Ordered.Select(
                     dimension => new CommitmentDimensionLimit(
                         dimension,
@@ -1292,7 +1202,6 @@ public sealed class ExactSmallCommitmentDifferentialTests
             bool relaxed = false) =>
             new(
                 fixture.Policy.PolicyId,
-                CommitmentBudgetBasis.DecisionInduced,
                 CommitmentDimensionVocabulary.Ordered.Select(
                     dimension => new CommitmentDimensionLimit(
                         dimension,
@@ -1558,7 +1467,6 @@ public sealed class ExactSmallCommitmentDifferentialTests
             initialDropMs,
             new CommitmentPolicy(
                 fixture.Policy.PolicyId,
-                CommitmentBudgetBasis.DecisionInduced,
                 CommitmentDimensionVocabulary.Ordered.Select(
                     dimension => new CommitmentDimensionLimit(
                         dimension,
@@ -1582,7 +1490,6 @@ public sealed class ExactSmallCommitmentDifferentialTests
             initialDropMs,
             new CommitmentPolicy(
                 fixture.Policy.PolicyId,
-                CommitmentBudgetBasis.DecisionInduced,
                 CommitmentDimensionVocabulary.Ordered.Select(
                     dimension => new CommitmentDimensionLimit(
                         dimension,
@@ -1668,7 +1575,6 @@ public sealed class ExactSmallCommitmentDifferentialTests
     private static CommitmentPolicy EtaPolicy(long hardLimit) =>
         new(
             "uniform-v1",
-            CommitmentBudgetBasis.DecisionInduced,
             CommitmentDimensionVocabulary.Ordered.Select(
                 dimension => new CommitmentDimensionLimit(
                     dimension,
@@ -1771,7 +1677,6 @@ public sealed class ExactSmallCommitmentDifferentialTests
         var limit = seed % 4 * 40L;
         var policy = new CommitmentPolicy(
             "uniform-v1",
-            CommitmentBudgetBasis.DecisionInduced,
             CommitmentDimensionVocabulary.Ordered.Select(
                 dimension => new CommitmentDimensionLimit(
                     dimension,

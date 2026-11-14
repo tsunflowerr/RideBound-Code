@@ -517,14 +517,12 @@ public sealed class CommitmentDecisionValidator
                     calculated.Failure.Dimension);
             }
 
-            var charged = policy.BudgetBasis == CommitmentBudgetBasis.DecisionInduced
-                ? calculated.Deltas!.DecisionInduced
-                : calculated.Deltas!.Visible;
+            // The budget is charged by the decision-induced delta.
             var budget = _budgetEvaluator.Evaluate(
                 request.Id,
                 request.Lifecycle,
                 priorHistory.Current.BudgetAfter,
-                charged,
+                calculated.Deltas!.DecisionInduced,
                 policy,
                 dropEtaTotalLimit);
 
@@ -576,7 +574,6 @@ public sealed class CommitmentDecisionValidator
                     exogenousProjection.Value!,
                     candidateProjection.Value!,
                     calculated.Deltas,
-                    policy.BudgetBasis,
                     context.CandidateState.Run.AppliedEpoch,
                     context.CandidateState.Run.SimulationTime,
                     context.RevisionReasonCode,
@@ -775,14 +772,11 @@ public sealed class CommitmentDecisionValidator
             return null;
         }
 
-        var keptCharged = policy.BudgetBasis == CommitmentBudgetBasis.DecisionInduced
-            ? keptDeltas.Deltas!.DecisionInduced
-            : keptDeltas.Deltas!.Visible;
         var keptBudget = _budgetEvaluator.Evaluate(
             request.Id,
             request.Lifecycle,
             priorHistory.Current.BudgetAfter,
-            keptCharged,
+            keptDeltas.Deltas!.DecisionInduced,
             policy,
             dropEtaTotalLimit);
         return new NoWorseReference(exogenous, keptLocks, keptBudget.Witnesses);

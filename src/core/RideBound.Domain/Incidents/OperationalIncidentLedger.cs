@@ -334,8 +334,8 @@ public sealed record CommitmentBreachRecord
         else if (kind == CommitmentBreachKind.ForcedReference)
         {
             // The forced action keeps the route, so the published projection is the kept-route
-            // projection and the decision adds nothing. The charged delta follows the budget
-            // basis: zero under decisionInduced, the visible delta under customerVisible.
+            // projection and the decision adds nothing. The record names no budget basis, so the
+            // charged delta may be the decision delta (zero) or the visible delta.
             var decisionAfter = budgetBefore.Add(deltas.DecisionInduced);
             var visibleAfter = budgetBefore.Add(deltas.Visible);
 

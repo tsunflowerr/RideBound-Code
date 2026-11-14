@@ -156,7 +156,6 @@ public sealed class WaitingRiderRelocationValidatorTests
         long? switchLimit = null) =>
         new(
             ApplicationTestData.Request().CommitmentPolicyId,
-            CommitmentBudgetBasis.DecisionInduced,
             CommitmentDimensionVocabulary.Ordered.Select(
                 dimension => new CommitmentDimensionLimit(
                     dimension,

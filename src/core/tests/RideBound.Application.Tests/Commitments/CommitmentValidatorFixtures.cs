@@ -108,7 +108,6 @@ internal static class CommitmentValidatorFixtures
         var candidate = reduced with { Run = changedRun };
         var policy = new CommitmentPolicy(
             request.CommitmentPolicyId,
-            CommitmentBudgetBasis.DecisionInduced,
             CommitmentDimensionVocabulary.Ordered.Select(
                 dimension => new CommitmentDimensionLimit(
                     dimension,

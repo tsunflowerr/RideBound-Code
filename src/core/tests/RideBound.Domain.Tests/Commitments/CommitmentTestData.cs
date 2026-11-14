@@ -68,7 +68,6 @@ internal static class CommitmentTestData
         PromiseLock confirmationLocks = PromiseLock.None) =>
         new(
             "test-boundary-v1",
-            CommitmentBudgetBasis.DecisionInduced,
             CommitmentDimensionVocabulary.Ordered.Select(
                 dimension => new CommitmentDimensionLimit(
                     dimension,

@@ -312,7 +312,6 @@ public sealed class CommitmentSlackProportionalTests
         bool shadow = false) =>
         new(
             "policy-1",
-            CommitmentBudgetBasis.DecisionInduced,
             CommitmentDimensionVocabulary.Ordered.Select(
                 dimension => new CommitmentDimensionLimit(
                     dimension,

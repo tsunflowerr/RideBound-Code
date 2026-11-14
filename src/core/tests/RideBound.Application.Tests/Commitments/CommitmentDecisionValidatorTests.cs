@@ -261,7 +261,6 @@ public sealed class CommitmentDecisionValidatorTests
         var candidate = reduced with { Run = candidateRun };
         var policy = new CommitmentPolicy(
             request.CommitmentPolicyId,
-            CommitmentBudgetBasis.DecisionInduced,
             CommitmentDimensionVocabulary.Ordered.Select(
                 dimension => new CommitmentDimensionLimit(
                     dimension,
@@ -437,7 +436,6 @@ public sealed class CommitmentDecisionValidatorTests
         var candidate = reduced with { Run = candidateRun };
         var policy = new CommitmentPolicy(
             request.CommitmentPolicyId,
-            CommitmentBudgetBasis.DecisionInduced,
             CommitmentDimensionVocabulary.Ordered.Select(
                 dimension => new CommitmentDimensionLimit(
                     dimension,

@@ -24,12 +24,6 @@ public enum PromiseLock
     DropEta = 16,
 }
 
-public enum CommitmentBudgetBasis
-{
-    DecisionInduced,
-    CustomerVisible,
-}
-
 public sealed record CommitmentDimensionLimit
 {
     public CommitmentDimensionLimit(
@@ -128,7 +122,6 @@ public sealed class CommitmentPolicy
 
     public CommitmentPolicy(
         string policyId,
-        CommitmentBudgetBasis budgetBasis,
         IEnumerable<CommitmentDimensionLimit> limits,
         MaterialRevisionRule materialRevisionRule,
         Duration? freezeHorizon = null,
@@ -154,11 +147,6 @@ public sealed class CommitmentPolicy
             | PromiseLock.DropStop
             | PromiseLock.PickupEta
             | PromiseLock.DropEta;
-
-        if (!Enum.IsDefined(budgetBasis))
-        {
-            throw new ArgumentOutOfRangeException(nameof(budgetBasis));
-        }
 
         if (materialized.Length != CommitmentDimensionVocabulary.Ordered.Count
             || materialized
@@ -293,7 +281,6 @@ public sealed class CommitmentPolicy
                 nameof(dropEtaShadowAllocation));
         }
 
-        BudgetBasis = budgetBasis;
         _limits = materialized.ToFrozenDictionary(value => value.Dimension);
         MaterialRevisionRule = materialRevisionRule;
         FreezeHorizon = freezeHorizon;
@@ -444,8 +431,6 @@ public sealed class CommitmentPolicy
         || DropEtaBudgetSlackPermille is not null;
 
     public string PolicyId { get; }
-
-    public CommitmentBudgetBasis BudgetBasis { get; }
 
     public IReadOnlyDictionary<
         CommitmentDimension,

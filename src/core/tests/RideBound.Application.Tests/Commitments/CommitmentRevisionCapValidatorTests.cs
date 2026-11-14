@@ -336,7 +336,6 @@ public sealed class CommitmentRevisionCapValidatorTests
         bool relaxed = false) =>
         new(
             ApplicationTestData.Request().CommitmentPolicyId,
-            CommitmentBudgetBasis.DecisionInduced,
             CommitmentDimensionVocabulary.Ordered.Select(
                 dimension => new CommitmentDimensionLimit(
                     dimension,

@@ -363,13 +363,9 @@ internal static class OnlineStateReferenceCanonicalizer
                 writer.WritePropertyName("budgetAfter");
                 WriteVector(writer, entry.BudgetAfter);
 
-                if (entry.BudgetBasis is CommitmentBudgetBasis budgetBasis)
+                if (entry.Kind == CommitmentLedgerEntryKind.Revision)
                 {
-                    writer.WriteString(
-                        "budgetBasis",
-                        budgetBasis == CommitmentBudgetBasis.DecisionInduced
-                            ? "decisionInduced"
-                            : "customerVisible");
+                    writer.WriteString("budgetBasis", "decisionInduced");
                 }
 
                 writer.WriteString("reasonCode", entry.ReasonCode);

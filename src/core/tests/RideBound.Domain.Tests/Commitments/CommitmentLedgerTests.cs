@@ -60,7 +60,6 @@ public sealed class CommitmentLedgerTests
                 CommitmentVector.Zero,
                 delta,
                 delta),
-            CommitmentBudgetBasis.DecisionInduced,
             2,
             new SimTime(2_000),
             "REPLAN",
@@ -89,7 +88,6 @@ public sealed class CommitmentLedgerTests
                 CommitmentVector.Zero,
                 returnDelta,
                 returnDelta),
-            CommitmentBudgetBasis.DecisionInduced,
             3,
             new SimTime(3_000),
             "REPLAN",
@@ -135,7 +133,6 @@ public sealed class CommitmentLedgerTests
                 CommitmentTestData.Vector(
                     CommitmentDimension.PickupEtaTotalMs,
                     1)),
-            CommitmentBudgetBasis.DecisionInduced,
             2,
             new SimTime(2_000),
             "REPLAN",
@@ -194,42 +191,6 @@ public sealed class CommitmentLedgerTests
         Assert.Single(first.Histories);
     }
 
-    [Fact]
-    public void Revision_rejects_unknown_budget_basis()
-    {
-        var ledger = CommitmentLedger.Empty.OpenInitial(
-            "pub-1",
-            CommitmentTestData.Projection(),
-            1,
-            new SimTime(1_000),
-            "INITIAL_ACCEPTANCE",
-            3).Ledger!;
-
-        var result = ledger.AppendRevision(
-            "pub-2",
-            TestData.RequestOne,
-            new PromiseVersion(1),
-            CommitmentTestData.Projection(),
-            CommitmentTestData.Projection(pickupEta: 10_001),
-            new ThreeWayPromiseDelta(
-                CommitmentVector.Zero,
-                CommitmentTestData.Vector(
-                    CommitmentDimension.PickupEtaTotalMs,
-                    1),
-                CommitmentTestData.Vector(
-                    CommitmentDimension.PickupEtaTotalMs,
-                    1)),
-            (CommitmentBudgetBasis)99,
-            2,
-            new SimTime(2_000),
-            "REPLAN",
-            4);
-
-        Assert.False(result.IsSuccess);
-        Assert.Equal("budgetBasis", result.Failure?.Dimension);
-        Assert.Single(ledger.Histories[TestData.RequestOne].Entries);
-    }
-
     /// <summary>
     /// ADR-089: the persistent publication set must reject every identifier any earlier entry
     /// used (the initial promise and earlier revisions), as the old scan of every entry did.
@@ -255,7 +216,6 @@ public sealed class CommitmentLedgerTests
             CommitmentTestData.Projection(),
             CommitmentTestData.Projection(pickupEta: 10_001),
             delta,
-            CommitmentBudgetBasis.DecisionInduced,
             2,
             new SimTime(2_000),
             "REPLAN",
@@ -270,7 +230,6 @@ public sealed class CommitmentLedgerTests
                 CommitmentTestData.Projection(pickupEta: 10_001),
                 CommitmentTestData.Projection(pickupEta: 10_002),
                 delta,
-                CommitmentBudgetBasis.DecisionInduced,
                 3,
                 new SimTime(3_000),
                 "REPLAN",
@@ -291,7 +250,6 @@ public sealed class CommitmentLedgerTests
             CommitmentTestData.Projection(),
             CommitmentTestData.Projection(pickupEta: 10_001),
             delta,
-            CommitmentBudgetBasis.DecisionInduced,
             2,
             new SimTime(2_000),
             "REPLAN",
@@ -342,7 +300,6 @@ public sealed class CommitmentLedgerTests
                         CommitmentVector.Zero,
                         delta,
                         delta),
-                    CommitmentBudgetBasis.DecisionInduced,
                     revision + 1,
                     new SimTime(1_000 + revision),
                     "PROPERTY_REPLAN",

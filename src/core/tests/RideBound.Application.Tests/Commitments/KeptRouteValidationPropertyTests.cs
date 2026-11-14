@@ -114,7 +114,6 @@ public sealed class KeptRouteValidationPropertyTests
 
         return new CommitmentPolicy(
             PolicyId,
-            CommitmentBudgetBasis.DecisionInduced,
             limits,
             new MaterialRevisionRule(1_000, 60_000),
             finalConfirmationLocks: PromiseLock.PickupStop | PromiseLock.PickupEta

@@ -192,7 +192,6 @@ public sealed class CommitmentRelaxedDeadlineLockTests
     private static CommitmentPolicy Policy(long slack, bool relaxed) =>
         new(
             "policy-1",
-            CommitmentBudgetBasis.DecisionInduced,
             CommitmentDimensionVocabulary.Ordered.Select(
                 dimension => new CommitmentDimensionLimit(
                     dimension,

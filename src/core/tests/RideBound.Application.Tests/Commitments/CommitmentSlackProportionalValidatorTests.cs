@@ -4,7 +4,6 @@ using RideBound.Application.Scheduling;
 using RideBound.Application.State;
 using RideBound.Domain.Commitments;
 using RideBound.Domain.Common;
-using RideBound.Domain.Incidents;
 using RideBound.Domain.Requests;
 using RideBound.Domain.Routes;
 using RideBound.Domain.Runs;
@@ -144,43 +143,6 @@ public sealed class CommitmentSlackProportionalValidatorTests
     }
 
     [Fact]
-    public void No_worse_recovery_under_a_rider_budget_allows_no_more_than_the_kept_overrun()
-    {
-        // Visible basis, 500 ms drift: the kept route charges 500 ms, past the rider's 315 ms. A
-        // changed route that keeps the drop charges the same 500 ms and is exempted; one that adds
-        // 300 ms charges 800 ms and stays rejected. A fixed 315 ms limit decides the same way.
-        var forced = new HashSet<VehicleId> { ApplicationTestData.VehicleId };
-
-        foreach (var (policy, isProportional) in new[]
-                 {
-                     (Policy(budgetPermille: 350, basis: CommitmentBudgetBasis.CustomerVisible), true),
-                     (Policy(dropBudget: RiderBudget, basis: CommitmentBudgetBasis.CustomerVisible), false),
-                 })
-        {
-            var baseline = Decision(policy, reducedAt: Now + 500);
-            var kept = new CommitmentDecisionValidator().Validate(
-                WithCandidateRoute(baseline, AppendAfterDrop)
-                    with { ForcedReferenceVehicles = forced, ForcedNoWorse = true });
-            var worse = new CommitmentDecisionValidator().Validate(
-                WithCandidateRoute(baseline, route => WaitBeforeDrop(route, "added", 300))
-                    with { ForcedReferenceVehicles = forced, ForcedNoWorse = true });
-
-            Assert.True(kept.IsValid, $"{isProportional}: " + string.Join("; ", kept.Witnesses.Select(w => w.Message)));
-            var breach = Assert.Single(kept.ForcedBreaches);
-            Assert.Equal(CommitmentBreachKind.ForcedNoWorse, breach.Kind);
-            Assert.Equal([CommitmentFailureCodes.BudgetExceeded], breach.WitnessCodes);
-            Assert.Equal(500, breach.AttemptedBudgetAfter.DropEtaTotalMs);
-            Assert.True(Assert.Single(kept.ForcedExemptions).NoWorse);
-            Assert.False(worse.IsValid);
-            Assert.Empty(worse.ForcedBreaches);
-            var witness = Assert.Single(worse.Witnesses);
-            Assert.Equal(CommitmentFailureCodes.BudgetExceeded, witness.Code);
-            Assert.Equal(RiderBudget, witness.Limit);
-            Assert.Equal(800, witness.After);
-        }
-    }
-
-    [Fact]
     public void A_two_sided_rider_deadline_holds_the_floor_at_drop0_minus_the_rider_budget()
     {
         // A 500 ms dwell before the drop makes the first promise 1100/1700 ms, so the rider's slack is
@@ -254,11 +216,9 @@ public sealed class CommitmentSlackProportionalValidatorTests
         long? dropBudget = null,
         long? deadlineSlack = null,
         bool relaxed = false,
-        bool twoSided = false,
-        CommitmentBudgetBasis basis = CommitmentBudgetBasis.DecisionInduced) =>
+        bool twoSided = false) =>
         new(
             ApplicationTestData.Request().CommitmentPolicyId,
-            basis,
             CommitmentDimensionVocabulary.Ordered.Select(
                 dimension => new CommitmentDimensionLimit(
                     dimension,
@@ -393,14 +353,6 @@ public sealed class CommitmentSlackProportionalValidatorTests
         stops.Insert(
             stops.FindIndex(value => value.Kind == RouteStopKind.DropOff),
             new RouteStop(new StopId(stopId), ApplicationTestData.NodeOne, RouteStopKind.Waypoint, null, new Duration(milliseconds)));
-        return RoutePlan.Create(new PlanVersion(route.Version.Value + 1), route.ExecutedStopCount, route.FrozenPrefix, stops).Value!;
-    }
-
-    /// <summary>A changed route that keeps the drop time: a zero-dwell waypoint after the drop.</summary>
-    private static RoutePlan AppendAfterDrop(RoutePlan route)
-    {
-        var stops = route.MutableSuffix.ToList();
-        stops.Add(new RouteStop(new StopId("after"), ApplicationTestData.NodeZero, RouteStopKind.Waypoint, null, new Duration(0)));
         return RoutePlan.Create(new PlanVersion(route.Version.Value + 1), route.ExecutedStopCount, route.FrozenPrefix, stops).Value!;
     }
 

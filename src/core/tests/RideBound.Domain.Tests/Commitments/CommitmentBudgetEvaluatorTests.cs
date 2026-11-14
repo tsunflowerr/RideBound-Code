@@ -52,7 +52,6 @@ public sealed class CommitmentBudgetEvaluatorTests
                 CommitmentPhase.AllActive));
         var policy = new CommitmentPolicy(
             "zero-and-infinite",
-            CommitmentBudgetBasis.DecisionInduced,
             limits,
             new MaterialRevisionRule(1, null));
         var delta = new CommitmentVector(

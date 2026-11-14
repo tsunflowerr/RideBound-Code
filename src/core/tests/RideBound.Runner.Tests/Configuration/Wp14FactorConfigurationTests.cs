@@ -33,7 +33,6 @@ public sealed class Wp14FactorConfigurationTests
         var policy = Decode(name);
 
         Assert.Equal(PolicyId, policy.PolicyId);
-        Assert.Equal(CommitmentBudgetBasis.DecisionInduced, policy.BudgetBasis);
 
         // The shared invariants hold at every level: no reassignment and no stop
         // switching, so the frontier only ever moves the ETA commitment.

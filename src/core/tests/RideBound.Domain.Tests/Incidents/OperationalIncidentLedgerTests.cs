@@ -247,8 +247,8 @@ public sealed class OperationalIncidentLedgerTests
     [Fact]
     public void Forced_reference_breach_accepts_exactly_the_two_basis_charges()
     {
-        // Under decisionInduced the kept route adds nothing; under customerVisible it adds
-        // the visible drift. Any other charge is not a charge by either basis.
+        // The record names no basis: the kept route is charged nothing (the decision delta) or
+        // the visible drift. Any other charge is refused.
         var drift = CommitmentTestData.Vector(CommitmentDimension.DropEtaTotalMs, 40);
         var deltas = new ThreeWayPromiseDelta(drift, CommitmentVector.Zero, drift);
 

@@ -16,30 +16,21 @@ public sealed class CommitmentPolicyTests
     }
 
     [Fact]
-    public void Policy_rejects_unknown_budget_basis()
-    {
-        Assert.Throws<ArgumentOutOfRangeException>(
-            () => CreatePolicy((CommitmentBudgetBasis)99));
-    }
-
-    [Fact]
     public void Policy_rejects_unknown_lock_bits()
     {
         Assert.Throws<ArgumentOutOfRangeException>(
             () => CreatePolicy(
-                CommitmentBudgetBasis.DecisionInduced,
                 new Duration(1_000),
                 (PromiseLock)64));
         Assert.Throws<ArgumentOutOfRangeException>(
             () => CreatePolicy(
-                CommitmentBudgetBasis.DecisionInduced,
                 finalLocks: (PromiseLock)64));
     }
 
     [Fact]
     public void Policy_has_no_deadline_by_default()
     {
-        var policy = CreatePolicy(CommitmentBudgetBasis.DecisionInduced);
+        var policy = CreatePolicy();
 
         Assert.Null(policy.DropEtaDeadlineSlack);
         Assert.False(policy.DropEtaDeadlineTwoSided);
@@ -66,7 +57,7 @@ public sealed class CommitmentPolicyTests
     [Fact]
     public void Policy_has_no_relaxed_deadline_and_no_revision_limit_by_default()
     {
-        var policy = CreatePolicy(CommitmentBudgetBasis.DecisionInduced);
+        var policy = CreatePolicy();
         var deadline = CreateDeadlinePolicy(new Duration(30_000), twoSided: false);
 
         Assert.False(policy.DropEtaDeadlineRelaxed);
@@ -121,7 +112,6 @@ public sealed class CommitmentPolicyTests
         Duration? revisionLimit = null) =>
         new(
             "validated-policy",
-            CommitmentBudgetBasis.DecisionInduced,
             CommitmentDimensionVocabulary.Ordered.Select(
                 dimension => new CommitmentDimensionLimit(
                     dimension,
@@ -134,13 +124,11 @@ public sealed class CommitmentPolicyTests
             dropEtaRevisionLimit: revisionLimit);
 
     private static CommitmentPolicy CreatePolicy(
-        CommitmentBudgetBasis budgetBasis,
         Duration? freezeHorizon = null,
         PromiseLock freezeLocks = PromiseLock.None,
         PromiseLock finalLocks = PromiseLock.None) =>
         new(
             "validated-policy",
-            budgetBasis,
             CommitmentDimensionVocabulary.Ordered.Select(
                 dimension => new CommitmentDimensionLimit(
                     dimension,

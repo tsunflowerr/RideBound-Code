@@ -172,38 +172,6 @@ public sealed class CommitmentDeadlineValidatorTests
     }
 
     [Fact]
-    public void A_forced_reference_breach_under_the_visible_basis_charges_the_overrun()
-    {
-        var visible = new CommitmentPolicy(
-            ApplicationTestData.Request().CommitmentPolicyId,
-            CommitmentBudgetBasis.CustomerVisible,
-            CommitmentDimensionVocabulary.Ordered.Select(
-                dimension => new CommitmentDimensionLimit(
-                    dimension,
-                    dimension == CommitmentDimension.DropEtaTotalMs ? 400 : null,
-                    CommitmentPhase.AllActive)),
-            new MaterialRevisionRule(1, null));
-        var plain = NoOpUnderDrift(promiseAt: Early, reducedAt: Late, visible);
-        var forced = plain with
-        {
-            ForcedReferenceVehicles = new HashSet<VehicleId> { ApplicationTestData.VehicleId },
-        };
-
-        var rejected = new CommitmentDecisionValidator().Validate(plain);
-        var kept = new CommitmentDecisionValidator().Validate(forced);
-
-        Assert.False(rejected.IsValid);
-        Assert.Equal(CommitmentFailureCodes.BudgetExceeded, Assert.Single(rejected.Witnesses).Code);
-        Assert.True(kept.IsValid);
-        var breach = Assert.Single(kept.ForcedBreaches);
-        Assert.Equal([CommitmentFailureCodes.BudgetExceeded], breach.WitnessCodes);
-        // 500 ms of drift charged against a 400 ms cap: recorded, never reset.
-        Assert.Equal(0, breach.BudgetBefore.DropEtaTotalMs);
-        Assert.Equal(500, breach.AttemptedBudgetAfter.DropEtaTotalMs);
-        Assert.Equal(500, Assert.Single(kept.Publications).Entry.BudgetAfter.DropEtaTotalMs);
-    }
-
-    [Fact]
     public void A_later_decision_repeats_the_exemption_but_records_a_breach_only_on_a_revision()
     {
         // Decision 1 keeps the late route (drop 1700 ms, deadline 1600 ms) and records a breach.
@@ -257,62 +225,6 @@ public sealed class CommitmentDeadlineValidatorTests
         var breach = Assert.Single(result.ForcedBreaches);
         Assert.Equal(CommitmentVector.Zero, breach.Deltas.Visible);
         Assert.Equal([CommitmentFailureCodes.DeadlineExceeded], breach.WitnessCodes);
-    }
-
-    [Fact]
-    public void A_phase_change_records_a_new_breach_even_with_the_same_gate_code()
-    {
-        // Visible basis, 500 ms drift charged at once. The pickup cap applies while accepted,
-        // the drop cap only once waiting. Decision 1 (accepted) breaches the pickup cap.
-        // Decision 2 confirms the booking without moving any ETA: the drop cap now applies and
-        // is exceeded. The code is BUDGET both times, but the overrun is new, so it is recorded;
-        // the same decision without the phase change is not.
-        var policy = new CommitmentPolicy(
-            ApplicationTestData.Request().CommitmentPolicyId,
-            CommitmentBudgetBasis.CustomerVisible,
-            CommitmentDimensionVocabulary.Ordered.Select(
-                dimension => new CommitmentDimensionLimit(
-                    dimension,
-                    dimension is CommitmentDimension.PickupEtaTotalMs
-                        or CommitmentDimension.DropEtaTotalMs
-                        ? 400
-                        : null,
-                    dimension switch
-                    {
-                        CommitmentDimension.PickupEtaTotalMs => CommitmentPhase.Accepted,
-                        CommitmentDimension.DropEtaTotalMs => CommitmentPhase.WaitingPickup,
-                        _ => CommitmentPhase.AllActive,
-                    })),
-            new MaterialRevisionRule(1, null));
-        var forced = new HashSet<VehicleId> { ApplicationTestData.VehicleId };
-        var validator = new CommitmentDecisionValidator();
-        var first = validator.Validate(
-            NoOpUnderDrift(promiseAt: Early, reducedAt: Late, policy)
-                with { ForcedReferenceVehicles = forced });
-        Assert.True(first.IsValid, string.Join("; ", first.Witnesses.Select(w => w.Message)));
-        Assert.Equal(
-            [CommitmentFailureCodes.BudgetExceeded],
-            Assert.Single(first.ForcedBreaches).WitnessCodes);
-        var committed = first.ValidatedState!;
-
-        var samePhase = validator.Validate(NextDecision(committed, Late, forced, policy));
-        var confirmed = validator.Validate(
-            NextDecision(
-                committed,
-                Late,
-                forced,
-                policy,
-                run => run.ConfirmWaitingPickup(ApplicationTestData.Request().Id).Value!));
-
-        Assert.True(samePhase.IsValid, string.Join("; ", samePhase.Witnesses.Select(w => w.Message)));
-        Assert.Empty(samePhase.ForcedBreaches);
-        Assert.Single(samePhase.ForcedExemptions);
-        Assert.True(confirmed.IsValid, string.Join("; ", confirmed.Witnesses.Select(w => w.Message)));
-        Assert.Empty(confirmed.Publications);
-        Assert.Equal(
-            [CommitmentFailureCodes.BudgetExceeded],
-            Assert.Single(confirmed.ForcedBreaches).WitnessCodes);
-        Assert.Equal(2, confirmed.ValidatedState!.Incidents.Breaches.Count);
     }
 
     [Fact]
@@ -395,40 +307,6 @@ public sealed class CommitmentDeadlineValidatorTests
         Assert.False(result.IsValid);
         Assert.Empty(result.ForcedBreaches);
         Assert.Equal(CommitmentFailureCodes.DeadlineExceeded, Assert.Single(result.Witnesses).Code);
-    }
-
-    [Fact]
-    public void No_worse_recovery_under_the_visible_basis_allows_no_more_than_the_kept_overrun()
-    {
-        // Visible basis, 400 ms cap, 500 ms drift: the kept route charges 500 ms. A changed route that
-        // keeps the drop charges the same 500 ms and is exempted; one that adds 300 ms charges 800 ms
-        // and stays rejected.
-        var visible = new CommitmentPolicy(
-            ApplicationTestData.Request().CommitmentPolicyId,
-            CommitmentBudgetBasis.CustomerVisible,
-            CommitmentDimensionVocabulary.Ordered.Select(
-                dimension => new CommitmentDimensionLimit(
-                    dimension,
-                    dimension == CommitmentDimension.DropEtaTotalMs ? 400 : null,
-                    CommitmentPhase.AllActive)),
-            new MaterialRevisionRule(1, null));
-        var forced = new HashSet<VehicleId> { ApplicationTestData.VehicleId };
-        var baseline = NoOpUnderDrift(promiseAt: Early, reducedAt: Late, visible);
-        var same = WithCandidateRoute(baseline, AppendAfterDrop)
-            with { ForcedReferenceVehicles = forced, ForcedNoWorse = true };
-        var worse = WithCandidateRoute(baseline, DelayBeforeDrop)
-            with { ForcedReferenceVehicles = forced, ForcedNoWorse = true };
-
-        var kept = new CommitmentDecisionValidator().Validate(same);
-        var rejected = new CommitmentDecisionValidator().Validate(worse);
-
-        Assert.True(kept.IsValid, string.Join("; ", kept.Witnesses.Select(w => w.Message)));
-        var breach = Assert.Single(kept.ForcedBreaches);
-        Assert.Equal(CommitmentBreachKind.ForcedNoWorse, breach.Kind);
-        Assert.Equal([CommitmentFailureCodes.BudgetExceeded], breach.WitnessCodes);
-        Assert.Equal(500, breach.AttemptedBudgetAfter.DropEtaTotalMs);
-        Assert.False(rejected.IsValid);
-        Assert.Equal(CommitmentFailureCodes.BudgetExceeded, Assert.Single(rejected.Witnesses).Code);
     }
 
     [Fact]
@@ -548,7 +426,6 @@ public sealed class CommitmentDeadlineValidatorTests
     private static CommitmentPolicy Policy(long? slack, bool twoSided = false) =>
         new(
             ApplicationTestData.Request().CommitmentPolicyId,
-            CommitmentBudgetBasis.DecisionInduced,
             CommitmentDimensionVocabulary.Ordered.Select(
                 dimension => new CommitmentDimensionLimit(
                     dimension,
@@ -626,7 +503,6 @@ public sealed class CommitmentDeadlineValidatorTests
                     CommitmentVector.Zero,
                     CommitmentVector.Zero,
                     CommitmentVector.Zero),
-                CommitmentBudgetBasis.DecisionInduced,
                 1,
                 new SimTime(Early),
                 "REPLAN",
@@ -666,16 +542,14 @@ public sealed class CommitmentDeadlineValidatorTests
     private static CommitmentValidationContext NextDecision(
         OnlineState committed,
         long at,
-        IReadOnlySet<VehicleId> forced,
-        CommitmentPolicy? policy = null,
-        Func<RideBoundRun, RideBoundRun>? events = null)
+        IReadOnlySet<VehicleId> forced)
     {
         var run = committed.Run.AdvanceEpoch(
             committed.Run.AppliedEpoch + 1,
             new SimTime(at)).Value!;
         var reduced = committed with
         {
-            Run = events is null ? run : events(run),
+            Run = run,
             NextEventSequence = committed.NextEventSequence + 1,
         };
 
@@ -683,7 +557,7 @@ public sealed class CommitmentDeadlineValidatorTests
             committed,
             reduced,
             reduced,
-            new CommitmentPolicyCatalog([policy ?? Policy(slack: 400)]),
+            new CommitmentPolicyCatalog([Policy(slack: 400)]),
             CommitmentValidatorFixtures.EmptyDistances.Instance,
             $"test-scope-{at}",
             committed.NextEventSequence,

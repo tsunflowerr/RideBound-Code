@@ -36,10 +36,6 @@ public sealed class Wp4RunnerConfiguration
         "planningForecast",
         "shadowAllocation");
 
-    /// <summary>The pointer that every refused removed feature carries.</summary>
-    private const string RemovedFeature =
-        "removed; see commit ebca912 (branch research/final-real-runs-2026-11-06)";
-
     /// <summary>The removed WP4 policyIds, each with the name its refusal gives.</summary>
     private static readonly IReadOnlyDictionary<string, string> RemovedPolicies =
         new Dictionary<string, string>(StringComparer.Ordinal)

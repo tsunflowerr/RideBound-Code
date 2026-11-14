@@ -99,7 +99,6 @@ public sealed class CommitmentRatchetLockTests
         PromiseLock ratchetLocks = PromiseLock.None) =>
         new(
             "policy-1",
-            CommitmentBudgetBasis.DecisionInduced,
             CommitmentDimensionVocabulary.Ordered.Select(
                 dimension => new CommitmentDimensionLimit(
                     dimension,

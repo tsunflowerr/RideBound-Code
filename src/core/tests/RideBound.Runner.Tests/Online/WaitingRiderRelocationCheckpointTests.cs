@@ -98,7 +98,6 @@ public sealed class WaitingRiderRelocationCheckpointTests
             .ReassignWaitingRequest(Rider, Receiver).Value!;
         var policy = new CommitmentPolicy(
             "uniform-v1",
-            CommitmentBudgetBasis.DecisionInduced,
             CommitmentDimensionVocabulary.Ordered.Select(
                 dimension => new CommitmentDimensionLimit(dimension, null, CommitmentPhase.AllActive)),
             new MaterialRevisionRule(1_000, null),

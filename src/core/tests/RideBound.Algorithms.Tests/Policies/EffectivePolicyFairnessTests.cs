@@ -110,7 +110,6 @@ public sealed class EffectivePolicyFairnessTests
             new[]
             {
                 policy.PolicyId,
-                policy.BudgetBasis.ToString(),
                 policy.MaterialRevisionRule.RawEtaThresholdMs?.ToString() ?? "none",
                 policy.MaterialRevisionRule.DisplayBucketWidthMs?.ToString() ?? "none",
                 policy.FreezeHorizon?.Milliseconds.ToString() ?? "none",
@@ -197,7 +196,6 @@ public sealed class EffectivePolicyFairnessTests
         long? revisionLimitMs = null) =>
         new(
             PolicyId,
-            CommitmentBudgetBasis.DecisionInduced,
             CommitmentDimensionVocabulary.Ordered.Select(
                 dimension => new CommitmentDimensionLimit(
                     dimension,

@@ -20,7 +20,6 @@ public sealed record CommitmentLedgerEntry
         ThreeWayPromiseDelta deltas,
         CommitmentVector budgetBefore,
         CommitmentVector budgetAfter,
-        CommitmentBudgetBasis? budgetBasis,
         string reasonCode,
         long sourceEventSequence)
     {
@@ -29,11 +28,6 @@ public sealed record CommitmentLedgerEntry
         ArgumentNullException.ThrowIfNull(deltas);
         ArgumentNullException.ThrowIfNull(budgetBefore);
         ArgumentNullException.ThrowIfNull(budgetAfter);
-
-        if (budgetBasis is not null && !Enum.IsDefined(budgetBasis.Value))
-        {
-            throw new ArgumentOutOfRangeException(nameof(budgetBasis));
-        }
 
         if (sourceEventSequence is < 1 or > DomainLimits.MaxCanonicalInteger)
         {
@@ -51,7 +45,6 @@ public sealed record CommitmentLedgerEntry
         Deltas = deltas;
         BudgetBefore = budgetBefore;
         BudgetAfter = budgetAfter;
-        BudgetBasis = budgetBasis;
         SourceEventSequence = sourceEventSequence;
     }
 
@@ -70,8 +63,6 @@ public sealed record CommitmentLedgerEntry
     public CommitmentVector BudgetBefore { get; }
 
     public CommitmentVector BudgetAfter { get; }
-
-    public CommitmentBudgetBasis? BudgetBasis { get; }
 
     public string ReasonCode { get; }
 
@@ -249,7 +240,6 @@ public sealed class CommitmentLedger
                 CommitmentVector.Zero),
             CommitmentVector.Zero,
             CommitmentVector.Zero,
-            null,
             reasonCode,
             sourceEventSequence);
         var history = new RiderCommitmentHistory([entry]);
@@ -268,7 +258,6 @@ public sealed class CommitmentLedger
         PromiseProjection exogenousProjection,
         PromiseProjection publishedProjection,
         ThreeWayPromiseDelta deltas,
-        CommitmentBudgetBasis budgetBasis,
         long publishedEpoch,
         SimTime publishedAt,
         string reasonCode,
@@ -277,14 +266,6 @@ public sealed class CommitmentLedger
         ArgumentNullException.ThrowIfNull(exogenousProjection);
         ArgumentNullException.ThrowIfNull(publishedProjection);
         ArgumentNullException.ThrowIfNull(deltas);
-
-        if (!Enum.IsDefined(budgetBasis))
-        {
-            return CommitmentLedgerAppendResult.Fail(
-                "Promise revision has an unknown budget basis.",
-                requestId.Value,
-                "budgetBasis");
-        }
 
         if (ContainsPublication(publicationId))
         {
@@ -328,10 +309,8 @@ public sealed class CommitmentLedger
                 "promiseVersion");
         }
 
-        var charged = budgetBasis == CommitmentBudgetBasis.DecisionInduced
-            ? deltas.DecisionInduced
-            : deltas.Visible;
-        var after = current.BudgetAfter.Add(charged);
+        // A revision is charged by its decision-induced delta.
+        var after = current.BudgetAfter.Add(deltas.DecisionInduced);
 
         if (!after.IsSuccess)
         {
@@ -355,7 +334,6 @@ public sealed class CommitmentLedger
             deltas,
             current.BudgetAfter,
             after.Value!,
-            budgetBasis,
             reasonCode,
             sourceEventSequence);
         var updatedHistory = new RiderCommitmentHistory(

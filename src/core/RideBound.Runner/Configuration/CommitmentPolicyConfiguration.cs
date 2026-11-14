@@ -247,15 +247,23 @@ public sealed class CommitmentPolicyConfiguration :
                 "'waitingRiderRelocation' cannot run under a vehicle_switch_count hardLimit of 0 for waiting riders.");
         }
 
+        var policyId = Text(element, "policyId");
+        var budgetBasis = Text(element, "budgetBasis");
+
+        // Every revision is charged by its decision-induced delta; the customer-visible basis is removed.
+        if (budgetBasis == "customerVisible")
+        {
+            throw new InvalidDataException(
+                "Commitment budgetBasis 'customerVisible' (the customer-visible budget basis): " + RemovedFeature);
+        }
+
+        if (budgetBasis != "decisionInduced")
+        {
+            throw new InvalidDataException("Unknown commitment budgetBasis.");
+        }
+
         return new CommitmentPolicy(
-            Text(element, "policyId"),
-            Text(element, "budgetBasis") switch
-            {
-                "decisionInduced" => CommitmentBudgetBasis.DecisionInduced,
-                "customerVisible" => CommitmentBudgetBasis.CustomerVisible,
-                _ => throw new InvalidDataException(
-                    "Unknown commitment budgetBasis."),
-            },
+            policyId,
             limits,
             new MaterialRevisionRule(rawThreshold, displayBucket),
             element.TryGetProperty("freezeHorizonMs", out var freeze)

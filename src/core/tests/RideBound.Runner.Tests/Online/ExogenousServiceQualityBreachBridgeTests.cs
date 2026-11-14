@@ -128,7 +128,6 @@ public sealed class ExogenousServiceQualityBreachBridgeTests
             ]);
         var policy = new CommitmentPolicy(
             "uniform-v1",
-            CommitmentBudgetBasis.DecisionInduced,
             CommitmentDimensionVocabulary.Ordered.Select(
                 dimension => new CommitmentDimensionLimit(
                     dimension,

@@ -200,7 +200,6 @@ public sealed class WaitingRiderRelocationPolicyTests
         var before = reduced with { Run = beforeRun, NextEventSequence = 1 };
         var policy = new CommitmentPolicy(
             "uniform-v1",
-            CommitmentBudgetBasis.DecisionInduced,
             CommitmentDimensionVocabulary.Ordered.Select(
                 dimension => new CommitmentDimensionLimit(dimension, null, CommitmentPhase.AllActive)),
             new MaterialRevisionRule(1_000, null),

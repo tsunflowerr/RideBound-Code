@@ -465,6 +465,36 @@ public sealed class CommitmentPolicyConfigurationTests
         Assert.True(allowed.WaitingRiderRelocation);
     }
 
+    [Fact]
+    public void The_customer_visible_budget_basis_is_refused_with_a_pointer_to_the_archive()
+    {
+        // Only decisionInduced is accepted. An unknown basis keeps its message, and so does a
+        // check that runs before the basis is read.
+        byte[] WithBasis(string basis, string? extraFields = null) =>
+            Encoding.UTF8.GetBytes(
+                Encoding.UTF8.GetString(PolicyJson(extraFields)).Replace(
+                    "\"budgetBasis\":\"decisionInduced\"",
+                    $"\"budgetBasis\":\"{basis}\"",
+                    StringComparison.Ordinal));
+
+        var visible = Assert.Throws<InvalidDataException>(
+            () => CommitmentPolicyConfiguration.Decode(WithBasis("customerVisible")));
+        var unknown = Assert.Throws<InvalidDataException>(
+            () => CommitmentPolicyConfiguration.Decode(WithBasis("visible")));
+        var earlier = Assert.Throws<InvalidDataException>(
+            () => CommitmentPolicyConfiguration.Decode(
+                WithBasis("customerVisible", "\"dropEtaDeadlineRelaxed\":true")));
+
+        Assert.Equal(
+            "Commitment budgetBasis 'customerVisible' (the customer-visible budget basis): removed; see commit "
+            + "ebca912 (branch research/final-real-runs-2026-11-06)",
+            visible.Message);
+        Assert.Equal("Unknown commitment budgetBasis.", unknown.Message);
+        Assert.StartsWith("'dropEtaDeadlineRelaxed' requires", earlier.Message, StringComparison.Ordinal);
+        Assert.True(CommitmentPolicyConfiguration.Decode(WithBasis("decisionInduced"))
+            .TryGetPolicy("uniform-v1", out _));
+    }
+
     private static byte[] PolicyJson(string? extraFields)
     {
         var limits = string.Join(

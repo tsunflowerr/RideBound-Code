@@ -298,12 +298,13 @@ public static class OnlineStateCheckpointCodec
 
                 var requestId = published.Projection.RequestId;
                 var current = ledger.Histories[requestId].Current;
-                var basis = Text(entry, "budgetBasis") switch
+
+                // A revision is charged by its decision-induced delta, the only budget basis.
+                if (Text(entry, "budgetBasis") != "decisionInduced")
                 {
-                    "decisionInduced" => CommitmentBudgetBasis.DecisionInduced,
-                    "customerVisible" => CommitmentBudgetBasis.CustomerVisible,
-                    _ => throw new InvalidOperationException("Unknown budget basis."),
-                };
+                    throw new InvalidOperationException("Unknown budget basis.");
+                }
+
                 var appended = ledger.AppendRevision(
                     publicationId,
                     requestId,
@@ -311,7 +312,6 @@ public static class OnlineStateCheckpointCodec
                     ReadPromiseProjection(entry.GetProperty("exogenousProjection")),
                     published.Projection,
                     ReadDeltas(entry.GetProperty("deltas")),
-                    basis,
                     published.PublishedEpoch,
                     published.PublishedAt,
                     reason,

@@ -3,11 +3,15 @@ using System.Text.Json;
 namespace RideBound.Runner.Configuration;
 
 /// <summary>
-/// JSON readers shared by the WP4 and the commitment configuration parsers. Their error texts are what a
-/// refused configuration reports, so their wording must stay as it is.
+/// JSON readers and the removed-feature pointer shared by the WP4 and the commitment configuration parsers.
+/// Their error texts are what a refused configuration reports, so their wording must stay as it is.
 /// </summary>
 internal static class JsonConfig
 {
+    /// <summary>The pointer that every refused removed feature carries.</summary>
+    public const string RemovedFeature =
+        "removed; see commit ebca912 (branch research/final-real-runs-2026-11-06)";
+
     /// <summary>A set of field names compared ordinally.</summary>
     public static IReadOnlySet<string> Fields(params string[] names) =>
         new HashSet<string>(names, StringComparer.Ordinal);
