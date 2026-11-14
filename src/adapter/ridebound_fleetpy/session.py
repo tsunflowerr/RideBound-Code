@@ -185,17 +185,24 @@ def _git_commit(repository: pathlib.Path) -> str:
     return commit
 
 
-def runner_owns_service_bounds(wp4_value: Mapping[str, Any], path: pathlib.Path) -> bool:
-    """ADR-076: read the WP4 `lateBoarding` key exactly as the Runner does.
+def require_recorded_late_boarding(wp4_value: Mapping[str, Any], path: pathlib.Path) -> None:
+    """ADR-076: the WP4 `lateBoarding` key must be `record-v1`, as the Runner requires.
 
-    Absent or `reject` keeps every FleetPy service-window check; `record-v1` makes the
-    Runner record late boardings and drops FleetPy's latest arrival, the only bound anchored
-    on the original pickup window. Any other value fails before the Runner starts.
+    The Runner records late boardings, and the adapter drops FleetPy's latest arrival, the
+    only bound anchored on the original pickup window. `reject`, also the meaning of an
+    absent key, kept that FleetPy check and is removed. Any other value fails before the
+    Runner starts.
     """
     late_boarding = wp4_value.get("lateBoarding", "reject")
-    if late_boarding not in ("reject", "record-v1"):
+    if late_boarding == "reject":
+        raise _fail(
+            "RBWP7_WP4_LATE_BOARDING_REJECT_REMOVED",
+            str(path),
+            "late-boarding rejection ('reject' or an absent key): "
+            "removed; see commit ebca912 (branch research/final-real-runs-2026-11-06)",
+        )
+    if late_boarding != "record-v1":
         raise _fail("RBWP7_WP4_LATE_BOARDING_INVALID", str(path), repr(late_boarding))
-    return late_boarding == "record-v1"
 
 
 def runner_plans_with_forecast(wp4_value: Mapping[str, Any], path: pathlib.Path) -> bool:
@@ -204,7 +211,8 @@ def runner_plans_with_forecast(wp4_value: Mapping[str, Any], path: pathlib.Path)
     The Runner then plans and validates every time window with forecast travel times, while
     FleetPy's plan check prices the same route at the current travel times; the two disagree
     by design, so FleetPy's pickup-window and maximum-trip checks are dropped and the Runner
-    owns them. That needs the Runner to record late boardings (`lateBoarding: record-v1`).
+    owns them. That needs the Runner to record late boardings, which
+    `require_recorded_late_boarding` already makes sure of.
     Absent keeps every earlier adapter path unchanged; any value other than an object fails
     here before the Runner starts (the Runner validates the object's contents).
     """
@@ -213,12 +221,6 @@ def runner_plans_with_forecast(wp4_value: Mapping[str, Any], path: pathlib.Path)
         return False
     if not isinstance(forecast, Mapping):
         raise _fail("RBWP7_WP4_PLANNING_FORECAST_INVALID", str(path), repr(forecast))
-    if not runner_owns_service_bounds(wp4_value, path):
-        raise _fail(
-            "RBWP7_WP4_PLANNING_FORECAST_NEEDS_RECORDED_LATE_BOARDING",
-            str(path),
-            repr(wp4_value.get("lateBoarding", "reject")),
-        )
     return True
 
 
@@ -262,10 +264,6 @@ class RideBoundSessionSettings:
     policy_binding_hash: str
     core_commit: str
     artifact_paths: tuple[pathlib.Path, ...]
-    # ADR-076 (exploratory): true when the WP4 configuration declares
-    # `lateBoarding: record-v1`. The Runner then records late boardings, and the adapter
-    # drops the one FleetPy bound anchored on the original window (the latest arrival).
-    runner_service_bounds: bool = False
     # G2 (exploratory): true when the WP4 configuration declares
     # `candidateGeneration.waitingRiderRelocation`. The adapter then infers and checks the one
     # waiting rider a decision may move between vehicles (relocation.py).
@@ -298,7 +296,7 @@ class RideBoundSessionSettings:
             raise _fail("RBWP7_WP4_POLICY_INVALID", str(wp4), repr(policy_id))
         if not isinstance(policy_version, str) or not policy_version:
             raise _fail("RBWP7_WP4_POLICY_INVALID", str(wp4), repr(policy_version))
-        runner_service_bounds = runner_owns_service_bounds(wp4_value, wp4)
+        require_recorded_late_boarding(wp4_value, wp4)
         waiting_rider_relocation = runner_relocates_waiting_riders(wp4_value, wp4)
         planning_forecast = runner_plans_with_forecast(wp4_value, wp4)
         commitment_policy_id = _required_text(
@@ -406,7 +404,6 @@ class RideBoundSessionSettings:
             wp4_policy_binding_hash(commitment, wp4),
             _git_commit(repository),
             tuple(path.resolve() for path in artifacts),
-            runner_service_bounds,
             waiting_rider_relocation,
             planning_forecast,
             _maximum_line_bytes(attributes),

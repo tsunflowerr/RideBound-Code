@@ -193,7 +193,8 @@ class SettingsTests(Folder):
         args = argparse.Namespace(
             dotnet=self.write("dotnet", ""), runner_root=self.write("runner/RideBound.Runner.dll", "").parent,
             commitment_config=self.write("c.json", {"policies": [{"policyId": run_job.COMMITMENT_POLICY_ID}]}),
-            wp4_config=self.write("w.json", {"policyId": "ridebound-hard-vector", "policyVersion": "1"}),
+            wp4_config=self.write("w.json", {"policyId": "ridebound-hard-vector", "policyVersion": "1",
+                                             "lateBoarding": "record-v1"}),
             fleetpy_root=fleetpy, label=JOB + "-fin2", master_seed=7)
         operator = run_job.operator_settings(args, [self.write("scenario.json", {})], 96, self.tmp / "t.ndjson.gz")
         settings = RideBoundSessionSettings.from_attributes(operator)
