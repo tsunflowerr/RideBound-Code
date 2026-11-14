@@ -189,40 +189,31 @@ public sealed class CommitmentPolicyConfigurationTests
     }
 
     [Fact]
-    public void Revision_limit_and_relaxed_deadline_are_read_when_present()
+    public void Relaxed_deadline_is_read_when_present()
     {
-        var capped = CommitmentPolicyConfiguration.Decode(
-            PolicyJson("\"dropEtaRevisionLimitMs\":60000"));
         var relaxed = CommitmentPolicyConfiguration.Decode(
             PolicyJson("\"dropEtaDeadlineSlackMs\":30000,\"dropEtaDeadlineRelaxed\":true"));
-        var both = CommitmentPolicyConfiguration.Decode(
+        var explicitOneSided = CommitmentPolicyConfiguration.Decode(
             PolicyJson(
                 "\"dropEtaDeadlineSlackMs\":30000,\"dropEtaDeadlineTwoSided\":false," +
-                "\"dropEtaDeadlineRelaxed\":true,\"dropEtaRevisionLimitMs\":1"));
+                "\"dropEtaDeadlineRelaxed\":true"));
 
-        Assert.True(capped.TryGetPolicy("uniform-v1", out var cap));
-        Assert.Equal(new Duration(60_000), cap.DropEtaRevisionLimit);
-        Assert.Null(cap.DropEtaDeadlineSlack);
-        Assert.False(cap.DropEtaDeadlineRelaxed);
         Assert.True(relaxed.TryGetPolicy("uniform-v1", out var deadline));
         Assert.Equal(new Duration(30_000), deadline.DropEtaDeadlineSlack);
         Assert.True(deadline.DropEtaDeadlineRelaxed);
         Assert.False(deadline.DropEtaDeadlineTwoSided);
-        Assert.Null(deadline.DropEtaRevisionLimit);
-        Assert.True(both.TryGetPolicy("uniform-v1", out var combined));
-        Assert.True(combined.DropEtaDeadlineRelaxed);
-        Assert.Equal(new Duration(1), combined.DropEtaRevisionLimit);
+        Assert.True(explicitOneSided.TryGetPolicy("uniform-v1", out var oneSided));
+        Assert.True(oneSided.DropEtaDeadlineRelaxed);
     }
 
     [Fact]
-    public void Revision_limit_and_relaxed_deadline_are_disabled_when_absent()
+    public void Relaxed_deadline_is_disabled_when_absent()
     {
         var configuration = CommitmentPolicyConfiguration.Decode(PolicyJson(null));
         var explicitOff = CommitmentPolicyConfiguration.Decode(
             PolicyJson("\"dropEtaDeadlineRelaxed\":false"));
 
         Assert.True(configuration.TryGetPolicy("uniform-v1", out var policy));
-        Assert.Null(policy.DropEtaRevisionLimit);
         Assert.False(policy.DropEtaDeadlineRelaxed);
         Assert.True(explicitOff.TryGetPolicy("uniform-v1", out var off));
         Assert.Null(off.DropEtaDeadlineSlack);
@@ -232,8 +223,6 @@ public sealed class CommitmentPolicyConfigurationTests
     }
 
     [Theory]
-    [InlineData("\"dropEtaRevisionLimitMs\":0", "must be positive")]
-    [InlineData("\"dropEtaRevisionLimitMs\":-1", "canonical non-negative integer")]
     [InlineData(
         "\"dropEtaDeadlineSlackMs\":30000,\"dropEtaDeadlineRelaxed\":\"yes\"",
         "'dropEtaDeadlineRelaxed' must be a boolean")]
@@ -248,12 +237,9 @@ public sealed class CommitmentPolicyConfigurationTests
         "\"dropEtaDeadlineRelaxed\":true",
         "'dropEtaDeadlineRelaxed' cannot be combined with 'dropEtaDeadlineTwoSided'")]
     [InlineData(
-        "\"dropEtaRevisionLimit\":30000",
-        "Unknown field 'dropEtaRevisionLimit'")]
-    [InlineData(
         "\"dropEtaDeadlineRelaxedMs\":30000",
         "Unknown field 'dropEtaDeadlineRelaxedMs'")]
-    public void Invalid_revision_limit_or_relaxed_deadline_is_rejected(
+    public void Invalid_relaxed_deadline_is_rejected(
         string extraFields,
         string expectedMessage)
     {
@@ -263,47 +249,23 @@ public sealed class CommitmentPolicyConfigurationTests
         Assert.Contains(expectedMessage, error.Message);
     }
 
-    [Theory]
-    [InlineData("\"dropEtaRevisionLimitMs\":1.5")]
-    [InlineData("\"dropEtaRevisionLimitMs\":30000.0")]
-    [InlineData("\"dropEtaRevisionLimitMs\":3e4")]
-    public void A_non_integer_revision_limit_is_rejected_by_canonical_json(string extraFields)
+    [Fact]
+    public void A_null_relaxed_flag_is_rejected_by_canonical_json()
     {
         var error = Assert.Throws<CanonicalJsonException>(
-            () => CommitmentPolicyConfiguration.Decode(PolicyJson(extraFields)));
-
-        Assert.Contains("not a canonical integer", error.Message);
-    }
-
-    [Theory]
-    [InlineData("\"dropEtaRevisionLimitMs\":\"30000\"")]
-    [InlineData("\"dropEtaRevisionLimitMs\":true")]
-    public void A_revision_limit_that_is_not_a_number_is_rejected(string extraFields)
-    {
-        // The shared integer reader throws InvalidOperationException on a non-number
-        // element, as it does for every other integer field of this file.
-        Assert.ThrowsAny<InvalidOperationException>(
-            () => CommitmentPolicyConfiguration.Decode(PolicyJson(extraFields)));
-    }
-
-    [Theory]
-    [InlineData("\"dropEtaRevisionLimitMs\":null")]
-    [InlineData("\"dropEtaDeadlineSlackMs\":30000,\"dropEtaDeadlineRelaxed\":null")]
-    public void A_null_revision_limit_or_relaxed_flag_is_rejected_by_canonical_json(
-        string extraFields)
-    {
-        var error = Assert.Throws<CanonicalJsonException>(
-            () => CommitmentPolicyConfiguration.Decode(PolicyJson(extraFields)));
+            () => CommitmentPolicyConfiguration.Decode(
+                PolicyJson("\"dropEtaDeadlineSlackMs\":30000,\"dropEtaDeadlineRelaxed\":null")));
 
         Assert.Contains("Null is not permitted", error.Message);
     }
 
     [Fact]
-    public void The_archived_reference_configuration_keeps_its_hash_and_both_options_off()
+    public void The_archived_reference_configuration_keeps_its_hash_and_the_relaxed_deadline_off()
     {
         // wp14-c1-h6-reference-v1.json is byte-identical to the C-30 configuration of every
-        // archived T3.8 run (ADR-078); its canonical hash must not move. Adding either new key
-        // gives a different configuration, so the arms of a comparison stay distinguishable.
+        // archived T3.8 run (ADR-078); its canonical hash must not move. Adding a strict or a
+        // relaxed deadline gives a different configuration, so the arms of a comparison stay
+        // distinguishable.
         var reference = File.ReadAllText(Path.Combine(
             RepositoryRoot(),
             "benchmarks",
@@ -316,18 +278,15 @@ public sealed class CommitmentPolicyConfigurationTests
             archived.ContentHash.Value);
         var policyId = Assert.Single(archived.PolicyIds);
         Assert.True(archived.TryGetPolicy(policyId, out var policy));
-        Assert.Null(policy.DropEtaRevisionLimit);
         Assert.False(policy.DropEtaDeadlineRelaxed);
         Assert.Null(policy.DropEtaDeadlineSlack);
 
-        var capped = JsonNode.Parse(reference)!;
-        capped["policies"]![0]!["dropEtaRevisionLimitMs"] = 30_000;
         var relaxed = JsonNode.Parse(reference)!;
         relaxed["policies"]![0]!["dropEtaDeadlineSlackMs"] = 30_000;
         relaxed["policies"]![0]!["dropEtaDeadlineRelaxed"] = true;
         var strict = JsonNode.Parse(reference)!;
         strict["policies"]![0]!["dropEtaDeadlineSlackMs"] = 30_000;
-        var hashes = new[] { capped, relaxed, strict }
+        var hashes = new[] { relaxed, strict }
             .Select(
                 value => CommitmentPolicyConfiguration.Decode(
                     Encoding.UTF8.GetBytes(value.ToJsonString())).ContentHash.Value)
@@ -535,6 +494,47 @@ public sealed class CommitmentPolicyConfigurationTests
                             "\"budgetBasis\":\"visible\"",
                             StringComparison.Ordinal)))).Message);
         Assert.True(CommitmentPolicyConfiguration.Decode(PolicyJson(null)).TryGetPolicy("uniform-v1", out _));
+    }
+
+    [Fact]
+    public void The_removed_revision_cap_is_refused_with_a_pointer_to_the_archive()
+    {
+        // The key is refused, whatever its value. The check runs last in the policy, so a check that
+        // runs before it keeps its message.
+        const string Removed =
+            "Commitment 'dropEtaRevisionLimitMs' (the per-decision revision cap): removed; see commit "
+            + "ebca912 (branch research/final-real-runs-2026-11-06)";
+        const string Cap = "\"dropEtaRevisionLimitMs\":60000";
+        string Message(string extraFields) =>
+            Assert.ThrowsAny<Exception>(
+                () => CommitmentPolicyConfiguration.Decode(PolicyJson(extraFields))).Message;
+
+        Assert.Equal(Removed, Message(Cap));
+        Assert.Equal(Removed, Message("\"dropEtaRevisionLimitMs\":0"));
+        Assert.Equal(Removed, Message("\"dropEtaRevisionLimitMs\":\"30000\""));
+        Assert.Equal(
+            Removed,
+            Message("\"dropEtaDeadlineSlackMs\":30000,\"dropEtaDeadlineRelaxed\":true," + Cap));
+
+        Assert.Contains("not a canonical integer", Message("\"dropEtaRevisionLimitMs\":1.5"));
+        Assert.Contains("Null is not permitted", Message("\"dropEtaRevisionLimitMs\":null"));
+        Assert.StartsWith(
+            "'dropEtaDeadlineRelaxed' requires",
+            Message(Cap + ",\"dropEtaDeadlineRelaxed\":true"),
+            StringComparison.Ordinal);
+        Assert.StartsWith(
+            "Commitment 'freezeHorizonMs' and 'freezeHorizonLocks' (the freeze horizon): removed",
+            Message(Cap + ",\"freezeHorizonMs\":300000"),
+            StringComparison.Ordinal);
+        Assert.Equal(
+            "Unknown commitment budgetBasis.",
+            Assert.Throws<InvalidDataException>(
+                () => CommitmentPolicyConfiguration.Decode(
+                    Encoding.UTF8.GetBytes(
+                        Encoding.UTF8.GetString(PolicyJson(Cap)).Replace(
+                            "\"budgetBasis\":\"decisionInduced\"",
+                            "\"budgetBasis\":\"visible\"",
+                            StringComparison.Ordinal)))).Message);
     }
 
     private static byte[] PolicyJson(string? extraFields)

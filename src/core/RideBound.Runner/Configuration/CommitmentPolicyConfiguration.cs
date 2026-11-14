@@ -26,12 +26,12 @@ public sealed class CommitmentPolicyConfiguration :
         // Removed keys, kept here so that ReadPolicy refuses them with the removal text.
         "freezeHorizonMs",
         "freezeHorizonLocks",
+        "dropEtaRevisionLimitMs",
         "finalConfirmationLocks",
         "ratchetLocks",
         "dropEtaDeadlineSlackMs",
         "dropEtaDeadlineTwoSided",
         "dropEtaDeadlineRelaxed",
-        "dropEtaRevisionLimitMs",
         "dropEtaBudgetSlackPermille",
         "dropEtaDeadlineSlackPermille",
         "waitingRiderRelocation",
@@ -178,9 +178,6 @@ public sealed class CommitmentPolicyConfiguration :
             "dropEtaDeadlineSlackMs");
         var deadlineTwoSided = OptionalBoolean(element, "dropEtaDeadlineTwoSided");
         var deadlineRelaxed = OptionalBoolean(element, "dropEtaDeadlineRelaxed");
-        var revisionLimit = OptionalPositiveInteger(
-            element,
-            "dropEtaRevisionLimitMs");
         var budgetPermille = OptionalPermille(element, "dropEtaBudgetSlackPermille");
         var deadlinePermille = OptionalPermille(element, "dropEtaDeadlineSlackPermille");
         var relocation = OptionalBoolean(element, "waitingRiderRelocation");
@@ -270,19 +267,24 @@ public sealed class CommitmentPolicyConfiguration :
             deadlineSlack is long slack ? new Duration(slack) : null,
             deadlineTwoSided,
             deadlineRelaxed,
-            revisionLimit is long limit ? new Duration(limit) : null,
             budgetPermille,
             deadlinePermille,
             relocation,
             shadowAllocation);
 
-        // The freeze horizon is removed. It is checked after every other check of the policy, so a
-        // policy that one of them refuses keeps that message.
+        // Removed options are checked after every other check of the policy, so a policy that one of
+        // those checks refuses keeps that message.
         if (element.TryGetProperty("freezeHorizonMs", out _)
             || element.TryGetProperty("freezeHorizonLocks", out _))
         {
             throw new InvalidDataException(
                 "Commitment 'freezeHorizonMs' and 'freezeHorizonLocks' (the freeze horizon): " + RemovedFeature);
+        }
+
+        if (element.TryGetProperty("dropEtaRevisionLimitMs", out _))
+        {
+            throw new InvalidDataException(
+                "Commitment 'dropEtaRevisionLimitMs' (the per-decision revision cap): " + RemovedFeature);
         }
 
         return policy;

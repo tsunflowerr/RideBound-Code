@@ -51,36 +51,26 @@ public sealed class CommitmentPolicyTests
     }
 
     [Fact]
-    public void Policy_has_no_relaxed_deadline_and_no_revision_limit_by_default()
+    public void Policy_has_no_relaxed_deadline_by_default()
     {
         var policy = CreatePolicy();
         var deadline = CreateDeadlinePolicy(new Duration(30_000), twoSided: false);
 
         Assert.False(policy.DropEtaDeadlineRelaxed);
-        Assert.Null(policy.DropEtaRevisionLimit);
         Assert.False(deadline.DropEtaDeadlineRelaxed);
-        Assert.Null(deadline.DropEtaRevisionLimit);
     }
 
     [Fact]
-    public void Policy_keeps_a_configured_relaxed_deadline_and_revision_limit()
+    public void Policy_keeps_a_configured_relaxed_deadline()
     {
         var policy = CreateDeadlinePolicy(
             new Duration(30_000),
             twoSided: false,
-            relaxed: true,
-            revisionLimit: new Duration(60_000));
-        var zero = CreateDeadlinePolicy(
-            null,
-            twoSided: false,
-            revisionLimit: new Duration(0));
+            relaxed: true);
 
         Assert.Equal(new Duration(30_000), policy.DropEtaDeadlineSlack);
         Assert.True(policy.DropEtaDeadlineRelaxed);
         Assert.False(policy.DropEtaDeadlineTwoSided);
-        Assert.Equal(new Duration(60_000), policy.DropEtaRevisionLimit);
-        Assert.Equal(new Duration(0), zero.DropEtaRevisionLimit);
-        Assert.Null(zero.DropEtaDeadlineSlack);
     }
 
     [Fact]
@@ -104,8 +94,7 @@ public sealed class CommitmentPolicyTests
     private static CommitmentPolicy CreateDeadlinePolicy(
         Duration? slack,
         bool twoSided,
-        bool relaxed = false,
-        Duration? revisionLimit = null) =>
+        bool relaxed = false) =>
         new(
             "validated-policy",
             CommitmentDimensionVocabulary.Ordered.Select(
@@ -116,8 +105,7 @@ public sealed class CommitmentPolicyTests
             new MaterialRevisionRule(1, null),
             dropEtaDeadlineSlack: slack,
             dropEtaDeadlineTwoSided: twoSided,
-            dropEtaDeadlineRelaxed: relaxed,
-            dropEtaRevisionLimit: revisionLimit);
+            dropEtaDeadlineRelaxed: relaxed);
 
     private static CommitmentPolicy CreatePolicy(
         PromiseLock finalLocks = PromiseLock.None) =>

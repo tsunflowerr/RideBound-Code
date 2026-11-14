@@ -129,7 +129,6 @@ public sealed class CommitmentPolicy
         Duration? dropEtaDeadlineSlack = null,
         bool dropEtaDeadlineTwoSided = false,
         bool dropEtaDeadlineRelaxed = false,
-        Duration? dropEtaRevisionLimit = null,
         int? dropEtaBudgetSlackPermille = null,
         int? dropEtaDeadlineSlackPermille = null,
         bool waitingRiderRelocation = false,
@@ -273,7 +272,6 @@ public sealed class CommitmentPolicy
         DropEtaDeadlineSlack = dropEtaDeadlineSlack;
         DropEtaDeadlineTwoSided = dropEtaDeadlineTwoSided;
         DropEtaDeadlineRelaxed = dropEtaDeadlineRelaxed;
-        DropEtaRevisionLimit = dropEtaRevisionLimit;
         DropEtaBudgetSlackPermille = dropEtaBudgetSlackPermille;
         DropEtaDeadlineSlackPermille = dropEtaDeadlineSlackPermille;
         WaitingRiderRelocation = waitingRiderRelocation;
@@ -461,17 +459,6 @@ public sealed class CommitmentPolicy
     /// itself, the two can differ. Requires a slack; cannot be two-sided.
     /// </summary>
     public bool DropEtaDeadlineRelaxed { get; }
-
-    /// <summary>
-    /// Per-decision cap on how far a candidate may move a rider's drop ETA, in either
-    /// direction, away from the exogenous (kept-route) projection; the reference is the
-    /// one every lock uses, not the previous published promise (P-b in the study
-    /// notation). Nothing accumulates across decisions, unlike the drop_eta_total_ms
-    /// hard limit; drift is free and the kept route never trips the cap. It applies in
-    /// the phases where the drop_eta_total_ms dimension applies, whether or not that
-    /// dimension has a hard limit. Research probe; null disables the rule.
-    /// </summary>
-    public Duration? DropEtaRevisionLimit { get; }
 
     /// <summary>
     /// Slack-proportional cumulative budget (rule C with the budget of Elmi et al. 2026,

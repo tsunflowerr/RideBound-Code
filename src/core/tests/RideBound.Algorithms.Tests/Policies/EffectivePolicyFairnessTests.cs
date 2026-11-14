@@ -61,29 +61,25 @@ public sealed class EffectivePolicyFairnessTests
     }
 
     /// <summary>
-    /// The per-decision revision limit (P-b) and the relaxed deadline (DL-HZ) are research
-    /// probes of the same kind, and the commitment arms keep them as configured.
+    /// The relaxed deadline (DL-HZ) is a research probe of the same kind, and the commitment
+    /// arms keep it as configured.
     /// </summary>
     [Theory]
     [InlineData(RidePoolingPolicyKind.RideBoundHardVector)]
-    public void A_commitment_arm_keeps_a_revision_limit_and_a_relaxed_deadline(
-        RidePoolingPolicyKind kind)
+    public void A_commitment_arm_keeps_a_relaxed_deadline(RidePoolingPolicyKind kind)
     {
         var policy = EffectivePolicyFor(
             kind,
             deadlineSlackMs: 30_000,
-            deadlineRelaxed: true,
-            revisionLimitMs: 60_000);
+            deadlineRelaxed: true);
 
-        Assert.Equal(60_000, policy.DropEtaRevisionLimit?.Milliseconds);
         Assert.True(policy.DropEtaDeadlineRelaxed);
         Assert.Equal(
             Fingerprint(
                 ConfiguredPolicy(
                     DropEtaHardLimit,
                     30_000,
-                    deadlineRelaxed: true,
-                    revisionLimitMs: 60_000)),
+                    deadlineRelaxed: true)),
             Fingerprint(policy));
     }
 
@@ -116,7 +112,6 @@ public sealed class EffectivePolicyFairnessTests
                 policy.DropEtaDeadlineSlack?.Milliseconds.ToString() ?? "none",
                 policy.DropEtaDeadlineTwoSided.ToString(),
                 policy.DropEtaDeadlineRelaxed.ToString(),
-                policy.DropEtaRevisionLimit?.Milliseconds.ToString() ?? "none",
             }.Concat(
                 CommitmentDimensionVocabulary.Ordered.Select(
                     dimension => string.Join(
@@ -133,8 +128,7 @@ public sealed class EffectivePolicyFairnessTests
         long? dropEtaHardLimit = DropEtaHardLimit,
         long? deadlineSlackMs = null,
         bool deadlineTwoSided = false,
-        bool deadlineRelaxed = false,
-        long? revisionLimitMs = null)
+        bool deadlineRelaxed = false)
     {
         var request = AlgorithmTestData.PendingRequest("request-1");
         var unadvanced = AlgorithmTestData.CreateState(
@@ -157,8 +151,7 @@ public sealed class EffectivePolicyFairnessTests
             dropEtaHardLimit,
             deadlineSlackMs,
             deadlineTwoSided,
-            deadlineRelaxed,
-            revisionLimitMs);
+            deadlineRelaxed);
         var solverBudget = DeterministicSolverBudget.Create(1000, 1000, 1).Value!;
         var executionBudget =
             DeterministicCandidateSelectionExecutionBudget.Create(
@@ -190,8 +183,7 @@ public sealed class EffectivePolicyFairnessTests
         long? dropEtaHardLimit,
         long? deadlineSlackMs = null,
         bool deadlineTwoSided = false,
-        bool deadlineRelaxed = false,
-        long? revisionLimitMs = null) =>
+        bool deadlineRelaxed = false) =>
         new(
             PolicyId,
             CommitmentDimensionVocabulary.Ordered.Select(
@@ -206,8 +198,7 @@ public sealed class EffectivePolicyFairnessTests
             new MaterialRevisionRule(1, 30_000),
             dropEtaDeadlineSlack: deadlineSlackMs is long slack ? new Duration(slack) : null,
             dropEtaDeadlineTwoSided: deadlineTwoSided,
-            dropEtaDeadlineRelaxed: deadlineRelaxed,
-            dropEtaRevisionLimit: revisionLimitMs is long limit ? new Duration(limit) : null);
+            dropEtaDeadlineRelaxed: deadlineRelaxed);
 
     /// <summary>
     /// The effective-policy decision is taken before the solver runs, so the cheapest

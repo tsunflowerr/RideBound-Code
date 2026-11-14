@@ -233,7 +233,7 @@ public sealed class CommitmentSlackProportionalValidatorTests
 
     /// <summary>
     /// The decision at <paramref name="reducedAt"/> on the kept route (pickup, drop), whose first
-    /// promise was published at <see cref="Now"/>. Same fixture as CommitmentRevisionCapValidatorTests.
+    /// promise was published at <see cref="Now"/>. Same fixture as CommitmentRelaxedDeadlineValidatorTests.
     /// <paramref name="initialDwell"/> adds a waypoint dwell before the drop (in the first promise and
     /// the kept route); <paramref name="boardAt"/> boards the rider at that time before the decision.
     /// </summary>

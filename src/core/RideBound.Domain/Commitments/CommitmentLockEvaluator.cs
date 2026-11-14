@@ -19,12 +19,6 @@ public sealed class CommitmentLockEvaluator
     /// <summary>Rule of a drop ETA earlier than the initial promise minus the slack.</summary>
     public const string DeadlineFloorRule = "deadline_floor";
 
-    /// <summary>
-    /// Rule of a drop ETA moved further from the exogenous projection than the
-    /// per-decision revision limit.
-    /// </summary>
-    public const string RevisionCapRule = "revision_cap";
-
     public IReadOnlyList<CommitmentLockWitness> Evaluate(
         RideRequest request,
         PublishedPromise previous,
@@ -106,12 +100,6 @@ public sealed class CommitmentLockEvaluator
                 anchor,
                 policy,
                 shadowAllocation);
-        }
-
-        // The revision cap is appended after the deadline for the same reason.
-        if (policy.DropEtaRevisionLimit is Duration limit)
-        {
-            AddRevisionCapWitness(ordered, request, exogenous, candidate, limit, policy);
         }
 
         return ordered.ToArray();
@@ -228,46 +216,6 @@ public sealed class CommitmentLockEvaluator
                 new CommitmentLockWitness(request.Id, "drop_eta_ms", DeadlineFloorRule));
         }
     }
-
-    /// <summary>
-    /// The per-decision revision cap compares the candidate with the exogenous
-    /// projection, as every lock does, so drift is free and the kept route never
-    /// trips it. It has no memory: each decision is judged on its own change, in
-    /// either direction. It applies in the phases of the drop_eta_total_ms dimension.
-    /// </summary>
-    private static void AddRevisionCapWitness(
-        ICollection<CommitmentLockWitness> witnesses,
-        RideRequest request,
-        PromiseProjection exogenous,
-        PromiseProjection candidate,
-        Duration limit,
-        CommitmentPolicy policy)
-    {
-        if ((policy.Limits[CommitmentDimension.DropEtaTotalMs].ApplicablePhases
-                & ToPhase(request.Lifecycle)) == 0)
-        {
-            return;
-        }
-
-        // Both values are canonical non-negative integers below 2^53, so the
-        // difference and its absolute value fit in a long.
-        var change = candidate.DropEta.Milliseconds - exogenous.DropEta.Milliseconds;
-
-        if (Math.Abs(change) > limit.Milliseconds)
-        {
-            witnesses.Add(
-                new CommitmentLockWitness(request.Id, "drop_eta_ms", RevisionCapRule));
-        }
-    }
-
-    private static CommitmentPhase ToPhase(RequestLifecycle lifecycle) =>
-        lifecycle switch
-        {
-            RequestLifecycle.Accepted => CommitmentPhase.Accepted,
-            RequestLifecycle.WaitingPickup => CommitmentPhase.WaitingPickup,
-            RequestLifecycle.Onboard => CommitmentPhase.Onboard,
-            _ => CommitmentPhase.None,
-        };
 
     /// <summary>
     /// An exact lock rejects any movement. A ratcheted lock rejects only movement

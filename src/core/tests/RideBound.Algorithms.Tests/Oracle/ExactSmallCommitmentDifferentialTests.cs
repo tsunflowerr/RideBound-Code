@@ -1089,97 +1089,13 @@ public sealed class ExactSmallCommitmentDifferentialTests
     }
 
     [Fact]
-    public void The_revision_cap_prunes_by_the_incumbent_change_and_never_makes_a_vehicle_forced()
-    {
-        // The kept route drifted 500 ms earlier than the incumbent's promise; no deadline is set. A
-        // cap one millisecond below the smallest positive incumbent delay keeps exactly the
-        // candidates that leave the incumbent's drop on the kept route. The drift itself is free,
-        // so the no-op is never rejected, and neither recovery mode finds a vehicle to force.
-        var fixture = CreateState(seed: 3);
-        var generated = new InsertionCandidateGenerator().Generate(
-            fixture.State,
-            AlgorithmTestData.SmallGeneration);
-        Assert.True(generated.IsSuccess, generated.Witness?.Message);
-        Assert.True(generated.Diagnostics!.IsComplete);
-        var set = generated.VehicleCandidates!.Single();
-        var cap = SmallestPositiveDelay(fixture, set) - 1;
-        var kept = fixture.BaselineDrop.Milliseconds;
-        var context = PromiseContext(
-            fixture,
-            kept + 500,
-            new CommitmentPolicy(
-                fixture.Policy.PolicyId,
-                CommitmentDimensionVocabulary.Ordered.Select(
-                    dimension => new CommitmentDimensionLimit(
-                        dimension,
-                        null,
-                        CommitmentPhase.AllActive)),
-                new MaterialRevisionRule(1_000, null),
-                dropEtaRevisionLimit: new Duration(cap)));
-        var expected = set.Candidates
-            .Where(
-                value => Math.Abs(
-                    OracleEtas(fixture.State, SemanticKey(value), fixture.IncumbentId)
-                        .Drop.Milliseconds - kept) <= cap)
-            .Select(value => value.CandidateId)
-            .Order(StringComparer.Ordinal)
-            .ToArray();
-        Assert.Contains(set.Candidates.Single(value => value.IsNoOp).CandidateId, expected);
-        Assert.True(expected.Length < set.Candidates.Count);
-
-        var results = new[]
-        {
-            new HardVectorCandidateAssessor().AssessAndFilter(
-                context,
-                generated.VehicleCandidates!,
-                requireSafetyNoOp: true),
-            new HardVectorCandidateAssessor().AssessAndFilter(
-                context,
-                generated.VehicleCandidates!,
-                requireSafetyNoOp: true,
-                forcedReferenceRecovery: true),
-            new HardVectorCandidateAssessor().AssessAndFilter(
-                context,
-                generated.VehicleCandidates!,
-                requireSafetyNoOp: true,
-                forcedReferenceRecovery: true,
-                forcedNoWorse: true),
-        };
-
-        foreach (var result in results)
-        {
-            Assert.True(result.IsSuccess, result.Witness?.Message);
-            Assert.Empty(result.Batch!.ForcedReferenceVehicles);
-            Assert.DoesNotContain(result.Batch.Assessments.Values, value => value.IsForcedReference);
-            Assert.Equal(expected, RetainedIds(result));
-            var pruned = result.Batch.FeasibleCandidateSets.Single().PrunedCandidates
-                .Where(value => set.Candidates.Any(candidate => candidate.CandidateId == value.CandidateId))
-                .ToArray();
-            Assert.Equal(set.Candidates.Count - expected.Length, pruned.Length);
-            Assert.All(
-                pruned,
-                value =>
-                {
-                    Assert.Equal(CommitmentFailureCodes.RevisionLimitExceeded, value.Code);
-                    Assert.Equal(
-                        CommitmentLockEvaluator.RevisionCapRule,
-                        Assert.Single(value.CommitmentWitnesses!).Rule);
-                });
-        }
-
-        Assert.Equal(PrunedKeys(results[0]), PrunedKeys(results[1]));
-        Assert.Equal(PrunedKeys(results[0]), PrunedKeys(results[2]));
-    }
-
-    [Fact]
     public void Zero_switch_limits_give_every_thesis_arm_the_same_selection_problem()
     {
         // Every Tier-3 configuration of the thesis sets a zero hard limit on vehicle_switch_count
         // in all active phases, and zero stop-switch limits. With the same state, no drop limit (U),
-        // Rule C, the revision cap, and the strict or relaxed deadline hand the solver the same
-        // levels and the same contributions: no C1 level reads a commitment budget. With a zero
-        // bound, Rule C and the cap also keep the same candidates, and the signature sees the
-        // candidate they prune (control).
+        // Rule C, and the strict or relaxed deadline hand the solver the same levels and the same
+        // contributions: no C1 level reads a commitment budget. With a zero bound, the signature
+        // sees the candidate Rule C prunes (control).
         var fixture = CreateState(seed: 3);
         var kept = fixture.BaselineDrop.Milliseconds;
         const long Bound = 30_000;
@@ -1196,7 +1112,6 @@ public sealed class ExactSmallCommitmentDifferentialTests
 
         CommitmentPolicy Arm(
             long? dropLimit = null,
-            long? revisionLimit = null,
             long? deadlineSlack = null,
             bool relaxed = false) =>
             new(
@@ -1208,8 +1123,7 @@ public sealed class ExactSmallCommitmentDifferentialTests
                         CommitmentPhase.AllActive)),
                 new MaterialRevisionRule(1_000, null),
                 dropEtaDeadlineSlack: deadlineSlack is long slack ? new Duration(slack) : null,
-                dropEtaDeadlineRelaxed: relaxed,
-                dropEtaRevisionLimit: revisionLimit is long limit ? new Duration(limit) : null);
+                dropEtaDeadlineRelaxed: relaxed);
 
         CandidateSelectionProblem Problem(CommitmentPolicy policy)
         {
@@ -1236,7 +1150,6 @@ public sealed class ExactSmallCommitmentDifferentialTests
         var expected = Signature(unlimited);
 
         Assert.Equal(expected, Signature(Problem(Arm(dropLimit: Bound))));
-        Assert.Equal(expected, Signature(Problem(Arm(revisionLimit: Bound))));
         Assert.Equal(expected, Signature(Problem(Arm(deadlineSlack: Bound))));
         Assert.Equal(expected, Signature(Problem(Arm(deadlineSlack: Bound, relaxed: true))));
         Assert.Equal(
@@ -1244,7 +1157,6 @@ public sealed class ExactSmallCommitmentDifferentialTests
             unlimited.ObjectiveLevels.Select(value => value.Name));
 
         var frozen = Signature(Problem(Arm(dropLimit: 0)));
-        Assert.Equal(frozen, Signature(Problem(Arm(revisionLimit: 0))));
         Assert.True(frozen.Length < expected.Length, "A zero bound must prune a candidate.");
     }
 

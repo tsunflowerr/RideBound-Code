@@ -586,52 +586,6 @@ public sealed class Wp4RunnerIntegrationTests
     }
 
     [Fact]
-    public void A_revision_cap_lets_drift_through_and_never_forces_the_kept_route()
-    {
-        // The same drift under a one-millisecond per-decision cap and no deadline. The decision
-        // only republishes the kept route, whose own change is zero, so under every recovery
-        // setting it is the uncapped decision: normal operation and no breach.
-        var plain = CommitmentConfiguration();
-        var capped = RevisionLimitCommitmentConfiguration(limitMs: 1);
-        Assert.True(capped.TryGetPolicy("uniform-v1", out var cappedPolicy));
-        Assert.Equal(1, cappedPolicy.DropEtaRevisionLimit?.Milliseconds);
-        var expected = DecisionPayloadCodec.Decode(
-            DriftBookedRider(
-                CreateSession(
-                    HardVectorConfiguration(plain, recovery: null),
-                    commitmentConfiguration: plain),
-                progressPermille: 1).Payload).Value!;
-        Assert.Single(
-            expected.Actions,
-            action => action.GetProperty("decisionType").GetString() == "promisePublished");
-
-        foreach (var recovery in new string?[]
-                 {
-                     null,
-                     "forced-reference-v1",
-                     "no-worse-than-reference-v1",
-                 })
-        {
-            var setup = CreateSession(
-                HardVectorConfiguration(capped, recovery),
-                commitmentConfiguration: capped);
-            var response = DriftBookedRider(setup, progressPermille: 1);
-
-            Assert.Equal("decision", response.MessageType.Value);
-            var decision = DecisionPayloadCodec.Decode(response.Payload);
-            Assert.True(decision.IsSuccess, decision.Error?.Message);
-            Assert.True(decision.Value!.Certificate.Body!.NormalOperation);
-            Assert.Empty(decision.Value.Certificate.Body.Witnesses);
-            Assert.Equal(
-                expected.Actions.Select(value => value.GetRawText()),
-                decision.Value.Actions.Select(value => value.GetRawText()));
-            _ = setup.Session.Process(
-                DecisionApplied(3, 1_050, decision.Value.DecisionHash.Value));
-            Assert.Empty(setup.Session.CommittedOnlineState!.Incidents.Breaches);
-        }
-    }
-
-    [Fact]
     public void An_unknown_commitment_recovery_value_is_rejected()
     {
         var commitment = CommitmentConfiguration();
@@ -994,19 +948,6 @@ public sealed class Wp4RunnerIntegrationTests
             json["policies"]![0]!["dropEtaDeadlineRelaxed"] = true;
         }
 
-        return CommitmentPolicyConfiguration.Decode(
-            Encoding.UTF8.GetBytes(json.ToJsonString()));
-    }
-
-    private static CommitmentPolicyConfiguration RevisionLimitCommitmentConfiguration(
-        long limitMs)
-    {
-        var json = JsonNode.Parse(File.ReadAllText(Path.Combine(
-            RepositoryRoot(),
-            "benchmarks",
-            "configurations",
-            "wp3-boundary-test-v1.json")))!;
-        json["policies"]![0]!["dropEtaRevisionLimitMs"] = limitMs;
         return CommitmentPolicyConfiguration.Decode(
             Encoding.UTF8.GetBytes(json.ToJsonString()));
     }
