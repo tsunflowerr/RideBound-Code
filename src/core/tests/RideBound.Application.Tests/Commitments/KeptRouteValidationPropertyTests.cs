@@ -13,10 +13,10 @@ namespace RideBound.Application.Tests.Commitments;
 /// <summary>
 /// Refactor safety net S3: under the final commitment policies (SHRC71 = rule C budget, SHHZ71 = relaxed
 /// deadline; G2 and their insertion-only twins), the kept route (the no-op: every vehicle keeps its route) always
-/// passes the commitment validator, whatever the world did since the last decision. This is why
-/// <c>commitmentRecovery: no-worse-than-reference-v1</c> never acts in the final runs: the kept candidate is the
-/// exogenous projection, so no lock has a witness, the relaxed fence exempts it, and its decision-induced delta
-/// is zero, so no budget grows.
+/// passes the commitment validator, whatever the world did since the last decision. This is why removing
+/// forced-reference recovery (<c>commitmentRecovery: no-worse-than-reference-v1</c> is now a no-op) changes no final
+/// run: the kept candidate is the exogenous projection, so no lock has a witness, the relaxed fence exempts it, and
+/// its decision-induced delta is zero, so no budget grows.
 /// Random small worlds: 1-2 vehicles with 1-3 riders each on 4 nodes; then 8 decisions. Before each decision the
 /// clock advances 0-120 s, every arc gets a new travel time (0.5x-3x), random bookings are confirmed and random
 /// vehicles reach their next stop (the rider boards or alights).
@@ -69,8 +69,6 @@ public sealed class KeptRouteValidationPropertyTests
                     result.IsValid,
                     $"{arm} seed {seed} step {step}: "
                     + string.Join("; ", result.Witnesses.Select(w => $"{w.Stage} {w.Code} {w.RequestId?.Value} {w.Rule} {w.Message}")));
-                Assert.Empty(result.ForcedExemptions);
-                Assert.Empty(result.ForcedBreaches);
                 state = WithShadowClasses(random, result.ValidatedState!, result.Publications);
                 seen.Decisions++;
                 CountRidersPastTheirDeadline(state, seed, seen);
@@ -117,7 +115,6 @@ public sealed class KeptRouteValidationPropertyTests
             finalConfirmationLocks: PromiseLock.PickupStop | PromiseLock.PickupEta
                 | (insertionOnly ? PromiseLock.Vehicle : PromiseLock.None),
             ratchetLocks: insertionOnly ? PromiseLock.None : PromiseLock.PickupEta,
-            dropEtaDeadlineRelaxed: !ruleC,
             dropEtaBudgetSlackPermille: ruleC ? 1000 : null,
             dropEtaDeadlineSlackPermille: ruleC ? null : 1000,
             waitingRiderRelocation: !insertionOnly,

@@ -148,7 +148,7 @@ public sealed class CommitmentSlackProportionalTests
     }
 
     [Theory]
-    // Kept route inside the rider deadline (drop0 + 105_000): the relaxed rule is the strict one.
+    // Kept route inside the rider deadline (drop0 + 105_000): only the deadline counts.
     [InlineData(DropAnchor, DropAnchor + Budget35, false)]
     [InlineData(DropAnchor, DropAnchor + Budget35 + 1, true)]
     // Adverse drift past the rider deadline: the kept route and anything no later pass.
@@ -160,7 +160,7 @@ public sealed class CommitmentSlackProportionalTests
         bool expectViolation)
     {
         var witnesses = EvaluateLocks(
-            Policy(deadlinePermille: 350, relaxed: true),
+            Policy(deadlinePermille: 350),
             Projection(PickupAnchor, exogenousDropMs),
             Projection(PickupAnchor, candidateDropMs));
 
@@ -183,18 +183,15 @@ public sealed class CommitmentSlackProportionalTests
         {
             for (var candidate = DropAnchor - 50_000; candidate <= DropAnchor + Budget35 + 50_000; candidate += 4_999)
             {
-                foreach (var relaxed in new[] { false, true })
-                {
-                    Assert.Equal(
-                        EvaluateLocks(
-                            Policy(fixedSlack: Budget35, relaxed: relaxed),
-                            Projection(PickupAnchor, exogenous),
-                            Projection(PickupAnchor, candidate)),
-                        EvaluateLocks(
-                            Policy(deadlinePermille: 350, relaxed: relaxed),
-                            Projection(PickupAnchor, exogenous),
-                            Projection(PickupAnchor, candidate)));
-                }
+                Assert.Equal(
+                    EvaluateLocks(
+                        Policy(fixedSlack: Budget35),
+                        Projection(PickupAnchor, exogenous),
+                        Projection(PickupAnchor, candidate)),
+                    EvaluateLocks(
+                        Policy(deadlinePermille: 350),
+                        Projection(PickupAnchor, exogenous),
+                        Projection(PickupAnchor, candidate)));
             }
         }
     }
@@ -206,10 +203,7 @@ public sealed class CommitmentSlackProportionalTests
         {
             var kept = Projection(PickupAnchor, DropAnchor + drift);
 
-            Assert.Empty(EvaluateLocks(Policy(deadlinePermille: 350, relaxed: true), kept, kept));
-            Assert.Equal(
-                drift > Budget35 ? 1 : 0,
-                EvaluateLocks(Policy(deadlinePermille: 350), kept, kept).Count);
+            Assert.Empty(EvaluateLocks(Policy(deadlinePermille: 350), kept, kept));
         }
     }
 
@@ -218,12 +212,10 @@ public sealed class CommitmentSlackProportionalTests
     {
         Assert.Throws<ArgumentException>(() => Policy(fixedSlack: 1_000, deadlinePermille: 350));
         Assert.Throws<ArgumentException>(() => Policy(budgetPermille: 350, dropHardLimit: 120_000));
-        Assert.Throws<ArgumentException>(() => Policy(relaxedWithoutDeadline: true));
 
-        var relaxed = Policy(deadlinePermille: 350, relaxed: true);
-        Assert.True(relaxed.DropEtaDeadlineRelaxed);
-        Assert.Null(relaxed.DropEtaDeadlineSlack);
-        Assert.Equal(350, relaxed.DropEtaDeadlineSlackPermille);
+        var deadline = Policy(deadlinePermille: 350);
+        Assert.Null(deadline.DropEtaDeadlineSlack);
+        Assert.Equal(350, deadline.DropEtaDeadlineSlackPermille);
 
         Assert.False(Policy().ReadsInitialPromise);
         Assert.True(Policy(budgetPermille: 350).ReadsInitialPromise);
@@ -241,7 +233,7 @@ public sealed class CommitmentSlackProportionalTests
         var guaranteed = new ShadowAllocation(ShadowAllocationClass.Guaranteed, "12.5");
         var allowed = new ShadowAllocation(ShadowAllocationClass.Allowed, "80");
         var rule = Policy(budgetPermille: 1000, shadow: true);
-        var fence = Policy(deadlinePermille: 1000, relaxed: true, shadow: true);
+        var fence = Policy(deadlinePermille: 1000, shadow: true);
         var anchor = Projection(PickupAnchor, DropAnchor);
 
         Assert.Equal(0, rule.DropEtaTotalLimitFor(anchor, new Duration(MaxRide), guaranteed));
@@ -302,10 +294,8 @@ public sealed class CommitmentSlackProportionalTests
         int? budgetPermille = null,
         int? deadlinePermille = null,
         long? fixedSlack = null,
-        bool relaxed = false,
         long? dropHardLimit = null,
         long? otherHardLimit = null,
-        bool relaxedWithoutDeadline = false,
         bool shadow = false) =>
         new(
             "policy-1",
@@ -316,7 +306,6 @@ public sealed class CommitmentSlackProportionalTests
                     CommitmentPhase.AllActive)),
             new MaterialRevisionRule(1, null),
             dropEtaDeadlineSlack: fixedSlack is long slack ? new Duration(slack) : null,
-            dropEtaDeadlineRelaxed: relaxed || relaxedWithoutDeadline,
             dropEtaBudgetSlackPermille: budgetPermille,
             dropEtaDeadlineSlackPermille: deadlinePermille,
             dropEtaShadowAllocation: shadow);

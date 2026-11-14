@@ -2,31 +2,14 @@ using System.Collections.Frozen;
 using RideBound.Algorithms.Candidates;
 using RideBound.Application.Commitments;
 using RideBound.Domain.Commitments;
-using RideBound.Domain.Common;
 
 namespace RideBound.Algorithms.Commitments;
 
-/// <param name="IsForcedReference">
-/// True for a candidate kept by forced-reference recovery although a commitment gate rejected
-/// it: the safety no-op (ADR-075) or, under no-worse recovery, a changed route of the same
-/// vehicle. The overrun is counted on the forced-reference objective level and recorded as a
-/// typed breach.
-/// </param>
-public sealed record HardVectorCandidateAssessment(
-    string CandidateId,
-    bool IsForcedReference = false);
+public sealed record HardVectorCandidateAssessment(string CandidateId);
 
 public sealed record HardVectorCandidateAssessmentBatch(
     IReadOnlyList<VehicleCandidateSet> FeasibleCandidateSets,
-    IReadOnlyDictionary<string, HardVectorCandidateAssessment> Assessments)
-{
-    /// <summary>
-    /// Vehicles whose safety no-op was kept as a forced reference. Always empty
-    /// unless forced-reference recovery was requested.
-    /// </summary>
-    public IReadOnlySet<VehicleId> ForcedReferenceVehicles { get; init; } =
-        FrozenSet<VehicleId>.Empty;
-}
+    IReadOnlyDictionary<string, HardVectorCandidateAssessment> Assessments);
 
 public sealed record HardVectorCandidateAssessmentResult
 {
@@ -72,48 +55,16 @@ public sealed class HardVectorCandidateAssessor
     /// rejection, and an emptied vehicle reports the no-op's rejection. Callers
     /// that do not need the no-op keep the behaviour they had before.
     /// </param>
-    /// <param name="forcedReferenceRecovery">
-    /// Exploratory recovery (off by default; requires <paramref name="requireSafetyNoOp"/>).
-    /// A safety no-op rejected by the commitment validator is validated again with its
-    /// vehicle named as forced-reference. If that validation accepts it, which happens
-    /// only when every rejection was a deadline or budget gate, the no-op is kept
-    /// as a forced option instead of failing the vehicle. Any other rejection keeps
-    /// the fail-closed behaviour.
-    /// </param>
-    /// <param name="forcedNoWorse">
-    /// Exploratory no-worse-than-reference recovery (off by default; requires
-    /// <paramref name="forcedReferenceRecovery"/>). On a vehicle whose no-op was kept as forced,
-    /// every other candidate the validator rejected is validated again under the no-worse rule;
-    /// one that passes is kept as a forced option too, so the vehicle can still serve a new rider
-    /// when that does not make any overrun of the kept route worse.
-    /// </param>
     public HardVectorCandidateAssessmentResult AssessAndFilter(
         CommitmentMechanismContext context,
         IReadOnlyList<VehicleCandidateSet> rawCandidateSets,
-        bool requireSafetyNoOp = false,
-        bool forcedReferenceRecovery = false,
-        bool forcedNoWorse = false)
+        bool requireSafetyNoOp = false)
     {
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(rawCandidateSets);
 
-        if (forcedReferenceRecovery && !requireSafetyNoOp)
-        {
-            throw new ArgumentException(
-                "Forced-reference recovery keeps the safety no-op, so it requires it.",
-                nameof(forcedReferenceRecovery));
-        }
-
-        if (forcedNoWorse && !forcedReferenceRecovery)
-        {
-            throw new ArgumentException(
-                "No-worse recovery extends forced-reference recovery, so it requires it.",
-                nameof(forcedNoWorse));
-        }
-
         var outputSets = new List<VehicleCandidateSet>(rawCandidateSets.Count);
         var assessments = new List<HardVectorCandidateAssessment>();
-        var forcedVehicles = new List<VehicleId>();
 
         foreach (var set in rawCandidateSets.OrderBy(
                      value => value.VehicleId.Value,
@@ -126,8 +77,8 @@ public sealed class HardVectorCandidateAssessor
                 new Dictionary<string, CommitmentValidationWitness>(
                     StringComparer.Ordinal);
 
-            // G2 candidates are half of a move; they are assessed as pairs after this loop,
-            // once the forced vehicles are known. Without G2 this is every candidate.
+            // G2 candidates are half of a move; they are assessed as pairs after this loop.
+            // Without G2 this is every candidate.
             foreach (var candidate in set.Candidates
                          .Where(value => value.RelocationRole is null)
                          .OrderBy(
@@ -195,65 +146,6 @@ public sealed class HardVectorCandidateAssessor
                 ? hardPruned.FirstOrDefault(
                     value => value.CandidateId == noOps[0].CandidateId)
                 : null;
-
-            // Only a validator rejection can be forced; a no-op that could not even be
-            // applied to the reduced state is a physical failure and stays fatal.
-            if (forcedReferenceRecovery
-                && noOpPrune is not null
-                && hardValidationWitnesses.ContainsKey(noOpPrune.CandidateId))
-            {
-                var forced = AssessForcedCandidate(
-                    context,
-                    noOps[0],
-                    set.VehicleId,
-                    noWorse: false);
-
-                if (forced is not null)
-                {
-                    retained.Add(noOps[0]);
-                    pruned.Remove(noOpPrune);
-                    hardPruned.Remove(noOpPrune);
-                    assessments.Add(forced);
-                    forcedVehicles.Add(set.VehicleId);
-                    noOpPrune = null;
-
-                    if (forcedNoWorse)
-                    {
-                        // Only validator rejections can be relaxed; a candidate that could not be
-                        // applied, or failed physically, stays pruned. Ordinal order keeps it
-                        // deterministic.
-                        foreach (var prune in hardPruned
-                                     .Where(value => hardValidationWitnesses.ContainsKey(value.CandidateId))
-                                     .OrderBy(value => value.CandidateId, StringComparer.Ordinal)
-                                     .ToArray())
-                        {
-                            var candidate = set.Candidates.Single(
-                                value => value.CandidateId == prune.CandidateId);
-                            var relaxed = AssessForcedCandidate(
-                                context,
-                                candidate,
-                                set.VehicleId,
-                                noWorse: true);
-
-                            if (relaxed is null)
-                            {
-                                continue;
-                            }
-
-                            retained.Add(candidate);
-                            pruned.Remove(prune);
-                            hardPruned.Remove(prune);
-                            hardValidationWitnesses.Remove(prune.CandidateId);
-                            assessments.Add(relaxed);
-                        }
-                    }
-
-                    retained.Sort(
-                        (left, right) => StringComparer.Ordinal.Compare(
-                            left.CandidateId,
-                            right.CandidateId));
-                }
-            }
 
             if (retained.Count == 0)
             {
@@ -332,10 +224,7 @@ public sealed class HardVectorCandidateAssessor
 
         if (rawCandidateSets.Any(set => set.Candidates.Any(value => value.RelocationRole is not null)))
         {
-            var relocated = AssessRelocations(
-                context,
-                rawCandidateSets,
-                forcedVehicles.ToHashSet());
+            var relocated = AssessRelocations(context, rawCandidateSets);
 
             for (var index = 0; index < outputSets.Count; index++)
             {
@@ -371,13 +260,9 @@ public sealed class HardVectorCandidateAssessor
                 outputSets.AsReadOnly(),
                 assessments.ToFrozenDictionary(
                     value => value.CandidateId,
-                    StringComparer.Ordinal))
-            {
-                ForcedReferenceVehicles = forcedVehicles.ToFrozenSet(),
-            });
+                    StringComparer.Ordinal)));
     }
 
-    public const string RelocationForcedVehicle = "RELOCATION_FORCED_VEHICLE";
     public const string RelocationDonorOnlyRejected = "RELOCATION_DONOR_ONLY_REJECTED";
     public const string RelocationNoReceiver = "RELOCATION_NO_RECEIVER";
     public const string RelocationMalformed = "RELOCATION_MALFORMED";
@@ -388,8 +273,6 @@ public sealed class HardVectorCandidateAssessor
     /// and the result does not depend on which partner (only the scoped vehicle's riders and
     /// route are checked):
     /// <list type="number">
-    /// <item>a forced-reference donor drops every candidate of w; a forced receiver drops its own
-    /// (the emulator excludes forced vehicles on both sides);</item>
     /// <item>the donor-only route D0, paired with the first receiver, must pass, otherwise every
     /// candidate of w is dropped (the emulator's admissible-donor rule);</item>
     /// <item>each receiver is checked paired with D0;</item>
@@ -399,8 +282,7 @@ public sealed class HardVectorCandidateAssessor
     /// </summary>
     private RelocationAssessment AssessRelocations(
         CommitmentMechanismContext context,
-        IReadOnlyList<VehicleCandidateSet> rawCandidateSets,
-        IReadOnlySet<VehicleId> forcedVehicles)
+        IReadOnlyList<VehicleCandidateSet> rawCandidateSets)
     {
         var result = new RelocationAssessment();
         var byRider = rawCandidateSets
@@ -432,25 +314,6 @@ public sealed class HardVectorCandidateAssessor
                 || receivers.Any(value => value.VehicleId == donorVehicle))
             {
                 result.PruneAll(group, RelocationMalformed, "G2 candidates of this rider do not form a donor-only route and receivers on other vehicles.");
-                continue;
-            }
-
-            if (forcedVehicles.Contains(donorVehicle.Value))
-            {
-                result.PruneAll(group, RelocationForcedVehicle, "A forced-reference vehicle cannot give up a waiting rider.");
-                continue;
-            }
-
-            foreach (var forcedReceiver in receivers.Where(value => forcedVehicles.Contains(value.VehicleId)))
-            {
-                result.Prune(forcedReceiver, RelocationForcedVehicle, "A forced-reference vehicle cannot take a waiting rider.");
-            }
-
-            receivers = receivers.Where(value => !forcedVehicles.Contains(value.VehicleId)).ToArray();
-
-            if (receivers.Length == 0)
-            {
-                result.PruneAll(donors, RelocationNoReceiver, "No receiver of this waiting rider is on a vehicle free to take it.");
                 continue;
             }
 
@@ -598,44 +461,5 @@ public sealed class HardVectorCandidateAssessor
                 Prune(candidate, code, message);
             }
         }
-    }
-
-    /// <summary>
-    /// Validates a rejected candidate again with its vehicle named as forced-reference: the
-    /// no-op (kept route, <paramref name="noWorse"/> false) or, under no-worse recovery, a
-    /// changed route of the same vehicle. Returns null when the validator still rejects it.
-    /// </summary>
-    private HardVectorCandidateAssessment? AssessForcedCandidate(
-        CommitmentMechanismContext context,
-        InsertionCandidate candidate,
-        VehicleId vehicleId,
-        bool noWorse)
-    {
-        var updated = CandidateStateApplicator.Apply(
-            context.ReducedState.Run,
-            candidate);
-
-        if (!updated.IsSuccess)
-        {
-            return null;
-        }
-
-        var validation = _validator.Validate(
-            new CommitmentValidationContext(
-                context.BeforeEventState,
-                context.ReducedState,
-                context.ReducedState with { Run = updated.Value! },
-                context.Policies,
-                context.StopDistances,
-                context.PublicationScope,
-                context.SourceEventSequence,
-                RevisionReasonCode: "C1_HARD_VECTOR",
-                ScopedVehicleId: vehicleId,
-                ForcedReferenceVehicles: new[] { vehicleId }.ToFrozenSet(),
-                ForcedNoWorse: noWorse));
-
-        return validation.IsValid && validation.ForcedExemptions.Count != 0
-            ? new HardVectorCandidateAssessment(candidate.CandidateId, IsForcedReference: true)
-            : null;
     }
 }

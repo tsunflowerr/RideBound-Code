@@ -56,17 +56,14 @@ public sealed class Wp4RunnerConfiguration
         "binMs");
 
     /// <summary>
-    /// ADR-075 (exploratory). Optional; omitted means fail-closed, so every
-    /// configuration written before it keeps its content hash and its behaviour.
+    /// Required, and the only accepted value. Forced-reference recovery and its no-worse extension are removed, so a
+    /// vehicle whose safety no-op a commitment gate rejects always fails closed, and this value is a no-op. It stays
+    /// because the final files set it. The recovery modes, which "fail-closed", "forced-reference-v1" or an absent key
+    /// selected, are refused.
     /// </summary>
-    public const string ForcedReferenceRecovery = "forced-reference-v1";
-    public const string FailClosedRecovery = "fail-closed";
-
-    /// <summary>
-    /// Exploratory extension of `forced-reference-v1`: a forced vehicle may also choose a changed
-    /// route that makes none of the kept route's gate overruns worse (no worse than reference).
-    /// </summary>
-    public const string NoWorseRecovery = "no-worse-than-reference-v1";
+    private const string NoWorseRecovery = "no-worse-than-reference-v1";
+    private const string FailClosedRecovery = "fail-closed";
+    private const string ForcedReferenceRecovery = "forced-reference-v1";
 
     /// <summary>
     /// Required, and the only accepted value: a promise opens when the booking is confirmed. The initial-acceptance
@@ -235,9 +232,7 @@ public sealed class Wp4RunnerConfiguration
 
         return new SolverBackedRidePoolingPolicyOptions(
             source.PolicyKind,
-            execution.Value!,
-            source.ForcedReferenceRecovery,
-            source.ForcedNoWorseRecovery);
+            execution.Value!);
     }
 
     public static Wp4RunnerConfiguration Decode(
@@ -299,26 +294,12 @@ public sealed class Wp4RunnerConfiguration
                 && Boolean(evidenceElement, "emitSolverExecutionEvidence");
         RequireVariantFields(hasSolver);
 
-        var (forcedReferenceRecovery, forcedNoWorseRecovery) = root.TryGetProperty(
-            "commitmentRecovery",
-            out _)
-                ? Text(root, "commitmentRecovery") switch
-                {
-                    FailClosedRecovery => (false, false),
-                    ForcedReferenceRecovery => (true, false),
-                    NoWorseRecovery => (true, true),
-                    _ => throw new InvalidDataException(
-                        "Unknown commitmentRecovery."),
-                }
-                : (false, false);
-
-        if (forcedReferenceRecovery
-            && (!hasSolver
-                || policyKind is not RidePoolingPolicyKind.RideBoundHardVector))
+        // Here only an unknown value is refused; the removed recovery modes and an absent key are refused at the end of
+        // Decode.
+        if (root.TryGetProperty("commitmentRecovery", out _)
+            && Text(root, "commitmentRecovery") is not (NoWorseRecovery or FailClosedRecovery or ForcedReferenceRecovery))
         {
-            throw new InvalidDataException(
-                $"commitmentRecovery '{Text(root, "commitmentRecovery")}' requires the "
-                + "solver-backed C1 or C2 policy.");
+            throw new InvalidDataException("Unknown commitmentRecovery.");
         }
 
         // Here only an unknown value is refused; the removed late-boarding rejection and an absent key are refused at
@@ -468,11 +449,7 @@ public sealed class Wp4RunnerConfiguration
         if (hasSolver)
         {
             var budget = ReadSolverBudget(solverElement);
-            solverOptions = new SolverBackedRidePoolingPolicyOptions(
-                policyKind,
-                budget,
-                forcedReferenceRecovery,
-                forcedNoWorseRecovery);
+            solverOptions = new SolverBackedRidePoolingPolicyOptions(policyKind, budget);
         }
 
         // The initial-acceptance trigger is removed: a promise always opens at the booking confirmation, so
@@ -494,6 +471,18 @@ public sealed class Wp4RunnerConfiguration
             throw new InvalidDataException(
                 $"WP4 lateBoarding must be '{RecordLateBoarding}'. The late-boarding rejection, "
                 + $"which '{RejectLateBoarding}' or an absent key selected: {RemovedFeature}");
+        }
+
+        // Forced-reference recovery is removed: a vehicle whose safety no-op a commitment gate rejects always fails
+        // closed. commitmentRecovery must still name the no-worse value, which the final files set and which now
+        // changes nothing. The other values and an absent key, which selected a recovery mode, are refused. Checked
+        // last, after lateBoarding.
+        if (!root.TryGetProperty("commitmentRecovery", out var recoveryElement)
+            || recoveryElement.GetString() != NoWorseRecovery)
+        {
+            throw new InvalidDataException(
+                $"WP4 commitmentRecovery must be '{NoWorseRecovery}', which is now a no-op. The recovery modes, "
+                + $"which '{FailClosedRecovery}', '{ForcedReferenceRecovery}' or an absent key selected: {RemovedFeature}");
         }
 
         return new Wp4RunnerConfiguration(

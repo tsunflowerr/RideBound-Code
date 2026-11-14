@@ -71,7 +71,7 @@ public sealed class CommitmentSlackProportionalValidatorTests
     {
         var result = new CommitmentDecisionValidator().Validate(
             WithCandidateRoute(
-                Decision(Policy(deadlinePermille: 350, relaxed: true)),
+                Decision(Policy(deadlinePermille: 350)),
                 route => WaitBeforeDrop(route, "added", delay)));
 
         Assert.Equal(expectValid, result.IsValid);
@@ -89,32 +89,14 @@ public sealed class CommitmentSlackProportionalValidatorTests
     public void Drift_past_a_relaxed_rider_deadline_keeps_the_kept_route_and_blocks_any_later_drop()
     {
         // The kept route drifts from 1200 to 1700 ms, past drop0 + 315 = 1515 ms.
-        var policy = Policy(deadlinePermille: 350, relaxed: true);
+        var policy = Policy(deadlinePermille: 350);
         var kept = new CommitmentDecisionValidator().Validate(Decision(policy, reducedAt: Now + 500));
         var later = new CommitmentDecisionValidator().Validate(
             WithCandidateRoute(Decision(policy, reducedAt: Now + 500), route => WaitBeforeDrop(route, "added", 1)));
 
         Assert.True(kept.IsValid, string.Join("; ", kept.Witnesses.Select(w => w.Message)));
-        Assert.Empty(kept.ForcedExemptions);
         Assert.False(later.IsValid);
         Assert.Equal(CommitmentFailureCodes.DeadlineExceeded, Assert.Single(later.Witnesses).Code);
-    }
-
-    [Fact]
-    public void A_strict_rider_deadline_rejects_drift_past_it_and_a_forced_vehicle_exempts_it()
-    {
-        var policy = Policy(deadlinePermille: 350);
-        var plain = new CommitmentDecisionValidator().Validate(Decision(policy, reducedAt: Now + 500));
-        var forced = new CommitmentDecisionValidator().Validate(
-            Decision(policy, reducedAt: Now + 500) with
-            {
-                ForcedReferenceVehicles = new HashSet<VehicleId> { ApplicationTestData.VehicleId },
-            });
-
-        Assert.False(plain.IsValid);
-        Assert.Equal(CommitmentFailureCodes.DeadlineExceeded, Assert.Single(plain.Witnesses).Code);
-        Assert.True(forced.IsValid, string.Join("; ", forced.Witnesses.Select(w => w.Message)));
-        Assert.NotEmpty(forced.ForcedExemptions);
     }
 
     [Fact]
@@ -125,7 +107,6 @@ public sealed class CommitmentSlackProportionalValidatorTests
             foreach (var (proportional, fixedPolicy) in new[]
                      {
                          (Policy(budgetPermille: 350), Policy(dropBudget: RiderBudget)),
-                         (Policy(deadlinePermille: 350, relaxed: true), Policy(deadlineSlack: RiderBudget, relaxed: true)),
                          (Policy(deadlinePermille: 350), Policy(deadlineSlack: RiderBudget)),
                      })
             {
@@ -194,8 +175,7 @@ public sealed class CommitmentSlackProportionalValidatorTests
         int? budgetPermille = null,
         int? deadlinePermille = null,
         long? dropBudget = null,
-        long? deadlineSlack = null,
-        bool relaxed = false) =>
+        long? deadlineSlack = null) =>
         new(
             ApplicationTestData.Request().CommitmentPolicyId,
             CommitmentDimensionVocabulary.Ordered.Select(
@@ -205,7 +185,6 @@ public sealed class CommitmentSlackProportionalValidatorTests
                     CommitmentPhase.AllActive)),
             new MaterialRevisionRule(1, null),
             dropEtaDeadlineSlack: deadlineSlack is long slack ? new Duration(slack) : null,
-            dropEtaDeadlineRelaxed: relaxed,
             dropEtaBudgetSlackPermille: budgetPermille,
             dropEtaDeadlineSlackPermille: deadlinePermille);
 

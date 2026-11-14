@@ -949,6 +949,54 @@ public sealed class Wp4RunnerConfigurationTests
             })));
     }
 
+    [Fact]
+    public void The_removed_recovery_modes_are_refused_with_a_pointer_to_the_archive()
+    {
+        const string refusal =
+            "WP4 commitmentRecovery must be 'no-worse-than-reference-v1', which is now a no-op. The recovery modes, "
+            + "which 'fail-closed', 'forced-reference-v1' or an absent key selected: removed; see commit ebca912 "
+            + "(branch research/final-real-runs-2026-11-06)";
+        var commitment = CommitmentConfiguration();
+        static void Absent(JsonObject json) => Assert.True(json.Remove("commitmentRecovery"));
+        string Refused(string json) =>
+            Assert.Throws<InvalidDataException>(
+                () => Wp4RunnerConfiguration.Decode(Encoding.UTF8.GetBytes(json), commitment)).Message;
+
+        // The final value stays accepted.
+        Assert.NotNull(Wp4RunnerConfiguration.Decode(Encoding.UTF8.GetBytes(FinalJson()), commitment));
+
+        // Files that were decoded before with a recovery mode: the final C1 file with "fail-closed",
+        // "forced-reference-v1" or without the key, and the archived C1 file (no key) made cost-first.
+        Assert.Equal(refusal, Refused(FinalJson(json => json["commitmentRecovery"] = "fail-closed")));
+        Assert.Equal(refusal, Refused(FinalJson(json => json["commitmentRecovery"] = "forced-reference-v1")));
+        Assert.Equal(refusal, Refused(FinalJson(Absent)));
+        Assert.Equal(refusal, Refused(Edit(ArchivedCostFirst("wp7-fleetpy-ridebound-hard-vector-v1.json"), Absent)));
+
+        // An unknown value and a value that is not a string keep their own errors.
+        Assert.Equal(
+            "Unknown commitmentRecovery.",
+            Refused(FinalJson(json => json["commitmentRecovery"] = "no-worse-than-reference-v2")));
+        Assert.Equal(
+            "'commitmentRecovery' must be a non-empty string.",
+            Refused(FinalJson(json => json["commitmentRecovery"] = true)));
+
+        // The check runs last, after lateBoarding, so a file that any other check refuses keeps its message.
+        Assert.Equal(
+            StabilityFirstRefusal,
+            Refused(FinalJson(json =>
+            {
+                Absent(json);
+                Assert.True(json.Remove("selectionObjectiveOrder"));
+            })));
+        Assert.StartsWith(
+            "WP4 lateBoarding must be",
+            Refused(FinalJson(json =>
+            {
+                json["commitmentRecovery"] = "fail-closed";
+                json["lateBoarding"] = "reject";
+            })));
+    }
+
     /// <summary>The refusal of every selectionObjectiveOrder other than cost-first, and of an absent key.</summary>
     private const string StabilityFirstRefusal =
         "WP4 selectionObjectiveOrder must be 'cost-first'. The stability-first ranking, which 'stability-first' or an "
@@ -1137,9 +1185,10 @@ public sealed class Wp4RunnerConfigurationTests
     }
 
     /// <summary>
-    /// An archived configuration file with `"selectionObjectiveOrder": "cost-first"` and `"lateBoarding": "record-v1"`
-    /// added, the only values the Runner accepts (the archived files have neither key; an absent order key selected
-    /// stability-first, and an absent lateBoarding key the late-boarding rejection).
+    /// An archived configuration file with `"selectionObjectiveOrder": "cost-first"`, `"lateBoarding": "record-v1"` and
+    /// `"commitmentRecovery": "no-worse-than-reference-v1"` added, the only values the Runner accepts (the archived files
+    /// have none of these keys; an absent order key selected stability-first, an absent lateBoarding key the
+    /// late-boarding rejection, and an absent commitmentRecovery key the fail-closed recovery mode).
     /// </summary>
     private static string ArchivedCostFirst(string fileName) =>
         Edit(
@@ -1148,6 +1197,7 @@ public sealed class Wp4RunnerConfigurationTests
             {
                 json["selectionObjectiveOrder"] = "cost-first";
                 json["lateBoarding"] = "record-v1";
+                json["commitmentRecovery"] = "no-worse-than-reference-v1";
             });
 
     private static CommitmentPolicyConfiguration CommitmentConfiguration() =>

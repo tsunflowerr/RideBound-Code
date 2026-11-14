@@ -252,7 +252,6 @@ public sealed class CommitmentPolicyConfiguration :
             ReadLocks(element, "finalConfirmationLocks"),
             ReadLocks(element, "ratchetLocks"),
             deadlineSlack is long slack ? new Duration(slack) : null,
-            deadlineRelaxed,
             budgetPermille,
             deadlinePermille,
             relocation,
@@ -277,6 +276,15 @@ public sealed class CommitmentPolicyConfiguration :
         {
             throw new InvalidDataException(
                 "Commitment 'dropEtaDeadlineTwoSided' (the two-sided deadline): " + RemovedFeature);
+        }
+
+        // A deadline is always relaxed, so 'dropEtaDeadlineRelaxed' must be true with a deadline. False, or a deadline
+        // without the key (false was its default), selected the strict deadline.
+        if (!deadlineRelaxed && (hasDeadline || element.TryGetProperty("dropEtaDeadlineRelaxed", out _)))
+        {
+            throw new InvalidDataException(
+                "Commitment 'dropEtaDeadlineRelaxed' false, or a deadline without it (the strict deadline): "
+                + RemovedFeature);
         }
 
         return policy;

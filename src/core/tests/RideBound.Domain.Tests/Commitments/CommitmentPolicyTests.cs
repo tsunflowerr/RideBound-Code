@@ -39,37 +39,7 @@ public sealed class CommitmentPolicyTests
         Assert.Equal(new Duration(30_000), policy.DropEtaDeadlineSlack);
     }
 
-    [Fact]
-    public void Policy_has_no_relaxed_deadline_by_default()
-    {
-        var policy = CreatePolicy();
-        var deadline = CreateDeadlinePolicy(new Duration(30_000));
-
-        Assert.False(policy.DropEtaDeadlineRelaxed);
-        Assert.False(deadline.DropEtaDeadlineRelaxed);
-    }
-
-    [Fact]
-    public void Policy_keeps_a_configured_relaxed_deadline()
-    {
-        var policy = CreateDeadlinePolicy(new Duration(30_000), relaxed: true);
-
-        Assert.Equal(new Duration(30_000), policy.DropEtaDeadlineSlack);
-        Assert.True(policy.DropEtaDeadlineRelaxed);
-    }
-
-    [Fact]
-    public void Policy_rejects_a_relaxed_deadline_without_a_slack()
-    {
-        var error = Assert.Throws<ArgumentException>(
-            () => CreateDeadlinePolicy(null, relaxed: true));
-
-        Assert.Equal("dropEtaDeadlineRelaxed", error.ParamName);
-    }
-
-    private static CommitmentPolicy CreateDeadlinePolicy(
-        Duration? slack,
-        bool relaxed = false) =>
+    private static CommitmentPolicy CreateDeadlinePolicy(Duration? slack) =>
         new(
             "validated-policy",
             CommitmentDimensionVocabulary.Ordered.Select(
@@ -78,8 +48,7 @@ public sealed class CommitmentPolicyTests
                     null,
                     CommitmentPhase.AllActive)),
             new MaterialRevisionRule(1, null),
-            dropEtaDeadlineSlack: slack,
-            dropEtaDeadlineRelaxed: relaxed);
+            dropEtaDeadlineSlack: slack);
 
     private static CommitmentPolicy CreatePolicy(
         PromiseLock finalLocks = PromiseLock.None) =>

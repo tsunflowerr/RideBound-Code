@@ -217,25 +217,7 @@ public sealed class SolverBackedFleetSelector
                     "Every C1/C2 candidate needs a hard-vector assessment.");
             }
 
-            var forcedTreatmentActive = profile
-                    is SolverBackedObjectiveProfile.HardVector
-                && allCandidates.Any(
-                    candidate => hardAssessments![candidate.CandidateId].IsForcedReference);
             var objectives = new List<ObjectiveMapping>();
-
-            if (forcedTreatmentActive)
-            {
-                // A forced option keeps a route that a commitment gate rejected, which
-                // breaches an existing promise. It ranks before accepting new riders, so
-                // it is selected only for a vehicle with no alternative that avoids it.
-                objectives.Add(
-                    MinSum(
-                        "forced-reference-count",
-                        candidate => hardAssessments![candidate.CandidateId]
-                            .IsForcedReference
-                                ? 1
-                                : 0));
-            }
 
             objectives.Add(
                 new(

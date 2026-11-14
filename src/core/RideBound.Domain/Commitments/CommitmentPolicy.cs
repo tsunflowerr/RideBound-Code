@@ -127,7 +127,6 @@ public sealed class CommitmentPolicy
         PromiseLock finalConfirmationLocks = PromiseLock.None,
         PromiseLock ratchetLocks = PromiseLock.None,
         Duration? dropEtaDeadlineSlack = null,
-        bool dropEtaDeadlineRelaxed = false,
         int? dropEtaBudgetSlackPermille = null,
         int? dropEtaDeadlineSlackPermille = null,
         bool waitingRiderRelocation = false,
@@ -197,16 +196,6 @@ public sealed class CommitmentPolicy
                 nameof(dropEtaDeadlineSlackPermille));
         }
 
-        var hasDeadline = dropEtaDeadlineSlack is not null
-            || dropEtaDeadlineSlackPermille is not null;
-
-        if (dropEtaDeadlineRelaxed && !hasDeadline)
-        {
-            throw new ArgumentException(
-                "A relaxed deadline requires a deadline slack.",
-                nameof(dropEtaDeadlineRelaxed));
-        }
-
         // The slack-proportional budget is the drop_eta_total_ms hard limit of each rider, so a
         // fixed hard limit on the same dimension would leave two limits for one ledger value.
         if (dropEtaBudgetSlackPermille is not null
@@ -253,7 +242,6 @@ public sealed class CommitmentPolicy
         FinalConfirmationLocks = finalConfirmationLocks;
         RatchetLocks = ratchetLocks;
         DropEtaDeadlineSlack = dropEtaDeadlineSlack;
-        DropEtaDeadlineRelaxed = dropEtaDeadlineRelaxed;
         DropEtaBudgetSlackPermille = dropEtaBudgetSlackPermille;
         DropEtaDeadlineSlackPermille = dropEtaDeadlineSlackPermille;
         WaitingRiderRelocation = waitingRiderRelocation;
@@ -415,27 +403,14 @@ public sealed class CommitmentPolicy
 
     /// <summary>
     /// Deadline on the drop ETA, measured from the rider's FIRST published promise
-    /// (the deadline style of Schulz and Pfeiffer, 2026). Unlike every lock, this
-    /// compares the candidate with the initial promise rather than with the
-    /// exogenous projection, so exogenous drift alone can trip it, including on the
-    /// safety no-op. Only a later drop ETA can break it, never an earlier one.
+    /// (the deadline style of Schulz and Pfeiffer, 2026). The deadline is relaxed to the
+    /// later of the initial promise plus the slack and the exogenous (kept-route)
+    /// projection: a candidate fails only if its drop ETA is later than both (DL-HZ in
+    /// the study notation). Drift alone never trips it, so the safety no-op is never
+    /// rejected by it. Only a later drop ETA can break it, never an earlier one.
     /// Research probe; null disables the rule.
     /// </summary>
     public Duration? DropEtaDeadlineSlack { get; }
-
-    /// <summary>
-    /// When true the deadline is relaxed to the later of the initial promise
-    /// plus the slack and the exogenous (kept-route) projection: a candidate fails only
-    /// if its drop ETA is later than both (DL-HZ in the study notation). Drift alone
-    /// never trips it, so the safety no-op is never rejected by it and it never
-    /// triggers forced-reference recovery. When the kept route overruns no other gate,
-    /// each candidate passes it for a rider exactly when the strict deadline passes it
-    /// under no-worse-than-reference recovery, but without forced vehicles or breach
-    /// records. No-worse recovery also exempts budget overruns of the kept route, and its
-    /// forced options add a ranking level, so beyond that case, and for the selection
-    /// itself, the two can differ. Requires a slack.
-    /// </summary>
-    public bool DropEtaDeadlineRelaxed { get; }
 
     /// <summary>
     /// Slack-proportional cumulative budget (rule C with the budget of Elmi et al. 2026,
@@ -446,9 +421,9 @@ public sealed class CommitmentPolicy
     public int? DropEtaBudgetSlackPermille { get; }
 
     /// <summary>
-    /// Slack-proportional deadline (Elmi et al. 2026 Ordinary Control; EO, or EOHZ when
-    /// relaxed): each rider's deadline slack is <see cref="SlackProportionalLimit"/> of its
-    /// first promise. Exclusive with the fixed <see cref="DropEtaDeadlineSlack"/>.
+    /// Slack-proportional deadline (Elmi et al. 2026 Ordinary Control, relaxed as EOHZ): each
+    /// rider's deadline slack is <see cref="SlackProportionalLimit"/> of its first promise.
+    /// Exclusive with the fixed <see cref="DropEtaDeadlineSlack"/>.
     /// Research probe; null disables the rule.
     /// </summary>
     public int? DropEtaDeadlineSlackPermille { get; }

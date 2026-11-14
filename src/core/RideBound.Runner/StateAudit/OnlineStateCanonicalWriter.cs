@@ -506,12 +506,6 @@ public static class OnlineStateCanonicalWriter
             case CommitmentBreachKind.ExogenousServiceQuality:
                 item.Member("kind"u8).String("exogenousServiceQuality");
                 break;
-            case CommitmentBreachKind.ForcedReference:
-                item.Member("kind"u8).String("forcedReference");
-                break;
-            case CommitmentBreachKind.ForcedNoWorse:
-                item.Member("kind"u8).String("forcedNoWorse");
-                break;
             default:
                 throw new InvalidOperationException("Unknown commitment breach kind.");
         }

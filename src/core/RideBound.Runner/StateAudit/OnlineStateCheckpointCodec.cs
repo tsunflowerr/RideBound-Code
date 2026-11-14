@@ -369,49 +369,7 @@ public static class OnlineStateCheckpointCodec
             var budgetBefore = ReadVector(value.GetProperty("budgetBefore"));
             CommitmentBreachRecord breach;
 
-            if (value.TryGetProperty("kind", out var kind)
-                && kind.GetString() == "forcedReference")
-            {
-                // The kept-route projection is stored as the safety projection; the factory
-                // rejects a record whose two projections differ.
-                breach = CommitmentBreachRecord.CreateForcedReference(
-                    Text(value, "breachId"),
-                    requestId,
-                    previousPromise,
-                    exogenousProjection,
-                    ReadPromiseProjection(value.GetProperty("safetyProjection")),
-                    deltas,
-                    budgetBefore,
-                    ReadVector(value.GetProperty("attemptedBudgetAfter")),
-                    value.GetProperty("witnessCodes")
-                        .EnumerateArray()
-                        .Select(item => item.GetString()!),
-                    Integer(value, "sourceEventSeq"),
-                    Integer(value, "recordedEpoch"),
-                    new SimTime(Integer(value, "recordedAtMs")));
-            }
-            else if (value.TryGetProperty("kind", out kind)
-                && kind.GetString() == "forcedNoWorse")
-            {
-                // The changed route's projection is stored as the safety projection; the factory
-                // rejects a record whose two projections are equal or on different vehicles.
-                breach = CommitmentBreachRecord.CreateForcedNoWorse(
-                    Text(value, "breachId"),
-                    requestId,
-                    previousPromise,
-                    exogenousProjection,
-                    ReadPromiseProjection(value.GetProperty("safetyProjection")),
-                    deltas,
-                    budgetBefore,
-                    ReadVector(value.GetProperty("attemptedBudgetAfter")),
-                    value.GetProperty("witnessCodes")
-                        .EnumerateArray()
-                        .Select(item => item.GetString()!),
-                    Integer(value, "sourceEventSeq"),
-                    Integer(value, "recordedEpoch"),
-                    new SimTime(Integer(value, "recordedAtMs")));
-            }
-            else if (value.TryGetProperty("kind", out kind))
+            if (value.TryGetProperty("kind", out var kind))
             {
                 if (kind.GetString() != "exogenousServiceQuality")
                 {

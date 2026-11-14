@@ -51,11 +51,6 @@ public sealed record FleetSelectionResult
         new(null, witness);
 }
 
-/// <param name="ForcedReferenceVehicles">
-/// Vehicles whose gate-rejected safety no-op was kept by forced-reference recovery.
-/// Null unless recovery was enabled and triggered; the Runner passes it to its own
-/// validation so that the kept route is recorded as a typed breach.
-/// </param>
 public sealed record DispatchDecision(
     OnlineState ProposedState,
     IReadOnlyList<SelectedVehiclePlan> VehiclePlans,
@@ -64,8 +59,7 @@ public sealed record DispatchDecision(
     int AcceptedRequestCount,
     long OperationalCost,
     CandidateSelectionExecutionResult? SelectionExecution = null,
-    CandidateGenerationDiagnostics? GenerationDiagnostics = null,
-    IReadOnlySet<VehicleId>? ForcedReferenceVehicles = null);
+    CandidateGenerationDiagnostics? GenerationDiagnostics = null);
 
 public sealed record DispatchDecisionResult
 {

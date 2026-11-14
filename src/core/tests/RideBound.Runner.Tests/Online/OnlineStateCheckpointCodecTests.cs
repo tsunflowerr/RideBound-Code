@@ -217,124 +217,54 @@ public sealed class OnlineStateCheckpointCodecTests
     }
 
     [Fact]
-    public void Forced_reference_breach_round_trips_with_its_own_kind_and_is_tamper_checked()
+    public void A_removed_forced_breach_kind_is_refused_on_restore()
     {
+        // Forced-reference recovery is removed, so a checkpoint that holds one of its breach kinds
+        // ("forcedReference", "forcedNoWorse") no longer restores.
         var (run, projection, promises, travel) = SingleRiderState();
         var requestId = projection.RequestId;
-        var drift = new CommitmentVector(0, 40, 0, 0, 0, 0, 0, 0, 0, 0);
         var incidents = OperationalIncidentLedger.Empty.AppendBreach(
-            CommitmentBreachRecord.CreateForcedReference(
-                "forced-breach-1",
+            CommitmentBreachRecord.CreateExogenousServiceQuality(
+                "exogenous-breach-1",
                 requestId,
                 promises.Histories[requestId].Current.PublishedPromise,
                 projection,
                 projection,
-                new ThreeWayPromiseDelta(drift, CommitmentVector.Zero, drift),
+                new ThreeWayPromiseDelta(
+                    CommitmentVector.Zero,
+                    CommitmentVector.Zero,
+                    CommitmentVector.Zero),
                 CommitmentVector.Zero,
-                drift,
-                [CommitmentFailureCodes.BudgetExceeded],
+                CommitmentVector.Zero,
+                [PhysicalViolationCodes.MaxRideTime],
+                [
+                    new ServiceQualityBreach(
+                        requestId,
+                        PhysicalViolationCodes.MaxRideTime,
+                        "maxRideTimeMs",
+                        100,
+                        101),
+                ],
                 3,
                 1,
                 new SimTime(2))).Ledger!;
         var state = new OnlineState(run, travel, 5, travel.SnapshotHash, promises, incidents);
-        var canonical = OnlineStateCanonicalizer.Canonicalize(state);
-        using var document = JsonDocument.Parse(canonical);
+        using var document = JsonDocument.Parse(OnlineStateCanonicalizer.Canonicalize(state));
+        Assert.True(
+            OnlineStateCheckpointCodec.Decode(document.RootElement).IsSuccess,
+            OnlineStateCheckpointCodec.Decode(document.RootElement).Error);
 
-        var decoded = OnlineStateCheckpointCodec.Decode(document.RootElement);
+        foreach (var kind in new[] { "forcedReference", "forcedNoWorse" })
+        {
+            var relabelled = JsonNode.Parse(document.RootElement.GetRawText())!;
+            relabelled["incidentLedger"]!["breaches"]![0]!["kind"] = kind;
+            using var relabelledDocument = JsonDocument.Parse(relabelled.ToJsonString());
 
-        Assert.True(decoded.IsSuccess, decoded.Error);
-        var breach = Assert.Single(decoded.State!.Incidents.Breaches);
-        Assert.Equal(CommitmentBreachKind.ForcedReference, breach.Kind);
-        Assert.Null(breach.IncidentId);
-        Assert.Equal(40, breach.AttemptedBudgetAfter.DropEtaTotalMs);
-        Assert.Equal(canonical, OnlineStateCanonicalizer.Canonicalize(decoded.State));
-        Assert.Equal(
-            "forcedReference",
-            document.RootElement.GetProperty("incidentLedger").GetProperty("breaches")[0]
-                .GetProperty("kind").GetString());
+            var decoded = OnlineStateCheckpointCodec.Decode(relabelledDocument.RootElement);
 
-        // Relabelled as an exogenous breach it no longer satisfies that kind's rules.
-        var relabelled = JsonNode.Parse(document.RootElement.GetRawText())!;
-        relabelled["incidentLedger"]!["breaches"]![0]!["kind"] = "exogenousServiceQuality";
-        relabelled["incidentLedger"]!["breaches"]![0]!["serviceQualityWitnesses"] = new JsonArray();
-        using var relabelledDocument = JsonDocument.Parse(relabelled.ToJsonString());
-        Assert.False(OnlineStateCheckpointCodec.Decode(relabelledDocument.RootElement).IsSuccess);
-
-        // A forged charge that follows neither budget basis is rejected.
-        var forged = JsonNode.Parse(document.RootElement.GetRawText())!;
-        forged["incidentLedger"]!["breaches"]![0]!["attemptedBudgetAfter"]!["dropEtaTotalMs"] = 7;
-        using var forgedDocument = JsonDocument.Parse(forged.ToJsonString());
-        Assert.False(OnlineStateCheckpointCodec.Decode(forgedDocument.RootElement).IsSuccess);
-
-        // A kept-route projection that differs from the exogenous one is rejected.
-        var moved = JsonNode.Parse(document.RootElement.GetRawText())!;
-        moved["incidentLedger"]!["breaches"]![0]!["safetyProjection"]!["dropEtaMs"] =
-            moved["incidentLedger"]!["breaches"]![0]!["safetyProjection"]!["dropEtaMs"]!
-                .GetValue<long>() + 1;
-        using var movedDocument = JsonDocument.Parse(moved.ToJsonString());
-        Assert.False(OnlineStateCheckpointCodec.Decode(movedDocument.RootElement).IsSuccess);
-    }
-
-    [Fact]
-    public void No_worse_breach_round_trips_with_its_own_kind_and_is_tamper_checked()
-    {
-        var (run, projection, promises, travel) = SingleRiderState();
-        var requestId = projection.RequestId;
-        // The changed route publishes a drop 5 ms later than the kept one.
-        var changed = new PromiseProjection(
-            projection.RequestId,
-            projection.VehicleId,
-            projection.PickupStopId,
-            projection.PickupNodeId,
-            projection.DropStopId,
-            projection.DropNodeId,
-            projection.PickupEta,
-            new SimTime(projection.DropEta.Milliseconds + 5),
-            projection.ServiceOrder);
-        var drift = new CommitmentVector(0, 40, 0, 0, 0, 0, 0, 0, 0, 0);
-        var decision = new CommitmentVector(0, 5, 0, 0, 0, 0, 0, 0, 0, 0);
-        var visible = new CommitmentVector(0, 45, 0, 0, 0, 0, 0, 0, 0, 0);
-        var incidents = OperationalIncidentLedger.Empty.AppendBreach(
-            CommitmentBreachRecord.CreateForcedNoWorse(
-                "no-worse-breach-1",
-                requestId,
-                promises.Histories[requestId].Current.PublishedPromise,
-                projection,
-                changed,
-                new ThreeWayPromiseDelta(drift, decision, visible),
-                CommitmentVector.Zero,
-                visible,
-                [CommitmentFailureCodes.DeadlineExceeded],
-                3,
-                1,
-                new SimTime(2))).Ledger!;
-        var state = new OnlineState(run, travel, 5, travel.SnapshotHash, promises, incidents);
-        var canonical = OnlineStateCanonicalizer.Canonicalize(state);
-        using var document = JsonDocument.Parse(canonical);
-
-        var decoded = OnlineStateCheckpointCodec.Decode(document.RootElement);
-
-        Assert.True(decoded.IsSuccess, decoded.Error);
-        var breach = Assert.Single(decoded.State!.Incidents.Breaches);
-        Assert.Equal(CommitmentBreachKind.ForcedNoWorse, breach.Kind);
-        Assert.Equal(canonical, OnlineStateCanonicalizer.Canonicalize(decoded.State));
-        Assert.Equal(
-            "forcedNoWorse",
-            document.RootElement.GetProperty("incidentLedger").GetProperty("breaches")[0]
-                .GetProperty("kind").GetString());
-
-        // Relabelled as a kept-route breach, the two different projections are rejected.
-        var relabelled = JsonNode.Parse(document.RootElement.GetRawText())!;
-        relabelled["incidentLedger"]!["breaches"]![0]!["kind"] = "forcedReference";
-        using var relabelledDocument = JsonDocument.Parse(relabelled.ToJsonString());
-        Assert.False(OnlineStateCheckpointCodec.Decode(relabelledDocument.RootElement).IsSuccess);
-
-        // A no-worse record whose route is in fact unchanged is rejected.
-        var unchanged = JsonNode.Parse(document.RootElement.GetRawText())!;
-        unchanged["incidentLedger"]!["breaches"]![0]!["safetyProjection"] =
-            JsonNode.Parse(unchanged["incidentLedger"]!["breaches"]![0]!["exogenousProjection"]!.ToJsonString());
-        using var unchangedDocument = JsonDocument.Parse(unchanged.ToJsonString());
-        Assert.False(OnlineStateCheckpointCodec.Decode(unchangedDocument.RootElement).IsSuccess);
+            Assert.False(decoded.IsSuccess);
+            Assert.Equal("Unknown commitment breach kind.", decoded.Error);
+        }
     }
 
     [Fact]

@@ -121,11 +121,7 @@ public sealed partial class RunnerSession
                 validationPolicies,
                 _stopDistances,
                 publicationScope,
-                sourceEventSequence,
-                ForcedReferenceVehicles:
-                    decision.Decision.ForcedReferenceVehicles,
-                ForcedNoWorse:
-                    _wp4Configuration.SolverPolicyOptions?.ForcedNoWorseRecovery == true));
+                sourceEventSequence));
 
         if (!validation.IsValid)
         {
@@ -184,21 +180,23 @@ public sealed partial class RunnerSession
         // One canonicalization and one hash of the staged state per epoch.
         CanonicalSegments? stagedCanonical = null;
         var stagedHash = HashStagedState(stateToStage, lightStateAfterHash, ref stagedCanonical);
-        var breachWitnesses = ForcedBreachWitnesses(validation.ForcedExemptions);
+
+        // A validated decision keeps no route that a commitment gate rejected, so it is always normal operation
+        // and carries no breach witness.
         var certificate = new CertificateShell(
             CertificateStatus.Produced,
             "VALIDATED",
             new CommitmentCertificateBody(
                 "1.0.0",
                 "commitment-validator-v1",
-                breachWitnesses.Length == 0,
+                true,
                 _stateHash,
                 stagedHash,
                 publications.Select(value => value.PublicationId).ToArray(),
                 stateToStage.Run.Vehicles.Count,
                 stateToStage.Run.Requests.Values.Count(
                     value => value.IsAcceptedActive),
-                breachWitnesses));
+                []));
 
         var staged = _onlineCoordinator.StageDecisionState(
             reduced.ProposedState!,
@@ -244,26 +242,6 @@ public sealed partial class RunnerSession
             certificate,
             new SolverStatusShell(solverStatus));
     }
-
-    /// <summary>
-    /// ADR-075: every decision that keeps a gate-rejected route is certified as
-    /// non-normal operation, with one witness per breached gate code of each rider,
-    /// including a decision that repeats an exemption without a new breach record.
-    /// Under no-worse recovery a rider exempted on a changed route is certified with the stage
-    /// `forcedNoWorse`, so a kept (frozen) vehicle stays distinguishable from one still serving.
-    /// </summary>
-    private static CertificateWitnessContract[] ForcedBreachWitnesses(
-        IReadOnlyList<ForcedReferenceExemption> exemptions) =>
-        exemptions
-            .OrderBy(value => value.RequestId.Value, StringComparer.Ordinal)
-            .SelectMany(
-                exemption => exemption.WitnessCodes.Select(
-                    code => new CertificateWitnessContract(
-                        exemption.NoWorse ? "forcedNoWorse" : "forcedReference",
-                        code,
-                        exemption.VehicleId.Value,
-                        exemption.RequestId.Value)))
-            .ToArray();
 
     private sealed record OnlineDecisionBuildResult(
         Sha256Hex? StateAfterHash,

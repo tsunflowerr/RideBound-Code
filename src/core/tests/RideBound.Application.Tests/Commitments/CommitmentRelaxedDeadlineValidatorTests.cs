@@ -75,17 +75,12 @@ public sealed class CommitmentRelaxedDeadlineValidatorTests
     }
 
     [Fact]
-    public void A_relaxed_deadline_keeps_the_no_op_under_drift_that_the_strict_deadline_rejects()
+    public void A_relaxed_deadline_keeps_the_no_op_under_drift_past_the_deadline()
     {
         // First promise 1200 ms, kept route 1700 ms, slack 400 ms: past the deadline.
-        var strict = Decision(Policy(deadlineSlack: 400), reducedAt: Now + 500);
-        var relaxed = Decision(Policy(deadlineSlack: 400, relaxed: true), reducedAt: Now + 500);
+        var kept = new CommitmentDecisionValidator().Validate(
+            Decision(Policy(deadlineSlack: 400), reducedAt: Now + 500));
 
-        var rejected = new CommitmentDecisionValidator().Validate(strict);
-        var kept = new CommitmentDecisionValidator().Validate(relaxed);
-
-        Assert.False(rejected.IsValid);
-        Assert.Equal(CommitmentFailureCodes.DeadlineExceeded, Assert.Single(rejected.Witnesses).Code);
         Assert.True(kept.IsValid, string.Join("; ", kept.Witnesses.Select(w => w.Message)));
         Assert.Equal(
             1_700,
@@ -103,7 +98,7 @@ public sealed class CommitmentRelaxedDeadlineValidatorTests
         bool expectValid)
     {
         var context = WithCandidateRoute(
-            Decision(Policy(deadlineSlack: 400, relaxed: true), reducedAt: Now + drift),
+            Decision(Policy(deadlineSlack: 400), reducedAt: Now + drift),
             route => delay == 0 ? AppendAfterDrop(route) : WaitBeforeDrop(route, "added", delay));
 
         var result = new CommitmentDecisionValidator().Validate(context);
@@ -119,31 +114,9 @@ public sealed class CommitmentRelaxedDeadlineValidatorTests
         }
     }
 
-    [Fact]
-    public void A_relaxed_deadline_gives_a_forced_vehicle_nothing_to_exempt()
-    {
-        var forced = new HashSet<VehicleId> { ApplicationTestData.VehicleId };
-        var keptRoute = Decision(Policy(deadlineSlack: 400, relaxed: true), reducedAt: Now + 500)
-            with { ForcedReferenceVehicles = forced };
-        var changedRoute = WithCandidateRoute(
-                Decision(Policy(deadlineSlack: 400, relaxed: true), reducedAt: Now + 500),
-                AppendAfterDrop)
-            with { ForcedReferenceVehicles = forced, ForcedNoWorse = true };
-
-        foreach (var context in new[] { keptRoute, changedRoute })
-        {
-            var result = new CommitmentDecisionValidator().Validate(context);
-
-            Assert.True(result.IsValid, string.Join("; ", result.Witnesses.Select(w => w.Message)));
-            Assert.Empty(result.ForcedExemptions);
-            Assert.Empty(result.ForcedBreaches);
-        }
-    }
-
     private static CommitmentPolicy Policy(
         long? dropBudget = null,
-        long? deadlineSlack = null,
-        bool relaxed = false) =>
+        long? deadlineSlack = null) =>
         new(
             ApplicationTestData.Request().CommitmentPolicyId,
             CommitmentDimensionVocabulary.Ordered.Select(
@@ -152,8 +125,7 @@ public sealed class CommitmentRelaxedDeadlineValidatorTests
                     dimension == CommitmentDimension.DropEtaTotalMs ? dropBudget : null,
                     CommitmentPhase.AllActive)),
             new MaterialRevisionRule(1, null),
-            dropEtaDeadlineSlack: deadlineSlack is long slack ? new Duration(slack) : null,
-            dropEtaDeadlineRelaxed: relaxed);
+            dropEtaDeadlineSlack: deadlineSlack is long slack ? new Duration(slack) : null);
 
     /// <summary>
     /// The decision at <paramref name="reducedAt"/> on the kept route (pickup, drop), whose first

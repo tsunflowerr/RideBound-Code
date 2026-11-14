@@ -176,7 +176,7 @@ public sealed class Wp4RunnerIntegrationTests
     public void Booking_confirmation_C1_ranks_each_vehicle_scope_before_fleet_validation()
     {
         var commitment = CommitmentConfiguration();
-        var wp4 = HardVectorConfiguration(commitment, recovery: null);
+        var wp4 = HardVectorConfiguration(commitment);
         var setup = CreateSession(
             wp4,
             commitmentConfiguration: commitment);
@@ -311,138 +311,13 @@ public sealed class Wp4RunnerIntegrationTests
     }
 
     [Fact]
-    public void Forced_reference_recovery_keeps_a_late_route_as_a_certified_breach()
-    {
-        // ADR-075. A one-millisecond drop deadline and a vehicle that has barely left
-        // its node: exogenous drift alone pushes the booked rider past the deadline.
-        // Fail-closed C1 has no candidate left and the session fails; with recovery the
-        // route is kept, one typed breach is recorded, and the certificate says so.
-        var commitment = DeadlineCommitmentConfiguration(slackMs: 1);
-        var failClosed = CreateSession(
-            HardVectorConfiguration(commitment, recovery: null),
-            commitmentConfiguration: commitment);
-        var legacy = DriftBookedRider(failClosed, progressPermille: 1);
-        Assert.Equal("error", legacy.MessageType.Value);
-        Assert.Equal("INTERNAL_ERROR", legacy.Payload.GetProperty("code").GetString());
-        var legacyMessage = legacy.Payload.GetProperty("message").GetString()!;
-        Assert.StartsWith(
-            "C1 rejected every generated candidate for this vehicle. No-op rejection: ",
-            legacyMessage,
-            StringComparison.Ordinal);
-        Assert.Contains("deadline", legacyMessage, StringComparison.Ordinal);
-        Assert.Equal(RunnerSessionStatus.Failed, failClosed.Session.Status);
-
-        var setup = CreateSession(
-            HardVectorConfiguration(commitment, recovery: "forced-reference-v1"),
-            commitmentConfiguration: commitment);
-        var response = DriftBookedRider(setup, progressPermille: 1);
-        var decision = DecisionPayloadCodec.Decode(response.Payload);
-
-        Assert.Equal("decision", response.MessageType.Value);
-        Assert.True(decision.IsSuccess, decision.Error?.Message);
-        var body = decision.Value!.Certificate.Body!;
-        Assert.False(body.NormalOperation);
-        var witness = Assert.Single(body.Witnesses);
-        Assert.Equal("forcedReference", witness.Stage);
-        Assert.Equal("COMMITMENT_DEADLINE_EXCEEDED", witness.Code);
-        Assert.Equal("r-1", witness.RequestId);
-        Assert.Single(
-            decision.Value.Actions,
-            action => action.GetProperty("decisionType").GetString()
-                == "promisePublished");
-
-        _ = setup.Session.Process(
-            DecisionApplied(3, 1_050, decision.Value.DecisionHash.Value));
-        var breach = Assert.Single(
-            setup.Session.CommittedOnlineState!.Incidents.Breaches);
-        Assert.Equal(
-            RideBound.Domain.Incidents.CommitmentBreachKind.ForcedReference,
-            breach.Kind);
-        Assert.Equal(["COMMITMENT_DEADLINE_EXCEEDED"], breach.WitnessCodes);
-
-        var checkpoint = setup.Session.Process(CheckpointRequest()).Response!;
-        var restored = CreateSession(
-            HardVectorConfiguration(commitment, recovery: "forced-reference-v1"),
-            commitmentConfiguration: commitment);
-        Assert.Equal(
-            "restore",
-            restored.Session.Process(RestoreRequest(checkpoint.Payload))
-                .Response?.MessageType.Value);
-        Assert.Equal(
-            breach.BreachId,
-            Assert.Single(restored.Session.CommittedOnlineState!.Incidents.Breaches)
-                .BreachId);
-    }
-
-    [Fact]
-    public void Forced_reference_recovery_repeats_the_exemption_but_records_a_breach_per_revision()
-    {
-        // After the first forced decision the rider stays past the deadline. A timer tick at
-        // the same time changes nothing: the certificate is still non-normal, but no second
-        // breach is written. A tick 30 ms later moves the kept route again, which revises the
-        // promise and records a second breach.
-        var commitment = DeadlineCommitmentConfiguration(slackMs: 1);
-        var setup = CreateSession(
-            HardVectorConfiguration(commitment, recovery: "forced-reference-v1"),
-            commitmentConfiguration: commitment);
-        var first = DecisionPayloadCodec.Decode(
-            DriftBookedRider(setup, progressPermille: 1).Payload).Value!;
-        _ = setup.Session.Process(DecisionApplied(3, 1_050, first.DecisionHash.Value));
-        Assert.Single(setup.Session.CommittedOnlineState!.Incidents.Breaches);
-
-        var same = DecisionPayloadCodec.Decode(
-            setup.Session.Process(TimerTick(epoch: 4, sequence: 7, simTime: 1_050))
-                .Response!.Payload);
-        Assert.True(same.IsSuccess, same.Error?.Message);
-        Assert.False(same.Value!.Certificate.Body!.NormalOperation);
-        Assert.Equal(
-            "COMMITMENT_DEADLINE_EXCEEDED",
-            Assert.Single(same.Value.Certificate.Body.Witnesses).Code);
-        Assert.DoesNotContain(
-            same.Value.Actions,
-            action => action.GetProperty("decisionType").GetString() == "promisePublished");
-        _ = setup.Session.Process(DecisionApplied(4, 1_050, same.Value.DecisionHash.Value));
-        Assert.Single(setup.Session.CommittedOnlineState!.Incidents.Breaches);
-
-        var later = DecisionPayloadCodec.Decode(
-            setup.Session.Process(TimerTick(epoch: 5, sequence: 8, simTime: 1_080))
-                .Response!.Payload);
-        Assert.True(later.IsSuccess, later.Error?.Message);
-        Assert.False(later.Value!.Certificate.Body!.NormalOperation);
-        Assert.Single(
-            later.Value.Actions,
-            action => action.GetProperty("decisionType").GetString() == "promisePublished");
-        _ = setup.Session.Process(DecisionApplied(5, 1_080, later.Value.DecisionHash.Value));
-        Assert.Equal(2, setup.Session.CommittedOnlineState!.Incidents.Breaches.Count);
-    }
-
-    [Fact]
-    public void An_explicit_fail_closed_recovery_behaves_like_the_default()
-    {
-        var commitment = DeadlineCommitmentConfiguration(slackMs: 1);
-        var explicitSetup = CreateSession(
-            HardVectorConfiguration(commitment, recovery: "fail-closed"),
-            commitmentConfiguration: commitment);
-
-        var response = DriftBookedRider(explicitSetup, progressPermille: 1);
-
-        Assert.False(explicitSetup.Wp4.SolverPolicyOptions!.ForcedReferenceRecovery);
-        Assert.Equal("error", response.MessageType.Value);
-        Assert.Equal("INTERNAL_ERROR", response.Payload.GetProperty("code").GetString());
-        Assert.StartsWith(
-            "C1 rejected every generated candidate for this vehicle. No-op rejection: ",
-            response.Payload.GetProperty("message").GetString(),
-            StringComparison.Ordinal);
-    }
-
-    [Fact]
     public void A_late_boarding_is_recorded_and_survives_checkpoint_restore()
     {
         // ADR-076. r-1 may be picked up in [1000, 2000] ms and boards at 2500 ms. The rider is
         // onboard, the window is unchanged, the 500 ms gap is one record, and the record
         // survives checkpoint/restore.
         var commitment = CommitmentConfiguration();
-        var configuration = HardVectorConfiguration(commitment, recovery: null);
+        var configuration = HardVectorConfiguration(commitment);
         var setup = CreateSession(configuration, commitmentConfiguration: commitment);
         var response = BoardBookedRider(setup, at: 2_500);
         var decision = DecisionPayloadCodec.Decode(response.Payload);
@@ -471,118 +346,26 @@ public sealed class Wp4RunnerIntegrationTests
     }
 
     [Fact]
-    public void Forced_reference_recovery_leaves_an_untriggered_decision_unchanged()
-    {
-        // Without a gate-rejected no-op the recovery option changes no action and no
-        // certificate content. The configuration hash differs by construction and is
-        // bound into the state hashes, so those are not compared.
-        var commitment = DeadlineCommitmentConfiguration(slackMs: 3_600_000);
-        var failClosed = CreateSession(
-            HardVectorConfiguration(commitment, recovery: null),
-            commitmentConfiguration: commitment);
-        var recovering = CreateSession(
-            HardVectorConfiguration(commitment, recovery: "forced-reference-v1"),
-            commitmentConfiguration: commitment);
-
-        var expected = DecisionPayloadCodec.Decode(
-            DriftBookedRider(failClosed, progressPermille: 1).Payload).Value!;
-        var actual = DecisionPayloadCodec.Decode(
-            DriftBookedRider(recovering, progressPermille: 1).Payload).Value!;
-
-        Assert.True(actual.Certificate.Body!.NormalOperation);
-        Assert.Empty(actual.Certificate.Body.Witnesses);
-        Assert.Equal(
-            expected.Certificate.Body!.PublicationIds,
-            actual.Certificate.Body.PublicationIds);
-        Assert.Equal(expected.ReasonCode, actual.ReasonCode);
-        Assert.Equal(expected.Solver.Status, actual.Solver.Status);
-        Assert.Equal(
-            expected.Actions.Select(value => value.GetRawText()),
-            actual.Actions.Select(value => value.GetRawText()));
-    }
-
-    [Fact]
-    public void No_worse_recovery_extends_forced_reference_and_keeps_a_lone_kept_route()
-    {
-        // With one booked rider and no other candidate, no-worse recovery has nothing to relax:
-        // the decision is the kept route, exactly as under forced-reference-v1, and it restores.
-        var commitment = DeadlineCommitmentConfiguration(slackMs: 1);
-        var configuration = HardVectorConfiguration(
-            commitment,
-            recovery: "no-worse-than-reference-v1");
-        Assert.True(configuration.SolverPolicyOptions!.ForcedReferenceRecovery);
-        Assert.True(configuration.SolverPolicyOptions.ForcedNoWorseRecovery);
-        Assert.False(
-            HardVectorConfiguration(commitment, recovery: "forced-reference-v1")
-                .SolverPolicyOptions!.ForcedNoWorseRecovery);
-
-        var setup = CreateSession(configuration, commitmentConfiguration: commitment);
-        var decision = DecisionPayloadCodec.Decode(
-            DriftBookedRider(setup, progressPermille: 1).Payload);
-
-        Assert.True(decision.IsSuccess, decision.Error?.Message);
-        var body = decision.Value!.Certificate.Body!;
-        Assert.False(body.NormalOperation);
-        Assert.Equal("forcedReference", Assert.Single(body.Witnesses).Stage);
-        _ = setup.Session.Process(
-            DecisionApplied(3, 1_050, decision.Value.DecisionHash.Value));
-        Assert.Equal(
-            RideBound.Domain.Incidents.CommitmentBreachKind.ForcedReference,
-            Assert.Single(setup.Session.CommittedOnlineState!.Incidents.Breaches).Kind);
-
-        var checkpoint = setup.Session.Process(CheckpointRequest()).Response!;
-        var restored = CreateSession(configuration, commitmentConfiguration: commitment);
-        Assert.Equal(
-            "restore",
-            restored.Session.Process(RestoreRequest(checkpoint.Payload))
-                .Response?.MessageType.Value);
-    }
-
-    [Fact]
     public void A_relaxed_deadline_keeps_the_late_route_as_normal_operation_without_recovery()
     {
-        // The scenario above: drift alone carries the booked rider past a one-millisecond
-        // deadline. The relaxed deadline is the later of that deadline and the kept route, so the
-        // kept route passes under every recovery setting, including fail-closed: the certificate is
-        // normal, no breach is recorded, and the fleet actions are those the strict deadline
-        // reaches only through a forced vehicle.
-        var strict = DeadlineCommitmentConfiguration(slackMs: 1);
-        var relaxed = DeadlineCommitmentConfiguration(slackMs: 1, relaxed: true);
-        Assert.True(relaxed.TryGetPolicy("uniform-v1", out var relaxedPolicy));
-        Assert.True(relaxedPolicy.DropEtaDeadlineRelaxed);
-        var forcedSetup = CreateSession(
-            HardVectorConfiguration(strict, recovery: "forced-reference-v1"),
-            commitmentConfiguration: strict);
-        var forced = DecisionPayloadCodec.Decode(
-            DriftBookedRider(forcedSetup, progressPermille: 1).Payload).Value!;
-        Assert.False(forced.Certificate.Body!.NormalOperation);
+        // Drift alone carries the booked rider past a one-millisecond deadline. The deadline is
+        // relaxed to the later of that deadline and the kept route, so the kept route passes: the
+        // certificate is normal and no breach is recorded.
+        var relaxed = DeadlineCommitmentConfiguration(slackMs: 1);
+        var setup = CreateSession(
+            HardVectorConfiguration(relaxed),
+            commitmentConfiguration: relaxed);
+        var response = DriftBookedRider(setup, progressPermille: 1);
 
-        foreach (var recovery in new string?[]
-                 {
-                     null,
-                     "forced-reference-v1",
-                     "no-worse-than-reference-v1",
-                 })
-        {
-            var setup = CreateSession(
-                HardVectorConfiguration(relaxed, recovery),
-                commitmentConfiguration: relaxed);
-            var response = DriftBookedRider(setup, progressPermille: 1);
-
-            Assert.Equal("decision", response.MessageType.Value);
-            var decision = DecisionPayloadCodec.Decode(response.Payload);
-            Assert.True(decision.IsSuccess, decision.Error?.Message);
-            var body = decision.Value!.Certificate.Body!;
-            Assert.True(body.NormalOperation);
-            Assert.Empty(body.Witnesses);
-            Assert.Equal(forced.Certificate.Body.PublicationIds, body.PublicationIds);
-            Assert.Equal(
-                forced.Actions.Select(value => value.GetRawText()),
-                decision.Value.Actions.Select(value => value.GetRawText()));
-            _ = setup.Session.Process(
-                DecisionApplied(3, 1_050, decision.Value.DecisionHash.Value));
-            Assert.Empty(setup.Session.CommittedOnlineState!.Incidents.Breaches);
-        }
+        Assert.Equal("decision", response.MessageType.Value);
+        var decision = DecisionPayloadCodec.Decode(response.Payload);
+        Assert.True(decision.IsSuccess, decision.Error?.Message);
+        var body = decision.Value!.Certificate.Body!;
+        Assert.True(body.NormalOperation);
+        Assert.Empty(body.Witnesses);
+        _ = setup.Session.Process(
+            DecisionApplied(3, 1_050, decision.Value.DecisionHash.Value));
+        Assert.Empty(setup.Session.CommittedOnlineState!.Incidents.Breaches);
     }
 
     [Fact]
@@ -912,29 +695,8 @@ public sealed class Wp4RunnerIntegrationTests
             Encoding.UTF8.GetBytes(batch.ToJsonString())).Response!;
     }
 
-    private static byte[] TimerTick(long epoch, long sequence, long simTime) =>
-        Encoding.UTF8.GetBytes(
-            $$"""
-            {
-              "schemaVersion":"1.0.0",
-              "messageType":"eventBatch",
-              "runId":"wp2-run-001",
-              "scenarioId":"wp2-two-epoch-small",
-              "epochId":{{epoch}},
-              "simTimeMs":{{simTime}},
-              "payload":{"events":[
-                {
-                  "eventSeq":{{sequence}},
-                  "eventType":"timerTick",
-                  "payload":{ }
-                }
-              ]}
-            }
-            """);
-
-    private static CommitmentPolicyConfiguration DeadlineCommitmentConfiguration(
-        long slackMs,
-        bool relaxed = false)
+    /// <summary>The archived commitment file with a relaxed drop deadline of <paramref name="slackMs"/>.</summary>
+    private static CommitmentPolicyConfiguration DeadlineCommitmentConfiguration(long slackMs)
     {
         var json = JsonNode.Parse(File.ReadAllText(Path.Combine(
             RepositoryRoot(),
@@ -942,11 +704,7 @@ public sealed class Wp4RunnerIntegrationTests
             "configurations",
             "wp3-boundary-test-v1.json")))!;
         json["policies"]![0]!["dropEtaDeadlineSlackMs"] = slackMs;
-
-        if (relaxed)
-        {
-            json["policies"]![0]!["dropEtaDeadlineRelaxed"] = true;
-        }
+        json["policies"]![0]!["dropEtaDeadlineRelaxed"] = true;
 
         return CommitmentPolicyConfiguration.Decode(
             Encoding.UTF8.GetBytes(json.ToJsonString()));
@@ -954,22 +712,19 @@ public sealed class Wp4RunnerIntegrationTests
 
     private static Wp4RunnerConfiguration HardVectorConfiguration(
         CommitmentPolicyConfiguration commitment,
-        string? recovery)
+        string recovery = "no-worse-than-reference-v1")
     {
         var json = JsonNode.Parse(File.ReadAllText(Path.Combine(
             RepositoryRoot(),
             "benchmarks",
             "configurations",
             "wp7-fleetpy-ridebound-hard-vector-v1.json")))!;
-        // The archived file has no order key, which selected the removed stability-first ranking, and no lateBoarding
-        // key, which selected the removed late-boarding rejection.
+        // The archived file has no order key, which selected the removed stability-first ranking, no lateBoarding
+        // key, which selected the removed late-boarding rejection, and no commitmentRecovery key, which selected the
+        // removed fail-closed recovery mode.
         json["selectionObjectiveOrder"] = "cost-first";
         json["lateBoarding"] = "record-v1";
-
-        if (recovery is not null)
-        {
-            json["commitmentRecovery"] = recovery;
-        }
+        json["commitmentRecovery"] = recovery;
 
         return Wp4RunnerConfiguration.Decode(
             Encoding.UTF8.GetBytes(json.ToJsonString()),

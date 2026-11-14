@@ -1,4 +1,3 @@
-using System.Collections.Frozen;
 using System.Security.Cryptography;
 using System.Text;
 using RideBound.Algorithms.Candidates;
@@ -43,54 +42,22 @@ public sealed record SolverBackedRidePoolingPolicyOptions
 {
     public SolverBackedRidePoolingPolicyOptions(
         RidePoolingPolicyKind policyKind,
-        DeterministicCandidateSelectionExecutionBudget executionBudget,
-        bool forcedReferenceRecovery = false,
-        bool forcedNoWorseRecovery = false)
+        DeterministicCandidateSelectionExecutionBudget executionBudget)
     {
         ArgumentNullException.ThrowIfNull(executionBudget);
-
-        if (forcedNoWorseRecovery && !forcedReferenceRecovery)
-        {
-            throw new ArgumentException(
-                "No-worse recovery extends forced-reference recovery, so it requires it.");
-        }
 
         if (!Enum.IsDefined(policyKind))
         {
             throw new ArgumentOutOfRangeException(nameof(policyKind));
         }
 
-        if (forcedReferenceRecovery
-            && policyKind is not RidePoolingPolicyKind.RideBoundHardVector)
-        {
-            throw new ArgumentException(
-                "Forced-reference recovery is only valid for the C1 and C2 policies.");
-        }
-
         PolicyKind = policyKind;
         ExecutionBudget = executionBudget;
-        ForcedReferenceRecovery = forcedReferenceRecovery;
-        ForcedNoWorseRecovery = forcedNoWorseRecovery;
     }
 
     public RidePoolingPolicyKind PolicyKind { get; }
 
     public DeterministicCandidateSelectionExecutionBudget ExecutionBudget { get; }
-
-    /// <summary>
-    /// Exploratory (ADR-075, off by default). A C1 vehicle whose safety no-op is
-    /// rejected only by a deadline or budget gate keeps its route as a forced
-    /// option, and the kept route is recorded as a typed breach instead of failing
-    /// the run.
-    /// </summary>
-    public bool ForcedReferenceRecovery { get; }
-
-    /// <summary>
-    /// Exploratory no-worse-than-reference extension of <see cref="ForcedReferenceRecovery"/>
-    /// (off by default): a forced vehicle may also choose a changed route that makes none of the
-    /// kept route's gate overruns worse, so it can still serve a new rider.
-    /// </summary>
-    public bool ForcedNoWorseRecovery { get; }
 }
 
 public sealed record SolverBackedPolicyDecision(
@@ -187,7 +154,6 @@ public sealed class SolverBackedRidePoolingPolicy
         var validationWorkUnits = 0L;
         var effectivePolicies = context.Policies;
         var profile = SolverBackedObjectiveProfile.RollingCost;
-        IReadOnlySet<VehicleId>? forcedReferenceVehicles = null;
 
         switch (policyOptions.PolicyKind)
         {
@@ -196,9 +162,7 @@ public sealed class SolverBackedRidePoolingPolicy
                     var assessed = _hardAssessor.AssessAndFilter(
                         context,
                         candidates,
-                        requireSafetyNoOp: true,
-                        forcedReferenceRecovery: policyOptions.ForcedReferenceRecovery,
-                        forcedNoWorse: policyOptions.ForcedNoWorseRecovery);
+                        requireSafetyNoOp: true);
 
                     if (!assessed.IsSuccess)
                     {
@@ -207,9 +171,6 @@ public sealed class SolverBackedRidePoolingPolicy
 
                     candidates = assessed.Batch!.FeasibleCandidateSets;
                     hardAssessments = assessed.Batch.Assessments;
-                    forcedReferenceVehicles = assessed.Batch.ForcedReferenceVehicles.Count == 0
-                        ? null
-                        : assessed.Batch.ForcedReferenceVehicles;
                     validationWorkUnits = CountCandidates(
                         generated.VehicleCandidates!);
                     profile = SolverBackedObjectiveProfile.HardVector;
@@ -236,9 +197,7 @@ public sealed class SolverBackedRidePoolingPolicy
             candidates,
             effectivePolicies,
             _commitmentValidator,
-            _physicalValidator,
-            forcedReferenceVehicles,
-            policyOptions.ForcedNoWorseRecovery);
+            _physicalValidator);
         var selected = _selector.Select(
             candidates,
             profile,
@@ -267,35 +226,9 @@ public sealed class SolverBackedRidePoolingPolicy
         {
             SelectionExecution = selected.Selection.Execution,
             GenerationDiagnostics = generated.Diagnostics,
-            ForcedReferenceVehicles = SelectedForcedVehicles(
-                selected.Selection.Selection,
-                hardAssessments,
-                forcedReferenceVehicles),
         };
         return SolverBackedPolicyDecisionResult.Success(
             new SolverBackedPolicyDecision(decision, effectivePolicies));
-    }
-
-    /// <summary>
-    /// The vehicles whose selected plan is a forced option (the kept no-op or, under no-worse
-    /// recovery, a changed route); null when none is, so a run without a forced selection
-    /// carries exactly the decision it had before.
-    /// </summary>
-    private static IReadOnlySet<VehicleId>? SelectedForcedVehicles(
-        FleetSelection selection,
-        IReadOnlyDictionary<string, HardVectorCandidateAssessment>? hardAssessments,
-        IReadOnlySet<VehicleId>? forcedReferenceVehicles)
-    {
-        if (forcedReferenceVehicles is null || hardAssessments is null)
-        {
-            return null;
-        }
-
-        var selected = selection.VehiclePlans
-            .Where(value => hardAssessments[value.Candidate.CandidateId].IsForcedReference)
-            .Select(value => value.VehicleId)
-            .ToFrozenSet();
-        return selected.Count == 0 ? null : selected;
     }
 
     private static DomainResult<CandidateSelectionPreSolveAccounting>
@@ -391,9 +324,7 @@ public sealed class SolverBackedRidePoolingPolicy
         IReadOnlyList<VehicleCandidateSet> candidates,
         ICommitmentPolicyProvider effectivePolicies,
         CommitmentDecisionValidator commitmentValidator,
-        PhysicalPlanValidator physicalValidator,
-        IReadOnlySet<VehicleId>? forcedReferenceVehicles,
-        bool forcedNoWorse) : IFleetSelectionValidator
+        PhysicalPlanValidator physicalValidator) : IFleetSelectionValidator
     {
         public CandidateSelectionValidationResult Validate(FleetSelection selection)
         {
@@ -430,9 +361,7 @@ public sealed class SolverBackedRidePoolingPolicy
                     context.StopDistances,
                     context.PublicationScope,
                     context.SourceEventSequence,
-                    RevisionReasonCode: "WP4_SOLVER_SELECTION",
-                    ForcedReferenceVehicles: forcedReferenceVehicles,
-                    ForcedNoWorse: forcedNoWorse));
+                    RevisionReasonCode: "WP4_SOLVER_SELECTION"));
             return validated.IsValid
                 ? CandidateSelectionValidationResult.Valid()
                 : CandidateSelectionValidationResult.Invalid(

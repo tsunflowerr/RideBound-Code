@@ -442,12 +442,6 @@ internal static class OnlineStateReferenceCanonicalizer
                 case CommitmentBreachKind.ExogenousServiceQuality:
                     writer.WriteString("kind", "exogenousServiceQuality");
                     break;
-                case CommitmentBreachKind.ForcedReference:
-                    writer.WriteString("kind", "forcedReference");
-                    break;
-                case CommitmentBreachKind.ForcedNoWorse:
-                    writer.WriteString("kind", "forcedNoWorse");
-                    break;
                 default:
                     throw new InvalidOperationException("Unknown commitment breach kind.");
             }

@@ -25,7 +25,7 @@ public sealed class CommitmentRelaxedDeadlineLockTests
     private static readonly StopId DropStop = new("stop-drop");
 
     [Theory]
-    // The kept route is inside the deadline: the relaxed rule is the strict one.
+    // The kept route is inside the deadline: only the deadline counts.
     [InlineData(Anchor, Anchor, false)]
     [InlineData(Anchor, Deadline, false)]
     [InlineData(Anchor, Deadline + 1, true)]
@@ -80,61 +80,10 @@ public sealed class CommitmentRelaxedDeadlineLockTests
     [InlineData(10 * Slack)]
     public void The_kept_route_never_trips_a_relaxed_deadline(long drift)
     {
-        // The strict deadline rejects the same kept route as soon as drift exceeds the
-        // slack, which is what makes a vehicle forced under recovery.
         var kept = Projection(Anchor + drift);
 
         Assert.Empty(Evaluate(RelaxedPolicy(Slack), kept, kept));
         Assert.Empty(Evaluate(RelaxedPolicy(0), kept, kept));
-        Assert.Equal(drift > Slack ? 1 : 0, Evaluate(StrictPolicy(Slack), kept, kept).Count);
-    }
-
-    [Fact]
-    public void Without_drift_past_the_deadline_the_relaxed_and_strict_rules_agree()
-    {
-        foreach (var exogenous in new[] { Anchor - Slack, Anchor, Deadline - 1, Deadline })
-        {
-            for (var candidate = Anchor - 2 * Slack; candidate <= Anchor + 3 * Slack; candidate += 7_500)
-            {
-                Assert.Equal(
-                    Evaluate(StrictPolicy(Slack), Projection(exogenous), Projection(candidate)),
-                    Evaluate(RelaxedPolicy(Slack), Projection(exogenous), Projection(candidate)));
-            }
-        }
-    }
-
-    [Fact]
-    public void The_relaxed_rule_equals_the_strict_rule_with_a_no_worse_exemption_for_the_kept_route()
-    {
-        // Per rider, strict + no-worse-than-reference recovery accepts a candidate when the
-        // strict deadline passes, or when the kept route also fails it and the candidate is
-        // no later than the kept route. The relaxed rule accepts exactly that set.
-        var times = new long[]
-        {
-            Anchor - Slack, Anchor, Deadline - 1, Deadline, Deadline + 1,
-            Deadline + 2, Deadline + 5_000, Deadline + 5_001, Deadline + 60_000,
-        };
-
-        foreach (var exogenous in times)
-        {
-            var keptFails = Evaluate(StrictPolicy(Slack), Projection(exogenous), Projection(exogenous))
-                .Any(value => value.Rule == CommitmentLockEvaluator.DeadlineCapRule);
-
-            foreach (var candidate in times)
-            {
-                var strictPasses = Evaluate(
-                    StrictPolicy(Slack),
-                    Projection(exogenous),
-                    Projection(candidate)).Count == 0;
-                var noWorse = strictPasses || keptFails && candidate <= exogenous;
-                var relaxedPasses = Evaluate(
-                    RelaxedPolicy(Slack),
-                    Projection(exogenous),
-                    Projection(candidate)).Count == 0;
-
-                Assert.Equal(noWorse, relaxedPasses);
-            }
-        }
     }
 
     [Fact]
@@ -183,11 +132,7 @@ public sealed class CommitmentRelaxedDeadlineLockTests
             policy,
             Projection(Anchor));
 
-    private static CommitmentPolicy RelaxedPolicy(long slack) => Policy(slack, relaxed: true);
-
-    private static CommitmentPolicy StrictPolicy(long slack) => Policy(slack, relaxed: false);
-
-    private static CommitmentPolicy Policy(long slack, bool relaxed) =>
+    private static CommitmentPolicy RelaxedPolicy(long slack) =>
         new(
             "policy-1",
             CommitmentDimensionVocabulary.Ordered.Select(
@@ -196,8 +141,7 @@ public sealed class CommitmentRelaxedDeadlineLockTests
                     null,
                     CommitmentPhase.AllActive)),
             new MaterialRevisionRule(1, null),
-            dropEtaDeadlineSlack: new Duration(slack),
-            dropEtaDeadlineRelaxed: relaxed);
+            dropEtaDeadlineSlack: new Duration(slack));
 
     private static RideRequest WaitingRequest()
     {

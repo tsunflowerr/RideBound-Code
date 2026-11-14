@@ -11,8 +11,8 @@ public sealed record CommitmentLockWitness(
 public sealed class CommitmentLockEvaluator
 {
     /// <summary>
-    /// Rule of a drop ETA later than the initial promise plus the slack (and, for a
-    /// relaxed deadline, also later than the exogenous projection).
+    /// Rule of a drop ETA later than both the initial promise plus the slack and the
+    /// exogenous projection.
     /// </summary>
     public const string DeadlineCapRule = "deadline_cap";
 
@@ -158,11 +158,10 @@ public sealed class CommitmentLockEvaluator
     /// <summary>
     /// Every lock above compares the candidate with the exogenous projection, so
     /// exogenous drift never trips a lock. The deadline compares it with the
-    /// rider's initial promise instead, so drift alone can trip it, including on
-    /// the safety no-op. It is a gate that lives next to the locks, not a lock.
-    /// A relaxed deadline also requires the candidate to be later than the
-    /// exogenous projection, so it fails only past max(initial + slack, kept route)
-    /// and drift alone never trips it.
+    /// rider's initial promise instead. It is a gate that lives next to the locks,
+    /// not a lock. The deadline is relaxed: it also requires the candidate to be
+    /// later than the exogenous projection, so it fails only past
+    /// max(initial + slack, kept route) and drift alone never trips it.
     /// </summary>
     private static void AddDeadlineWitness(
         ICollection<CommitmentLockWitness> witnesses,
@@ -196,16 +195,12 @@ public sealed class CommitmentLockEvaluator
         // difference fits in a long.
         var shift = candidate.DropEta.Milliseconds - anchor.DropEta.Milliseconds;
 
-        if (shift > slack.Milliseconds)
+        // The kept route has candidate == exogenous, so the deadline never rejects it.
+        if (shift > slack.Milliseconds
+            && candidate.DropEta.Milliseconds > exogenous.DropEta.Milliseconds)
         {
-            // The kept route has candidate == exogenous, so a relaxed deadline never
-            // rejects it and never makes a vehicle forced.
-            if (!policy.DropEtaDeadlineRelaxed
-                || candidate.DropEta.Milliseconds > exogenous.DropEta.Milliseconds)
-            {
-                witnesses.Add(
-                    new CommitmentLockWitness(request.Id, "drop_eta_ms", DeadlineCapRule));
-            }
+            witnesses.Add(
+                new CommitmentLockWitness(request.Id, "drop_eta_ms", DeadlineCapRule));
         }
     }
 

@@ -49,20 +49,6 @@ public sealed class WaitingRiderRelocationValidatorTests
     }
 
     [Fact]
-    public void A_move_touching_a_forced_reference_vehicle_breaks_the_boundary()
-    {
-        foreach (var forced in new[] { Donor, Receiver })
-        {
-            var result = new CommitmentDecisionValidator().Validate(
-                Moved(Decision(Policy(relocation: true)))
-                    with { ForcedReferenceVehicles = new HashSet<VehicleId> { forced } });
-
-            Assert.False(result.IsValid);
-            Assert.Equal("COMMITMENT_STATE_BOUNDARY_MISMATCH", Assert.Single(result.Witnesses).Code);
-        }
-    }
-
-    [Fact]
     public void A_move_that_delays_the_pickup_fails_the_ratchet_and_an_earlier_one_passes()
     {
         // A 1 ms dwell before the pickup on v-2 makes the pickup 1 ms later than the kept route.

@@ -224,195 +224,6 @@ public sealed class OperationalIncidentLedgerTests
     }
 
     [Fact]
-    public void Forced_reference_breach_charges_the_visible_delta_and_needs_no_incident()
-    {
-        var drift = CommitmentTestData.Vector(CommitmentDimension.DropEtaTotalMs, 40);
-        var breach = ForcedReference(
-            new ThreeWayPromiseDelta(drift, CommitmentVector.Zero, drift),
-            before: 25,
-            after: 65,
-            [CommitmentFailureCodes.BudgetExceeded]);
-
-        var appended = OperationalIncidentLedger.Empty.AppendBreach(breach);
-
-        Assert.True(appended.IsSuccess, appended.Failure?.Message);
-        var stored = Assert.Single(appended.Ledger!.Breaches);
-        Assert.Equal(CommitmentBreachKind.ForcedReference, stored.Kind);
-        Assert.Null(stored.IncidentId);
-        Assert.Empty(stored.ServiceQualityWitnesses);
-        Assert.Equal(65, stored.AttemptedBudgetAfter.DropEtaTotalMs);
-        Assert.False(stored.NormalOperation);
-    }
-
-    [Fact]
-    public void Forced_reference_breach_accepts_exactly_the_two_basis_charges()
-    {
-        // The record names no basis: the kept route is charged nothing (the decision delta) or
-        // the visible drift. Any other charge is refused.
-        var drift = CommitmentTestData.Vector(CommitmentDimension.DropEtaTotalMs, 40);
-        var deltas = new ThreeWayPromiseDelta(drift, CommitmentVector.Zero, drift);
-
-        var decisionBasis = ForcedReference(
-            deltas,
-            before: 25,
-            after: 25,
-            [CommitmentFailureCodes.DeadlineExceeded]);
-        var visibleBasis = ForcedReference(
-            deltas,
-            before: 25,
-            after: 65,
-            [CommitmentFailureCodes.DeadlineExceeded]);
-
-        Assert.Equal(25, decisionBasis.AttemptedBudgetAfter.DropEtaTotalMs);
-        Assert.Equal(65, visibleBasis.AttemptedBudgetAfter.DropEtaTotalMs);
-        Assert.Throws<ArgumentException>(
-            () => ForcedReference(
-                deltas,
-                before: 25,
-                after: 26,
-                [CommitmentFailureCodes.DeadlineExceeded]));
-    }
-
-    [Fact]
-    public void Forced_reference_breach_rejects_a_phase_lock_and_a_differing_kept_projection()
-    {
-        // A lock compares with the exogenous projection, which a kept route equals, so a
-        // phase lock on a kept route would be a defect. The published projection must be
-        // the kept route's, which is the exogenous one.
-        var drift = CommitmentTestData.Vector(CommitmentDimension.DropEtaTotalMs, 40);
-        var deltas = new ThreeWayPromiseDelta(drift, CommitmentVector.Zero, drift);
-
-        Assert.Throws<ArgumentException>(
-            () => ForcedReference(deltas, 25, 25, [CommitmentFailureCodes.PhaseLock]));
-        Assert.Throws<ArgumentException>(
-            () => ForcedReference(
-                deltas,
-                25,
-                25,
-                [CommitmentFailureCodes.DeadlineExceeded],
-                keptRoute: CommitmentTestData.Projection(TestData.VehicleTwo)));
-    }
-
-    [Fact]
-    public void Forced_reference_breach_rejects_a_decision_delta_a_wrong_budget_and_foreign_codes()
-    {
-        var drift = CommitmentTestData.Vector(CommitmentDimension.DropEtaTotalMs, 40);
-        var decision = CommitmentTestData.Vector(CommitmentDimension.DropEtaTotalMs, 5);
-
-        // Keeping the route adds no decision-induced change.
-        Assert.Throws<ArgumentException>(
-            () => ForcedReference(
-                new ThreeWayPromiseDelta(drift, decision, drift),
-                25,
-                30,
-                [CommitmentFailureCodes.BudgetExceeded]));
-        // The budget must follow one of the two bases exactly.
-        Assert.Throws<ArgumentException>(
-            () => ForcedReference(
-                new ThreeWayPromiseDelta(drift, CommitmentVector.Zero, drift),
-                25,
-                50,
-                [CommitmentFailureCodes.BudgetExceeded]));
-        // With no decision change the visible delta is the exogenous one.
-        Assert.Throws<ArgumentException>(
-            () => ForcedReference(
-                new ThreeWayPromiseDelta(drift, CommitmentVector.Zero, decision),
-                25,
-                25,
-                [CommitmentFailureCodes.BudgetExceeded]));
-        // Only commitment-gate codes; a service-quality code belongs to the exogenous kind.
-        Assert.Throws<ArgumentException>(
-            () => ForcedReference(
-                new ThreeWayPromiseDelta(drift, CommitmentVector.Zero, drift),
-                25,
-                25,
-                [PhysicalViolationCodes.PickupWindow]));
-    }
-
-    [Fact]
-    public void Forced_reference_breach_identifier_is_unique_in_the_ledger()
-    {
-        var drift = CommitmentTestData.Vector(CommitmentDimension.DropEtaTotalMs, 40);
-        var breach = ForcedReference(
-            new ThreeWayPromiseDelta(drift, CommitmentVector.Zero, drift),
-            25,
-            25,
-            [CommitmentFailureCodes.DeadlineExceeded]);
-        var once = OperationalIncidentLedger.Empty.AppendBreach(breach).Ledger!;
-
-        Assert.Equal(
-            IncidentFailureCodes.DuplicateBreach,
-            once.AppendBreach(breach).Failure?.Code);
-    }
-
-    [Fact]
-    public void No_worse_breach_records_a_changed_route_of_the_same_vehicle_without_an_incident()
-    {
-        // Kept route drops at 20 000 ms; the changed route drops earlier, at 19 990 ms: 10 ms of
-        // decision-induced change on top of the 40 ms drift, charged under the visible basis.
-        var drift = CommitmentTestData.Vector(CommitmentDimension.DropEtaTotalMs, 40);
-        var decision = CommitmentTestData.Vector(CommitmentDimension.DropEtaTotalMs, 10);
-        var visible = CommitmentTestData.Vector(CommitmentDimension.DropEtaTotalMs, 30);
-        var breach = NoWorse(
-            new ThreeWayPromiseDelta(drift, decision, visible),
-            before: 25,
-            after: 55,
-            [CommitmentFailureCodes.DeadlineExceeded],
-            CommitmentTestData.Projection(dropEta: 19_990));
-
-        var appended = OperationalIncidentLedger.Empty.AppendBreach(breach);
-
-        Assert.True(appended.IsSuccess, appended.Failure?.Message);
-        var stored = Assert.Single(appended.Ledger!.Breaches);
-        Assert.Equal(CommitmentBreachKind.ForcedNoWorse, stored.Kind);
-        Assert.Null(stored.IncidentId);
-        Assert.False(stored.NormalOperation);
-        Assert.Equal(19_990, stored.SafetyProjection.DropEta.Milliseconds);
-    }
-
-    [Fact]
-    public void No_worse_breach_rejects_an_unchanged_route_and_another_vehicle()
-    {
-        var drift = CommitmentTestData.Vector(CommitmentDimension.DropEtaTotalMs, 40);
-        var deltas = new ThreeWayPromiseDelta(drift, CommitmentVector.Zero, drift);
-
-        // An unchanged route is a kept-route (ForcedReference) record, not a no-worse one.
-        Assert.Throws<ArgumentException>(
-            () => NoWorse(deltas, 25, 25, [CommitmentFailureCodes.DeadlineExceeded],
-                CommitmentTestData.Projection()));
-        // The changed route belongs to the same vehicle: a reassignment is never no-worse.
-        Assert.Throws<ArgumentException>(
-            () => NoWorse(deltas, 25, 25, [CommitmentFailureCodes.DeadlineExceeded],
-                CommitmentTestData.Projection(TestData.VehicleTwo, dropEta: 19_990)));
-    }
-
-    [Fact]
-    public void No_worse_breach_rejects_foreign_codes_and_a_charge_outside_both_bases()
-    {
-        var drift = CommitmentTestData.Vector(CommitmentDimension.DropEtaTotalMs, 40);
-        var deltas = new ThreeWayPromiseDelta(drift, CommitmentVector.Zero, drift);
-        var changed = CommitmentTestData.Projection(dropEta: 19_990);
-
-        Assert.Throws<ArgumentException>(
-            () => NoWorse(deltas, 25, 25, [CommitmentFailureCodes.PhaseLock], changed));
-        Assert.Throws<ArgumentException>(
-            () => NoWorse(deltas, 25, 26, [CommitmentFailureCodes.DeadlineExceeded], changed));
-    }
-
-    [Fact]
-    public void Projection_equality_is_field_by_field()
-    {
-        Assert.True(
-            CommitmentBreachRecord.ProjectionsEqual(
-                CommitmentTestData.Projection(),
-                CommitmentTestData.Projection()));
-        Assert.False(
-            CommitmentBreachRecord.ProjectionsEqual(
-                CommitmentTestData.Projection(),
-                CommitmentTestData.Projection(dropEta: 19_990)));
-    }
-
-    [Fact]
     public void A_late_pickup_is_after_the_window_and_recorded_once_per_rider()
     {
         var late = new ObservedLatePickup(
@@ -471,30 +282,20 @@ public sealed class OperationalIncidentLedgerTests
             6,
             new SimTime(1_500)).Ledger!;
         var operational = opened.AppendBreach(Breach(incidentId));
-        var drift = CommitmentTestData.Vector(CommitmentDimension.DropEtaTotalMs, 40);
-        var forced = operational.Ledger!.AppendBreach(
-            ForcedReference(
-                new ThreeWayPromiseDelta(drift, CommitmentVector.Zero, drift),
-                25,
-                25,
-                [CommitmentFailureCodes.DeadlineExceeded]));
-        var resolved = forced.Ledger!.Resolve(incidentId, 12, new SimTime(2_700)).Ledger!;
+        var exogenous = operational.Ledger!.AppendBreach(ExogenousBreach());
+        var resolved = exogenous.Ledger!.Resolve(incidentId, 12, new SimTime(2_700)).Ledger!;
 
         Assert.True(operational.IsSuccess, operational.Failure?.Message);
-        Assert.True(forced.IsSuccess, forced.Failure?.Message);
+        Assert.True(exogenous.IsSuccess, exogenous.Failure?.Message);
         Assert.Same(late, Assert.Single(opened.LatePickups));
         Assert.Same(late, Assert.Single(operational.Ledger.LatePickups));
-        Assert.Same(late, Assert.Single(forced.Ledger.LatePickups));
+        Assert.Same(late, Assert.Single(exogenous.Ledger.LatePickups));
         Assert.Same(late, Assert.Single(resolved.LatePickups));
         Assert.Equal(2, resolved.Breaches.Count);
     }
 
-    private static CommitmentBreachRecord ForcedReference(
-        ThreeWayPromiseDelta deltas,
-        long before,
-        long after,
-        IEnumerable<string> witnessCodes,
-        PromiseProjection? keptRoute = null)
+    /// <summary>An exogenous service-quality breach (no incident), as in the test above.</summary>
+    private static CommitmentBreachRecord ExogenousBreach()
     {
         var projection = CommitmentTestData.Projection();
         var previous = new PublishedPromise(
@@ -503,45 +304,31 @@ public sealed class OperationalIncidentLedgerTests
             new SimTime(1_000),
             projection);
 
-        return CommitmentBreachRecord.CreateForcedReference(
-            "forced-breach-1",
+        return CommitmentBreachRecord.CreateExogenousServiceQuality(
+            "exogenous-breach-1",
             TestData.RequestOne,
             previous,
             projection,
-            keptRoute ?? projection,
-            deltas,
-            CommitmentTestData.Vector(CommitmentDimension.DropEtaTotalMs, before),
-            CommitmentTestData.Vector(CommitmentDimension.DropEtaTotalMs, after),
-            witnessCodes,
-            11,
-            2,
-            new SimTime(2_000));
-    }
-
-    private static CommitmentBreachRecord NoWorse(
-        ThreeWayPromiseDelta deltas,
-        long before,
-        long after,
-        IEnumerable<string> witnessCodes,
-        PromiseProjection published)
-    {
-        var kept = CommitmentTestData.Projection();
-        var previous = new PublishedPromise(
-            new PromiseVersion(1),
-            1,
-            new SimTime(1_000),
-            kept);
-
-        return CommitmentBreachRecord.CreateForcedNoWorse(
-            "no-worse-breach-1",
-            TestData.RequestOne,
-            previous,
-            kept,
-            published,
-            deltas,
-            CommitmentTestData.Vector(CommitmentDimension.DropEtaTotalMs, before),
-            CommitmentTestData.Vector(CommitmentDimension.DropEtaTotalMs, after),
-            witnessCodes,
+            projection,
+            new ThreeWayPromiseDelta(
+                CommitmentVector.Zero,
+                CommitmentVector.Zero,
+                CommitmentVector.Zero),
+            CommitmentTestData.Vector(
+                CommitmentDimension.PickupEtaTotalMs,
+                7),
+            CommitmentTestData.Vector(
+                CommitmentDimension.PickupEtaTotalMs,
+                7),
+            [PhysicalViolationCodes.PickupWindow],
+            [
+                new ServiceQualityBreach(
+                    TestData.RequestOne,
+                    PhysicalViolationCodes.PickupWindow,
+                    "latestPickupMs",
+                    100,
+                    101),
+            ],
             11,
             2,
             new SimTime(2_000));

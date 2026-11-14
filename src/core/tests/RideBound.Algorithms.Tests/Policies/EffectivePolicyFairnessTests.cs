@@ -58,29 +58,6 @@ public sealed class EffectivePolicyFairnessTests
     }
 
     /// <summary>
-    /// The relaxed deadline (DL-HZ) is a research probe of the same kind, and the commitment
-    /// arms keep it as configured.
-    /// </summary>
-    [Theory]
-    [InlineData(RidePoolingPolicyKind.RideBoundHardVector)]
-    public void A_commitment_arm_keeps_a_relaxed_deadline(RidePoolingPolicyKind kind)
-    {
-        var policy = EffectivePolicyFor(
-            kind,
-            deadlineSlackMs: 30_000,
-            deadlineRelaxed: true);
-
-        Assert.True(policy.DropEtaDeadlineRelaxed);
-        Assert.Equal(
-            Fingerprint(
-                ConfiguredPolicy(
-                    DropEtaHardLimit,
-                    30_000,
-                    deadlineRelaxed: true)),
-            Fingerprint(policy));
-    }
-
-    /// <summary>
     /// A policy kind added later must make a deliberate choice. Landing in the default
     /// branch silently exempts the new arm from every limit — the exact failure mode
     /// that would make a published comparison unfair without any test going red.
@@ -107,7 +84,6 @@ public sealed class EffectivePolicyFairnessTests
                 policy.MaterialRevisionRule.DisplayBucketWidthMs?.ToString() ?? "none",
                 ((int)policy.FinalConfirmationLocks).ToString(),
                 policy.DropEtaDeadlineSlack?.Milliseconds.ToString() ?? "none",
-                policy.DropEtaDeadlineRelaxed.ToString(),
             }.Concat(
                 CommitmentDimensionVocabulary.Ordered.Select(
                     dimension => string.Join(
@@ -122,8 +98,7 @@ public sealed class EffectivePolicyFairnessTests
     private static CommitmentPolicy EffectivePolicyFor(
         RidePoolingPolicyKind kind,
         long? dropEtaHardLimit = DropEtaHardLimit,
-        long? deadlineSlackMs = null,
-        bool deadlineRelaxed = false)
+        long? deadlineSlackMs = null)
     {
         var request = AlgorithmTestData.PendingRequest("request-1");
         var unadvanced = AlgorithmTestData.CreateState(
@@ -144,8 +119,7 @@ public sealed class EffectivePolicyFairnessTests
             state.ExpectedInitialTravelTimeSnapshotHash);
         var configured = ConfiguredPolicy(
             dropEtaHardLimit,
-            deadlineSlackMs,
-            deadlineRelaxed);
+            deadlineSlackMs);
         var solverBudget = DeterministicSolverBudget.Create(1000, 1000, 1).Value!;
         var executionBudget =
             DeterministicCandidateSelectionExecutionBudget.Create(
@@ -175,8 +149,7 @@ public sealed class EffectivePolicyFairnessTests
 
     private static CommitmentPolicy ConfiguredPolicy(
         long? dropEtaHardLimit,
-        long? deadlineSlackMs = null,
-        bool deadlineRelaxed = false) =>
+        long? deadlineSlackMs = null) =>
         new(
             PolicyId,
             CommitmentDimensionVocabulary.Ordered.Select(
@@ -189,8 +162,7 @@ public sealed class EffectivePolicyFairnessTests
                         ? CommitmentPhase.WaitingPickup
                         : CommitmentPhase.AllActive)),
             new MaterialRevisionRule(1, 30_000),
-            dropEtaDeadlineSlack: deadlineSlackMs is long slack ? new Duration(slack) : null,
-            dropEtaDeadlineRelaxed: deadlineRelaxed);
+            dropEtaDeadlineSlack: deadlineSlackMs is long slack ? new Duration(slack) : null);
 
     /// <summary>
     /// The effective-policy decision is taken before the solver runs, so the cheapest

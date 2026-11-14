@@ -196,24 +196,24 @@ public sealed class SolverBackedFleetSelectionTests
     }
 
     /// <summary>
-    /// ADR-078. Vehicle 1 has only its forced no-op; vehicle 2 can serve the request for cost 20
-    /// (v2-dear) or for cost 10 (v2-cheap).
+    /// ADR-078. Vehicle 1 has only its no-op; vehicle 2 can serve the request for cost 20 (v2-dear) or for
+    /// cost 10 (v2-cheap).
     /// </summary>
     private static (VehicleCandidateSet[] Sets, Dictionary<string, HardVectorCandidateAssessment> Hard)
-        ForcedAndTwoPricedInsertions()
+        NoOpAndTwoPricedInsertions()
     {
         var request = new RequestId("request-1");
         var first = AlgorithmTestData.VehicleOne;
         var second = AlgorithmTestData.VehicleTwo;
-        var forced = Candidate("v1-forced", first, [], 0);
+        var only = Candidate("v1-noop", first, [], 0);
         var noOp = Candidate("v2-noop", second, [], 0);
         var dear = Candidate("v2-dear", second, [request], 20);
         var cheap = Candidate("v2-cheap", second, [request], 10);
         return (
-            [Set(first, forced), Set(second, noOp, dear, cheap)],
+            [Set(first, only), Set(second, noOp, dear, cheap)],
             new Dictionary<string, HardVectorCandidateAssessment>
             {
-                [forced.CandidateId] = new(forced.CandidateId, IsForcedReference: true),
+                [only.CandidateId] = new(only.CandidateId),
                 [noOp.CandidateId] = new(noOp.CandidateId),
                 [dear.CandidateId] = new(dear.CandidateId),
                 [cheap.CandidateId] = new(cheap.CandidateId),
@@ -223,48 +223,34 @@ public sealed class SolverBackedFleetSelectionTests
     [Fact]
     public void Cost_first_drops_only_the_utilization_and_revision_levels()
     {
-        // The C1 levels (cost-first, the only order): the forced level when a forced option
-        // exists, the accepted count, cost, then one candidate-id rank level per vehicle. There is
-        // no utilization or revision level.
-        var (sets, hard) = ForcedAndTwoPricedInsertions();
-        var unforcedHard = hard.ToDictionary(
-            value => value.Key,
-            value => value.Value with { IsForcedReference = false });
+        // The C1 levels (cost-first, the only order): the accepted count, cost, then one candidate-id rank level
+        // per vehicle. There is no utilization or revision level.
+        var (sets, hard) = NoOpAndTwoPricedInsertions();
 
-        var forced = Select(sets, SolverBackedObjectiveProfile.HardVector, hardAssessments: hard);
-        var unforced = Select(sets, SolverBackedObjectiveProfile.HardVector, hardAssessments: unforcedHard);
+        var result = Select(sets, SolverBackedObjectiveProfile.HardVector, hardAssessments: hard);
 
-        Assert.True(forced.IsSuccess, forced.Witness?.Message);
-        Assert.True(unforced.IsSuccess, unforced.Witness?.Message);
+        Assert.True(result.IsSuccess, result.Witness?.Message);
         CandidateSelectionObjectiveLevel[] levels =
         [
-            new("forced-reference-count", CandidateSelectionObjectiveSense.Minimize),
             new("accepted-request-count", CandidateSelectionObjectiveSense.Maximize),
             new("operational-cost", CandidateSelectionObjectiveSense.Minimize),
             new("candidate-id-rank:vehicle-1", CandidateSelectionObjectiveSense.Minimize),
             new("candidate-id-rank:vehicle-2", CandidateSelectionObjectiveSense.Minimize),
         ];
-        Assert.Equal(levels, forced.Selection!.Problem.ObjectiveLevels);
-        Assert.Equal(levels.Skip(1), unforced.Selection!.Problem.ObjectiveLevels);
+        Assert.Equal(levels, result.Selection!.Problem.ObjectiveLevels);
 
         // Each option's contribution on every level, in level order (options sorted by vehicle, then id).
-        static string[] Contributions(SolverBackedFleetSelectionResult result) =>
-            result.Selection!.Problem.Options
-                .Select(value => $"{value.OptionId}={string.Join(",", value.ObjectiveContributions)}")
-                .ToArray();
         Assert.Equal(
-            ["v1-forced=1,0,0,0,0", "v2-cheap=0,1,10,0,0", "v2-dear=0,1,20,0,1", "v2-noop=0,0,0,0,2"],
-            Contributions(forced));
-        Assert.Equal(
-            ["v1-forced=0,0,0,0", "v2-cheap=1,10,0,0", "v2-dear=1,20,0,1", "v2-noop=0,0,0,2"],
-            Contributions(unforced));
+            ["v1-noop=0,0,0,0", "v2-cheap=1,10,0,0", "v2-dear=1,20,0,1", "v2-noop=0,0,0,2"],
+            result.Selection.Problem.Options
+                .Select(value => $"{value.OptionId}={string.Join(",", value.ObjectiveContributions)}"));
 
-        // The cheaper plan wins; the forced vehicle keeps its only option.
+        // The cheaper plan wins; vehicle 1 keeps its only option.
         Assert.Equal(
-            ["v1-forced", "v2-cheap"],
-            forced.Selection.Selection.VehiclePlans.Select(value => value.Candidate.CandidateId));
-        Assert.Equal(1, forced.Selection.Selection.AcceptedRequestCount);
-        Assert.Equal(10, forced.Selection.Selection.OperationalCost);
+            ["v1-noop", "v2-cheap"],
+            result.Selection.Selection.VehiclePlans.Select(value => value.Candidate.CandidateId));
+        Assert.Equal(1, result.Selection.Selection.AcceptedRequestCount);
+        Assert.Equal(10, result.Selection.Selection.OperationalCost);
     }
 
     private static SolverBackedFleetSelectionResult Select(

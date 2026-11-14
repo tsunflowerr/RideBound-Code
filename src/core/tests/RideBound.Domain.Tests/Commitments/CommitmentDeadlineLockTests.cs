@@ -7,8 +7,9 @@ namespace RideBound.Domain.Tests.Commitments;
 
 /// <summary>
 /// Research probe for the deadline family. A deadline compares the candidate drop ETA
-/// with the rider's INITIAL promise, not with the exogenous projection, so exogenous
-/// drift alone can trip it on the safety no-op. Disabled unless a slack is configured.
+/// with the rider's INITIAL promise, not with the exogenous projection; it is relaxed, so
+/// a candidate must also be later than the exogenous projection to fail it (see
+/// CommitmentRelaxedDeadlineLockTests). Disabled unless a slack is configured.
 /// </summary>
 public sealed class CommitmentDeadlineLockTests
 {
@@ -68,20 +69,6 @@ public sealed class CommitmentDeadlineLockTests
         {
             Assert.Empty(witnesses);
         }
-    }
-
-    [Fact]
-    public void Drift_alone_trips_the_deadline_on_the_safety_no_op()
-    {
-        // The no-op keeps the route, so candidate == exogenous and the decision adds
-        // nothing. A lock never fires here; the deadline does, because the kept
-        // route already arrives later than the initial promise plus the slack.
-        var drifted = Projection(Anchor + Slack + 5_000);
-
-        var witnesses = Evaluate(Policy(Slack), drifted, drifted, Projection(Anchor));
-
-        var witness = Assert.Single(witnesses);
-        Assert.Equal("deadline_cap", witness.Rule);
     }
 
     [Fact]
