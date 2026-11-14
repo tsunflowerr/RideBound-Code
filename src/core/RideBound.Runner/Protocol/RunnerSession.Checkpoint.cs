@@ -156,7 +156,7 @@ public sealed partial class RunnerSession
                 envelope);
         }
 
-        _onlineCoordinator = new EventReductionCoordinator(state, CreateEventReducer());
+        _onlineCoordinator = new EventReductionCoordinator(state);
         _committedCanonical = new CanonicalStateBytes(state, restoredCanonical);
         _stagedCanonical = null;
         _appliedEpoch = checkpoint.Content.AppliedEpoch;

@@ -4,7 +4,6 @@ using RideBound.Algorithms.Policies;
 using RideBound.Application.Commitments;
 using RideBound.Application.Events;
 using RideBound.Application.Optimization;
-using RideBound.Application.State;
 using RideBound.Contracts.Protocol;
 using RideBound.Domain.Commitments;
 using RideBound.Runner.Mapping;
@@ -82,8 +81,7 @@ public sealed partial class RunnerSession
             _commitmentPolicies,
             _stopDistances,
             publicationScope,
-            sourceEventSequence,
-            InitialPromiseTrigger: _wp4Configuration.InitialPromiseTrigger);
+            sourceEventSequence);
 
         var solved = _solverBackedPolicy!.Decide(
             context,
@@ -124,7 +122,6 @@ public sealed partial class RunnerSession
                 _stopDistances,
                 publicationScope,
                 sourceEventSequence,
-                InitialPromiseTrigger: _wp4Configuration.InitialPromiseTrigger,
                 ForcedReferenceVehicles:
                     decision.Decision.ForcedReferenceVehicles,
                 ForcedNoWorse:
@@ -222,9 +219,7 @@ public sealed partial class RunnerSession
 
         var actions = OnlineDecisionActionMapper.Map(
                 decision.Decision,
-                beforeEventState,
-                _wp4Configuration.InitialPromiseTrigger
-                    == InitialPromiseTrigger.BookingConfirmation)
+                beforeEventState)
             .Concat(OnlineDecisionActionMapper.MapPublications(publications))
             .ToArray();
         var reasonCode = decision.Decision.RequestActions.Any(
@@ -249,10 +244,6 @@ public sealed partial class RunnerSession
             certificate,
             new SolverStatusShell(solverStatus));
     }
-
-    /// <summary>ADR-076: late boardings are recorded only when the WP4 configuration asks.</summary>
-    private EventReducer CreateEventReducer() =>
-        new(recordLatePickups: _wp4Configuration.RecordsLateBoarding);
 
     /// <summary>
     /// ADR-075: every decision that keeps a gate-rejected route is certified as

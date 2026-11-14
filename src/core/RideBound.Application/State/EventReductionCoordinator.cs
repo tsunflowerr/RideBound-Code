@@ -4,16 +4,13 @@ namespace RideBound.Application.State;
 
 public sealed class EventReductionCoordinator
 {
-    private readonly EventReducer _reducer;
+    private readonly EventReducer _reducer = new();
     private OnlineState? _pendingState;
 
-    public EventReductionCoordinator(
-        OnlineState initialState,
-        EventReducer? reducer = null)
+    public EventReductionCoordinator(OnlineState initialState)
     {
         ArgumentNullException.ThrowIfNull(initialState);
         CommittedState = initialState;
-        _reducer = reducer ?? new EventReducer();
     }
 
     public OnlineState CommittedState { get; private set; }

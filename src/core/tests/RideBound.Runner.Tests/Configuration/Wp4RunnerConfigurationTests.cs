@@ -2,7 +2,6 @@ using System.Reflection;
 using System.Text;
 using System.Text.Json.Nodes;
 using RideBound.Algorithms.Policies;
-using RideBound.Application.Commitments;
 using RideBound.Domain.Commitments;
 using RideBound.Runner.Configuration;
 using RideBound.Solvers.OrTools;
@@ -27,9 +26,6 @@ public sealed class Wp4RunnerConfigurationTests
 
         Assert.Equal(policyId, configuration.PolicyId);
         Assert.Equal("wp7-fleetpy-v1", configuration.PolicyVersion);
-        Assert.Equal(
-            InitialPromiseTrigger.BookingConfirmation,
-            configuration.InitialPromiseTrigger);
         Assert.NotEqual(
             configuration.ContentHash,
             configuration.BindToCommitmentConfiguration(
@@ -53,47 +49,10 @@ public sealed class Wp4RunnerConfigurationTests
             OrToolsCandidateSelectionSolver.AdapterVersion,
             "google-ortools-9.15.6755");
         Assert.NotNull(first.SolverPolicyOptions);
-        Assert.Equal(
-            InitialPromiseTrigger.BookingConfirmation,
-            first.InitialPromiseTrigger);
         Assert.Equal(first.ContentHash, second.ContentHash);
         Assert.NotEqual(first.ContentHash, binding);
         Assert.NotEqual(commitment.ContentHash, binding);
         Assert.Equal(64, binding.Value.Length);
-    }
-
-    [Fact]
-    public void An_absent_initial_promise_trigger_is_initial_acceptance_and_unknown_values_are_refused()
-    {
-        // The final configuration without initialPromiseTrigger, whose absence selects initial-acceptance.
-        var commitment = CommitmentConfiguration();
-        var portfolioJson = FinalJson(json => Assert.True(json.Remove("initialPromiseTrigger")));
-        var portfolio = Wp4RunnerConfiguration.Decode(
-            Encoding.UTF8.GetBytes(portfolioJson),
-            commitment);
-
-        Assert.Equal(
-            InitialPromiseTrigger.InitialAcceptance,
-            portfolio.InitialPromiseTrigger);
-
-        var unknown = portfolioJson.Replace(
-            "service-set-stability-portfolio-v1",
-            "unknown-retention",
-            StringComparison.Ordinal);
-        Assert.Contains(
-            "retentionStrategy",
-            Assert.Throws<InvalidDataException>(
-                () => Wp4RunnerConfiguration.Decode(
-                    Encoding.UTF8.GetBytes(unknown),
-                    commitment)).Message);
-
-        var unknownTrigger = Edit(portfolioJson, json => json["initialPromiseTrigger"] = "unknown-trigger");
-        Assert.Contains(
-            "initialPromiseTrigger",
-            Assert.Throws<InvalidDataException>(
-                () => Wp4RunnerConfiguration.Decode(
-                    Encoding.UTF8.GetBytes(unknownTrigger),
-                    commitment)).Message);
     }
 
     [Fact]
@@ -884,6 +843,112 @@ public sealed class Wp4RunnerConfigurationTests
                     commitment)).Message);
     }
 
+    [Fact]
+    public void The_removed_initial_acceptance_trigger_is_refused_with_a_pointer_to_the_archive()
+    {
+        const string refusal =
+            "WP4 initialPromiseTrigger must be 'booking-confirmation'. The initial-acceptance trigger, which "
+            + "'initial-acceptance' or an absent key selected: removed; see commit ebca912 (branch "
+            + "research/final-real-runs-2026-11-06)";
+        var commitment = CommitmentConfiguration();
+        static void Absent(JsonObject json) => Assert.True(json.Remove("initialPromiseTrigger"));
+        string Refused(string json) =>
+            Assert.Throws<InvalidDataException>(
+                () => Wp4RunnerConfiguration.Decode(Encoding.UTF8.GetBytes(json), commitment)).Message;
+        Assert.NotNull(Wp4RunnerConfiguration.Decode(Encoding.UTF8.GetBytes(FinalJson()), commitment));
+
+        // Files that were decoded before with initial-acceptance: the final C1 file with the value or without the key,
+        // and the archived boundary C1 file (no key) made cost-first with the portfolio retention.
+        Assert.Equal(refusal, Refused(FinalJson(json => json["initialPromiseTrigger"] = "initial-acceptance")));
+        Assert.Equal(refusal, Refused(FinalJson(Absent)));
+        Assert.Equal(
+            refusal,
+            Refused(Edit(
+                ArchivedCostFirst("wp4-ridebound-hard-vector-boundary-v1.json"),
+                json => json["candidateGeneration"]!["retentionStrategy"] = "service-set-stability-portfolio-v1")));
+
+        // An unknown value and a value that is not a string keep their own errors.
+        Assert.Equal(
+            "Unknown initialPromiseTrigger.",
+            Refused(FinalJson(json => json["initialPromiseTrigger"] = "unknown-trigger")));
+        Assert.Equal(
+            "'initialPromiseTrigger' must be a non-empty string.",
+            Refused(FinalJson(json => json["initialPromiseTrigger"] = 1)));
+
+        // The check runs last, so a file that any other check refuses keeps its message: here an unknown retention,
+        // the order check, and the solver adapter check, the last one before it.
+        Assert.Equal(
+            "Unknown candidate retentionStrategy.",
+            Refused(FinalJson(json =>
+            {
+                Absent(json);
+                json["candidateGeneration"]!["retentionStrategy"] = "unknown-retention";
+            })));
+        Assert.Equal(
+            StabilityFirstRefusal,
+            Refused(FinalJson(json =>
+            {
+                Absent(json);
+                Assert.True(json.Remove("selectionObjectiveOrder"));
+            })));
+        Assert.Equal(
+            $"solverExecution.adapterVersion must be '{OrToolsCandidateSelectionSolver.AdapterVersion}'.",
+            Refused(FinalJson(json =>
+            {
+                Absent(json);
+                json["solverExecution"]!["adapterVersion"] = "other-solver";
+            })));
+    }
+
+    [Fact]
+    public void The_removed_late_boarding_rejection_is_refused_with_a_pointer_to_the_archive()
+    {
+        const string refusal =
+            "WP4 lateBoarding must be 'record-v1'. The late-boarding rejection, which 'reject' or an absent key "
+            + "selected: removed; see commit ebca912 (branch research/final-real-runs-2026-11-06)";
+        var commitment = CommitmentConfiguration();
+        static void Absent(JsonObject json) => Assert.True(json.Remove("lateBoarding"));
+        string Refused(string json) =>
+            Assert.Throws<InvalidDataException>(
+                () => Wp4RunnerConfiguration.Decode(Encoding.UTF8.GetBytes(json), commitment)).Message;
+        Assert.NotNull(Wp4RunnerConfiguration.Decode(Encoding.UTF8.GetBytes(FinalJson()), commitment));
+
+        // Files that were decoded before with the rejection: the final C1 file with "reject" or without the key, and
+        // the archived C1 file (no key) made cost-first.
+        Assert.Equal(refusal, Refused(FinalJson(json => json["lateBoarding"] = "reject")));
+        Assert.Equal(refusal, Refused(FinalJson(Absent)));
+        Assert.Equal(refusal, Refused(Edit(ArchivedCostFirst("wp7-fleetpy-ridebound-hard-vector-v1.json"), Absent)));
+
+        // An unknown value and a value that is not a string keep their own errors.
+        Assert.Equal("Unknown lateBoarding.", Refused(FinalJson(json => json["lateBoarding"] = "record-v2")));
+        Assert.Equal(
+            "'lateBoarding' must be a non-empty string.",
+            Refused(FinalJson(json => json["lateBoarding"] = true)));
+
+        // The check runs last, after the trigger check, so a file that any other check refuses keeps its message.
+        Assert.Equal(
+            StabilityFirstRefusal,
+            Refused(FinalJson(json =>
+            {
+                Absent(json);
+                Assert.True(json.Remove("selectionObjectiveOrder"));
+            })));
+        Assert.Equal(
+            $"solverExecution.adapterVersion must be '{OrToolsCandidateSelectionSolver.AdapterVersion}'.",
+            Refused(FinalJson(json =>
+            {
+                Absent(json);
+                json["solverExecution"]!["adapterVersion"] = "other-solver";
+            })));
+        Assert.StartsWith(
+            "WP4 initialPromiseTrigger must be",
+            Refused(FinalJson(json =>
+            {
+                Absent(json);
+                json["initialPromiseTrigger"] = "initial-acceptance";
+            })));
+    }
+
     /// <summary>The refusal of every selectionObjectiveOrder other than cost-first, and of an absent key.</summary>
     private const string StabilityFirstRefusal =
         "WP4 selectionObjectiveOrder must be 'cost-first'. The stability-first ranking, which 'stability-first' or an "
@@ -1072,13 +1137,18 @@ public sealed class Wp4RunnerConfigurationTests
     }
 
     /// <summary>
-    /// An archived configuration file with `"selectionObjectiveOrder": "cost-first"` added, the only order the Runner
-    /// accepts (the archived files have no key, which used to select stability-first).
+    /// An archived configuration file with `"selectionObjectiveOrder": "cost-first"` and `"lateBoarding": "record-v1"`
+    /// added, the only values the Runner accepts (the archived files have neither key; an absent order key selected
+    /// stability-first, and an absent lateBoarding key the late-boarding rejection).
     /// </summary>
     private static string ArchivedCostFirst(string fileName) =>
         Edit(
             File.ReadAllText(Path.Combine(RepositoryRoot(), "benchmarks", "configurations", fileName)),
-            json => json["selectionObjectiveOrder"] = "cost-first");
+            json =>
+            {
+                json["selectionObjectiveOrder"] = "cost-first";
+                json["lateBoarding"] = "record-v1";
+            });
 
     private static CommitmentPolicyConfiguration CommitmentConfiguration() =>
         CommitmentPolicyConfiguration.Decode(

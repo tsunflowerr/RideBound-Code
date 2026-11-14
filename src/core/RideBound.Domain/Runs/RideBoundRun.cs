@@ -420,8 +420,7 @@ public sealed class RideBoundRun
         VehicleId vehicleId,
         RequestId requestId,
         PlanVersion planVersion,
-        SimTime pickupTime,
-        bool allowLatePickup = false)
+        SimTime pickupTime)
     {
         if (!TryGetRequestAndVehicle(
                 requestId,
@@ -433,7 +432,7 @@ public sealed class RideBoundRun
             return failure!;
         }
 
-        var boardedRequest = request!.Board(vehicleId, pickupTime, allowLatePickup);
+        var boardedRequest = request!.Board(vehicleId, pickupTime);
         var boardedVehicle = vehicle!.Board(
             requestId,
             request.PartySize,

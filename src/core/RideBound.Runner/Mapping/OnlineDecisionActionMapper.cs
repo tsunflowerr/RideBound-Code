@@ -14,8 +14,7 @@ public static class OnlineDecisionActionMapper
 {
     public static IReadOnlyList<JsonElement> Map(
         DispatchDecision decision,
-        OnlineState stateBeforeEvents,
-        bool includeEventInducedPlanUpdates)
+        OnlineState stateBeforeEvents)
     {
         ArgumentNullException.ThrowIfNull(decision);
         ArgumentNullException.ThrowIfNull(stateBeforeEvents);
@@ -31,13 +30,12 @@ public static class OnlineDecisionActionMapper
         foreach (var plan in decision.VehiclePlans
                      .Where(
                          value => !value.Candidate.IsNoOp
-                             || includeEventInducedPlanUpdates
-                             && (!stateBeforeEvents.Run.Vehicles.TryGetValue(
-                                     value.VehicleId,
-                                     out var priorVehicle)
-                                 || !RoutesEqual(
-                                     priorVehicle.Route,
-                                     value.Candidate.Route)))
+                             || !stateBeforeEvents.Run.Vehicles.TryGetValue(
+                                 value.VehicleId,
+                                 out var priorVehicle)
+                             || !RoutesEqual(
+                                 priorVehicle.Route,
+                                 value.Candidate.Route))
                      .OrderBy(
                          value => value.VehicleId.Value,
                          StringComparer.Ordinal))

@@ -54,16 +54,8 @@ public sealed record CommitmentValidationContext(
     long SourceEventSequence,
     string RevisionReasonCode = "ONLINE_REPLAN",
     VehicleId? ScopedVehicleId = null,
-    InitialPromiseTrigger InitialPromiseTrigger =
-        InitialPromiseTrigger.InitialAcceptance,
     IReadOnlySet<VehicleId>? ForcedReferenceVehicles = null,
     bool ForcedNoWorse = false);
-
-public enum InitialPromiseTrigger
-{
-    InitialAcceptance,
-    BookingConfirmation,
-}
 
 public enum CommitmentValidationStage
 {
@@ -259,24 +251,16 @@ public sealed class CommitmentDecisionValidator
 
             if (priorHistory is null)
             {
-                if (context.InitialPromiseTrigger
-                        == InitialPromiseTrigger.BookingConfirmation
-                    && request.Lifecycle == RequestLifecycle.Accepted)
+                if (request.Lifecycle == RequestLifecycle.Accepted)
                 {
                     // The assignment is still a provisional booking offer. It is
                     // physically validated but deliberately has no rider promise.
                     continue;
                 }
 
-                var opensAtAcceptance = context.InitialPromiseTrigger
-                        == InitialPromiseTrigger.InitialAcceptance
-                    && context.ReducedState.Run.Requests.TryGetValue(
-                        request.Id,
-                        out var reducedRequest)
-                    && reducedRequest.Lifecycle == RequestLifecycle.Pending;
-                var opensAtBooking = context.InitialPromiseTrigger
-                        == InitialPromiseTrigger.BookingConfirmation
-                    && request.Lifecycle is RequestLifecycle.WaitingPickup
+                // The first promise opens when the booking is confirmed: the rider was
+                // accepted before this batch and is now waiting or onboard.
+                var opensAtBooking = request.Lifecycle is RequestLifecycle.WaitingPickup
                         or RequestLifecycle.Onboard
                     && context.BeforeEventState.Run.Requests.TryGetValue(
                         request.Id,
@@ -288,7 +272,7 @@ public sealed class CommitmentDecisionValidator
                     && afterBooking.Lifecycle is RequestLifecycle.WaitingPickup
                         or RequestLifecycle.Onboard;
 
-                if (!opensAtAcceptance && !opensAtBooking)
+                if (!opensAtBooking)
                 {
                     return Invalid(
                         CommitmentValidationStage.Ledger,
@@ -307,9 +291,7 @@ public sealed class CommitmentDecisionValidator
                     candidateProjection.Value!,
                     context.CandidateState.Run.AppliedEpoch,
                     context.CandidateState.Run.SimulationTime,
-                    opensAtBooking
-                        ? "INITIAL_BOOKING_CONFIRMATION"
-                        : "INITIAL_ACCEPTANCE",
+                    "INITIAL_BOOKING_CONFIRMATION",
                     context.SourceEventSequence);
 
                 if (!opened.IsSuccess)

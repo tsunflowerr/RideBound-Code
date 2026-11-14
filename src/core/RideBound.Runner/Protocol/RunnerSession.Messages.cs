@@ -147,8 +147,7 @@ public sealed partial class RunnerSession
         _onlineCoordinator = new EventReductionCoordinator(
             OnlineState.Create(
                 run,
-                _identity.Manifest.TravelTimeSnapshotHash.Value),
-            CreateEventReducer());
+                _identity.Manifest.TravelTimeSnapshotHash.Value));
         _stagedCanonical = null;
 
         if (_lightAudit)

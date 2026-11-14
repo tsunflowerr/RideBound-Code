@@ -24,8 +24,7 @@ namespace RideBound.Application.Tests.Commitments;
 /// - jams: one step in three, every arc is 10x slower, so many kept drops end up past their first promise's
 ///   deadline (the case where a strict fence would reject the kept route);
 /// - late boardings: one boarding in three comes 1-60 min after the published pickup, often after the latest
-///   pickup of the booking window (boarded with <c>allowLatePickup</c>, as the final <c>lateBoarding: record-v1</c>
-///   does).
+///   pickup of the booking window (accepted, as under the final <c>lateBoarding: record-v1</c>).
 /// Early boarding is left out on purpose: a boarding earlier than the published pickup by more than the rest of the
 /// ride makes the projected drop precede the published pickup, which PromiseProjection refuses. That is a known
 /// limit of the frozen baseline, not part of this property.
@@ -64,8 +63,7 @@ public sealed class KeptRouteValidationPropertyTests
                     new CommitmentPolicyCatalog([policy]),
                     CommitmentValidatorFixtures.EmptyDistances.Instance,
                     $"kept-{seed}-{step}",
-                    state.NextEventSequence,
-                    InitialPromiseTrigger: InitialPromiseTrigger.BookingConfirmation));
+                    state.NextEventSequence));
 
                 Assert.True(
                     result.IsValid,
@@ -192,8 +190,7 @@ public sealed class KeptRouteValidationPropertyTests
             new CommitmentPolicyCatalog([policy]),
             CommitmentValidatorFixtures.EmptyDistances.Instance,
             "open",
-            2,
-            InitialPromiseTrigger: InitialPromiseTrigger.BookingConfirmation));
+            2));
         Assert.True(opened.IsValid, string.Join("; ", opened.Witnesses.Select(w => w.Message)));
         return WithShadowClasses(random, opened.ValidatedState!, opened.Publications);
     }
@@ -232,7 +229,7 @@ public sealed class KeptRouteValidationPropertyTests
                 var lateBy = random.Next(3) == 0 ? random.Next(1, 61) * 60_000L : 0;
                 now = Math.Max(now, publishedPickup + lateBy);
                 run = run.ReachStop(vehicle.Id, stop.StopId, vehicle.Route.Version, new NodePosition(stop.NodeId), run.AppliedEpoch).Value!;
-                var boarded = run.Board(vehicle.Id, rider.Id, vehicle.Route.Version, new SimTime(now), allowLatePickup: true);
+                var boarded = run.Board(vehicle.Id, rider.Id, vehicle.Route.Version, new SimTime(now));
                 Assert.True(boarded.IsSuccess, $"{rider.Id.Value} boards at {now} ms: {boarded.Failure?.Message}");
                 run = boarded.Value!;
                 seen.Boardings++;

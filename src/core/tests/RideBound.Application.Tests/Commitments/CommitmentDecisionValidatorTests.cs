@@ -278,9 +278,7 @@ public sealed class CommitmentDecisionValidatorTests
                 policies,
                 CommitmentValidatorFixtures.EmptyDistances.Instance,
                 "booking-offer-scope",
-                1,
-                InitialPromiseTrigger:
-                    InitialPromiseTrigger.BookingConfirmation));
+                1));
 
         Assert.True(offered.IsValid, offered.Witnesses.FirstOrDefault()?.Message);
         Assert.Empty(offered.Publications);
@@ -306,9 +304,7 @@ public sealed class CommitmentDecisionValidatorTests
                 policies,
                 CommitmentValidatorFixtures.EmptyDistances.Instance,
                 "booking-confirmation-scope",
-                2,
-                InitialPromiseTrigger:
-                    InitialPromiseTrigger.BookingConfirmation));
+                2));
 
         Assert.True(
             published.IsValid,
@@ -358,9 +354,7 @@ public sealed class CommitmentDecisionValidatorTests
                 fixture.Policies,
                 CommitmentValidatorFixtures.EmptyDistances.Instance,
                 "booking-and-boarding-scope",
-                4,
-                InitialPromiseTrigger:
-                    InitialPromiseTrigger.BookingConfirmation));
+                4));
 
         Assert.True(
             published.IsValid,
@@ -451,9 +445,7 @@ public sealed class CommitmentDecisionValidatorTests
             policies,
             CommitmentValidatorFixtures.EmptyDistances.Instance,
             "booking-offer-scope",
-            1,
-            InitialPromiseTrigger:
-                InitialPromiseTrigger.BookingConfirmation);
+            1);
 
         return new BookingOfferFixture(
             request,

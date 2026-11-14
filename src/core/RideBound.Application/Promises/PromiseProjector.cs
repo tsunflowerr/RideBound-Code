@@ -90,9 +90,9 @@ public sealed class PromiseProjector
             && request.ActualPickupTime is not null)
         {
             // Booking confirmation and boarding can legitimately be reduced in
-            // the same simulator batch. In booking-confirmation mode there is no
-            // prior publication yet, so recover the just-realized pickup from the
-            // executed frozen prefix and bind its actual service time.
+            // the same simulator batch. There is then no prior publication yet,
+            // so recover the just-realized pickup from the executed frozen
+            // prefix and bind its actual service time.
             var realizedPickup = route.FrozenPrefix
                 .Take(route.ExecutedStopCount)
                 .LastOrDefault(

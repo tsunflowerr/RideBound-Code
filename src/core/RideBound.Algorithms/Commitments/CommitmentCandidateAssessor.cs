@@ -11,9 +11,7 @@ public sealed record CommitmentMechanismContext(
     ICommitmentPolicyProvider Policies,
     IStopDistanceLookup StopDistances,
     string PublicationScope,
-    long SourceEventSequence,
-    InitialPromiseTrigger InitialPromiseTrigger =
-        InitialPromiseTrigger.InitialAcceptance);
+    long SourceEventSequence);
 
 /// <summary>
 /// A machine-readable assessment failure. The optional fields mirror the

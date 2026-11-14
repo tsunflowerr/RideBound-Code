@@ -3,7 +3,6 @@ using System.Text.Json;
 using RideBound.Algorithms.Candidates;
 using RideBound.Algorithms.Policies;
 using RideBound.Algorithms.Shareability;
-using RideBound.Application.Commitments;
 using RideBound.Application.Optimization;
 using RideBound.Contracts.Protocol;
 using RideBound.Contracts.Serialization;
@@ -70,12 +69,19 @@ public sealed class Wp4RunnerConfiguration
     public const string NoWorseRecovery = "no-worse-than-reference-v1";
 
     /// <summary>
-    /// ADR-076 (exploratory). Optional; omitted means a boarding after the latest pickup
-    /// fails the batch, as before. `record-v1` accepts it as a fact and records it. The
-    /// FleetPy adapter reads the same key and then leaves service windows to the Runner.
+    /// Required, and the only accepted value: a promise opens when the booking is confirmed. The initial-acceptance
+    /// trigger, which "initial-acceptance" or an absent key selected, is refused.
     /// </summary>
-    public const string RecordLateBoarding = "record-v1";
-    public const string RejectLateBoarding = "reject";
+    private const string BookingConfirmationTrigger = "booking-confirmation";
+    private const string InitialAcceptanceTrigger = "initial-acceptance";
+
+    /// <summary>
+    /// ADR-076. Required, and the only accepted value: a boarding after the latest pickup is accepted as a fact and
+    /// recorded. The late-boarding rejection, which "reject" or an absent key selected, is refused. The FleetPy
+    /// adapter reads the same key and then leaves service windows to the Runner.
+    /// </summary>
+    private const string RecordLateBoarding = "record-v1";
+    private const string RejectLateBoarding = "reject";
 
     /// <summary>
     /// ADR-089. `auditHash` omitted or `full-v1` hashes the whole canonical online state for every
@@ -151,10 +157,8 @@ public sealed class Wp4RunnerConfiguration
         Sha256Hex contentHash,
         string policyId,
         string policyVersion,
-        InitialPromiseTrigger initialPromiseTrigger,
         CandidateGenerationOptions candidateGeneration,
         SolverBackedRidePoolingPolicyOptions? solverPolicyOptions,
-        bool recordsLateBoarding,
         bool usesLightAuditHash,
         TravelTimeForecast? planningForecast,
         ShadowAllocationInputs? shadowAllocation)
@@ -164,10 +168,8 @@ public sealed class Wp4RunnerConfiguration
         ContentHash = contentHash;
         PolicyId = policyId;
         PolicyVersion = policyVersion;
-        InitialPromiseTrigger = initialPromiseTrigger;
         CandidateGeneration = candidateGeneration;
         SolverPolicyOptions = solverPolicyOptions;
-        RecordsLateBoarding = recordsLateBoarding;
         UsesLightAuditHash = usesLightAuditHash;
     }
 
@@ -177,14 +179,9 @@ public sealed class Wp4RunnerConfiguration
 
     public string PolicyVersion { get; }
 
-    public InitialPromiseTrigger InitialPromiseTrigger { get; }
-
     public CandidateGenerationOptions CandidateGeneration { get; }
 
     public SolverBackedRidePoolingPolicyOptions? SolverPolicyOptions { get; }
-
-    /// <summary>True only for `lateBoarding: record-v1` (ADR-076).</summary>
-    public bool RecordsLateBoarding { get; }
 
     /// <summary>True only for `auditHash: light-v1` (ADR-089).</summary>
     public bool UsesLightAuditHash { get; }
@@ -286,19 +283,13 @@ public sealed class Wp4RunnerConfiguration
                 "WP4 policyVersion must be an opaque protocol identifier.");
         }
 
-        var initialPromiseTrigger = root.TryGetProperty(
-            "initialPromiseTrigger",
-            out _)
-                ? Text(root, "initialPromiseTrigger") switch
-                {
-                    "initial-acceptance" =>
-                        InitialPromiseTrigger.InitialAcceptance,
-                    "booking-confirmation" =>
-                        InitialPromiseTrigger.BookingConfirmation,
-                    _ => throw new InvalidDataException(
-                        "Unknown initialPromiseTrigger."),
-                }
-                : InitialPromiseTrigger.InitialAcceptance;
+        // Here only an unknown value is refused; the removed initial-acceptance trigger and an absent key are refused
+        // at the end of Decode.
+        if (root.TryGetProperty("initialPromiseTrigger", out _)
+            && Text(root, "initialPromiseTrigger") is not (BookingConfirmationTrigger or InitialAcceptanceTrigger))
+        {
+            throw new InvalidDataException("Unknown initialPromiseTrigger.");
+        }
 
         var generation = ReadGeneration(root.GetProperty("candidateGeneration"));
         var hasSolver = root.TryGetProperty("solverExecution", out var solverElement);
@@ -330,16 +321,13 @@ public sealed class Wp4RunnerConfiguration
                 + "solver-backed C1 or C2 policy.");
         }
 
-        // A late boarding is an observation, not a policy decision, so every policy may
-        // record it; the arms of one comparison should share the same setting.
-        var recordsLateBoarding = root.TryGetProperty("lateBoarding", out _)
-            ? Text(root, "lateBoarding") switch
-            {
-                RejectLateBoarding => false,
-                RecordLateBoarding => true,
-                _ => throw new InvalidDataException("Unknown lateBoarding."),
-            }
-            : false;
+        // Here only an unknown value is refused; the removed late-boarding rejection and an absent key are refused at
+        // the end of Decode.
+        if (root.TryGetProperty("lateBoarding", out _)
+            && Text(root, "lateBoarding") is not (RecordLateBoarding or RejectLateBoarding))
+        {
+            throw new InvalidDataException("Unknown lateBoarding.");
+        }
 
         var usesLightAuditHash = root.TryGetProperty("auditHash", out _)
             ? Text(root, "auditHash") switch
@@ -487,14 +475,33 @@ public sealed class Wp4RunnerConfiguration
                 forcedNoWorseRecovery);
         }
 
+        // The initial-acceptance trigger is removed: a promise always opens at the booking confirmation, so
+        // initialPromiseTrigger must name it. An absent key selected initial-acceptance and is refused too. Checked
+        // last, so a file that any other check refuses keeps its message.
+        if (!root.TryGetProperty("initialPromiseTrigger", out var triggerElement)
+            || triggerElement.GetString() != BookingConfirmationTrigger)
+        {
+            throw new InvalidDataException(
+                $"WP4 initialPromiseTrigger must be '{BookingConfirmationTrigger}'. The initial-acceptance trigger, "
+                + $"which '{InitialAcceptanceTrigger}' or an absent key selected: {RemovedFeature}");
+        }
+
+        // The late-boarding rejection is removed: a late boarding is always recorded, so lateBoarding must be
+        // record-v1. An absent key selected the rejection and is refused too. Checked last, after the trigger.
+        if (!root.TryGetProperty("lateBoarding", out var lateElement)
+            || lateElement.GetString() != RecordLateBoarding)
+        {
+            throw new InvalidDataException(
+                $"WP4 lateBoarding must be '{RecordLateBoarding}'. The late-boarding rejection, "
+                + $"which '{RejectLateBoarding}' or an absent key selected: {RemovedFeature}");
+        }
+
         return new Wp4RunnerConfiguration(
             contentHash!,
             policyId,
             policyVersion,
-            initialPromiseTrigger,
             generation,
             solverOptions,
-            recordsLateBoarding,
             usesLightAuditHash,
             planningForecast,
             shadowAllocation);

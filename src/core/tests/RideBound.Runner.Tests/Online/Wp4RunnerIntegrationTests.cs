@@ -436,30 +436,13 @@ public sealed class Wp4RunnerIntegrationTests
     }
 
     [Fact]
-    public void A_late_boarding_is_rejected_by_default_and_recorded_with_record_v1()
+    public void A_late_boarding_is_recorded_and_survives_checkpoint_restore()
     {
-        // ADR-076. r-1 may be picked up in [1000, 2000] ms and boards at 2500 ms. By default
-        // the Runner rejects the observation, which is the Tier 2 "window-wall" death. With
-        // `lateBoarding: record-v1` the rider is onboard, the window is unchanged, the 500 ms
-        // gap is one record, and the record survives checkpoint/restore.
+        // ADR-076. r-1 may be picked up in [1000, 2000] ms and boards at 2500 ms. The rider is
+        // onboard, the window is unchanged, the 500 ms gap is one record, and the record
+        // survives checkpoint/restore.
         var commitment = CommitmentConfiguration();
-        var byDefault = CreateSession(
-            HardVectorConfiguration(commitment, recovery: null),
-            commitmentConfiguration: commitment);
-        var rejected = BoardBookedRider(byDefault, at: 2_500);
-        Assert.Equal("error", rejected.MessageType.Value);
-        Assert.Equal(
-            "SCHEMA_VALIDATION_FAILED",
-            rejected.Payload.GetProperty("code").GetString());
-        Assert.Equal(
-            "Actual pickup time must remain inside the accepted pickup window.",
-            rejected.Payload.GetProperty("message").GetString());
-
-        var configuration = HardVectorConfiguration(
-            commitment,
-            recovery: null,
-            lateBoarding: "record-v1");
-        Assert.True(configuration.RecordsLateBoarding);
+        var configuration = HardVectorConfiguration(commitment, recovery: null);
         var setup = CreateSession(configuration, commitmentConfiguration: commitment);
         var response = BoardBookedRider(setup, at: 2_500);
         var decision = DecisionPayloadCodec.Decode(response.Payload);
@@ -485,19 +468,6 @@ public sealed class Wp4RunnerIntegrationTests
         Assert.Equal(
             late,
             Assert.Single(restored.Session.CommittedOnlineState!.Incidents.LatePickups));
-    }
-
-    [Fact]
-    public void The_late_boarding_setting_accepts_only_its_two_values()
-    {
-        var commitment = CommitmentConfiguration();
-
-        Assert.False(
-            HardVectorConfiguration(commitment, recovery: null, lateBoarding: "reject")
-                .RecordsLateBoarding);
-        Assert.False(HardVectorConfiguration(commitment, recovery: null).RecordsLateBoarding);
-        Assert.Throws<InvalidDataException>(
-            () => HardVectorConfiguration(commitment, recovery: null, lateBoarding: "record-v2"));
     }
 
     [Fact]
@@ -1043,25 +1013,21 @@ public sealed class Wp4RunnerIntegrationTests
 
     private static Wp4RunnerConfiguration HardVectorConfiguration(
         CommitmentPolicyConfiguration commitment,
-        string? recovery,
-        string? lateBoarding = null)
+        string? recovery)
     {
         var json = JsonNode.Parse(File.ReadAllText(Path.Combine(
             RepositoryRoot(),
             "benchmarks",
             "configurations",
             "wp7-fleetpy-ridebound-hard-vector-v1.json")))!;
-        // The archived file has no order key, which selected the removed stability-first ranking.
+        // The archived file has no order key, which selected the removed stability-first ranking, and no lateBoarding
+        // key, which selected the removed late-boarding rejection.
         json["selectionObjectiveOrder"] = "cost-first";
+        json["lateBoarding"] = "record-v1";
 
         if (recovery is not null)
         {
             json["commitmentRecovery"] = recovery;
-        }
-
-        if (lateBoarding is not null)
-        {
-            json["lateBoarding"] = lateBoarding;
         }
 
         return Wp4RunnerConfiguration.Decode(

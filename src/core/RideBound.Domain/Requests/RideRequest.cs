@@ -272,16 +272,14 @@ public sealed record RideRequest
             ? Success(RequestLifecycle.CancelledAfterAcceptance, AssignedVehicleId)
             : InvalidTransition(RequestLifecycle.CancelledAfterAcceptance);
 
-    /// <param name="allowLatePickup">
-    /// ADR-076 (exploratory, off by default). When true, a boarding after the latest
-    /// pickup is accepted as an observed fact; the accepted window is left unchanged, so
-    /// the caller records the gap as a separate service violation. A boarding before the
-    /// earliest pickup is always rejected.
-    /// </param>
+    /// <summary>
+    /// ADR-076: a boarding after the latest pickup is accepted as an observed fact; the
+    /// accepted window is left unchanged, so the caller records the gap as a separate
+    /// service violation. A boarding before the earliest pickup is rejected.
+    /// </summary>
     public DomainResult<RideRequest> Board(
         VehicleId vehicleId,
-        SimTime pickupTime,
-        bool allowLatePickup = false)
+        SimTime pickupTime)
     {
         if (Lifecycle != RequestLifecycle.WaitingPickup)
         {
@@ -297,8 +295,7 @@ public sealed record RideRequest
                 "vehicleId");
         }
 
-        if (pickupTime.Milliseconds < EarliestPickup.Milliseconds
-            || !allowLatePickup && pickupTime.Milliseconds > LatestPickup.Milliseconds)
+        if (pickupTime.Milliseconds < EarliestPickup.Milliseconds)
         {
             return DomainResult<RideRequest>.Fail(
                 RequestFailureCodes.PickupTimeOutsideWindow,

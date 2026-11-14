@@ -459,18 +459,14 @@ public sealed class EventReducerTests
     }
 
     [Fact]
-    public void A_late_boarding_fails_by_default_and_is_recorded_as_a_fact_when_asked()
+    public void A_late_boarding_is_recorded_as_a_fact()
     {
-        // Window [1000, 2000] ms; the rider boards at 2500 ms. By default the batch fails as
-        // before. With recording on, the rider is onboard, the window is unchanged, and the
-        // 500 ms gap is one separate record.
+        // Window [1000, 2000] ms; the rider boards at 2500 ms. The rider is onboard, the window
+        // is unchanged, and the 500 ms gap is one separate record.
         var (state, batch) = BoardingAt(2_500);
 
-        var rejected = new EventReducer().Reduce(state, batch);
-        var recorded = new EventReducer(recordLatePickups: true).Reduce(state, batch);
+        var recorded = new EventReducer().Reduce(state, batch);
 
-        Assert.False(rejected.IsSuccess);
-        Assert.Equal(RequestFailureCodes.PickupTimeOutsideWindow, rejected.Witness!.Code);
         Assert.True(recorded.IsSuccess, recorded.Witness?.Message);
         var rider = recorded.ProposedState!.Run.Requests[ApplicationTestData.RequestId];
         Assert.Equal(RequestLifecycle.Onboard, rider.Lifecycle);
@@ -486,28 +482,26 @@ public sealed class EventReducerTests
     }
 
     [Fact]
-    public void An_on_time_boarding_records_nothing_even_when_recording_is_on()
+    public void An_on_time_boarding_records_nothing()
     {
         var (state, batch) = BoardingAt(2_000);
 
-        var expected = new EventReducer().Reduce(state, batch);
-        var actual = new EventReducer(recordLatePickups: true).Reduce(state, batch);
+        var actual = new EventReducer().Reduce(state, batch);
 
-        Assert.True(expected.IsSuccess, expected.Witness?.Message);
         Assert.True(actual.IsSuccess, actual.Witness?.Message);
         Assert.Empty(actual.ProposedState!.Incidents.LatePickups);
         Assert.Same(state.Incidents, actual.ProposedState.Incidents);
-        Assert.Equal(
-            expected.ProposedState!.Run.Requests[ApplicationTestData.RequestId],
-            actual.ProposedState.Run.Requests[ApplicationTestData.RequestId]);
+        var rider = actual.ProposedState.Run.Requests[ApplicationTestData.RequestId];
+        Assert.Equal(RequestLifecycle.Onboard, rider.Lifecycle);
+        Assert.Equal(new SimTime(2_000), rider.ActualPickupTime);
     }
 
     [Fact]
-    public void A_boarding_before_the_earliest_pickup_is_rejected_even_when_recording()
+    public void A_boarding_before_the_earliest_pickup_is_rejected()
     {
         var (state, batch) = BoardingAt(999, bookingAt: 999);
 
-        var result = new EventReducer(recordLatePickups: true).Reduce(state, batch);
+        var result = new EventReducer().Reduce(state, batch);
 
         Assert.False(result.IsSuccess);
         Assert.Equal(RequestFailureCodes.PickupTimeOutsideWindow, result.Witness!.Code);

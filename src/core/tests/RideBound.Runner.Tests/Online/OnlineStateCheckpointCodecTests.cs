@@ -356,8 +356,7 @@ public sealed class OnlineStateCheckpointCodecTests
             vehicleId,
             requestId,
             new PlanVersion(0),
-            new SimTime(1_500),
-            allowLatePickup: true).Value!;
+            new SimTime(1_500)).Value!;
         run = run.AdvanceEpoch(2, new SimTime(1_500)).Value!;
         var incidents = OperationalIncidentLedger.Empty.RecordLatePickup(
             new ObservedLatePickup(

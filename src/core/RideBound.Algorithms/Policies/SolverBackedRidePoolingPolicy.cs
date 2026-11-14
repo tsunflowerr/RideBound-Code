@@ -431,7 +431,6 @@ public sealed class SolverBackedRidePoolingPolicy
                     context.PublicationScope,
                     context.SourceEventSequence,
                     RevisionReasonCode: "WP4_SOLVER_SELECTION",
-                    InitialPromiseTrigger: context.InitialPromiseTrigger,
                     ForcedReferenceVehicles: forcedReferenceVehicles,
                     ForcedNoWorse: forcedNoWorse));
             return validated.IsValid

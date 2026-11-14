@@ -337,8 +337,7 @@ public sealed class ExactSmallCommitmentDifferentialTests
                 context.PublicationScope,
                 context.SourceEventSequence,
                 RevisionReasonCode: "C1_HARD_VECTOR",
-                ScopedVehicleId: candidate.VehicleId,
-                InitialPromiseTrigger: context.InitialPromiseTrigger));
+                ScopedVehicleId: candidate.VehicleId));
         Assert.True(validation.IsValid, validation.Witnesses.FirstOrDefault()?.Message);
         return validation.Publications.Sum(value => value.Entry.Deltas.DecisionInduced.DropEtaTotalMs);
     }
@@ -1365,7 +1364,6 @@ public sealed class ExactSmallCommitmentDifferentialTests
             context.StopDistances,
             context.PublicationScope,
             context.SourceEventSequence,
-            InitialPromiseTrigger: context.InitialPromiseTrigger,
             ForcedReferenceVehicles: forced,
             ForcedNoWorse: noWorse);
 

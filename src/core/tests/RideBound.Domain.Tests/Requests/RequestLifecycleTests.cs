@@ -90,7 +90,6 @@ public sealed class RequestLifecycleTests
 
     [Theory]
     [InlineData(999)]
-    [InlineData(2001)]
     public void Boarding_outside_the_pickup_window_is_rejected(long pickupTimeMs)
     {
         var request = InState(RequestLifecycle.WaitingPickup);
@@ -107,12 +106,12 @@ public sealed class RequestLifecycleTests
     }
 
     [Fact]
-    public void A_late_boarding_is_accepted_only_when_allowed_and_keeps_the_window()
+    public void A_late_boarding_is_accepted_and_keeps_the_window()
     {
         var request = InState(RequestLifecycle.WaitingPickup);
 
-        var late = request.Board(TestData.VehicleOne, new SimTime(2001), allowLatePickup: true);
-        var early = request.Board(TestData.VehicleOne, new SimTime(999), allowLatePickup: true);
+        var late = request.Board(TestData.VehicleOne, new SimTime(2001));
+        var early = request.Board(TestData.VehicleOne, new SimTime(999));
 
         Assert.True(late.IsSuccess, late.Failure?.Message);
         Assert.Equal(RequestLifecycle.Onboard, late.Value!.Lifecycle);
