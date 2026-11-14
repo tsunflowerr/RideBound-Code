@@ -19,7 +19,7 @@ public sealed class CandidateSelectionModelTests
         Assert.Equal([VehicleOne, VehicleTwo], problem.VehicleIds);
         Assert.Equal([RequestOne], problem.RequestIds);
         Assert.Equal(
-            ["accepted", "worst-policy", "operational-cost"],
+            ["accepted", "penalty", "operational-cost"],
             problem.ObjectiveLevels.Select(level => level.Name));
         Assert.Equal(
             ["v1-accept", "v1-noop", "v2-accept", "v2-noop"],
@@ -40,12 +40,10 @@ public sealed class CandidateSelectionModelTests
             [
                 new CandidateSelectionObjectiveLevel(
                     "same",
-                    CandidateSelectionObjectiveSense.Minimize,
-                    CandidateSelectionObjectiveAggregation.Sum),
+                    CandidateSelectionObjectiveSense.Minimize),
                 new CandidateSelectionObjectiveLevel(
                     "same",
-                    CandidateSelectionObjectiveSense.Maximize,
-                    CandidateSelectionObjectiveAggregation.Sum),
+                    CandidateSelectionObjectiveSense.Maximize),
             ],
             [
                 new CandidateSelectionOption(
@@ -193,7 +191,7 @@ public sealed class CandidateSelectionModelTests
     }
 
     [Fact]
-    public void Solution_aggregates_sum_and_maximum_and_uses_vehicle_order()
+    public void Solution_sums_each_level_and_uses_vehicle_order()
     {
         var problem = CreateProblemResult().Value!;
 
@@ -203,7 +201,7 @@ public sealed class CandidateSelectionModelTests
 
         Assert.True(result.IsSuccess, result.Failure?.Message);
         Assert.Equal(["v1-accept", "v2-noop"], result.Value!.SelectedOptionIds);
-        Assert.Equal([1, 30, 50], result.Value.ObjectiveValues);
+        Assert.Equal([1, 50, 50], result.Value.ObjectiveValues);
     }
 
     [Fact]
@@ -211,8 +209,7 @@ public sealed class CandidateSelectionModelTests
     {
         var level = new CandidateSelectionObjectiveLevel(
             "sum",
-            CandidateSelectionObjectiveSense.Minimize,
-            CandidateSelectionObjectiveAggregation.Sum);
+            CandidateSelectionObjectiveSense.Minimize);
         var problem = CandidateSelectionProblem.Create(
             [VehicleOne, VehicleTwo],
             [],
@@ -248,7 +245,7 @@ public sealed class CandidateSelectionModelTests
 
         var moreAcceptedButExpensive = new long[] { 2, 1000, 1000 };
         var lessAcceptedButCheap = new long[] { 1, 0, 0 };
-        var sameAcceptedLowerWorst = new long[] { 2, 999, 5000 };
+        var sameAcceptedLowerPenalty = new long[] { 2, 999, 5000 };
 
         Assert.True(
             LexicographicObjectiveComparer.Compare(
@@ -258,7 +255,7 @@ public sealed class CandidateSelectionModelTests
         Assert.True(
             LexicographicObjectiveComparer.Compare(
                 moreAcceptedButExpensive,
-                sameAcceptedLowerWorst,
+                sameAcceptedLowerPenalty,
                 levels) > 0);
     }
 
@@ -460,16 +457,13 @@ public sealed class CandidateSelectionModelTests
         [
             new CandidateSelectionObjectiveLevel(
                 "accepted",
-                CandidateSelectionObjectiveSense.Maximize,
-                CandidateSelectionObjectiveAggregation.Sum),
+                CandidateSelectionObjectiveSense.Maximize),
             new CandidateSelectionObjectiveLevel(
-                "worst-policy",
-                CandidateSelectionObjectiveSense.Minimize,
-                CandidateSelectionObjectiveAggregation.Maximum),
+                "penalty",
+                CandidateSelectionObjectiveSense.Minimize),
             new CandidateSelectionObjectiveLevel(
                 "operational-cost",
-                CandidateSelectionObjectiveSense.Minimize,
-                CandidateSelectionObjectiveAggregation.Sum),
+                CandidateSelectionObjectiveSense.Minimize),
         ];
 
     private static CandidateSelectionOption NoOp(

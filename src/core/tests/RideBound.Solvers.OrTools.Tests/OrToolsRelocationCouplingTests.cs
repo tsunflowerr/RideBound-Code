@@ -105,8 +105,8 @@ public sealed class OrToolsRelocationCouplingTests
 
     private static CandidateSelectionObjectiveLevel[] Levels() =>
     [
-        new("operational-cost", CandidateSelectionObjectiveSense.Minimize, CandidateSelectionObjectiveAggregation.Sum),
-        new("relocation-candidate-count", CandidateSelectionObjectiveSense.Minimize, CandidateSelectionObjectiveAggregation.Sum),
+        new("operational-cost", CandidateSelectionObjectiveSense.Minimize),
+        new("relocation-candidate-count", CandidateSelectionObjectiveSense.Minimize),
     ];
 
     private static CandidateSelectionSolveResult Solve(CandidateSelectionProblem problem) =>

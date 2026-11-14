@@ -96,18 +96,10 @@ public sealed class CandidateSelectionSolution
                  levelIndex < problem.ObjectiveLevels.Count;
                  levelIndex++)
             {
-                objectiveValues[levelIndex] =
-                    problem.ObjectiveLevels[levelIndex].Aggregation switch
-                    {
-                        CandidateSelectionObjectiveAggregation.Sum => selected.Aggregate(
-                            0L,
-                            (total, option) => checked(
-                                total + option.ObjectiveContributions[levelIndex])),
-                        CandidateSelectionObjectiveAggregation.Maximum => selected.Max(
-                            option => option.ObjectiveContributions[levelIndex]),
-                        _ => throw new InvalidOperationException(
-                            "Unknown objective aggregation."),
-                    };
+                objectiveValues[levelIndex] = selected.Aggregate(
+                    0L,
+                    (total, option) => checked(
+                        total + option.ObjectiveContributions[levelIndex]));
 
                 if (objectiveValues[levelIndex] > DomainLimits.MaxCanonicalInteger)
                 {

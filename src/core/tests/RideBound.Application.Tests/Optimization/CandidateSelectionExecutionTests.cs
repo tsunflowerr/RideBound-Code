@@ -291,12 +291,10 @@ public sealed class CandidateSelectionExecutionTests
             [
                 new CandidateSelectionObjectiveLevel(
                     "accepted",
-                    CandidateSelectionObjectiveSense.Maximize,
-                    CandidateSelectionObjectiveAggregation.Sum),
+                    CandidateSelectionObjectiveSense.Maximize),
                 new CandidateSelectionObjectiveLevel(
                     "cost",
-                    CandidateSelectionObjectiveSense.Minimize,
-                    CandidateSelectionObjectiveAggregation.Sum),
+                    CandidateSelectionObjectiveSense.Minimize),
             ],
             [
                 new CandidateSelectionOption(

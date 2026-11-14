@@ -19,7 +19,7 @@ public sealed class OrToolsModelIdentityTests
 
         for (var seed = 1; seed <= 400; seed++)
         {
-            var problem = RandomProblem(new Random(seed), relocation: seed % 3 == 0, maximumLevel: seed % 4 == 0);
+            var problem = RandomProblem(new Random(seed), relocation: seed % 3 == 0);
             compared += AssertSameModels(problem, seed);
         }
 
@@ -30,7 +30,7 @@ public sealed class OrToolsModelIdentityTests
     public void Indexed_builder_matches_on_a_fleet_sized_like_the_via_cells()
     {
         // 62 vehicles and one candidate-id rank level per vehicle, as in the Via jobs (64 levels).
-        var problem = RandomProblem(new Random(62), relocation: true, maximumLevel: false, vehicles: 62);
+        var problem = RandomProblem(new Random(62), relocation: true, vehicles: 62);
 
         Assert.Equal(64, problem.ObjectiveLevels.Count);
         Assert.Equal(problem.ObjectiveLevels.Count, AssertSameModels(problem, 62));
@@ -44,8 +44,7 @@ public sealed class OrToolsModelIdentityTests
         var second = new VehicleId("v2");
         var level = new CandidateSelectionObjectiveLevel(
             "cost",
-            CandidateSelectionObjectiveSense.Minimize,
-            CandidateSelectionObjectiveAggregation.Sum);
+            CandidateSelectionObjectiveSense.Minimize);
         var problem = CandidateSelectionProblem.Create(
             [first, second],
             [],
@@ -142,7 +141,6 @@ public sealed class OrToolsModelIdentityTests
     private static CandidateSelectionProblem RandomProblem(
         Random random,
         bool relocation,
-        bool maximumLevel,
         int? vehicles = null)
     {
         var vehicleCount = vehicles ?? random.Next(1, 9);
@@ -157,19 +155,13 @@ public sealed class OrToolsModelIdentityTests
             : [];
         var levels = new List<CandidateSelectionObjectiveLevel>
         {
-            new("accepted-request-count", CandidateSelectionObjectiveSense.Maximize, CandidateSelectionObjectiveAggregation.Sum),
-            new("operational-cost", CandidateSelectionObjectiveSense.Minimize, CandidateSelectionObjectiveAggregation.Sum),
+            new("accepted-request-count", CandidateSelectionObjectiveSense.Maximize),
+            new("operational-cost", CandidateSelectionObjectiveSense.Minimize),
         };
-
-        if (maximumLevel)
-        {
-            levels.Add(new("worst-delay", CandidateSelectionObjectiveSense.Minimize, CandidateSelectionObjectiveAggregation.Maximum));
-        }
 
         levels.AddRange(vehicleIds.Select(vehicle => new CandidateSelectionObjectiveLevel(
             $"candidate-id-rank:{vehicle.Value}",
-            CandidateSelectionObjectiveSense.Minimize,
-            CandidateSelectionObjectiveAggregation.Sum)));
+            CandidateSelectionObjectiveSense.Minimize)));
 
         var options = new List<CandidateSelectionOption>();
 
@@ -223,8 +215,9 @@ public sealed class OrToolsModelIdentityTests
     }
 
     /// <summary>
-    /// The archived builder, verbatim from OrToolsCandidateSelectionSolver.cs at 59c4ee8 (lines
-    /// 339-476), returning the model instead of the solver's private context.
+    /// The archived builder from OrToolsCandidateSelectionSolver.cs at 59c4ee8 (lines 339-476),
+    /// verbatim but for its Maximum-level branch, which went with the Maximum aggregation; it
+    /// returns the model instead of the solver's private context.
     /// </summary>
     private static class ArchivedBuilder
     {
@@ -308,28 +301,12 @@ public sealed class OrToolsModelIdentityTests
                         $"Objective '{level.Name}' can exceed the canonical range.");
                 }
 
-                if (level.Aggregation == CandidateSelectionObjectiveAggregation.Sum)
-                {
-                    objectives.Add(
-                        LinearExpr.WeightedSum(
-                            problem.Options.Select(
-                                option => variables[option.OptionId]),
-                            problem.Options.Select(
-                                option => option.ObjectiveContributions[levelIndex])));
-                    continue;
-                }
-
-                var maximum = model.NewIntVar(
-                    0,
-                    upperBound.Value,
-                    $"objective-max-{levelIndex}");
-                model.AddMaxEquality(
-                    maximum,
-                    problem.Options.Select(
-                        option => LinearExpr.Term(
-                            variables[option.OptionId],
-                            option.ObjectiveContributions[levelIndex])));
-                objectives.Add(maximum);
+                objectives.Add(
+                    LinearExpr.WeightedSum(
+                        problem.Options.Select(
+                            option => variables[option.OptionId]),
+                        problem.Options.Select(
+                            option => option.ObjectiveContributions[levelIndex])));
             }
 
             foreach (var bound in fixedBounds)
@@ -347,13 +324,6 @@ public sealed class OrToolsModelIdentityTests
             CandidateSelectionProblem problem,
             int levelIndex)
         {
-            if (problem.ObjectiveLevels[levelIndex].Aggregation
-                == CandidateSelectionObjectiveAggregation.Maximum)
-            {
-                return problem.Options.Max(
-                    option => option.ObjectiveContributions[levelIndex]);
-            }
-
             long total = 0;
 
             foreach (var vehicle in problem.VehicleIds)

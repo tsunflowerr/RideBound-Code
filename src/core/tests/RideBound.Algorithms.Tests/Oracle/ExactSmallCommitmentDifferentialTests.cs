@@ -1318,7 +1318,7 @@ public sealed class ExactSmallCommitmentDifferentialTests
 
         static string[] Signature(CandidateSelectionProblem problem) =>
             problem.ObjectiveLevels
-                .Select(value => $"{value.Name}/{value.Sense}/{value.Aggregation}")
+                .Select(value => $"{value.Name}/{value.Sense}")
                 .Concat(
                     problem.Options.Select(
                         value => $"{value.OptionId}={string.Join(",", value.ObjectiveContributions)}"))

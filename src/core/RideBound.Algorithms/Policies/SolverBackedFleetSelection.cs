@@ -241,8 +241,7 @@ public sealed class SolverBackedFleetSelector
                 new(
                     new CandidateSelectionObjectiveLevel(
                         "accepted-request-count",
-                        CandidateSelectionObjectiveSense.Maximize,
-                        CandidateSelectionObjectiveAggregation.Sum),
+                        CandidateSelectionObjectiveSense.Maximize),
                     candidate => candidate.NewRequestIds.Count));
 
             objectives.Add(
@@ -345,8 +344,7 @@ public sealed class SolverBackedFleetSelector
             new(
                 new CandidateSelectionObjectiveLevel(
                     name,
-                    CandidateSelectionObjectiveSense.Minimize,
-                    CandidateSelectionObjectiveAggregation.Sum),
+                    CandidateSelectionObjectiveSense.Minimize),
                 contribution);
 
         private static SelectionModelMapping Failure(

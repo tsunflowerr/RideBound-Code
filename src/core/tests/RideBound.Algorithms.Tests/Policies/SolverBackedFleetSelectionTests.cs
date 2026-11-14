@@ -239,11 +239,11 @@ public sealed class SolverBackedFleetSelectionTests
         Assert.True(unforced.IsSuccess, unforced.Witness?.Message);
         CandidateSelectionObjectiveLevel[] levels =
         [
-            new("forced-reference-count", CandidateSelectionObjectiveSense.Minimize, CandidateSelectionObjectiveAggregation.Sum),
-            new("accepted-request-count", CandidateSelectionObjectiveSense.Maximize, CandidateSelectionObjectiveAggregation.Sum),
-            new("operational-cost", CandidateSelectionObjectiveSense.Minimize, CandidateSelectionObjectiveAggregation.Sum),
-            new("candidate-id-rank:vehicle-1", CandidateSelectionObjectiveSense.Minimize, CandidateSelectionObjectiveAggregation.Sum),
-            new("candidate-id-rank:vehicle-2", CandidateSelectionObjectiveSense.Minimize, CandidateSelectionObjectiveAggregation.Sum),
+            new("forced-reference-count", CandidateSelectionObjectiveSense.Minimize),
+            new("accepted-request-count", CandidateSelectionObjectiveSense.Maximize),
+            new("operational-cost", CandidateSelectionObjectiveSense.Minimize),
+            new("candidate-id-rank:vehicle-1", CandidateSelectionObjectiveSense.Minimize),
+            new("candidate-id-rank:vehicle-2", CandidateSelectionObjectiveSense.Minimize),
         ];
         Assert.Equal(levels, forced.Selection!.Problem.ObjectiveLevels);
         Assert.Equal(levels.Skip(1), unforced.Selection!.Problem.ObjectiveLevels);

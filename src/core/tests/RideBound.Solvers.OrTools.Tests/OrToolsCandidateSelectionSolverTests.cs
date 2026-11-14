@@ -6,7 +6,7 @@ namespace RideBound.Solvers.OrTools.Tests;
 public sealed class OrToolsCandidateSelectionSolverTests
 {
     [Fact]
-    public void Multi_pass_lexicographic_solve_honors_request_uniqueness_and_maximum()
+    public void Multi_pass_lexicographic_solve_honors_request_uniqueness()
     {
         var problem = TradeoffProblem();
 
@@ -16,7 +16,7 @@ public sealed class OrToolsCandidateSelectionSolverTests
 
         Assert.Equal(CandidateSelectionSolveStatus.Optimal, result.Status);
         Assert.Equal(["v1-request-2", "v2-request-1"], result.Solution!.SelectedOptionIds);
-        Assert.Equal([2, 100, 110, 3], result.Solution.ObjectiveValues);
+        Assert.Equal([2, 200, 110, 3], result.Solution.ObjectiveValues);
         Assert.Equal(4, result.Diagnostics.ObjectiveBounds.Count);
         Assert.All(
             result.Diagnostics.ObjectiveBounds,
@@ -39,12 +39,10 @@ public sealed class OrToolsCandidateSelectionSolverTests
             [
                 new CandidateSelectionObjectiveLevel(
                     "accepted",
-                    CandidateSelectionObjectiveSense.Maximize,
-                    CandidateSelectionObjectiveAggregation.Sum),
+                    CandidateSelectionObjectiveSense.Maximize),
                 new CandidateSelectionObjectiveLevel(
                     "cost",
-                    CandidateSelectionObjectiveSense.Minimize,
-                    CandidateSelectionObjectiveAggregation.Sum),
+                    CandidateSelectionObjectiveSense.Minimize),
             ],
             [
                 new CandidateSelectionOption("noop", vehicle, [], [0, 0], true),
@@ -75,18 +73,15 @@ public sealed class OrToolsCandidateSelectionSolverTests
         {
             new CandidateSelectionObjectiveLevel(
                 "accepted",
-                CandidateSelectionObjectiveSense.Maximize,
-                CandidateSelectionObjectiveAggregation.Sum),
+                CandidateSelectionObjectiveSense.Maximize),
             new CandidateSelectionObjectiveLevel(
                 "cost",
-                CandidateSelectionObjectiveSense.Minimize,
-                CandidateSelectionObjectiveAggregation.Sum),
+                CandidateSelectionObjectiveSense.Minimize),
         }.Concat(
             vehicles.Select(
                 vehicle => new CandidateSelectionObjectiveLevel(
                     $"candidate-id-rank:{vehicle.Value}",
-                    CandidateSelectionObjectiveSense.Minimize,
-                    CandidateSelectionObjectiveAggregation.Sum)))
+                    CandidateSelectionObjectiveSense.Minimize)))
             .ToArray();
         var options = vehicles.SelectMany(
                 (vehicle, vehicleIndex) =>
@@ -179,8 +174,7 @@ public sealed class OrToolsCandidateSelectionSolverTests
             [
                 new CandidateSelectionObjectiveLevel(
                     "overflow",
-                    CandidateSelectionObjectiveSense.Minimize,
-                    CandidateSelectionObjectiveAggregation.Sum),
+                    CandidateSelectionObjectiveSense.Minimize),
             ],
             [
                 new CandidateSelectionOption(
@@ -244,20 +238,16 @@ public sealed class OrToolsCandidateSelectionSolverTests
         {
             new CandidateSelectionObjectiveLevel(
                 "accepted",
-                CandidateSelectionObjectiveSense.Maximize,
-                CandidateSelectionObjectiveAggregation.Sum),
+                CandidateSelectionObjectiveSense.Maximize),
             new CandidateSelectionObjectiveLevel(
-                "worst-utilization",
-                CandidateSelectionObjectiveSense.Minimize,
-                CandidateSelectionObjectiveAggregation.Maximum),
+                "utilization",
+                CandidateSelectionObjectiveSense.Minimize),
             new CandidateSelectionObjectiveLevel(
                 "cost",
-                CandidateSelectionObjectiveSense.Minimize,
-                CandidateSelectionObjectiveAggregation.Sum),
+                CandidateSelectionObjectiveSense.Minimize),
             new CandidateSelectionObjectiveLevel(
                 "stable-id",
-                CandidateSelectionObjectiveSense.Minimize,
-                CandidateSelectionObjectiveAggregation.Sum),
+                CandidateSelectionObjectiveSense.Minimize),
         };
         var options = new[]
         {

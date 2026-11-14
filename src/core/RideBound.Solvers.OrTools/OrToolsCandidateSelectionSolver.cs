@@ -246,7 +246,7 @@ public sealed class OrToolsCandidateSelectionSolver : ICandidateSelectionSolver
     /// and constraint for constraint, as the archived builder's (ADR-089; the model-identity
     /// tests compare the CP-SAT protos byte for byte): the lookups come from
     /// <paramref name="index"/> instead of a scan of every option per vehicle, request and level,
-    /// and a Sum objective is created only when a pass uses it, because creating an expression
+    /// and an objective is created only when a pass uses it, because creating an expression
     /// does not change the model.
     /// </summary>
     internal static BuildResult BuildModel(
@@ -291,40 +291,25 @@ public sealed class OrToolsCandidateSelectionSolver : ICandidateSelectionSolver
                 LinearExpr.Sum(index.Receivers.Select(option => literals[option])) <= 1);
         }
 
-        var objectives = new LinearExpr?[problem.ObjectiveLevels.Count];
-
         for (var levelIndex = 0;
              levelIndex < problem.ObjectiveLevels.Count;
              levelIndex++)
         {
             var level = problem.ObjectiveLevels[levelIndex];
-            var upperBound = index.UpperBounds[levelIndex];
 
-            if (upperBound is null)
+            if (index.UpperBounds[levelIndex] is null)
             {
                 return BuildResult.Failure(
                     $"Objective '{level.Name}' can exceed the canonical range.");
             }
-
-            if (level.Aggregation == CandidateSelectionObjectiveAggregation.Sum)
-            {
-                continue;
-            }
-
-            var maximum = model.NewIntVar(
-                0,
-                upperBound.Value,
-                $"objective-max-{levelIndex}");
-            model.AddMaxEquality(
-                maximum,
-                options.Select(
-                    (option, optionIndex) => LinearExpr.Term(
-                        literals[optionIndex],
-                        option.ObjectiveContributions[levelIndex])));
-            objectives[levelIndex] = maximum;
         }
 
-        var context = new ModelContext(model, variables, literals, options, objectives);
+        var context = new ModelContext(
+            model,
+            variables,
+            literals,
+            options,
+            problem.ObjectiveLevels.Count);
 
         foreach (var bound in fixedBounds)
         {
@@ -457,18 +442,13 @@ public sealed class OrToolsCandidateSelectionSolver : ICandidateSelectionSolver
             where TKey : notnull =>
             lists.TryGetValue(key, out var list) ? list.ToArray() : [];
 
+        // The largest sum a selection (one option per vehicle) can reach on the level, or null
+        // when it can leave the canonical range.
         private static long? ObjectiveUpperBound(
             CandidateSelectionProblem problem,
             IReadOnlyList<int[]> vehicleOptions,
             int levelIndex)
         {
-            if (problem.ObjectiveLevels[levelIndex].Aggregation
-                == CandidateSelectionObjectiveAggregation.Maximum)
-            {
-                return problem.Options.Max(
-                    option => option.ObjectiveContributions[levelIndex]);
-            }
-
             long total = 0;
 
             foreach (var options in vehicleOptions)
@@ -637,22 +617,24 @@ public sealed class OrToolsCandidateSelectionSolver : ICandidateSelectionSolver
     }
 
     /// <summary>
-    /// A built model and its objective expressions. A Maximum level's expression is the variable
-    /// the build added; a Sum level's is created on first use and never enters the model by itself.
+    /// A built model and its objective expressions. A level's expression (the weighted sum of its
+    /// contributions) is created on first use and never enters the model by itself.
     /// </summary>
     internal sealed class ModelContext(
         CpModel model,
         IReadOnlyDictionary<string, BoolVar> variables,
         BoolVar[] literals,
         IReadOnlyList<CandidateSelectionOption> options,
-        LinearExpr?[] objectives)
+        int levelCount)
     {
+        private readonly LinearExpr?[] _objectives = new LinearExpr?[levelCount];
+
         public CpModel Model { get; } = model;
 
         public IReadOnlyDictionary<string, BoolVar> Variables { get; } = variables;
 
         public LinearExpr Objective(int levelIndex) =>
-            objectives[levelIndex] ??= LinearExpr.WeightedSum(
+            _objectives[levelIndex] ??= LinearExpr.WeightedSum(
                 literals.AsEnumerable(),
                 options.Select(option => option.ObjectiveContributions[levelIndex]));
     }

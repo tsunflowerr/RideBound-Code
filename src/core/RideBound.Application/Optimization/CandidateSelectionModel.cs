@@ -9,16 +9,13 @@ public enum CandidateSelectionObjectiveSense
     Maximize,
 }
 
-public enum CandidateSelectionObjectiveAggregation
-{
-    Sum,
-    Maximum,
-}
-
+/// <summary>
+/// One lexicographic level. Its value for a selection is the sum of the selected options'
+/// contributions.
+/// </summary>
 public sealed record CandidateSelectionObjectiveLevel(
     string Name,
-    CandidateSelectionObjectiveSense Sense,
-    CandidateSelectionObjectiveAggregation Aggregation);
+    CandidateSelectionObjectiveSense Sense);
 
 /// <param name="RelocationOut">
 /// The waiting rider this option gives up (a G2 donor); null otherwise.
@@ -108,8 +105,7 @@ public sealed class CandidateSelectionProblem
             || levels.Select(level => level.Name)
                 .Distinct(StringComparer.Ordinal)
                 .Count() != levels.Length
-            || levels.Any(level => !Enum.IsDefined(level.Sense))
-            || levels.Any(level => !Enum.IsDefined(level.Aggregation)))
+            || levels.Any(level => !Enum.IsDefined(level.Sense)))
         {
             return Fail(
                 "Objective levels must have unique canonical names and known semantics.",
