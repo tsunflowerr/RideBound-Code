@@ -251,7 +251,6 @@ public sealed class CommitmentDeadlineLockTests
             Published(exogenous),
             exogenous,
             candidate,
-            new SimTime(0),
             policy,
             anchor);
 

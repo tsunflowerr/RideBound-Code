@@ -30,7 +30,6 @@ public sealed class CommitmentLockEvaluator
         PublishedPromise previous,
         PromiseProjection exogenous,
         PromiseProjection candidate,
-        SimTime evaluationTime,
         CommitmentPolicy policy,
         PromiseProjection? anchor = null,
         ShadowAllocation? shadowAllocation = null)
@@ -71,17 +70,6 @@ public sealed class CommitmentLockEvaluator
             && policy.FinalConfirmationLocks != PromiseLock.None)
         {
             rules.Add((policy.FinalConfirmationLocks, "final_confirmation"));
-        }
-
-        if (policy.FreezeHorizon is Duration horizon
-            && previous.Projection.PickupEta.Milliseconds
-                >= evaluationTime.Milliseconds
-            && previous.Projection.PickupEta.Milliseconds
-                - evaluationTime.Milliseconds
-                <= horizon.Milliseconds
-            && policy.FreezeHorizonLocks != PromiseLock.None)
-        {
-            rules.Add((policy.FreezeHorizonLocks, "freeze_horizon"));
         }
 
         rules.Insert(0, (activeLocks, "accepted_assignment"));

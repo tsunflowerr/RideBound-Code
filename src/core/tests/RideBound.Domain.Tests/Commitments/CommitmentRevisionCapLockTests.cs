@@ -156,14 +156,12 @@ public sealed class CommitmentRevisionCapLockTests
             Published(Projection(Previous)),
             Projection(Exogenous),
             Projection(Exogenous + Limit + 1),
-            new SimTime(0),
             Policy(Limit, CommitmentPhase.Accepted));
         var exempt = new CommitmentLockEvaluator().Evaluate(
             accepted,
             Published(Projection(Previous)),
             Projection(Exogenous),
             Projection(Exogenous + Limit + 1),
-            new SimTime(0),
             Policy(Limit, CommitmentPhase.WaitingPickup | CommitmentPhase.Onboard));
 
         Assert.Equal(CommitmentLockEvaluator.RevisionCapRule, Assert.Single(capped).Rule);
@@ -188,14 +186,12 @@ public sealed class CommitmentRevisionCapLockTests
             Published(Projection(Previous)),
             Projection(Exogenous),
             Projection(Exogenous + Limit + 1),
-            new SimTime(0),
             Policy(Limit, dropPhases));
         var within = new CommitmentLockEvaluator().Evaluate(
             onboard,
             Published(Projection(Previous)),
             Projection(Exogenous),
             Projection(Exogenous + Limit),
-            new SimTime(0),
             Policy(Limit, dropPhases));
 
         if (expectViolation)
@@ -226,7 +222,6 @@ public sealed class CommitmentRevisionCapLockTests
             Published(Projection(Exogenous)),
             Projection(Exogenous),
             candidate,
-            new SimTime(0),
             policy,
             anchor: Projection(Exogenous));
 
@@ -271,7 +266,6 @@ public sealed class CommitmentRevisionCapLockTests
             Published(previous),
             exogenous,
             candidate,
-            new SimTime(0),
             policy);
 
     private static CommitmentPolicy Policy(

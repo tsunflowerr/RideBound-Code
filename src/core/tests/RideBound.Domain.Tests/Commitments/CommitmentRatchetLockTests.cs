@@ -42,7 +42,6 @@ public sealed class CommitmentRatchetLockTests
             Published(exogenous),
             exogenous,
             candidate,
-            new SimTime(0),
             policy);
 
         Assert.Equal(
@@ -64,7 +63,6 @@ public sealed class CommitmentRatchetLockTests
             Published(exogenous),
             exogenous,
             candidate,
-            new SimTime(0),
             policy);
 
         // Pickup improved and is ratcheted, so it passes. Drop improved too but is

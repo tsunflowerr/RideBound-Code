@@ -19,7 +19,6 @@ public sealed class CommitmentLockEvaluatorTests
             previous,
             previous.Projection,
             candidate,
-            new SimTime(1_000),
             CommitmentTestData.Policy());
 
         var witness = Assert.Single(witnesses);
@@ -44,7 +43,6 @@ public sealed class CommitmentLockEvaluatorTests
             previous,
             previous.Projection,
             candidate,
-            new SimTime(11_000),
             CommitmentTestData.Policy());
 
         var witness = Assert.Single(witnesses);
@@ -53,7 +51,7 @@ public sealed class CommitmentLockEvaluatorTests
     }
 
     [Fact]
-    public void Freeze_horizon_and_final_confirmation_use_explicit_policy_flags()
+    public void Final_confirmation_uses_explicit_policy_flags()
     {
         var request = TestData.PendingRequest()
             .Accept(TestData.VehicleOne).Value!
@@ -63,8 +61,6 @@ public sealed class CommitmentLockEvaluatorTests
             pickupStopId: new StopId("pickup-new"),
             pickupEta: 10_001);
         var policy = CommitmentTestData.Policy(
-            freezeHorizon: new Duration(1_000),
-            freezeLocks: PromiseLock.PickupEta,
             confirmationLocks: PromiseLock.PickupStop);
 
         var witnesses = new CommitmentLockEvaluator().Evaluate(
@@ -72,21 +68,12 @@ public sealed class CommitmentLockEvaluatorTests
             previous,
             previous.Projection,
             candidate,
-            new SimTime(9_000),
             policy);
 
-        Assert.Collection(
-            witnesses,
-            witness =>
-            {
-                Assert.Equal("pickup_eta_ms", witness.Dimension);
-                Assert.Equal("freeze_horizon", witness.Rule);
-            },
-            witness =>
-            {
-                Assert.Equal("pickup_stop", witness.Dimension);
-                Assert.Equal("final_confirmation", witness.Rule);
-            });
+        // Only the configured pickup stop is locked; the moved pickup ETA is not.
+        var witness = Assert.Single(witnesses);
+        Assert.Equal("pickup_stop", witness.Dimension);
+        Assert.Equal("final_confirmation", witness.Rule);
     }
 
     [Fact]
@@ -107,14 +94,12 @@ public sealed class CommitmentLockEvaluatorTests
             previous,
             exogenous,
             exogenous,
-            new SimTime(2_000),
             policy);
         var changedByDecision = evaluator.Evaluate(
             request,
             previous,
             exogenous,
             CommitmentTestData.Projection(pickupEta: 10_009),
-            new SimTime(2_000),
             policy);
 
         Assert.Empty(noOp);

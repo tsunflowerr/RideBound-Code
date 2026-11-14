@@ -165,7 +165,6 @@ public sealed class CommitmentRelaxedDeadlineLockTests
                 Published(kept),
                 kept,
                 kept,
-                new SimTime(0),
                 RelaxedPolicy(Slack),
                 anchor: null));
 
@@ -181,7 +180,6 @@ public sealed class CommitmentRelaxedDeadlineLockTests
             Published(Projection(Anchor)),
             exogenous,
             candidate,
-            new SimTime(0),
             policy,
             Projection(Anchor));
 

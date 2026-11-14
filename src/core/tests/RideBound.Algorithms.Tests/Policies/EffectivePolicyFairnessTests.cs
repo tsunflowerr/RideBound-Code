@@ -112,8 +112,6 @@ public sealed class EffectivePolicyFairnessTests
                 policy.PolicyId,
                 policy.MaterialRevisionRule.RawEtaThresholdMs?.ToString() ?? "none",
                 policy.MaterialRevisionRule.DisplayBucketWidthMs?.ToString() ?? "none",
-                policy.FreezeHorizon?.Milliseconds.ToString() ?? "none",
-                ((int)policy.FreezeHorizonLocks).ToString(),
                 ((int)policy.FinalConfirmationLocks).ToString(),
                 policy.DropEtaDeadlineSlack?.Milliseconds.ToString() ?? "none",
                 policy.DropEtaDeadlineTwoSided.ToString(),

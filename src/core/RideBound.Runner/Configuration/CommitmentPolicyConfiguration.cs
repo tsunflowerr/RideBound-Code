@@ -23,6 +23,7 @@ public sealed class CommitmentPolicyConfiguration :
         "budgetBasis",
         "limits",
         "materialRevisionRule",
+        // Removed keys, kept here so that ReadPolicy refuses them with the removal text.
         "freezeHorizonMs",
         "freezeHorizonLocks",
         "finalConfirmationLocks",
@@ -230,12 +231,10 @@ public sealed class CommitmentPolicyConfiguration :
         }
 
         if (relocation
-            && ((ReadLocks(element, "finalConfirmationLocks")
-                | ReadLocks(element, "freezeHorizonLocks")) & PromiseLock.Vehicle) != 0)
+            && (ReadLocks(element, "finalConfirmationLocks") & PromiseLock.Vehicle) != 0)
         {
             throw new InvalidDataException(
-                "'waitingRiderRelocation' requires 'finalConfirmationLocks' and "
-                + "'freezeHorizonLocks' without 'vehicle'.");
+                "'waitingRiderRelocation' requires 'finalConfirmationLocks' without 'vehicle'.");
         }
 
         if (relocation
@@ -262,14 +261,10 @@ public sealed class CommitmentPolicyConfiguration :
             throw new InvalidDataException("Unknown commitment budgetBasis.");
         }
 
-        return new CommitmentPolicy(
+        var policy = new CommitmentPolicy(
             policyId,
             limits,
             new MaterialRevisionRule(rawThreshold, displayBucket),
-            element.TryGetProperty("freezeHorizonMs", out var freeze)
-                ? new Duration(PositiveInteger(freeze, "freezeHorizonMs"))
-                : null,
-            ReadLocks(element, "freezeHorizonLocks"),
             ReadLocks(element, "finalConfirmationLocks"),
             ReadLocks(element, "ratchetLocks"),
             deadlineSlack is long slack ? new Duration(slack) : null,
@@ -280,6 +275,17 @@ public sealed class CommitmentPolicyConfiguration :
             deadlinePermille,
             relocation,
             shadowAllocation);
+
+        // The freeze horizon is removed. It is checked after every other check of the policy, so a
+        // policy that one of them refuses keeps that message.
+        if (element.TryGetProperty("freezeHorizonMs", out _)
+            || element.TryGetProperty("freezeHorizonLocks", out _))
+        {
+            throw new InvalidDataException(
+                "Commitment 'freezeHorizonMs' and 'freezeHorizonLocks' (the freeze horizon): " + RemovedFeature);
+        }
+
+        return policy;
     }
 
     private static int? OptionalPermille(JsonElement element, string propertyName)

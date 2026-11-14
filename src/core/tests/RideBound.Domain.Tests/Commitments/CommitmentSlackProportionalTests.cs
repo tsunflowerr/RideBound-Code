@@ -260,7 +260,6 @@ public sealed class CommitmentSlackProportionalTests
             new PublishedPromise(new PromiseVersion(1), 1, new SimTime(0), anchor),
             anchor,
             later,
-            new SimTime(0),
             fence,
             anchor,
             guaranteed));
@@ -269,7 +268,6 @@ public sealed class CommitmentSlackProportionalTests
             new PublishedPromise(new PromiseVersion(1), 1, new SimTime(0), anchor),
             anchor,
             later,
-            new SimTime(0),
             fence,
             anchor,
             allowed));
@@ -297,7 +295,6 @@ public sealed class CommitmentSlackProportionalTests
             new PublishedPromise(new PromiseVersion(1), 1, new SimTime(0), Projection(PickupAnchor, DropAnchor)),
             exogenous,
             candidate,
-            new SimTime(0),
             policy,
             Projection(PickupAnchor, DropAnchor));
 

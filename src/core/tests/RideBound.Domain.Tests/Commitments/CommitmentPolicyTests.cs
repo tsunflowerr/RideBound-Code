@@ -20,10 +20,6 @@ public sealed class CommitmentPolicyTests
     {
         Assert.Throws<ArgumentOutOfRangeException>(
             () => CreatePolicy(
-                new Duration(1_000),
-                (PromiseLock)64));
-        Assert.Throws<ArgumentOutOfRangeException>(
-            () => CreatePolicy(
                 finalLocks: (PromiseLock)64));
     }
 
@@ -124,8 +120,6 @@ public sealed class CommitmentPolicyTests
             dropEtaRevisionLimit: revisionLimit);
 
     private static CommitmentPolicy CreatePolicy(
-        Duration? freezeHorizon = null,
-        PromiseLock freezeLocks = PromiseLock.None,
         PromiseLock finalLocks = PromiseLock.None) =>
         new(
             "validated-policy",
@@ -135,7 +129,5 @@ public sealed class CommitmentPolicyTests
                     null,
                     CommitmentPhase.AllActive)),
             new MaterialRevisionRule(1, null),
-            freezeHorizon,
-            freezeLocks,
             finalLocks);
 }

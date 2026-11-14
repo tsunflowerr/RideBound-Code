@@ -91,19 +91,6 @@ public sealed class WaitingRiderRelocationLockTests
         Assert.True(Policy(relocation: true, switchLimit: 0, switchPhases: CommitmentPhase.Onboard).WaitingRiderRelocation);
         Assert.True(Policy(relocation: true, switchLimit: 1).WaitingRiderRelocation);
         Assert.False(Policy(relocation: false, switchLimit: 0, confirmationLocks: PromiseLock.Vehicle).WaitingRiderRelocation);
-
-        // A vehicle lock inside the freeze horizon would make the flag inert there.
-        Assert.Contains(
-            "inside the freeze horizon",
-            Assert.Throws<ArgumentException>(
-                () => new CommitmentPolicy(
-                    "test-boundary-v1",
-                    CommitmentDimensionVocabulary.Ordered.Select(
-                        dimension => new CommitmentDimensionLimit(dimension, null, CommitmentPhase.AllActive)),
-                    new MaterialRevisionRule(1_000, 60_000),
-                    freezeHorizon: new Duration(60_000),
-                    freezeHorizonLocks: PromiseLock.Vehicle | PromiseLock.PickupEta,
-                    waitingRiderRelocation: true)).Message);
     }
 
     private static IReadOnlyList<CommitmentLockWitness> Evaluate(
@@ -122,7 +109,6 @@ public sealed class WaitingRiderRelocationLockTests
             previous,
             previous.Projection,
             candidate,
-            new SimTime(1_000),
             policy);
     }
 

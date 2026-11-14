@@ -157,7 +157,7 @@ public sealed class CommitmentPolicyConfigurationTests
     public void Drop_eta_deadline_given_as_a_string_is_rejected()
     {
         // The shared integer reader used for every integer field of this file
-        // (including freezeHorizonMs) calls TryGetInt64, which throws
+        // calls TryGetInt64, which throws
         // InvalidOperationException on a string element. That is the reader's
         // existing behaviour; Program catches it and exits with code 64.
         Assert.ThrowsAny<InvalidOperationException>(
@@ -427,10 +427,7 @@ public sealed class CommitmentPolicyConfigurationTests
     [Theory]
     [InlineData(
         "\"waitingRiderRelocation\":true,\"finalConfirmationLocks\":[\"vehicle\",\"pickupEta\"]",
-        "'waitingRiderRelocation' requires 'finalConfirmationLocks' and 'freezeHorizonLocks' without 'vehicle'")]
-    [InlineData(
-        "\"waitingRiderRelocation\":true,\"freezeHorizonMs\":60000,\"freezeHorizonLocks\":[\"vehicle\"]",
-        "'waitingRiderRelocation' requires 'finalConfirmationLocks' and 'freezeHorizonLocks' without 'vehicle'")]
+        "'waitingRiderRelocation' requires 'finalConfirmationLocks' without 'vehicle'")]
     [InlineData("\"waitingRiderRelocation\":\"true\"", "waitingRiderRelocation")]
     public void Invalid_waiting_rider_relocation_settings_are_rejected(string extraFields, string expectedMessage)
     {
@@ -493,6 +490,51 @@ public sealed class CommitmentPolicyConfigurationTests
         Assert.StartsWith("'dropEtaDeadlineRelaxed' requires", earlier.Message, StringComparison.Ordinal);
         Assert.True(CommitmentPolicyConfiguration.Decode(WithBasis("decisionInduced"))
             .TryGetPolicy("uniform-v1", out _));
+    }
+
+    [Fact]
+    public void The_removed_freeze_horizon_is_refused_with_a_pointer_to_the_archive()
+    {
+        // Either key is refused, whatever its value. The check runs last in the policy, so a check
+        // that runs before it keeps its message.
+        const string Removed =
+            "Commitment 'freezeHorizonMs' and 'freezeHorizonLocks' (the freeze horizon): removed; see commit "
+            + "ebca912 (branch research/final-real-runs-2026-11-06)";
+        const string Freeze = "\"freezeHorizonMs\":300000,\"freezeHorizonLocks\":[\"pickupEta\"]";
+        string Message(string extraFields) =>
+            Assert.ThrowsAny<Exception>(
+                () => CommitmentPolicyConfiguration.Decode(PolicyJson(extraFields))).Message;
+
+        Assert.Equal(Removed, Message(Freeze));
+        Assert.Equal(Removed, Message("\"freezeHorizonMs\":300000"));
+        Assert.Equal(Removed, Message("\"freezeHorizonLocks\":[]"));
+        Assert.Equal(
+            Removed,
+            Message(
+                "\"waitingRiderRelocation\":true,\"finalConfirmationLocks\":[\"pickupStop\"],"
+                + "\"freezeHorizonMs\":60000,\"freezeHorizonLocks\":[\"vehicle\"]"));
+
+        Assert.StartsWith(
+            "'dropEtaDeadlineRelaxed' requires",
+            Message(Freeze + ",\"dropEtaDeadlineRelaxed\":true"),
+            StringComparison.Ordinal);
+        Assert.Equal(
+            "'waitingRiderRelocation' requires 'finalConfirmationLocks' without 'vehicle'.",
+            Message(Freeze + ",\"waitingRiderRelocation\":true,\"finalConfirmationLocks\":[\"vehicle\"]"));
+        Assert.StartsWith(
+            "Only pickup and drop ETA locks can be relaxed to a ratchet.",
+            Message(Freeze + ",\"ratchetLocks\":[\"vehicle\"]"),
+            StringComparison.Ordinal);
+        Assert.Equal(
+            "Unknown commitment budgetBasis.",
+            Assert.Throws<InvalidDataException>(
+                () => CommitmentPolicyConfiguration.Decode(
+                    Encoding.UTF8.GetBytes(
+                        Encoding.UTF8.GetString(PolicyJson(Freeze)).Replace(
+                            "\"budgetBasis\":\"decisionInduced\"",
+                            "\"budgetBasis\":\"visible\"",
+                            StringComparison.Ordinal)))).Message);
+        Assert.True(CommitmentPolicyConfiguration.Decode(PolicyJson(null)).TryGetPolicy("uniform-v1", out _));
     }
 
     private static byte[] PolicyJson(string? extraFields)

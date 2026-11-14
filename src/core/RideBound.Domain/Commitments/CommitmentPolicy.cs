@@ -124,8 +124,6 @@ public sealed class CommitmentPolicy
         string policyId,
         IEnumerable<CommitmentDimensionLimit> limits,
         MaterialRevisionRule materialRevisionRule,
-        Duration? freezeHorizon = null,
-        PromiseLock freezeHorizonLocks = PromiseLock.None,
         PromiseLock finalConfirmationLocks = PromiseLock.None,
         PromiseLock ratchetLocks = PromiseLock.None,
         Duration? dropEtaDeadlineSlack = null,
@@ -157,18 +155,6 @@ public sealed class CommitmentPolicy
             throw new ArgumentException(
                 "A commitment policy must define every dimension exactly once.",
                 nameof(limits));
-        }
-
-        if (freezeHorizon is null && freezeHorizonLocks != PromiseLock.None)
-        {
-            throw new ArgumentException(
-                "Freeze-horizon locks require a freeze horizon.",
-                nameof(freezeHorizonLocks));
-        }
-
-        if ((freezeHorizonLocks & ~allLocks) != 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(freezeHorizonLocks));
         }
 
         if ((finalConfirmationLocks & ~allLocks) != 0)
@@ -254,11 +240,10 @@ public sealed class CommitmentPolicy
         // lock, or a zero switch limit while waiting, would forbid every move and leave the
         // flag silently inert, so both are rejected.
         if (waitingRiderRelocation
-            && ((finalConfirmationLocks | freezeHorizonLocks) & PromiseLock.Vehicle) != 0)
+            && (finalConfirmationLocks & PromiseLock.Vehicle) != 0)
         {
             throw new ArgumentException(
-                "Waiting-rider relocation cannot keep a vehicle lock at final confirmation "
-                + "or inside the freeze horizon.",
+                "Waiting-rider relocation cannot keep a vehicle lock at final confirmation.",
                 nameof(waitingRiderRelocation));
         }
 
@@ -283,8 +268,6 @@ public sealed class CommitmentPolicy
 
         _limits = materialized.ToFrozenDictionary(value => value.Dimension);
         MaterialRevisionRule = materialRevisionRule;
-        FreezeHorizon = freezeHorizon;
-        FreezeHorizonLocks = freezeHorizonLocks;
         FinalConfirmationLocks = finalConfirmationLocks;
         RatchetLocks = ratchetLocks;
         DropEtaDeadlineSlack = dropEtaDeadlineSlack;
@@ -437,10 +420,6 @@ public sealed class CommitmentPolicy
         CommitmentDimensionLimit> Limits => _limits;
 
     public MaterialRevisionRule MaterialRevisionRule { get; }
-
-    public Duration? FreezeHorizon { get; }
-
-    public PromiseLock FreezeHorizonLocks { get; }
 
     public PromiseLock FinalConfirmationLocks { get; }
 

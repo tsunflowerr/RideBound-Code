@@ -388,7 +388,6 @@ public sealed class CommitmentDecisionValidator
                 priorHistory.Current.PublishedPromise,
                 exogenousProjection.Value!,
                 candidateProjection.Value!,
-                context.CandidateState.Run.SimulationTime,
                 policy,
                 anchor,
                 shadowAllocation);
@@ -738,7 +737,6 @@ public sealed class CommitmentDecisionValidator
             priorHistory.Current.PublishedPromise,
             exogenous,
             exogenous,
-            context.CandidateState.Run.SimulationTime,
             policy,
             anchor,
             shadowAllocation);
