@@ -1,4 +1,5 @@
 using System.Text.Json;
+using RideBound.Algorithms.Dispatch;
 using RideBound.Algorithms.Policies;
 using RideBound.Application.Commitments;
 using RideBound.Application.State;
@@ -63,10 +64,9 @@ public sealed partial class RunnerSession
     private readonly IStopDistanceLookup _stopDistances;
     private readonly Sha256Hex _commitmentPolicyConfigurationHash;
     private readonly CommitmentDecisionValidator _commitmentValidator = new();
-    private readonly ExogenousServiceQualityBreachBridge _breachBridge;
     private readonly Wp4RunnerConfiguration _wp4Configuration;
     private readonly RideBound.Algorithms.Shareability.ShadowAllocator? _shadowAllocator;
-    private readonly SolverBackedRidePoolingPolicy? _solverBackedPolicy;
+    private readonly DispatchStep? _dispatchStep;
     private readonly bool _useManifestSolverSeed;
     private HelloPayload? _hello;
     private HelloAckPayload? _helloAcknowledgement;
@@ -113,18 +113,20 @@ public sealed partial class RunnerSession
         _commitmentPolicies = commitmentPolicies;
         _stopDistances = stopDistances;
         _commitmentPolicyConfigurationHash = commitmentPolicyConfigurationHash;
-        _breachBridge = new ExogenousServiceQualityBreachBridge();
         _wp4Configuration = wp4Configuration;
         _shadowAllocator = wp4Configuration.ShadowAllocation is { } shadowInputs
             ? new RideBound.Algorithms.Shareability.ShadowAllocator(shadowInputs)
             : null;
         _lightAudit = wp4Configuration.UsesLightAuditHash;
         _useManifestSolverSeed = useManifestSolverSeed;
-        _solverBackedPolicy = wp4Configuration.SolverPolicyOptions is not null
-            ? solverBackedPolicy
-                ?? new SolverBackedRidePoolingPolicy(
-                    new OrToolsCandidateSelectionSolver(),
-                    commitmentValidator: _commitmentValidator)
+        _dispatchStep = wp4Configuration.SolverPolicyOptions is not null
+            ? new DispatchStep(
+                solverBackedPolicy
+                    ?? new SolverBackedRidePoolingPolicy(
+                        new OrToolsCandidateSelectionSolver(),
+                        commitmentValidator: _commitmentValidator),
+                _commitmentValidator,
+                _shadowAllocator)
             : null;
 
         if (useManifestSolverSeed

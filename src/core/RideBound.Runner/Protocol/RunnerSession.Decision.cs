@@ -1,18 +1,17 @@
 using System.Text.Json;
 using RideBound.Algorithms.Commitments;
 using RideBound.Algorithms.Policies;
-using RideBound.Application.Commitments;
 using RideBound.Application.Events;
 using RideBound.Application.Optimization;
 using RideBound.Contracts.Protocol;
-using RideBound.Domain.Commitments;
 using RideBound.Runner.Mapping;
 using RideBound.Runner.StateAudit;
 
 namespace RideBound.Runner.Protocol;
 
-// The dispatch decision for one event batch: map and reduce the events, run the policy, validate its result,
-// record exogenous breaches, give new riders their Shadow class and build the certificate.
+// The dispatch decision for one event batch: map and reduce the events, run the dispatch step
+// (Algorithms/Dispatch/DispatchStep.cs: the policy, the second validation, exogenous breaches and
+// Shadow classes), hash and stage its state, and build the certificate and the actions.
 public sealed partial class RunnerSession
 {
     /// <summary>
@@ -83,7 +82,8 @@ public sealed partial class RunnerSession
             publicationScope,
             sourceEventSequence);
 
-        var solved = _solverBackedPolicy!.Decide(
+        // Decide, validate again, record exogenous breaches and give new riders their Shadow class.
+        var dispatched = _dispatchStep!.Run(
             context,
             _wp4Configuration.CandidateGeneration,
             _useManifestSolverSeed
@@ -91,91 +91,18 @@ public sealed partial class RunnerSession
                     _identity!.Manifest.MasterSeed)
                 : _wp4Configuration.SolverPolicyOptions!);
 
-        if (!solved.IsSuccess)
+        if (!dispatched.IsSuccess)
         {
             _onlineCoordinator.DiscardPendingProposal();
             return OnlineDecisionBuildResult.Fail(
                 "INTERNAL_ERROR",
                 ProtocolFailureDisposition.FailSession,
-                solved.Witness!.Message);
+                dispatched.FailureMessage!);
         }
 
-        var decision = DispatchDecisionResult.Success(
-            solved.Decision!.Decision);
-        var validationPolicies = solved.Decision.EffectivePolicies;
-
-        if (!decision.IsSuccess)
-        {
-            _onlineCoordinator.DiscardPendingProposal();
-            return OnlineDecisionBuildResult.Fail(
-                "INTERNAL_ERROR",
-                ProtocolFailureDisposition.FailSession,
-                decision.Witness!.Message);
-        }
-
-        var validation = _commitmentValidator.Validate(
-            new CommitmentValidationContext(
-                beforeEventState,
-                reduced.ProposedState!,
-                decision.Decision!.ProposedState,
-                validationPolicies,
-                _stopDistances,
-                publicationScope,
-                sourceEventSequence));
-
-        if (!validation.IsValid)
-        {
-            // The policy already validated this decision, so a rejection here is an
-            // internal inconsistency. The commitment code is not a protocol error
-            // code, and encoding it used to throw; it is kept in the message.
-            _onlineCoordinator.DiscardPendingProposal();
-            var witness = validation.Witnesses[0];
-            return OnlineDecisionBuildResult.Fail(
-                "INTERNAL_ERROR",
-                ProtocolFailureDisposition.FailSession,
-                $"{witness.Code}: {witness.Message}");
-        }
-
-        var stateToStage = validation.ValidatedState!;
-        IReadOnlyList<PromisePublication> publications = validation.Publications;
-
-        if (decision.Decision.GenerationDiagnostics is { } diagnostics
-            && diagnostics.ExogenousServiceQualityBreaches.Count != 0)
-        {
-            var bridged = _breachBridge.Apply(
-                reduced.ProposedState!,
-                stateToStage,
-                diagnostics,
-                validationPolicies,
-                _stopDistances,
-                sourceEventSequence);
-
-            if (!bridged.IsSuccess)
-            {
-                _onlineCoordinator.DiscardPendingProposal();
-                return OnlineDecisionBuildResult.Fail(
-                    "INTERNAL_ERROR",
-                    ProtocolFailureDisposition.FailSession,
-                    $"EXOGENOUS_BREACH_BRIDGE_FAILED: {bridged.Error}");
-            }
-
-            stateToStage = bridged.State!;
-        }
-
-        // ADR-089 GĐ4: Shadow Control. Every rider whose first promise this decision publishes
-        // gets its frozen class now, from this staged state, so the next decision reads it and
-        // the state hash and checkpoint carry it (engine17.js:742-776).
-        if (_shadowAllocator is not null)
-        {
-            var opened = publications
-                .Where(value => value.Entry.Kind == CommitmentLedgerEntryKind.InitialPromise)
-                .Select(value => value.Entry.PublishedPromise.Projection.RequestId)
-                .ToArray();
-            stateToStage = _shadowAllocator.Allocate(
-                stateToStage,
-                opened,
-                stateToStage.Run.SimulationTime);
-        }
+        var decision = dispatched.Decision!;
+        var stateToStage = dispatched.StateToStage!;
+        var publications = dispatched.Publications!;
 
         // One canonicalization and one hash of the staged state per epoch.
         CanonicalSegments? stagedCanonical = null;
@@ -216,16 +143,16 @@ public sealed partial class RunnerSession
             : new CanonicalStateBytes(stateToStage, stagedCanonical);
 
         var actions = OnlineDecisionActionMapper.Map(
-                decision.Decision,
+                decision,
                 beforeEventState)
             .Concat(OnlineDecisionActionMapper.MapPublications(publications))
             .ToArray();
-        var reasonCode = decision.Decision.RequestActions.Any(
+        var reasonCode = decision.RequestActions.Any(
             value => value.Outcome == RequestDecisionOutcome.Accepted)
-            || decision.Decision.RequestActions.Count == 0
+            || decision.RequestActions.Count == 0
                 ? DecisionReasonCodes.Accepted
                 : DecisionReasonCodes.NoFeasibleInsertion;
-        var solverStatus = decision.Decision.SelectionExecution?.SolveResult.Status
+        var solverStatus = decision.SelectionExecution?.SolveResult.Status
             switch
         {
             CandidateSelectionSolveStatus.SafeFallback =>

@@ -1,4 +1,5 @@
 using RideBound.Algorithms.Candidates;
+using RideBound.Algorithms.Dispatch;
 using RideBound.Application.Commitments;
 using RideBound.Application.State;
 using RideBound.Application.Travel;
@@ -10,7 +11,6 @@ using RideBound.Domain.Routes;
 using RideBound.Domain.Runs;
 using RideBound.Domain.Validation;
 using RideBound.Domain.Vehicles;
-using RideBound.Runner.Mapping;
 
 namespace RideBound.Runner.Tests.Online;
 
