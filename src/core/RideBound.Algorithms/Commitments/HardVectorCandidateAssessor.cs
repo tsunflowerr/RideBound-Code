@@ -225,33 +225,7 @@ public sealed class HardVectorCandidateAssessor
         if (rawCandidateSets.Any(set => set.Candidates.Any(value => value.RelocationRole is not null)))
         {
             var relocated = AssessRelocations(context, rawCandidateSets);
-
-            for (var index = 0; index < outputSets.Count; index++)
-            {
-                var set = outputSets[index];
-                var retained = relocated.Retained
-                    .Where(value => value.VehicleId == set.VehicleId)
-                    .ToArray();
-                var pruned = relocated.Pruned
-                    .Where(value => value.VehicleId == set.VehicleId)
-                    .ToArray();
-
-                if (retained.Length != 0 || pruned.Length != 0)
-                {
-                    outputSets[index] = set with
-                    {
-                        Candidates = set.Candidates
-                            .Concat(retained)
-                            .OrderBy(value => value.CandidateId, StringComparer.Ordinal)
-                            .ToArray(),
-                        PrunedCandidates = set.PrunedCandidates
-                            .Concat(pruned)
-                            .OrderBy(value => value.CandidateId, StringComparer.Ordinal)
-                            .ToArray(),
-                    };
-                }
-            }
-
+            MergeRelocations(outputSets, relocated);
             assessments.AddRange(relocated.Assessments);
         }
 
@@ -426,6 +400,42 @@ public sealed class HardVectorCandidateAssessor
         }
 
         return PairResult.Kept(new HardVectorCandidateAssessment(candidate.CandidateId));
+    }
+
+    /// <summary>
+    /// Adds the assessed G2 candidates to their vehicle's set: kept ones to the candidates,
+    /// rejected ones to the pruned candidates, each list again in candidate-id order. A set with
+    /// no G2 candidate of its vehicle stays as it is.
+    /// </summary>
+    private static void MergeRelocations(
+        List<VehicleCandidateSet> outputSets,
+        RelocationAssessment relocated)
+    {
+        for (var index = 0; index < outputSets.Count; index++)
+        {
+            var set = outputSets[index];
+            var retained = relocated.Retained
+                .Where(value => value.VehicleId == set.VehicleId)
+                .ToArray();
+            var pruned = relocated.Pruned
+                .Where(value => value.VehicleId == set.VehicleId)
+                .ToArray();
+
+            if (retained.Length != 0 || pruned.Length != 0)
+            {
+                outputSets[index] = set with
+                {
+                    Candidates = set.Candidates
+                        .Concat(retained)
+                        .OrderBy(value => value.CandidateId, StringComparer.Ordinal)
+                        .ToArray(),
+                    PrunedCandidates = set.PrunedCandidates
+                        .Concat(pruned)
+                        .OrderBy(value => value.CandidateId, StringComparer.Ordinal)
+                        .ToArray(),
+                };
+            }
+        }
     }
 
     private sealed record PairResult(
