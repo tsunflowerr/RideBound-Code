@@ -148,36 +148,20 @@ public sealed class SolverBackedRidePoolingPolicy
                 RevisionPenaltyPolicy.GenerationFailure(generated.Witness!).Witness!);
         }
 
-        var candidates = generated.VehicleCandidates!;
-        IReadOnlyDictionary<string, HardVectorCandidateAssessment>?
-            hardAssessments = null;
-        var validationWorkUnits = 0L;
-        var effectivePolicies = context.Policies;
-        var profile = SolverBackedObjectiveProfile.RollingCost;
+        // The C1 hard gate keeps only the candidates the commitment validator accepts.
+        // Every generated candidate counts as validation work.
+        var assessed = _hardAssessor.AssessAndFilter(
+            context,
+            generated.VehicleCandidates!,
+            requireSafetyNoOp: true);
 
-        switch (policyOptions.PolicyKind)
+        if (!assessed.IsSuccess)
         {
-            case RidePoolingPolicyKind.RideBoundHardVector:
-                {
-                    var assessed = _hardAssessor.AssessAndFilter(
-                        context,
-                        candidates,
-                        requireSafetyNoOp: true);
-
-                    if (!assessed.IsSuccess)
-                    {
-                        return AssessmentFailure(assessed.Witness!);
-                    }
-
-                    candidates = assessed.Batch!.FeasibleCandidateSets;
-                    hardAssessments = assessed.Batch.Assessments;
-                    validationWorkUnits = CountCandidates(
-                        generated.VehicleCandidates!);
-                    profile = SolverBackedObjectiveProfile.HardVector;
-                    break;
-                }
+            return AssessmentFailure(assessed.Witness!);
         }
 
+        var candidates = assessed.Batch!.FeasibleCandidateSets;
+        var validationWorkUnits = CountCandidates(generated.VehicleCandidates!);
         var accounting = CreateAccounting(
             generated.Diagnostics!,
             validationWorkUnits,
@@ -195,16 +179,15 @@ public sealed class SolverBackedRidePoolingPolicy
         var validator = new FullFleetValidator(
             context,
             candidates,
-            effectivePolicies,
             _commitmentValidator,
             _physicalValidator);
         var selected = _selector.Select(
             candidates,
-            profile,
+            SolverBackedObjectiveProfile.HardVector,
             policyOptions.ExecutionBudget,
             accounting.Value!,
             validator,
-            hardAssessments);
+            assessed.Batch.Assessments);
 
         if (!selected.IsSuccess)
         {
@@ -228,7 +211,7 @@ public sealed class SolverBackedRidePoolingPolicy
             GenerationDiagnostics = generated.Diagnostics,
         };
         return SolverBackedPolicyDecisionResult.Success(
-            new SolverBackedPolicyDecision(decision, effectivePolicies));
+            new SolverBackedPolicyDecision(decision, context.Policies));
     }
 
     private static DomainResult<CandidateSelectionPreSolveAccounting>
@@ -322,7 +305,6 @@ public sealed class SolverBackedRidePoolingPolicy
     private sealed class FullFleetValidator(
         CommitmentMechanismContext context,
         IReadOnlyList<VehicleCandidateSet> candidates,
-        ICommitmentPolicyProvider effectivePolicies,
         CommitmentDecisionValidator commitmentValidator,
         PhysicalPlanValidator physicalValidator) : IFleetSelectionValidator
     {
@@ -357,7 +339,7 @@ public sealed class SolverBackedRidePoolingPolicy
                     context.BeforeEventState,
                     context.ReducedState,
                     applied.Decision!.ProposedState,
-                    effectivePolicies,
+                    context.Policies,
                     context.StopDistances,
                     context.PublicationScope,
                     context.SourceEventSequence,
