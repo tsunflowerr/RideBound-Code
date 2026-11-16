@@ -210,259 +210,306 @@ public sealed class CommitmentDecisionValidator
                 return ProjectionFailure(candidateProjection.Failure!, request);
             }
 
-            if (priorHistory is null)
-            {
-                if (request.Lifecycle == RequestLifecycle.Accepted)
-                {
-                    // The assignment is still a provisional booking offer. It is
-                    // physically validated but deliberately has no rider promise.
-                    continue;
-                }
-
-                // The first promise opens when the booking is confirmed: the rider was
-                // accepted before this batch and is now waiting or onboard.
-                var opensAtBooking = request.Lifecycle is RequestLifecycle.WaitingPickup
-                        or RequestLifecycle.Onboard
-                    && context.BeforeEventState.Run.Requests.TryGetValue(
-                        request.Id,
-                        out var beforeBooking)
-                    && beforeBooking.Lifecycle == RequestLifecycle.Accepted
-                    && context.ReducedState.Run.Requests.TryGetValue(
-                        request.Id,
-                        out var afterBooking)
-                    && afterBooking.Lifecycle is RequestLifecycle.WaitingPickup
-                        or RequestLifecycle.Onboard;
-
-                if (!opensAtBooking)
-                {
-                    return Invalid(
-                        CommitmentValidationStage.Ledger,
-                        CommitmentFailureCodes.LedgerConflict,
-                        "Initial promise trigger does not match the request lifecycle transition.",
-                        requestId: request.Id,
-                        dimension: "promiseVersion");
-                }
-
-                var publicationId = CreatePublicationId(
-                    context.PublicationScope,
-                    request.Id,
-                    new PromiseVersion(1));
-                var opened = ledger.OpenInitial(
-                    publicationId,
+            var failure = priorHistory is null
+                ? OpenInitialPromise(
+                    context,
+                    request,
                     candidateProjection.Value!,
-                    context.CandidateState.Run.AppliedEpoch,
-                    context.CandidateState.Run.SimulationTime,
-                    "INITIAL_BOOKING_CONFIRMATION",
-                    context.SourceEventSequence);
-
-                if (!opened.IsSuccess)
-                {
-                    return LedgerFailure(opened.Failure!, request.Id);
-                }
-
-                ledger = opened.Ledger!;
-                var entry = ledger.Histories[request.Id].Current;
-                publications.Add(new PromisePublication(publicationId, entry));
-                continue;
-            }
-
-            if (!context.ReducedState.Run.Requests.TryGetValue(
-                    request.Id,
-                    out var oldRequest)
-                || !oldRequest.IsAcceptedActive
-                || oldRequest.AssignedVehicleId is not VehicleId oldVehicleId
-                || !context.ReducedState.Run.Vehicles.TryGetValue(
-                    oldVehicleId,
-                    out var oldVehicle))
-            {
-                return Invalid(
-                    CommitmentValidationStage.State,
-                    CommitmentFailureCodes.LedgerConflict,
-                    "An active ledger history has no matching reduced assignment.",
-                    requestId: request.Id,
-                    dimension: "assignedVehicleId");
-            }
-
-            var oldSchedule = _scheduleProjector.Project(
-                context.ReducedState.Run,
-                oldVehicle,
-                oldVehicle.Route,
-                context.ReducedState.TravelTimes!,
-                context.ReducedState.Run.SimulationTime);
-
-            if (!oldSchedule.IsSuccess)
-            {
-                return Invalid(
-                    CommitmentValidationStage.Projection,
-                    SchedulingFailureCodes.ScheduleProjectionFailed,
-                    oldSchedule.Failure!.Message,
-                    oldVehicle.Id,
-                    request.Id,
-                    "exogenousSchedule");
-            }
-
-            var exogenousProjection = _promiseProjector.Project(
-                context.ReducedState.Run,
-                oldVehicle,
-                oldVehicle.Route,
-                oldSchedule.Schedule!,
-                request.Id,
-                priorHistory.Current.PublishedPromise.Projection);
-
-            if (!exogenousProjection.IsSuccess)
-            {
-                return ProjectionFailure(exogenousProjection.Failure!, request);
-            }
-
-            // Only a deadline or a slack-proportional budget reads the initial promise, so
-            // without one this path is unchanged. The ledger can only be opened by an initial
-            // promise, so a different first entry is a broken invariant, not a rejectable candidate.
-            PromiseProjection? anchor = null;
-
-            if (policy.ReadsInitialPromise)
-            {
-                var initialEntry = priorHistory.Entries[0];
-
-                if (initialEntry.Kind != CommitmentLedgerEntryKind.InitialPromise)
-                {
-                    throw new InvalidOperationException(
-                        "The first ledger entry of a rider must be the initial promise.");
-                }
-
-                anchor = initialEntry.PublishedPromise.Projection;
-            }
-
-            // ADR-089 GĐ4: under Shadow Control the rider's class, frozen at its first promise,
-            // scales its slack-proportional budget or deadline.
-            var shadowAllocation = policy.DropEtaShadowAllocation
-                ? ledger.ShadowAllocationOf(request.Id)
-                : null;
-
-            // Per-rider drop_eta_total_ms limit of a slack-proportional budget; null otherwise.
-            var dropEtaTotalLimit = policy.DropEtaTotalLimitFor(
-                anchor,
-                request.MaxRideTime,
-                shadowAllocation);
-
-            var lockWitnesses = _lockEvaluator.Evaluate(
-                request,
-                priorHistory.Current.PublishedPromise,
-                exogenousProjection.Value!,
-                candidateProjection.Value!,
-                policy,
-                anchor,
-                shadowAllocation);
-
-            if (lockWitnesses.Count != 0)
-            {
-                var lockFailures = lockWitnesses.Select(
-                    value => value.Rule switch
-                    {
-                        CommitmentLockEvaluator.DeadlineCapRule => new CommitmentValidationWitness(
-                            CommitmentValidationStage.Lock,
-                            CommitmentFailureCodes.DeadlineExceeded,
-                            "The candidate delays the drop ETA beyond the initial-promise deadline.",
-                            request.AssignedVehicleId,
-                            value.RequestId,
-                            value.Dimension,
-                            value.Rule),
-                        _ => new CommitmentValidationWitness(
-                            CommitmentValidationStage.Lock,
-                            CommitmentFailureCodes.PhaseLock,
-                            "The candidate changes a phase-locked promise field.",
-                            request.AssignedVehicleId,
-                            value.RequestId,
-                            value.Dimension,
-                            value.Rule),
-                    });
-
-                return CommitmentDecisionValidationResult.Invalid(lockFailures);
-            }
-
-            var calculated = _deltaCalculator.Calculate(
-                priorHistory.Current.PublishedPromise,
-                exogenousProjection.Value!,
-                candidateProjection.Value!,
-                policy.MaterialRevisionRule,
-                context.StopDistances);
-
-            if (!calculated.IsSuccess)
-            {
-                return Invalid(
-                    CommitmentValidationStage.Projection,
-                    calculated.Failure!.Code,
-                    calculated.Failure.Message,
-                    request.AssignedVehicleId,
-                    request.Id,
-                    calculated.Failure.Dimension);
-            }
-
-            // The budget is charged by the decision-induced delta.
-            var budget = _budgetEvaluator.Evaluate(
-                request.Id,
-                request.Lifecycle,
-                priorHistory.Current.BudgetAfter,
-                calculated.Deltas!.DecisionInduced,
-                policy,
-                dropEtaTotalLimit);
-
-            if (!budget.IsAllowed)
-            {
-                var budgetFailures = budget.Witnesses.Select(
-                    value => new CommitmentValidationWitness(
-                        CommitmentValidationStage.Budget,
-                        CommitmentFailureCodes.BudgetExceeded,
-                        "The candidate exceeds a hard commitment dimension.",
-                        request.AssignedVehicleId,
-                        value.RequestId,
-                        value.Dimension,
-                        Limit: value.Limit,
-                        Before: value.Before,
-                        Delta: value.Delta,
-                        After: value.After));
-
-                return CommitmentDecisionValidationResult.Invalid(budgetFailures);
-            }
-
-            var unchanged = calculated.Deltas.Exogenous == CommitmentVector.Zero
-                && calculated.Deltas.DecisionInduced == CommitmentVector.Zero
-                && calculated.Deltas.Visible == CommitmentVector.Zero;
-
-            if (!unchanged)
-            {
-                var nextVersion = priorHistory.Current.PublishedPromise.Version.Next();
-                var revisionId = CreatePublicationId(
-                    context.PublicationScope,
-                    request.Id,
-                    nextVersion);
-                var revised = ledger.AppendRevision(
-                    revisionId,
-                    request.Id,
-                    priorHistory.Current.PublishedPromise.Version,
-                    exogenousProjection.Value!,
+                    ref ledger,
+                    publications)
+                : CheckRevision(
+                    context,
+                    request,
+                    policy,
+                    priorHistory,
                     candidateProjection.Value!,
-                    calculated.Deltas,
-                    context.CandidateState.Run.AppliedEpoch,
-                    context.CandidateState.Run.SimulationTime,
-                    context.RevisionReasonCode,
-                    context.SourceEventSequence);
+                    ref ledger,
+                    publications);
 
-                if (!revised.IsSuccess)
-                {
-                    return LedgerFailure(revised.Failure!, request.Id);
-                }
-
-                ledger = revised.Ledger!;
-                publications.Add(
-                    new PromisePublication(
-                        revisionId,
-                        ledger.Histories[request.Id].Current));
+            if (failure is not null)
+            {
+                return failure;
             }
         }
 
         return CommitmentDecisionValidationResult.Valid(
             context.CandidateState with { Commitments = ledger },
             publications.AsReadOnly());
+    }
+
+    /// <summary>
+    /// A rider without a ledger history: no promise while the booking is a provisional offer,
+    /// then promise version 1 when the booking is confirmed. Returns null when the rider passes.
+    /// </summary>
+    private static CommitmentDecisionValidationResult? OpenInitialPromise(
+        CommitmentValidationContext context,
+        RideRequest request,
+        PromiseProjection candidateProjection,
+        ref CommitmentLedger ledger,
+        List<PromisePublication> publications)
+    {
+        if (request.Lifecycle == RequestLifecycle.Accepted)
+        {
+            // The assignment is still a provisional booking offer. It is
+            // physically validated but deliberately has no rider promise.
+            return null;
+        }
+
+        // The first promise opens when the booking is confirmed: the rider was
+        // accepted before this batch and is now waiting or onboard.
+        var opensAtBooking = request.Lifecycle is RequestLifecycle.WaitingPickup
+                or RequestLifecycle.Onboard
+            && context.BeforeEventState.Run.Requests.TryGetValue(
+                request.Id,
+                out var beforeBooking)
+            && beforeBooking.Lifecycle == RequestLifecycle.Accepted
+            && context.ReducedState.Run.Requests.TryGetValue(
+                request.Id,
+                out var afterBooking)
+            && afterBooking.Lifecycle is RequestLifecycle.WaitingPickup
+                or RequestLifecycle.Onboard;
+
+        if (!opensAtBooking)
+        {
+            return Invalid(
+                CommitmentValidationStage.Ledger,
+                CommitmentFailureCodes.LedgerConflict,
+                "Initial promise trigger does not match the request lifecycle transition.",
+                requestId: request.Id,
+                dimension: "promiseVersion");
+        }
+
+        var publicationId = CreatePublicationId(
+            context.PublicationScope,
+            request.Id,
+            new PromiseVersion(1));
+        var opened = ledger.OpenInitial(
+            publicationId,
+            candidateProjection,
+            context.CandidateState.Run.AppliedEpoch,
+            context.CandidateState.Run.SimulationTime,
+            "INITIAL_BOOKING_CONFIRMATION",
+            context.SourceEventSequence);
+
+        if (!opened.IsSuccess)
+        {
+            return LedgerFailure(opened.Failure!, request.Id);
+        }
+
+        ledger = opened.Ledger!;
+        var entry = ledger.Histories[request.Id].Current;
+        publications.Add(new PromisePublication(publicationId, entry));
+        return null;
+    }
+
+    /// <summary>
+    /// A rider with an open promise: the candidate must keep the phase locks, the deadline and
+    /// the budget, and a changed promise is appended to the ledger as a revision. Returns null
+    /// when the rider passes.
+    /// </summary>
+    private CommitmentDecisionValidationResult? CheckRevision(
+        CommitmentValidationContext context,
+        RideRequest request,
+        CommitmentPolicy policy,
+        RiderCommitmentHistory priorHistory,
+        PromiseProjection candidateProjection,
+        ref CommitmentLedger ledger,
+        List<PromisePublication> publications)
+    {
+        if (!context.ReducedState.Run.Requests.TryGetValue(
+                request.Id,
+                out var oldRequest)
+            || !oldRequest.IsAcceptedActive
+            || oldRequest.AssignedVehicleId is not VehicleId oldVehicleId
+            || !context.ReducedState.Run.Vehicles.TryGetValue(
+                oldVehicleId,
+                out var oldVehicle))
+        {
+            return Invalid(
+                CommitmentValidationStage.State,
+                CommitmentFailureCodes.LedgerConflict,
+                "An active ledger history has no matching reduced assignment.",
+                requestId: request.Id,
+                dimension: "assignedVehicleId");
+        }
+
+        var oldSchedule = _scheduleProjector.Project(
+            context.ReducedState.Run,
+            oldVehicle,
+            oldVehicle.Route,
+            context.ReducedState.TravelTimes!,
+            context.ReducedState.Run.SimulationTime);
+
+        if (!oldSchedule.IsSuccess)
+        {
+            return Invalid(
+                CommitmentValidationStage.Projection,
+                SchedulingFailureCodes.ScheduleProjectionFailed,
+                oldSchedule.Failure!.Message,
+                oldVehicle.Id,
+                request.Id,
+                "exogenousSchedule");
+        }
+
+        var exogenousProjection = _promiseProjector.Project(
+            context.ReducedState.Run,
+            oldVehicle,
+            oldVehicle.Route,
+            oldSchedule.Schedule!,
+            request.Id,
+            priorHistory.Current.PublishedPromise.Projection);
+
+        if (!exogenousProjection.IsSuccess)
+        {
+            return ProjectionFailure(exogenousProjection.Failure!, request);
+        }
+
+        // Only a deadline or a slack-proportional budget reads the initial promise, so
+        // without one this path is unchanged. The ledger can only be opened by an initial
+        // promise, so a different first entry is a broken invariant, not a rejectable candidate.
+        PromiseProjection? anchor = null;
+
+        if (policy.ReadsInitialPromise)
+        {
+            var initialEntry = priorHistory.Entries[0];
+
+            if (initialEntry.Kind != CommitmentLedgerEntryKind.InitialPromise)
+            {
+                throw new InvalidOperationException(
+                    "The first ledger entry of a rider must be the initial promise.");
+            }
+
+            anchor = initialEntry.PublishedPromise.Projection;
+        }
+
+        // ADR-089 GĐ4: under Shadow Control the rider's class, frozen at its first promise,
+        // scales its slack-proportional budget or deadline.
+        var shadowAllocation = policy.DropEtaShadowAllocation
+            ? ledger.ShadowAllocationOf(request.Id)
+            : null;
+
+        // Per-rider drop_eta_total_ms limit of a slack-proportional budget; null otherwise.
+        var dropEtaTotalLimit = policy.DropEtaTotalLimitFor(
+            anchor,
+            request.MaxRideTime,
+            shadowAllocation);
+
+        var lockWitnesses = _lockEvaluator.Evaluate(
+            request,
+            priorHistory.Current.PublishedPromise,
+            exogenousProjection.Value!,
+            candidateProjection,
+            policy,
+            anchor,
+            shadowAllocation);
+
+        if (lockWitnesses.Count != 0)
+        {
+            var lockFailures = lockWitnesses.Select(
+                value => value.Rule switch
+                {
+                    CommitmentLockEvaluator.DeadlineCapRule => new CommitmentValidationWitness(
+                        CommitmentValidationStage.Lock,
+                        CommitmentFailureCodes.DeadlineExceeded,
+                        "The candidate delays the drop ETA beyond the initial-promise deadline.",
+                        request.AssignedVehicleId,
+                        value.RequestId,
+                        value.Dimension,
+                        value.Rule),
+                    _ => new CommitmentValidationWitness(
+                        CommitmentValidationStage.Lock,
+                        CommitmentFailureCodes.PhaseLock,
+                        "The candidate changes a phase-locked promise field.",
+                        request.AssignedVehicleId,
+                        value.RequestId,
+                        value.Dimension,
+                        value.Rule),
+                });
+
+            return CommitmentDecisionValidationResult.Invalid(lockFailures);
+        }
+
+        var calculated = _deltaCalculator.Calculate(
+            priorHistory.Current.PublishedPromise,
+            exogenousProjection.Value!,
+            candidateProjection,
+            policy.MaterialRevisionRule,
+            context.StopDistances);
+
+        if (!calculated.IsSuccess)
+        {
+            return Invalid(
+                CommitmentValidationStage.Projection,
+                calculated.Failure!.Code,
+                calculated.Failure.Message,
+                request.AssignedVehicleId,
+                request.Id,
+                calculated.Failure.Dimension);
+        }
+
+        // The budget is charged by the decision-induced delta.
+        var budget = _budgetEvaluator.Evaluate(
+            request.Id,
+            request.Lifecycle,
+            priorHistory.Current.BudgetAfter,
+            calculated.Deltas!.DecisionInduced,
+            policy,
+            dropEtaTotalLimit);
+
+        if (!budget.IsAllowed)
+        {
+            var budgetFailures = budget.Witnesses.Select(
+                value => new CommitmentValidationWitness(
+                    CommitmentValidationStage.Budget,
+                    CommitmentFailureCodes.BudgetExceeded,
+                    "The candidate exceeds a hard commitment dimension.",
+                    request.AssignedVehicleId,
+                    value.RequestId,
+                    value.Dimension,
+                    Limit: value.Limit,
+                    Before: value.Before,
+                    Delta: value.Delta,
+                    After: value.After));
+
+            return CommitmentDecisionValidationResult.Invalid(budgetFailures);
+        }
+
+        var unchanged = calculated.Deltas.Exogenous == CommitmentVector.Zero
+            && calculated.Deltas.DecisionInduced == CommitmentVector.Zero
+            && calculated.Deltas.Visible == CommitmentVector.Zero;
+
+        if (!unchanged)
+        {
+            var nextVersion = priorHistory.Current.PublishedPromise.Version.Next();
+            var revisionId = CreatePublicationId(
+                context.PublicationScope,
+                request.Id,
+                nextVersion);
+            var revised = ledger.AppendRevision(
+                revisionId,
+                request.Id,
+                priorHistory.Current.PublishedPromise.Version,
+                exogenousProjection.Value!,
+                candidateProjection,
+                calculated.Deltas,
+                context.CandidateState.Run.AppliedEpoch,
+                context.CandidateState.Run.SimulationTime,
+                context.RevisionReasonCode,
+                context.SourceEventSequence);
+
+            if (!revised.IsSuccess)
+            {
+                return LedgerFailure(revised.Failure!, request.Id);
+            }
+
+            ledger = revised.Ledger!;
+            publications.Add(
+                new PromisePublication(
+                    revisionId,
+                    ledger.Histories[request.Id].Current));
+        }
+
+        return null;
     }
 
     /// <param name="relocation">
