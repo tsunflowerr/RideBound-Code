@@ -8,7 +8,7 @@ using RideBound.Domain.Vehicles;
 
 namespace RideBound.Algorithms.Candidates;
 
-public sealed class InsertionCandidateGenerator
+public sealed partial class InsertionCandidateGenerator
 {
     private readonly PhysicalPlanValidator _validator;
     private readonly ForwardSlackProfileCache _slackCache;
@@ -99,8 +99,9 @@ public sealed class InsertionCandidateGenerator
 
         IReadOnlyList<RelocationCandidateLoss>? relocationLosses = null;
 
-        // G2 runs only when configured, after the ordinary search, and its candidates are
-        // appended after retention, so the ordinary sets are unchanged when it is off.
+        // G2 (WaitingRiderRelocationGenerator.cs) runs only when configured, after the ordinary
+        // search, and its candidates are appended after retention, so the ordinary sets are
+        // unchanged when it is off.
         if (options.WaitingRiderRelocation is { } relocationOptions)
         {
             var relocated = GenerateRelocations(state, requests, options, relocationOptions);
@@ -124,183 +125,6 @@ public sealed class InsertionCandidateGenerator
                 omissions.AsReadOnly(),
                 breaches.AsReadOnly(),
                 relocationLosses));
-    }
-
-    /// <summary>
-    /// G2 (waiting-rider relocation), mirroring the emulator's reference (engine.js 463-497):
-    /// for each donor in ordinal order and each eligible waiting rider w,
-    /// <list type="number">
-    /// <item>the donor-only route D0 (the suffix without w) must be strictly feasible;</item>
-    /// <item>every receiver route (w's own stops inserted into another vehicle's suffix, no new
-    /// request) is evaluated, and at least one must be feasible;</item>
-    /// <item>donor routes taking the new requests are explored from D0 with the ordinary
-    /// best-first search and work cap.</item>
-    /// </list>
-    /// A rider failing 1 or 2 yields no candidate. Every route is checked physically against the
-    /// reduced state with the move declared; commitments are assessed later, as a pair.
-    /// </summary>
-    private RelocationGenerationResult GenerateRelocations(
-        OnlineState state,
-        IReadOnlyList<RideRequest> requests,
-        CandidateGenerationOptions options,
-        WaitingRiderRelocationGenerationOptions relocationOptions)
-    {
-        var result = new RelocationGenerationResult();
-
-        foreach (var donor in state.Run.Vehicles.Values.OrderBy(
-                     value => value.Id.Value,
-                     StringComparer.Ordinal))
-        {
-            var seeds = _relocationBuilder.Eligible(state, donor);
-
-            if (seeds.Count == 0)
-            {
-                continue;
-            }
-
-            var work = 0L;
-            var evaluatedReceivers = 0L;
-            var feasibleReceivers = 0L;
-            var feasibleDonors = 0L;
-            var omittedDonorPaths = 0L;
-            var saturated = false;
-            var withoutReceiver = 0L;
-
-            foreach (var seed in seeds)
-            {
-                var targets = _relocationBuilder.Targets(
-                    state,
-                    donor,
-                    seed.Request,
-                    relocationOptions.MaximumTargetVehicles);
-
-                if (targets.Count == 0)
-                {
-                    withoutReceiver++;
-                    continue;
-                }
-
-                // The donor's own checks ignore the receiver, so the context names the first
-                // target; each receiver route is checked with its own vehicle below.
-                var donorContext = new WaitingRiderRelocation(
-                    seed.Request.Id,
-                    donor.Id,
-                    targets[0].Id);
-                var donorFeasible =
-                    new Dictionary<string, InsertionCandidate>(StringComparer.Ordinal);
-                var donorPruned =
-                    new Dictionary<string, CandidatePruneWitness>(StringComparer.Ordinal);
-                var donorOnly = donor.Route.ReplaceMutableSuffix(seed.DonorSuffix);
-                work = SaturatingAdd(work, 1);
-
-                if (donorOnly.IsSuccess)
-                {
-                    EvaluateRoute(
-                        state,
-                        donor,
-                        donorOnly.Value!,
-                        [],
-                        isNoOp: false,
-                        ServiceQualityAllowance.Strict,
-                        donorFeasible,
-                        donorPruned,
-                        relocation: donorContext,
-                        relocationRole: RelocationRole.Donor);
-                }
-
-                if (donorFeasible.Count == 0)
-                {
-                    continue;
-                }
-
-                var receiverFeasible =
-                    new Dictionary<string, InsertionCandidate>(StringComparer.Ordinal);
-                var receiverPruned =
-                    new Dictionary<string, CandidatePruneWitness>(StringComparer.Ordinal);
-
-                foreach (var receiver in targets)
-                {
-                    var receiverContext = new WaitingRiderRelocation(
-                        seed.Request.Id,
-                        donor.Id,
-                        receiver.Id);
-
-                    foreach (var route in WaitingRiderRelocationBuilder.ReceiverRoutes(
-                                 receiver,
-                                 seed.Pickup,
-                                 seed.DropOff))
-                    {
-                        work = SaturatingAdd(work, 1);
-                        evaluatedReceivers = SaturatingAdd(evaluatedReceivers, 1);
-                        EvaluateRoute(
-                            state,
-                            receiver,
-                            route,
-                            [],
-                            isNoOp: false,
-                            ServiceQualityAllowance.Strict,
-                            receiverFeasible,
-                            receiverPruned,
-                            relocation: receiverContext,
-                            relocationRole: RelocationRole.Receiver);
-                    }
-                }
-
-                if (receiverFeasible.Count == 0)
-                {
-                    withoutReceiver++;
-                    continue;
-                }
-
-                var exploration = ExploreBestFirst(
-                    state,
-                    donor,
-                    requests,
-                    options,
-                    ServiceQualityAllowance.Strict,
-                    donorFeasible,
-                    donorPruned,
-                    new RelocationRoot(donorContext, seed.DonorSuffix));
-
-                work = SaturatingAdd(work, exploration.WorkUnits);
-                omittedDonorPaths = SaturatingAdd(
-                    omittedDonorPaths,
-                    exploration.OmittedCandidatePathCount);
-                saturated |= exploration.OmissionCountWasSaturated;
-
-                if (exploration.OmittedCandidatePathCount > 0)
-                {
-                    result.Omissions.Add(
-                        new CandidateOmissionWitness(
-                            CandidateGenerationFailureCodes.RelocationWorkBoundOmission,
-                            exploration.OmittedCandidatePathCount,
-                            CandidateIdentity.CreateOmissionDigest(
-                                exploration.OmittedSubtreeIds),
-                            [seed.Request.Id],
-                            exploration.OmissionCountWasSaturated));
-                    result.Truncated.Add(donor.Id);
-                }
-
-                feasibleDonors = SaturatingAdd(feasibleDonors, donorFeasible.Count);
-                feasibleReceivers = SaturatingAdd(feasibleReceivers, receiverFeasible.Count);
-                result.Add(donorFeasible.Values, donorPruned.Values);
-                result.Add(receiverFeasible.Values, receiverPruned.Values);
-            }
-
-            result.Losses.Add(
-                new RelocationCandidateLoss(
-                    donor.Id,
-                    seeds.Count,
-                    work,
-                    evaluatedReceivers,
-                    feasibleReceivers,
-                    feasibleDonors,
-                    omittedDonorPaths,
-                    saturated,
-                    withoutReceiver));
-        }
-
-        return result;
     }
 
     private VehicleGenerationResult GenerateForVehicle(
@@ -350,37 +174,16 @@ public sealed class InsertionCandidateGenerator
                     value.ExogenousMilliseconds))
             .ToArray();
 
-        var noOpCandidateId = CandidateIdentity.Create(
-            state,
-            vehicle.Id,
-            vehicle.Route,
-            []);
-        EvaluateRoute(
+        var noOpFailure = EvaluateNoOp(
             state,
             vehicle,
-            vehicle.Route,
-            [],
-            isNoOp: true,
             serviceQuality,
             feasibleById,
             prunedById);
 
-        if (!feasibleById.TryGetValue(noOpCandidateId, out var noOp)
-            || !noOp.IsNoOp)
+        if (noOpFailure is not null)
         {
-            prunedById.TryGetValue(noOpCandidateId, out var prune);
-            return VehicleGenerationResult.Failure(
-                new CandidateGenerationWitness(
-                    CandidateGenerationFailureCodes.ActiveRouteInfeasible,
-                    prune is null
-                        ? "The active route could not be retained as the safety " +
-                          "no-op candidate."
-                        : "The active route could not be retained as the safety " +
-                          $"no-op candidate: {prune.Code}: {prune.Message}" +
-                          FormatPhysicalDetails(prune.PhysicalWitness),
-                    vehicle.Id,
-                    prune?.PhysicalWitness?.RequestId,
-                    prune?.PhysicalWitness?.Dimension ?? prune?.Code));
+            return VehicleGenerationResult.Failure(noOpFailure);
         }
 
         // ADR-047. The relief exists to keep the safety no-op alive, and the
@@ -417,28 +220,7 @@ public sealed class InsertionCandidateGenerator
             ranked = retention.Retained.ToList();
         }
 
-        var omissions = new List<CandidateOmissionWitness>();
-
-        if (exploration.OmittedCandidatePathCount > 0)
-        {
-            omissions.Add(
-                new CandidateOmissionWitness(
-                    CandidateGenerationFailureCodes.WorkBoundOmission,
-                    exploration.OmittedCandidatePathCount,
-                    CandidateIdentity.CreateOmissionDigest(
-                        exploration.OmittedSubtreeIds),
-                    CountWasSaturated: exploration.OmissionCountWasSaturated));
-        }
-
-        if (omittedByCap.Length > 0)
-        {
-            omissions.Add(
-                new CandidateOmissionWitness(
-                    CandidateGenerationFailureCodes.CandidateCapOmission,
-                    omittedByCap.Length,
-                    CandidateIdentity.CreateOmissionDigest(
-                        omittedByCap.Select(candidate => candidate.CandidateId))));
-        }
+        var omissions = BuildOmissions(exploration, omittedByCap);
 
         var loss = new VehicleCandidateLoss(
             exploration.WorkUnits,
@@ -468,6 +250,86 @@ public sealed class InsertionCandidateGenerator
                 loss),
             omissions.AsReadOnly(),
             breaches);
+    }
+
+    /// <summary>
+    /// Evaluates the unchanged active route as the safety no-op candidate, under the probed
+    /// allowance. Returns the failure witness when the route cannot be kept, otherwise null.
+    /// </summary>
+    private CandidateGenerationWitness? EvaluateNoOp(
+        OnlineState state,
+        VehicleState vehicle,
+        ServiceQualityAllowance serviceQuality,
+        Dictionary<string, InsertionCandidate> feasibleById,
+        Dictionary<string, CandidatePruneWitness> prunedById)
+    {
+        var noOpCandidateId = CandidateIdentity.Create(
+            state,
+            vehicle.Id,
+            vehicle.Route,
+            []);
+        EvaluateRoute(
+            state,
+            vehicle,
+            vehicle.Route,
+            [],
+            isNoOp: true,
+            serviceQuality,
+            feasibleById,
+            prunedById);
+
+        if (!feasibleById.TryGetValue(noOpCandidateId, out var noOp)
+            || !noOp.IsNoOp)
+        {
+            prunedById.TryGetValue(noOpCandidateId, out var prune);
+            return new CandidateGenerationWitness(
+                CandidateGenerationFailureCodes.ActiveRouteInfeasible,
+                prune is null
+                    ? "The active route could not be retained as the safety " +
+                      "no-op candidate."
+                    : "The active route could not be retained as the safety " +
+                      $"no-op candidate: {prune.Code}: {prune.Message}" +
+                      FormatPhysicalDetails(prune.PhysicalWitness),
+                vehicle.Id,
+                prune?.PhysicalWitness?.RequestId,
+                prune?.PhysicalWitness?.Dimension ?? prune?.Code);
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// The omission witnesses of one vehicle: first the paths the work bound left unexplored,
+    /// then the feasible candidates the cap dropped.
+    /// </summary>
+    private static List<CandidateOmissionWitness> BuildOmissions(
+        ExplorationResult exploration,
+        InsertionCandidate[] omittedByCap)
+    {
+        var omissions = new List<CandidateOmissionWitness>();
+
+        if (exploration.OmittedCandidatePathCount > 0)
+        {
+            omissions.Add(
+                new CandidateOmissionWitness(
+                    CandidateGenerationFailureCodes.WorkBoundOmission,
+                    exploration.OmittedCandidatePathCount,
+                    CandidateIdentity.CreateOmissionDigest(
+                        exploration.OmittedSubtreeIds),
+                    CountWasSaturated: exploration.OmissionCountWasSaturated));
+        }
+
+        if (omittedByCap.Length > 0)
+        {
+            omissions.Add(
+                new CandidateOmissionWitness(
+                    CandidateGenerationFailureCodes.CandidateCapOmission,
+                    omittedByCap.Length,
+                    CandidateIdentity.CreateOmissionDigest(
+                        omittedByCap.Select(candidate => candidate.CandidateId))));
+        }
+
+        return omissions;
     }
 
     private static string FormatPhysicalDetails(
@@ -998,74 +860,6 @@ public sealed class InsertionCandidateGenerator
         long OmittedCandidatePathCount,
         IReadOnlyList<string> OmittedSubtreeIds,
         bool OmissionCountWasSaturated);
-
-    /// <summary>The root of a G2 donor search: D0's suffix and the declared move.</summary>
-    private sealed record RelocationRoot(
-        WaitingRiderRelocation Relocation,
-        IReadOnlyList<RouteStop> Suffix);
-
-    /// <summary>
-    /// G2 output, kept per vehicle until it is appended to the ordinary sets after retention.
-    /// </summary>
-    private sealed class RelocationGenerationResult
-    {
-        private readonly Dictionary<VehicleId, List<InsertionCandidate>> _candidates = [];
-        private readonly Dictionary<VehicleId, List<CandidatePruneWitness>> _pruned = [];
-
-        public List<CandidateOmissionWitness> Omissions { get; } = [];
-
-        public List<RelocationCandidateLoss> Losses { get; } = [];
-
-        public HashSet<VehicleId> Truncated { get; } = [];
-
-        public void Add(
-            IEnumerable<InsertionCandidate> candidates,
-            IEnumerable<CandidatePruneWitness> pruned)
-        {
-            foreach (var candidate in candidates)
-            {
-                (_candidates.TryGetValue(candidate.VehicleId, out var list)
-                    ? list
-                    : _candidates[candidate.VehicleId] = []).Add(candidate);
-            }
-
-            foreach (var witness in pruned)
-            {
-                (_pruned.TryGetValue(witness.VehicleId, out var list)
-                    ? list
-                    : _pruned[witness.VehicleId] = []).Add(witness);
-            }
-        }
-
-        /// <summary>
-        /// The set unchanged when G2 produced nothing for its vehicle; otherwise the union,
-        /// still ordered by candidate id. G2 candidates are never capped (emulator-equal).
-        /// </summary>
-        public VehicleCandidateSet MergeInto(VehicleCandidateSet set)
-        {
-            var hasCandidates = _candidates.TryGetValue(set.VehicleId, out var candidates);
-            var hasPruned = _pruned.TryGetValue(set.VehicleId, out var pruned);
-            var truncated = Truncated.Contains(set.VehicleId);
-
-            if (!hasCandidates && !hasPruned && !truncated)
-            {
-                return set;
-            }
-
-            return set with
-            {
-                Candidates = set.Candidates
-                    .Concat(candidates ?? [])
-                    .OrderBy(value => value.CandidateId, StringComparer.Ordinal)
-                    .ToArray(),
-                PrunedCandidates = set.PrunedCandidates
-                    .Concat(pruned ?? [])
-                    .OrderBy(value => value.CandidateId, StringComparer.Ordinal)
-                    .ToArray(),
-                WasTruncated = set.WasTruncated || truncated,
-            };
-        }
-    }
 
     private sealed record VehicleGenerationResult(
         VehicleCandidateSet? Candidates,
