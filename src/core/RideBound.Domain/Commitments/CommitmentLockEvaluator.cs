@@ -39,22 +39,22 @@ public sealed class CommitmentLockEvaluator
                 "Lock evaluation request and promise identities must match.");
         }
 
-        // Waiting-rider relocation lifts only this rule's vehicle lock, and only for a
+        // The rules in order: the accepted assignment, then onboard, then final confirmation.
+        // Waiting-rider relocation lifts only the accepted-assignment vehicle lock, and only for a
         // confirmed waiting rider; the onboard and configured rules still apply.
-        var activeLocks = policy.WaitingRiderRelocation
+        var acceptedLocks = policy.WaitingRiderRelocation
             && request.Lifecycle == RequestLifecycle.WaitingPickup
                 ? PromiseLock.None
                 : PromiseLock.Vehicle;
-        var rules = new List<(PromiseLock Locks, string Rule)>();
+        var rules = new List<(PromiseLock Locks, string Rule)>
+        {
+            (acceptedLocks, "accepted_assignment"),
+        };
 
         if (request.Lifecycle == RequestLifecycle.Onboard)
         {
             rules.Add(
-                (
-                    PromiseLock.Vehicle
-                    | PromiseLock.PickupStop
-                    | PromiseLock.PickupEta,
-                    "onboard"));
+                (PromiseLock.Vehicle | PromiseLock.PickupStop | PromiseLock.PickupEta, "onboard"));
         }
 
         if (request.Lifecycle == RequestLifecycle.WaitingPickup
@@ -63,7 +63,6 @@ public sealed class CommitmentLockEvaluator
             rules.Add((policy.FinalConfirmationLocks, "final_confirmation"));
         }
 
-        rules.Insert(0, (activeLocks, "accepted_assignment"));
         var witnesses = new List<CommitmentLockWitness>();
 
         foreach (var (locks, rule) in rules)

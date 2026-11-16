@@ -618,38 +618,43 @@ public sealed class CommitmentDecisionValidator
 
             var current = pair.Value;
 
-            if (current.Lifecycle != RequestLifecycle.Pending)
+            // A pending request keeps its definition; it may stay pending, be accepted on a
+            // vehicle or be rejected.
+            if (current.Lifecycle == RequestLifecycle.Pending)
             {
-                if (current != proposed)
-                {
-                    if (relocation is not null
-                        || WaitingRiderRelocation.FromChange(current, proposed) is not { } moved)
+                if (!HasSameRequestDefinition(current, proposed)
+                    || proposed.ActualPickupTime is not null
+                    || proposed.Lifecycle switch
                     {
-                        relocation = null;
-                        return false;
-                    }
-
-                    relocation = moved;
+                        RequestLifecycle.Pending =>
+                            proposed.AssignedVehicleId is null,
+                        RequestLifecycle.Accepted =>
+                            proposed.AssignedVehicleId is not null,
+                        RequestLifecycle.Rejected =>
+                            proposed.AssignedVehicleId is null,
+                        _ => false,
+                    } is false)
+                {
+                    return false;
                 }
 
                 continue;
             }
 
-            if (!HasSameRequestDefinition(current, proposed)
-                || proposed.ActualPickupTime is not null
-                || proposed.Lifecycle switch
-                {
-                    RequestLifecycle.Pending =>
-                        proposed.AssignedVehicleId is null,
-                    RequestLifecycle.Accepted =>
-                        proposed.AssignedVehicleId is not null,
-                    RequestLifecycle.Rejected =>
-                        proposed.AssignedVehicleId is null,
-                    _ => false,
-                } is false)
+            // Other requests stay unchanged, except one waiting rider moved to another vehicle.
+            if (current == proposed)
             {
+                continue;
+            }
+
+            if (relocation is not null
+                || WaitingRiderRelocation.FromChange(current, proposed) is not { } moved)
+            {
+                relocation = null;
                 return false;
             }
+
+            relocation = moved;
         }
 
         return true;
