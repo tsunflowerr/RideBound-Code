@@ -1,10 +1,10 @@
-using System.Reflection;
 using System.Text;
 using System.Text.Json.Nodes;
 using RideBound.Contracts.Serialization;
 using RideBound.Domain.Commitments;
 using RideBound.Domain.Common;
 using RideBound.Runner.Configuration;
+using RideBound.Tests;
 
 namespace RideBound.Runner.Tests.Configuration;
 
@@ -15,9 +15,9 @@ public sealed class CommitmentPolicyConfigurationTests
     {
         var configuration = CommitmentPolicyConfiguration.Decode(
             File.ReadAllBytes(Path.Combine(
-                RepositoryRoot(),
-                "benchmarks",
-                "configurations",
+                TestPaths.Root(),
+                "configs",
+                "test",
                 "wp3-boundary-test-v1.json")));
 
         Assert.Equal(
@@ -206,9 +206,9 @@ public sealed class CommitmentPolicyConfigurationTests
         // archived T3.8 run (ADR-078); its canonical hash must not move. Adding a deadline
         // gives a different configuration, so the arms of a comparison stay distinguishable.
         var reference = File.ReadAllText(Path.Combine(
-            RepositoryRoot(),
-            "benchmarks",
-            "configurations",
+            TestPaths.Root(),
+            "configs",
+            "test",
             "wp14-c1-h6-reference-v1.json"));
         var archived = CommitmentPolicyConfiguration.Decode(Encoding.UTF8.GetBytes(reference));
 
@@ -625,11 +625,4 @@ public sealed class CommitmentPolicyConfigurationTests
             $"\"limits\":[{limits}],\"materialRevisionRule\":{{\"rawEtaThresholdMs\":1}}" +
             $"{extra}}}],\"stopDistances\":[]}}");
     }
-
-    private static string RepositoryRoot() =>
-        typeof(CommitmentPolicyConfigurationTests)
-            .Assembly
-            .GetCustomAttributes<AssemblyMetadataAttribute>()
-            .Single(value => value.Key == "RideBoundRepositoryRoot")
-            .Value!;
 }

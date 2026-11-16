@@ -1,5 +1,6 @@
 using RideBound.Domain.Commitments;
 using RideBound.Runner.Configuration;
+using RideBound.Tests;
 
 namespace RideBound.Runner.Tests.Configuration;
 
@@ -137,9 +138,9 @@ public sealed class Wp14FactorConfigurationTests
     private static CommitmentPolicyConfiguration Load(string name)
     {
         var path = Path.Combine(
-            RepositoryRoot(),
-            "benchmarks",
-            "configurations",
+            TestPaths.Root(),
+            "configs",
+            "test",
             $"{name}.json");
         return CommitmentPolicyConfiguration.Decode(File.ReadAllBytes(path));
     }
@@ -148,19 +149,5 @@ public sealed class Wp14FactorConfigurationTests
     {
         Assert.True(Load(name).TryGetPolicy(PolicyId, out var policy));
         return policy;
-    }
-
-    private static string RepositoryRoot()
-    {
-        var directory = new DirectoryInfo(AppContext.BaseDirectory);
-
-        while (directory is not null
-            && !File.Exists(Path.Combine(directory.FullName, "RideBound.slnx")))
-        {
-            directory = directory.Parent;
-        }
-
-        return directory?.FullName
-            ?? throw new InvalidOperationException("Repository root not found.");
     }
 }

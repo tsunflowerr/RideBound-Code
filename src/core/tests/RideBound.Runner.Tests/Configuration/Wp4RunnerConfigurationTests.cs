@@ -1,10 +1,10 @@
-using System.Reflection;
 using System.Text;
 using System.Text.Json.Nodes;
 using RideBound.Algorithms.Policies;
 using RideBound.Domain.Commitments;
 using RideBound.Runner.Configuration;
 using RideBound.Solvers.OrTools;
+using RideBound.Tests;
 
 namespace RideBound.Runner.Tests.Configuration;
 
@@ -122,9 +122,9 @@ public sealed class Wp4RunnerConfigurationTests
             + "removed; see commit ebca912 (branch research/final-real-runs-2026-11-06)";
         var commitment = CommitmentConfiguration();
         var archived = File.ReadAllText(Path.Combine(
-            RepositoryRoot(),
-            "benchmarks",
-            "configurations",
+            TestPaths.Root(),
+            "configs",
+            "test",
             "wp4-rolling-cost-boundary-v1.json"));
         Assert.NotNull(Wp4RunnerConfiguration.Decode(Encoding.UTF8.GetBytes(FinalJson()), commitment));
 
@@ -240,17 +240,17 @@ public sealed class Wp4RunnerConfigurationTests
             "WP4 policyId 'commit-soft-hard-hybrid' and the 'warningProfiles' block (the soft-hard hybrid policy): "
             + "removed; see commit ebca912 (branch research/final-real-runs-2026-11-06)";
         var commitment = CommitmentConfiguration();
-        var repository = RepositoryRoot();
+        var repository = TestPaths.Root();
         var archivedCommitment = CommitmentPolicyConfiguration.Decode(
             File.ReadAllBytes(Path.Combine(
                 repository,
-                "benchmarks",
-                "configurations",
+                "configs",
+                "test",
                 "wp8-drop-eta-budget-loose-v1.json")));
         var archived = File.ReadAllText(Path.Combine(
             repository,
-            "benchmarks",
-            "configurations",
+            "configs",
+            "test",
             "wp9-fleetpy-soft-hard-hybrid-audited-v1.json"));
         var limits = string.Join(
             ",",
@@ -304,9 +304,9 @@ public sealed class Wp4RunnerConfigurationTests
     {
         var commitment = CommitmentConfiguration();
         var archived = File.ReadAllText(Path.Combine(
-            RepositoryRoot(),
-            "benchmarks",
-            "configurations",
+            TestPaths.Root(),
+            "configs",
+            "test",
             "wp7-fleetpy-ridebound-hard-vector-v1.json"));
         Assert.NotNull(Wp4RunnerConfiguration.Decode(Encoding.UTF8.GetBytes(FinalJson()), commitment));
 
@@ -334,9 +334,9 @@ public sealed class Wp4RunnerConfigurationTests
 
         // The archived tier-3 configuration with its own commitment file.
         var reference = CommitmentPolicyConfiguration.Decode(File.ReadAllBytes(Path.Combine(
-            RepositoryRoot(),
-            "benchmarks",
-            "configurations",
+            TestPaths.Root(),
+            "configs",
+            "test",
             "wp14-c1-h6-reference-v1.json")));
         Assert.Equal(
             StabilityFirstRefusal,
@@ -516,9 +516,9 @@ public sealed class Wp4RunnerConfigurationTests
         Assert.Equal(
             StabilityFirstRefusal,
             Refused(File.ReadAllText(Path.Combine(
-                RepositoryRoot(),
-                "benchmarks",
-                "configurations",
+                TestPaths.Root(),
+                "configs",
+                "test",
                 "wp4-ridebound-hard-vector-boundary-v1.json"))));
         Assert.Equal(
             StabilityFirstRefusal,
@@ -670,9 +670,9 @@ public sealed class Wp4RunnerConfigurationTests
 
         // A file without the key decodes as before and keeps its content hash (the tier-3 cost-first text).
         var reference = File.ReadAllText(Path.Combine(
-            RepositoryRoot(),
-            "benchmarks",
-            "configurations",
+            TestPaths.Root(),
+            "configs",
+            "test",
             "wp14-c1-h6-reference-v1.json"));
         Assert.Equal(
             "e1a41d4502036da6c911e9375b65be646253f8f5d140929faaf12e6c3acc68f2",
@@ -1058,9 +1058,9 @@ public sealed class Wp4RunnerConfigurationTests
         // A Rule C per-rider drop budget runs under cost-first; any other order is the removed
         // stability-first ranking and is refused.
         var json = JsonNode.Parse(File.ReadAllText(Path.Combine(
-            RepositoryRoot(),
-            "benchmarks",
-            "configurations",
+            TestPaths.Root(),
+            "configs",
+            "test",
             "wp14-c1-h6-reference-v1.json")))!;
         var policy = json["policies"]![0]!.AsObject();
         policy["limits"]!.AsArray()
@@ -1095,9 +1095,9 @@ public sealed class Wp4RunnerConfigurationTests
     {
         // The G2 arms: no vehicle lock at final confirmation, a pickup ratchet, no zero switch limit.
         var json = JsonNode.Parse(File.ReadAllText(Path.Combine(
-            RepositoryRoot(),
-            "benchmarks",
-            "configurations",
+            TestPaths.Root(),
+            "configs",
+            "test",
             "wp14-c1-h6-reference-v1.json")))!;
         var policy = json["policies"]![0]!.AsObject();
         policy["limits"]!.AsArray()
@@ -1192,7 +1192,7 @@ public sealed class Wp4RunnerConfigurationTests
     /// </summary>
     private static string ArchivedCostFirst(string fileName) =>
         Edit(
-            File.ReadAllText(Path.Combine(RepositoryRoot(), "benchmarks", "configurations", fileName)),
+            File.ReadAllText(Path.Combine(TestPaths.Root(), "configs", "test", fileName)),
             json =>
             {
                 json["selectionObjectiveOrder"] = "cost-first";
@@ -1203,9 +1203,9 @@ public sealed class Wp4RunnerConfigurationTests
     private static CommitmentPolicyConfiguration CommitmentConfiguration() =>
         CommitmentPolicyConfiguration.Decode(
             File.ReadAllBytes(Path.Combine(
-                RepositoryRoot(),
-                "benchmarks",
-                "configurations",
+                TestPaths.Root(),
+                "configs",
+                "test",
                 "wp3-boundary-test-v1.json")));
 
     /// <summary>The final C1 configuration (<see cref="Final.FinalRuns.FinalC1Wp4WithoutShadow"/>) as JSON text,
@@ -1239,11 +1239,4 @@ public sealed class Wp4RunnerConfigurationTests
             json["repair"] = new JsonObject { ["maximumRequestsConsideredPerVehicle"] = 1 };
             edit?.Invoke(json);
         });
-
-    private static string RepositoryRoot() =>
-        typeof(Wp4RunnerConfigurationTests)
-            .Assembly
-            .GetCustomAttributes<AssemblyMetadataAttribute>()
-            .Single(value => value.Key == "RideBoundRepositoryRoot")
-            .Value!;
 }

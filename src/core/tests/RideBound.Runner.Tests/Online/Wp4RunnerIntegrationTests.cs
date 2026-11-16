@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using System.Reflection;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -10,6 +9,7 @@ using RideBound.Contracts.Serialization;
 using RideBound.Contracts.Tests.Fixtures;
 using RideBound.Runner.Configuration;
 using RideBound.Runner.Protocol;
+using RideBound.Tests;
 
 namespace RideBound.Runner.Tests.Online;
 
@@ -699,9 +699,9 @@ public sealed class Wp4RunnerIntegrationTests
     private static CommitmentPolicyConfiguration DeadlineCommitmentConfiguration(int permille)
     {
         var json = JsonNode.Parse(File.ReadAllText(Path.Combine(
-            RepositoryRoot(),
-            "benchmarks",
-            "configurations",
+            TestPaths.Root(),
+            "configs",
+            "test",
             "wp3-boundary-test-v1.json")))!;
         json["policies"]![0]!["dropEtaDeadlineSlackPermille"] = permille;
         json["policies"]![0]!["dropEtaDeadlineRelaxed"] = true;
@@ -715,9 +715,9 @@ public sealed class Wp4RunnerIntegrationTests
         string recovery = "no-worse-than-reference-v1")
     {
         var json = JsonNode.Parse(File.ReadAllText(Path.Combine(
-            RepositoryRoot(),
-            "benchmarks",
-            "configurations",
+            TestPaths.Root(),
+            "configs",
+            "test",
             "wp7-fleetpy-ridebound-hard-vector-v1.json")))!;
         // The archived file has no order key, which selected the removed stability-first ranking, no lateBoarding
         // key, which selected the removed late-boarding rejection, and no commitmentRecovery key, which selected the
@@ -880,9 +880,9 @@ public sealed class Wp4RunnerIntegrationTests
     private static CommitmentPolicyConfiguration CommitmentConfiguration() =>
         CommitmentPolicyConfiguration.Decode(
             File.ReadAllBytes(Path.Combine(
-                RepositoryRoot(),
-                "benchmarks",
-                "configurations",
+                TestPaths.Root(),
+                "configs",
+                "test",
                 "wp3-boundary-test-v1.json")));
 
     private static byte[] ReadFixture(string path) =>
@@ -928,13 +928,6 @@ public sealed class Wp4RunnerIntegrationTests
               "payload":{{payload.GetRawText()}}
             }
             """);
-
-    private static string RepositoryRoot() =>
-        typeof(Wp4RunnerIntegrationTests)
-            .Assembly
-            .GetCustomAttributes<AssemblyMetadataAttribute>()
-            .Single(value => value.Key == "RideBoundRepositoryRoot")
-            .Value!;
 
     private sealed record SessionSetup(
         RunnerSession Session,
