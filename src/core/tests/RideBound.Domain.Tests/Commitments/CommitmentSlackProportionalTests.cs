@@ -177,21 +177,26 @@ public sealed class CommitmentSlackProportionalTests
     }
 
     [Fact]
-    public void A_slack_proportional_deadline_equals_the_fixed_deadline_of_the_same_slack()
+    public void A_slack_proportional_deadline_rejects_exactly_the_drops_later_than_its_deadline_and_the_kept_route()
     {
+        // The rider deadline is drop0 + 105_000; a candidate fails only past it and past the kept route.
         foreach (var exogenous in new[] { DropAnchor - 1_000, DropAnchor, DropAnchor + Budget35, DropAnchor + Budget35 + 7 })
         {
             for (var candidate = DropAnchor - 50_000; candidate <= DropAnchor + Budget35 + 50_000; candidate += 4_999)
             {
-                Assert.Equal(
-                    EvaluateLocks(
-                        Policy(fixedSlack: Budget35),
-                        Projection(PickupAnchor, exogenous),
-                        Projection(PickupAnchor, candidate)),
-                    EvaluateLocks(
-                        Policy(deadlinePermille: 350),
-                        Projection(PickupAnchor, exogenous),
-                        Projection(PickupAnchor, candidate)));
+                var witnesses = EvaluateLocks(
+                    Policy(deadlinePermille: 350),
+                    Projection(PickupAnchor, exogenous),
+                    Projection(PickupAnchor, candidate));
+
+                if (candidate > Math.Max(DropAnchor + Budget35, exogenous))
+                {
+                    Assert.Equal(CommitmentLockEvaluator.DeadlineCapRule, Assert.Single(witnesses).Rule);
+                }
+                else
+                {
+                    Assert.Empty(witnesses);
+                }
             }
         }
     }
@@ -210,17 +215,14 @@ public sealed class CommitmentSlackProportionalTests
     [Fact]
     public void Policy_construction_keeps_the_new_rules_exclusive_and_explicit()
     {
-        Assert.Throws<ArgumentException>(() => Policy(fixedSlack: 1_000, deadlinePermille: 350));
         Assert.Throws<ArgumentException>(() => Policy(budgetPermille: 350, dropHardLimit: 120_000));
 
         var deadline = Policy(deadlinePermille: 350);
-        Assert.Null(deadline.DropEtaDeadlineSlack);
         Assert.Equal(350, deadline.DropEtaDeadlineSlackPermille);
 
         Assert.False(Policy().ReadsInitialPromise);
         Assert.True(Policy(budgetPermille: 350).ReadsInitialPromise);
         Assert.True(Policy(deadlinePermille: 350).ReadsInitialPromise);
-        Assert.True(Policy(fixedSlack: 1_000).ReadsInitialPromise);
         Assert.Null(Policy().DropEtaTotalLimitFor(null, new Duration(MaxRide)));
         Assert.Throws<ArgumentException>(
             () => Policy(budgetPermille: 350).DropEtaTotalLimitFor(null, new Duration(MaxRide)));
@@ -293,7 +295,6 @@ public sealed class CommitmentSlackProportionalTests
     private static CommitmentPolicy Policy(
         int? budgetPermille = null,
         int? deadlinePermille = null,
-        long? fixedSlack = null,
         long? dropHardLimit = null,
         long? otherHardLimit = null,
         bool shadow = false) =>
@@ -305,7 +306,6 @@ public sealed class CommitmentSlackProportionalTests
                     dimension == CommitmentDimension.DropEtaTotalMs ? dropHardLimit : otherHardLimit,
                     CommitmentPhase.AllActive)),
             new MaterialRevisionRule(1, null),
-            dropEtaDeadlineSlack: fixedSlack is long slack ? new Duration(slack) : null,
             dropEtaBudgetSlackPermille: budgetPermille,
             dropEtaDeadlineSlackPermille: deadlinePermille,
             dropEtaShadowAllocation: shadow);

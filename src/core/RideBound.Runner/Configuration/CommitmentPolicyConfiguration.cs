@@ -28,9 +28,9 @@ public sealed class CommitmentPolicyConfiguration :
         "freezeHorizonLocks",
         "dropEtaRevisionLimitMs",
         "dropEtaDeadlineTwoSided",
+        "dropEtaDeadlineSlackMs",
         "finalConfirmationLocks",
         "ratchetLocks",
-        "dropEtaDeadlineSlackMs",
         "dropEtaDeadlineRelaxed",
         "dropEtaBudgetSlackPermille",
         "dropEtaDeadlineSlackPermille",
@@ -173,9 +173,6 @@ public sealed class CommitmentPolicyConfiguration :
         var displayBucket = OptionalPositiveInteger(
             revision,
             "displayBucketWidthMs");
-        var deadlineSlack = OptionalPositiveInteger(
-            element,
-            "dropEtaDeadlineSlackMs");
         var deadlineRelaxed = OptionalBoolean(element, "dropEtaDeadlineRelaxed");
         var budgetPermille = OptionalPermille(element, "dropEtaBudgetSlackPermille");
         var deadlinePermille = OptionalPermille(element, "dropEtaDeadlineSlackPermille");
@@ -192,18 +189,20 @@ public sealed class CommitmentPolicyConfiguration :
                 + "'dropEtaDeadlineSlackPermille', of 1000.");
         }
 
-        if (deadlineSlack is not null && deadlinePermille is not null)
+        // The fixed-ms deadline is refused here, before the relaxed-deadline check below, so a relaxed
+        // fixed-ms deadline gets the removal text and not that check's message.
+        if (element.TryGetProperty("dropEtaDeadlineSlackMs", out _))
         {
             throw new InvalidDataException(
-                "'dropEtaDeadlineSlackMs' cannot be combined with 'dropEtaDeadlineSlackPermille'.");
+                "Commitment 'dropEtaDeadlineSlackMs' (the fixed-ms deadline): " + RemovedFeature);
         }
 
-        var hasDeadline = deadlineSlack is not null || deadlinePermille is not null;
+        var hasDeadline = deadlinePermille is not null;
 
         if (deadlineRelaxed && !hasDeadline)
         {
             throw new InvalidDataException(
-                "'dropEtaDeadlineRelaxed' requires 'dropEtaDeadlineSlackMs' or 'dropEtaDeadlineSlackPermille'.");
+                "'dropEtaDeadlineRelaxed' requires 'dropEtaDeadlineSlackPermille'.");
         }
 
         if (budgetPermille is not null
@@ -251,7 +250,6 @@ public sealed class CommitmentPolicyConfiguration :
             new MaterialRevisionRule(rawThreshold, displayBucket),
             ReadLocks(element, "finalConfirmationLocks"),
             ReadLocks(element, "ratchetLocks"),
-            deadlineSlack is long slack ? new Duration(slack) : null,
             budgetPermille,
             deadlinePermille,
             relocation,

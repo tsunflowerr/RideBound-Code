@@ -24,6 +24,10 @@ public sealed class CommitmentRelaxedDeadlineValidatorTests
     // Eight tenths of the budget.
     private const long Step = 200;
 
+    // The first promise leaves the rider a ride-time slack of 1100 + 1000 ms max ride - 1200
+    // = 900 ms, and 444 permille of it is round(399.6) = 400 ms of deadline slack.
+    private const int Slack400 = 444;
+
     [Fact]
     public void Two_successive_changes_of_eight_tenths_of_the_budget_fail_rule_c()
     {
@@ -79,7 +83,7 @@ public sealed class CommitmentRelaxedDeadlineValidatorTests
     {
         // First promise 1200 ms, kept route 1700 ms, slack 400 ms: past the deadline.
         var kept = new CommitmentDecisionValidator().Validate(
-            Decision(Policy(deadlineSlack: 400), reducedAt: Now + 500));
+            Decision(Policy(deadlinePermille: Slack400), reducedAt: Now + 500));
 
         Assert.True(kept.IsValid, string.Join("; ", kept.Witnesses.Select(w => w.Message)));
         Assert.Equal(
@@ -98,7 +102,7 @@ public sealed class CommitmentRelaxedDeadlineValidatorTests
         bool expectValid)
     {
         var context = WithCandidateRoute(
-            Decision(Policy(deadlineSlack: 400), reducedAt: Now + drift),
+            Decision(Policy(deadlinePermille: Slack400), reducedAt: Now + drift),
             route => delay == 0 ? AppendAfterDrop(route) : WaitBeforeDrop(route, "added", delay));
 
         var result = new CommitmentDecisionValidator().Validate(context);
@@ -116,7 +120,7 @@ public sealed class CommitmentRelaxedDeadlineValidatorTests
 
     private static CommitmentPolicy Policy(
         long? dropBudget = null,
-        long? deadlineSlack = null) =>
+        int? deadlinePermille = null) =>
         new(
             ApplicationTestData.Request().CommitmentPolicyId,
             CommitmentDimensionVocabulary.Ordered.Select(
@@ -125,7 +129,7 @@ public sealed class CommitmentRelaxedDeadlineValidatorTests
                     dimension == CommitmentDimension.DropEtaTotalMs ? dropBudget : null,
                     CommitmentPhase.AllActive)),
             new MaterialRevisionRule(1, null),
-            dropEtaDeadlineSlack: deadlineSlack is long slack ? new Duration(slack) : null);
+            dropEtaDeadlineSlackPermille: deadlinePermille);
 
     /// <summary>
     /// The decision at <paramref name="reducedAt"/> on the kept route (pickup, drop), whose first

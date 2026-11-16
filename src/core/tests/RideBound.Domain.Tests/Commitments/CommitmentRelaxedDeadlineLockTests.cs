@@ -10,6 +10,9 @@ namespace RideBound.Domain.Tests.Commitments;
 /// rider's initial promise <c>p0</c> is lifted to the kept route when drift has already
 /// carried it past <c>p0 + slack</c>, so a candidate fails only when its drop ETA is later
 /// than <c>max(p0 + slack, e)</c>, with <c>e</c> the exogenous (kept-route) projection.
+/// The deadline is 1000 permille, so its slack is the rider's whole ride-time slack,
+/// pickup0 + maxRide - drop0: the first promise picks up at 0 and drops at Anchor, so a
+/// maximum ride time of Anchor + slack gives the deadline slack <c>slack</c>.
 /// </summary>
 public sealed class CommitmentRelaxedDeadlineLockTests
 {
@@ -23,6 +26,16 @@ public sealed class CommitmentRelaxedDeadlineLockTests
     private static readonly NodeId DropNode = new("node-drop");
     private static readonly StopId PickupStop = new("stop-pickup");
     private static readonly StopId DropStop = new("stop-drop");
+
+    private static readonly CommitmentPolicy Policy = new(
+        "policy-1",
+        CommitmentDimensionVocabulary.Ordered.Select(
+            dimension => new CommitmentDimensionLimit(
+                dimension,
+                null,
+                CommitmentPhase.AllActive)),
+        new MaterialRevisionRule(1, null),
+        dropEtaDeadlineSlackPermille: 1000);
 
     [Theory]
     // The kept route is inside the deadline: only the deadline counts.
@@ -52,7 +65,7 @@ public sealed class CommitmentRelaxedDeadlineLockTests
         bool expectViolation)
     {
         var witnesses = Evaluate(
-            RelaxedPolicy(Slack),
+            Slack,
             Projection(exogenousDropMs),
             Projection(candidateDropMs));
 
@@ -82,25 +95,25 @@ public sealed class CommitmentRelaxedDeadlineLockTests
     {
         var kept = Projection(Anchor + drift);
 
-        Assert.Empty(Evaluate(RelaxedPolicy(Slack), kept, kept));
-        Assert.Empty(Evaluate(RelaxedPolicy(0), kept, kept));
+        Assert.Empty(Evaluate(Slack, kept, kept));
+        Assert.Empty(Evaluate(0, kept, kept));
     }
 
     [Fact]
     public void A_relaxed_zero_slack_deadline_is_the_later_of_the_initial_promise_and_the_kept_route()
     {
-        Assert.Empty(Evaluate(RelaxedPolicy(0), Projection(Anchor), Projection(Anchor)));
-        Assert.Single(Evaluate(RelaxedPolicy(0), Projection(Anchor), Projection(Anchor + 1)));
-        Assert.Empty(Evaluate(RelaxedPolicy(0), Projection(Anchor + 9), Projection(Anchor + 9)));
-        Assert.Single(Evaluate(RelaxedPolicy(0), Projection(Anchor + 9), Projection(Anchor + 10)));
+        Assert.Empty(Evaluate(0, Projection(Anchor), Projection(Anchor)));
+        Assert.Single(Evaluate(0, Projection(Anchor), Projection(Anchor + 1)));
+        Assert.Empty(Evaluate(0, Projection(Anchor + 9), Projection(Anchor + 9)));
+        Assert.Single(Evaluate(0, Projection(Anchor + 9), Projection(Anchor + 10)));
     }
 
     [Fact]
     public void A_relaxed_deadline_never_rejects_an_early_drop()
     {
         // Being early is never a violation.
-        Assert.Empty(Evaluate(RelaxedPolicy(Slack), Projection(Anchor), Projection(0)));
-        Assert.Empty(Evaluate(RelaxedPolicy(Slack), Projection(0), Projection(0)));
+        Assert.Empty(Evaluate(Slack, Projection(Anchor), Projection(0)));
+        Assert.Empty(Evaluate(Slack, Projection(0), Projection(0)));
     }
 
     [Fact]
@@ -110,40 +123,30 @@ public sealed class CommitmentRelaxedDeadlineLockTests
 
         var error = Assert.Throws<ArgumentException>(
             () => new CommitmentLockEvaluator().Evaluate(
-                WaitingRequest(),
+                WaitingRequest(Anchor + Slack),
                 Published(kept),
                 kept,
                 kept,
-                RelaxedPolicy(Slack),
+                Policy,
                 anchor: null));
 
         Assert.Equal("anchor", error.ParamName);
     }
 
+    /// <summary>The locks of a rider whose deadline slack is <paramref name="slack"/>.</summary>
     private static IReadOnlyList<CommitmentLockWitness> Evaluate(
-        CommitmentPolicy policy,
+        long slack,
         PromiseProjection exogenous,
         PromiseProjection candidate) =>
         new CommitmentLockEvaluator().Evaluate(
-            WaitingRequest(),
+            WaitingRequest(Anchor + slack),
             Published(Projection(Anchor)),
             exogenous,
             candidate,
-            policy,
+            Policy,
             Projection(Anchor));
 
-    private static CommitmentPolicy RelaxedPolicy(long slack) =>
-        new(
-            "policy-1",
-            CommitmentDimensionVocabulary.Ordered.Select(
-                dimension => new CommitmentDimensionLimit(
-                    dimension,
-                    null,
-                    CommitmentPhase.AllActive)),
-            new MaterialRevisionRule(1, null),
-            dropEtaDeadlineSlack: new Duration(slack));
-
-    private static RideRequest WaitingRequest()
+    private static RideRequest WaitingRequest(long maxRide)
     {
         var request = RideRequest.CreatePending(
             Request,
@@ -152,7 +155,7 @@ public sealed class CommitmentRelaxedDeadlineLockTests
             DropNode,
             new SimTime(0),
             new SimTime(600_000),
-            new Duration(3_600_000),
+            new Duration(maxRide),
             1,
             "service-class-1",
             "policy-1").Value!;

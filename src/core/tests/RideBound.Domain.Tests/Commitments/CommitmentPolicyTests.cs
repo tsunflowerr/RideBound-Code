@@ -1,5 +1,4 @@
 using RideBound.Domain.Commitments;
-using RideBound.Domain.Common;
 
 namespace RideBound.Domain.Tests.Commitments;
 
@@ -28,18 +27,18 @@ public sealed class CommitmentPolicyTests
     {
         var policy = CreatePolicy();
 
-        Assert.Null(policy.DropEtaDeadlineSlack);
+        Assert.Null(policy.DropEtaDeadlineSlackPermille);
     }
 
     [Fact]
     public void Policy_keeps_the_configured_deadline()
     {
-        var policy = CreateDeadlinePolicy(new Duration(30_000));
+        var policy = CreateDeadlinePolicy(350);
 
-        Assert.Equal(new Duration(30_000), policy.DropEtaDeadlineSlack);
+        Assert.Equal(350, policy.DropEtaDeadlineSlackPermille);
     }
 
-    private static CommitmentPolicy CreateDeadlinePolicy(Duration? slack) =>
+    private static CommitmentPolicy CreateDeadlinePolicy(int permille) =>
         new(
             "validated-policy",
             CommitmentDimensionVocabulary.Ordered.Select(
@@ -48,7 +47,7 @@ public sealed class CommitmentPolicyTests
                     null,
                     CommitmentPhase.AllActive)),
             new MaterialRevisionRule(1, null),
-            dropEtaDeadlineSlack: slack);
+            dropEtaDeadlineSlackPermille: permille);
 
     private static CommitmentPolicy CreatePolicy(
         PromiseLock finalLocks = PromiseLock.None) =>

@@ -9,7 +9,10 @@ namespace RideBound.Domain.Tests.Commitments;
 /// Research probe for the deadline family. A deadline compares the candidate drop ETA
 /// with the rider's INITIAL promise, not with the exogenous projection; it is relaxed, so
 /// a candidate must also be later than the exogenous projection to fail it (see
-/// CommitmentRelaxedDeadlineLockTests). Disabled unless a slack is configured.
+/// CommitmentRelaxedDeadlineLockTests). Disabled unless a deadline is configured.
+/// The deadline is 1000 permille, so its slack is the rider's whole ride-time slack,
+/// pickup0 + maxRide - drop0: the anchor picks up at 0 and drops at Anchor, so the maximum
+/// ride time Anchor + Slack gives the deadline slack Slack.
 /// </summary>
 public sealed class CommitmentDeadlineLockTests
 {
@@ -28,7 +31,7 @@ public sealed class CommitmentDeadlineLockTests
     {
         var far = Projection(Anchor + 10 * Slack);
 
-        var witnesses = Evaluate(Policy(slack: null), far, far, Projection(Anchor));
+        var witnesses = Evaluate(Policy(deadline: false), far, far, Projection(Anchor));
 
         Assert.Empty(witnesses);
     }
@@ -38,7 +41,7 @@ public sealed class CommitmentDeadlineLockTests
     {
         var far = Projection(Anchor + 10 * Slack);
 
-        var witnesses = Evaluate(Policy(slack: null), far, far, anchor: null);
+        var witnesses = Evaluate(Policy(deadline: false), far, far, anchor: null);
 
         Assert.Empty(witnesses);
     }
@@ -56,7 +59,7 @@ public sealed class CommitmentDeadlineLockTests
         var exogenous = Projection(Anchor);
         var candidate = Projection(candidateDropMs);
 
-        var witnesses = Evaluate(Policy(Slack), exogenous, candidate, Projection(Anchor));
+        var witnesses = Evaluate(Policy(deadline: true), exogenous, candidate, Projection(Anchor));
 
         if (expectViolation)
         {
@@ -77,7 +80,7 @@ public sealed class CommitmentDeadlineLockTests
         var exogenous = Projection(Anchor);
 
         var error = Assert.Throws<ArgumentException>(
-            () => Evaluate(Policy(Slack), exogenous, exogenous, anchor: null));
+            () => Evaluate(Policy(deadline: true), exogenous, exogenous, anchor: null));
 
         Assert.Equal("anchor", error.ParamName);
     }
@@ -89,7 +92,7 @@ public sealed class CommitmentDeadlineLockTests
         var foreign = Projection(Anchor, new RequestId("request-2"));
 
         var error = Assert.Throws<ArgumentException>(
-            () => Evaluate(Policy(Slack), exogenous, exogenous, foreign));
+            () => Evaluate(Policy(deadline: true), exogenous, exogenous, foreign));
 
         Assert.Equal("anchor", error.ParamName);
     }
@@ -101,7 +104,7 @@ public sealed class CommitmentDeadlineLockTests
         // the initial promise by more than the slack, the deadline still keeps the no-op.
         var early = Projection(Anchor - Slack - 1);
 
-        var witnesses = Evaluate(Policy(Slack), early, early, Projection(Anchor));
+        var witnesses = Evaluate(Policy(deadline: true), early, early, Projection(Anchor));
 
         Assert.Empty(witnesses);
     }
@@ -109,12 +112,14 @@ public sealed class CommitmentDeadlineLockTests
     [Fact]
     public void A_zero_slack_is_an_exact_deadline()
     {
+        // A maximum ride time equal to the anchor ride leaves no slack.
         var anchor = Projection(Anchor);
 
-        Assert.Empty(Evaluate(Policy(0), anchor, Projection(Anchor), anchor));
+        Assert.Empty(Evaluate(Policy(deadline: true), anchor, Projection(Anchor), anchor, maxRide: Anchor));
         Assert.Equal(
             "deadline_cap",
-            Assert.Single(Evaluate(Policy(0), anchor, Projection(Anchor + 1), anchor)).Rule);
+            Assert.Single(
+                Evaluate(Policy(deadline: true), anchor, Projection(Anchor + 1), anchor, maxRide: Anchor)).Rule);
     }
 
     [Fact]
@@ -122,7 +127,7 @@ public sealed class CommitmentDeadlineLockTests
     {
         // Callers read the first witness as the reason for a prune, so a lock that
         // fires must stay first; the deadline is appended after the lock witnesses.
-        var policy = Policy(Slack, finalConfirmationLocks: PromiseLock.DropEta);
+        var policy = Policy(deadline: true, finalConfirmationLocks: PromiseLock.DropEta);
         var exogenous = Projection(Anchor);
         var candidate = Projection(Anchor + Slack + 1);
 
@@ -147,7 +152,7 @@ public sealed class CommitmentDeadlineLockTests
     {
         // "drop_eta_ms" sorts before "pickup_eta_ms", so without the append rule the
         // deadline would displace a pickup lock from the first position.
-        var policy = Policy(Slack, finalConfirmationLocks: PromiseLock.PickupEta);
+        var policy = Policy(deadline: true, finalConfirmationLocks: PromiseLock.PickupEta);
         var exogenous = Projection(Anchor);
         var candidate = Projection(Anchor + Slack + 1, pickupMs: 1);
 
@@ -170,22 +175,25 @@ public sealed class CommitmentDeadlineLockTests
     [Fact]
     public void Extreme_canonical_times_do_not_overflow()
     {
+        // The anchor at 0 has a zero ride, so the maximum ride time Slack gives the slack Slack;
+        // the anchor at the maximum leaves no ride-time slack at all.
         var zero = Projection(0);
         var max = Projection(DomainLimits.MaxCanonicalInteger);
 
         Assert.Equal(
             CommitmentLockEvaluator.DeadlineCapRule,
-            Assert.Single(Evaluate(Policy(Slack), zero, max, zero)).Rule);
-        Assert.Empty(Evaluate(Policy(Slack), max, zero, max));
+            Assert.Single(Evaluate(Policy(deadline: true), zero, max, zero, maxRide: Slack)).Rule);
+        Assert.Empty(Evaluate(Policy(deadline: true), max, zero, max, maxRide: Slack));
     }
 
     private static IReadOnlyList<CommitmentLockWitness> Evaluate(
         CommitmentPolicy policy,
         PromiseProjection exogenous,
         PromiseProjection candidate,
-        PromiseProjection? anchor) =>
+        PromiseProjection? anchor,
+        long maxRide = Anchor + Slack) =>
         new CommitmentLockEvaluator().Evaluate(
-            WaitingRequest(),
+            WaitingRequest(maxRide),
             Published(exogenous),
             exogenous,
             candidate,
@@ -193,7 +201,7 @@ public sealed class CommitmentDeadlineLockTests
             anchor);
 
     private static CommitmentPolicy Policy(
-        long? slack,
+        bool deadline,
         PromiseLock finalConfirmationLocks = PromiseLock.None) =>
         new(
             "policy-1",
@@ -204,9 +212,9 @@ public sealed class CommitmentDeadlineLockTests
                     CommitmentPhase.AllActive)),
             new MaterialRevisionRule(1, null),
             finalConfirmationLocks: finalConfirmationLocks,
-            dropEtaDeadlineSlack: slack is long value ? new Duration(value) : null);
+            dropEtaDeadlineSlackPermille: deadline ? 1000 : null);
 
-    private static RideRequest WaitingRequest()
+    private static RideRequest WaitingRequest(long maxRide)
     {
         var request = RideRequest.CreatePending(
             Request,
@@ -215,7 +223,7 @@ public sealed class CommitmentDeadlineLockTests
             DropNode,
             new SimTime(0),
             new SimTime(600_000),
-            new Duration(3_600_000),
+            new Duration(maxRide),
             1,
             "service-class-1",
             "policy-1").Value!;

@@ -50,10 +50,10 @@ public sealed class EffectivePolicyFairnessTests
     [InlineData(RidePoolingPolicyKind.RideBoundHardVector)]
     public void A_commitment_arm_keeps_a_configured_deadline(RidePoolingPolicyKind kind)
     {
-        var policy = EffectivePolicyFor(kind, deadlineSlackMs: 30_000);
+        var policy = EffectivePolicyFor(kind, deadlinePermille: 350);
 
         Assert.Equal(
-            Fingerprint(ConfiguredPolicy(DropEtaHardLimit, 30_000)),
+            Fingerprint(ConfiguredPolicy(DropEtaHardLimit, 350)),
             Fingerprint(policy));
     }
 
@@ -83,7 +83,7 @@ public sealed class EffectivePolicyFairnessTests
                 policy.MaterialRevisionRule.RawEtaThresholdMs?.ToString() ?? "none",
                 policy.MaterialRevisionRule.DisplayBucketWidthMs?.ToString() ?? "none",
                 ((int)policy.FinalConfirmationLocks).ToString(),
-                policy.DropEtaDeadlineSlack?.Milliseconds.ToString() ?? "none",
+                policy.DropEtaDeadlineSlackPermille?.ToString() ?? "none",
             }.Concat(
                 CommitmentDimensionVocabulary.Ordered.Select(
                     dimension => string.Join(
@@ -98,7 +98,7 @@ public sealed class EffectivePolicyFairnessTests
     private static CommitmentPolicy EffectivePolicyFor(
         RidePoolingPolicyKind kind,
         long? dropEtaHardLimit = DropEtaHardLimit,
-        long? deadlineSlackMs = null)
+        int? deadlinePermille = null)
     {
         var request = AlgorithmTestData.PendingRequest("request-1");
         var unadvanced = AlgorithmTestData.CreateState(
@@ -119,7 +119,7 @@ public sealed class EffectivePolicyFairnessTests
             state.ExpectedInitialTravelTimeSnapshotHash);
         var configured = ConfiguredPolicy(
             dropEtaHardLimit,
-            deadlineSlackMs);
+            deadlinePermille);
         var solverBudget = DeterministicSolverBudget.Create(1000, 1000, 1).Value!;
         var executionBudget =
             DeterministicCandidateSelectionExecutionBudget.Create(
@@ -149,7 +149,7 @@ public sealed class EffectivePolicyFairnessTests
 
     private static CommitmentPolicy ConfiguredPolicy(
         long? dropEtaHardLimit,
-        long? deadlineSlackMs = null) =>
+        int? deadlinePermille = null) =>
         new(
             PolicyId,
             CommitmentDimensionVocabulary.Ordered.Select(
@@ -162,7 +162,7 @@ public sealed class EffectivePolicyFairnessTests
                         ? CommitmentPhase.WaitingPickup
                         : CommitmentPhase.AllActive)),
             new MaterialRevisionRule(1, 30_000),
-            dropEtaDeadlineSlack: deadlineSlackMs is long slack ? new Duration(slack) : null);
+            dropEtaDeadlineSlackPermille: deadlinePermille);
 
     /// <summary>
     /// The effective-policy decision is taken before the solver runs, so the cheapest

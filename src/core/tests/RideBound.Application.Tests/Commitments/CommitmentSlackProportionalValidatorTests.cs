@@ -104,22 +104,15 @@ public sealed class CommitmentSlackProportionalValidatorTests
     {
         foreach (var delay in new long[] { 0, 50, 200, 314, 315, 316, 400, 900 })
         {
-            foreach (var (proportional, fixedPolicy) in new[]
-                     {
-                         (Policy(budgetPermille: 350), Policy(dropBudget: RiderBudget)),
-                         (Policy(deadlinePermille: 350), Policy(deadlineSlack: RiderBudget)),
-                     })
-            {
-                var a = new CommitmentDecisionValidator().Validate(
-                    WithCandidateRoute(Decision(proportional), route => WaitBeforeDrop(route, "added", delay)));
-                var b = new CommitmentDecisionValidator().Validate(
-                    WithCandidateRoute(Decision(fixedPolicy), route => WaitBeforeDrop(route, "added", delay)));
+            var a = new CommitmentDecisionValidator().Validate(
+                WithCandidateRoute(Decision(Policy(budgetPermille: 350)), route => WaitBeforeDrop(route, "added", delay)));
+            var b = new CommitmentDecisionValidator().Validate(
+                WithCandidateRoute(Decision(Policy(dropBudget: RiderBudget)), route => WaitBeforeDrop(route, "added", delay)));
 
-                Assert.Equal(b.IsValid, a.IsValid);
-                Assert.Equal(
-                    b.Witnesses.Select(w => (w.Code, w.Rule, w.Limit, w.After)),
-                    a.Witnesses.Select(w => (w.Code, w.Rule, w.Limit, w.After)));
-            }
+            Assert.Equal(b.IsValid, a.IsValid);
+            Assert.Equal(
+                b.Witnesses.Select(w => (w.Code, w.Rule, w.Limit, w.After)),
+                a.Witnesses.Select(w => (w.Code, w.Rule, w.Limit, w.After)));
         }
     }
 
@@ -174,8 +167,7 @@ public sealed class CommitmentSlackProportionalValidatorTests
     private static CommitmentPolicy Policy(
         int? budgetPermille = null,
         int? deadlinePermille = null,
-        long? dropBudget = null,
-        long? deadlineSlack = null) =>
+        long? dropBudget = null) =>
         new(
             ApplicationTestData.Request().CommitmentPolicyId,
             CommitmentDimensionVocabulary.Ordered.Select(
@@ -184,7 +176,6 @@ public sealed class CommitmentSlackProportionalValidatorTests
                     dimension == CommitmentDimension.DropEtaTotalMs ? dropBudget : null,
                     CommitmentPhase.AllActive)),
             new MaterialRevisionRule(1, null),
-            dropEtaDeadlineSlack: deadlineSlack is long slack ? new Duration(slack) : null,
             dropEtaBudgetSlackPermille: budgetPermille,
             dropEtaDeadlineSlackPermille: deadlinePermille);
 

@@ -464,8 +464,9 @@ public sealed class ExactSmallCommitmentDifferentialTests
     public void A_relaxed_deadline_keeps_exactly_the_candidates_no_later_than_the_deadline_or_the_kept_route()
     {
         // DL-HZ. The kept route drops the incumbent at e and the independent oracle gives every
-        // candidate's incumbent drop p. For each slack s and first promise p0, the relaxed deadline
-        // keeps exactly the candidates with p <= max(p0 + s, e).
+        // candidate's incumbent drop p. For each permille share a and first promise p0 the deadline
+        // is d = p0 + round(a * (pickup0 + maxRide - p0)), and the relaxed deadline keeps exactly the
+        // candidates with p <= max(d, e).
         var fixture = CreateState(seed: 3);
         var generated = new InsertionCandidateGenerator().Generate(
             fixture.State,
@@ -487,39 +488,35 @@ public sealed class ExactSmallCommitmentDifferentialTests
             .ToArray();
         Assert.True(delays.Length >= 2, "The fixture needs two distinct incumbent delays.");
         Assert.Contains(drops.Values, value => value == kept);
+        var pickup = fixture.BaselinePickup.Milliseconds;
+        var maxRide = fixture.State.Run.Requests[fixture.IncumbentId].MaxRideTime.Milliseconds;
         var driftCases = 0;
         var insideCases = 0;
 
-        foreach (var slack in new[] { 0, delays[0], delays[1] })
+        foreach (var permille in new[] { 1, 10 })
         {
-            // How far drift carried the kept route past the deadline p0 + s (negative: inside).
-            foreach (var overrun in new[]
-                     {
-                         delays[1] + 1, delays[0] + 1, delays[0], 1, 0, -1, -delays[0], -delays[1],
-                     })
+            // Every first promise from the pickup (a first promise cannot drop the incumbent before
+            // it was picked up) to the kept drop plus the second delay, so the deadline crosses the
+            // kept route and the first two delays.
+            for (var initial = pickup; initial <= kept + delays[1]; initial++)
             {
-                var initial = kept - slack - overrun;
-
-                // A first promise cannot drop the incumbent before it was picked up.
-                if (initial < fixture.BaselinePickup.Milliseconds)
-                {
-                    continue;
-                }
-
+                var deadline = initial + (long)Math.Round(
+                    permille / 1000.0 * (pickup + maxRide - initial),
+                    MidpointRounding.AwayFromZero);
                 var relaxed = new HardVectorCandidateAssessor().AssessAndFilter(
-                    SlackDeadlineContext(fixture, initial, slack),
+                    SlackDeadlineContext(fixture, initial, permille),
                     generated.VehicleCandidates!,
                     requireSafetyNoOp: true);
 
                 Assert.True(relaxed.IsSuccess, relaxed.Witness?.Message);
                 var expected = drops
-                    .Where(value => value.Value <= Math.Max(initial + slack, kept))
+                    .Where(value => value.Value <= Math.Max(deadline, kept))
                     .Select(value => value.Key)
                     .Order(StringComparer.Ordinal)
                     .ToArray();
                 Assert.Equal(expected, RetainedIds(relaxed));
 
-                if (overrun > 0)
+                if (deadline < kept)
                 {
                     driftCases++;
                 }
@@ -537,11 +534,12 @@ public sealed class ExactSmallCommitmentDifferentialTests
     [Fact]
     public void A_relaxed_deadline_decision_serves_the_new_rider_as_normal_operation()
     {
-        // Drift carried the kept route 1 ms past a zero-slack deadline. The relaxed rule bounds the
-        // incumbent by the kept route, so the policy still serves the new rider, and the decision
+        // Drift carried the kept route 1 ms past the deadline: a first promise 6 ms before the kept
+        // drop plus 1 permille of its ride-time slack (round(4.916) = 5 ms). The relaxed rule bounds
+        // the incumbent by the kept route, so the policy still serves the new rider, and the decision
         // validates as the Runner validates it, with no breach.
         var fixture = CreateState(seed: 3);
-        var context = SlackDeadlineContext(fixture, fixture.BaselineDrop.Milliseconds - 1, 0);
+        var context = SlackDeadlineContext(fixture, fixture.BaselineDrop.Milliseconds - 6, permille: 1);
 
         AlgorithmTestData.AssertGeneratedInFull(context.ReducedState, AlgorithmTestData.SmallGeneration);
         var result = new SolverBackedRidePoolingPolicy(new EnumeratingSolver()).Decide(
@@ -587,7 +585,7 @@ public sealed class ExactSmallCommitmentDifferentialTests
 
         CommitmentPolicy Arm(
             long? dropLimit = null,
-            long? deadlineSlack = null) =>
+            int? deadlinePermille = null) =>
             new(
                 fixture.Policy.PolicyId,
                 CommitmentDimensionVocabulary.Ordered.Select(
@@ -596,7 +594,7 @@ public sealed class ExactSmallCommitmentDifferentialTests
                         HardLimit(dimension, dropLimit),
                         CommitmentPhase.AllActive)),
                 new MaterialRevisionRule(1_000, null),
-                dropEtaDeadlineSlack: deadlineSlack is long slack ? new Duration(slack) : null);
+                dropEtaDeadlineSlackPermille: deadlinePermille);
 
         CandidateSelectionProblem Problem(CommitmentPolicy policy)
         {
@@ -623,7 +621,7 @@ public sealed class ExactSmallCommitmentDifferentialTests
         var expected = Signature(unlimited);
 
         Assert.Equal(expected, Signature(Problem(Arm(dropLimit: Bound))));
-        Assert.Equal(expected, Signature(Problem(Arm(deadlineSlack: Bound))));
+        Assert.Equal(expected, Signature(Problem(Arm(deadlinePermille: 1000))));
         Assert.Equal(
             ["accepted-request-count", "operational-cost", "candidate-id-rank:vehicle-1"],
             unlimited.ObjectiveLevels.Select(value => value.Name));
@@ -772,13 +770,13 @@ public sealed class ExactSmallCommitmentDifferentialTests
     }
 
     /// <summary>
-    /// A relaxed (DL-HZ) deadline of <paramref name="slack"/> from the given first promise, with no
-    /// budget limit.
+    /// A relaxed (DL-HZ) deadline of <paramref name="permille"/> of the ride-time slack of the given
+    /// first promise, with no budget limit.
     /// </summary>
     private static CommitmentMechanismContext SlackDeadlineContext(
         Fixture fixture,
         long initialDropMs,
-        long slack) =>
+        int permille) =>
         PromiseContext(
             fixture,
             initialDropMs,
@@ -790,7 +788,7 @@ public sealed class ExactSmallCommitmentDifferentialTests
                         null,
                         CommitmentPhase.AllActive)),
                 new MaterialRevisionRule(1_000, null),
-                dropEtaDeadlineSlack: new Duration(slack)));
+                dropEtaDeadlineSlackPermille: permille));
 
     private static string[] RetainedIds(HardVectorCandidateAssessmentResult result) =>
         result.Batch!.FeasibleCandidateSets.Single().Candidates

@@ -348,10 +348,10 @@ public sealed class Wp4RunnerIntegrationTests
     [Fact]
     public void A_relaxed_deadline_keeps_the_late_route_as_normal_operation_without_recovery()
     {
-        // Drift alone carries the booked rider past a one-millisecond deadline. The deadline is
-        // relaxed to the later of that deadline and the kept route, so the kept route passes: the
-        // certificate is normal and no breach is recorded.
-        var relaxed = DeadlineCommitmentConfiguration(slackMs: 1);
+        // Drift alone carries the booked rider past a one-millisecond deadline (1 permille of its
+        // 900 ms ride-time slack). The deadline is relaxed to the later of that deadline and the kept
+        // route, so the kept route passes: the certificate is normal and no breach is recorded.
+        var relaxed = DeadlineCommitmentConfiguration(permille: 1);
         var setup = CreateSession(
             HardVectorConfiguration(relaxed),
             commitmentConfiguration: relaxed);
@@ -695,15 +695,15 @@ public sealed class Wp4RunnerIntegrationTests
             Encoding.UTF8.GetBytes(batch.ToJsonString())).Response!;
     }
 
-    /// <summary>The archived commitment file with a relaxed drop deadline of <paramref name="slackMs"/>.</summary>
-    private static CommitmentPolicyConfiguration DeadlineCommitmentConfiguration(long slackMs)
+    /// <summary>The archived commitment file with a relaxed drop deadline of <paramref name="permille"/>.</summary>
+    private static CommitmentPolicyConfiguration DeadlineCommitmentConfiguration(int permille)
     {
         var json = JsonNode.Parse(File.ReadAllText(Path.Combine(
             RepositoryRoot(),
             "benchmarks",
             "configurations",
             "wp3-boundary-test-v1.json")))!;
-        json["policies"]![0]!["dropEtaDeadlineSlackMs"] = slackMs;
+        json["policies"]![0]!["dropEtaDeadlineSlackPermille"] = permille;
         json["policies"]![0]!["dropEtaDeadlineRelaxed"] = true;
 
         return CommitmentPolicyConfiguration.Decode(

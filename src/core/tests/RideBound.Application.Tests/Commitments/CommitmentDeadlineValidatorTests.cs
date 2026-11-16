@@ -23,10 +23,14 @@ public sealed class CommitmentDeadlineValidatorTests
     private const long Early = 1_000;
     private const long Late = 1_500;
 
+    // Either first promise leaves the rider a ride-time slack of pickup + 1000 ms max ride - drop
+    // = 900 ms, and 444 permille of it is round(399.6) = 400 ms of deadline slack.
+    private const int Slack400 = 444;
+
     [Fact]
     public void Without_a_deadline_the_same_drift_keeps_the_no_op()
     {
-        var context = NoOpUnderDrift(promiseAt: Early, reducedAt: Late, Policy(slack: null));
+        var context = NoOpUnderDrift(promiseAt: Early, reducedAt: Late, Policy(deadlinePermille: null));
 
         Assert.True(new CommitmentDecisionValidator().Validate(context).IsValid);
     }
@@ -42,7 +46,7 @@ public sealed class CommitmentDeadlineValidatorTests
             NoOpUnderDrift(
                 promiseAt: Early,
                 reducedAt: Late,
-                Policy(slack: 400),
+                Policy(Slack400),
                 revisedAt: Late),
             DelayBeforeDrop);
 
@@ -70,7 +74,7 @@ public sealed class CommitmentDeadlineValidatorTests
             NoOpUnderDrift(
                 promiseAt: Late,
                 reducedAt: Late,
-                Policy(slack: 400),
+                Policy(Slack400),
                 revisedAt: Early),
             DelayBeforeDrop);
 
@@ -107,7 +111,7 @@ public sealed class CommitmentDeadlineValidatorTests
             stops).Value!;
     }
 
-    private static CommitmentPolicy Policy(long? slack) =>
+    private static CommitmentPolicy Policy(int? deadlinePermille) =>
         new(
             ApplicationTestData.Request().CommitmentPolicyId,
             CommitmentDimensionVocabulary.Ordered.Select(
@@ -116,7 +120,7 @@ public sealed class CommitmentDeadlineValidatorTests
                     null,
                     CommitmentPhase.AllActive)),
             new MaterialRevisionRule(1, null),
-            dropEtaDeadlineSlack: slack is long value ? new Duration(value) : null);
+            dropEtaDeadlineSlackPermille: deadlinePermille);
 
     private static CommitmentValidationContext NoOpUnderDrift(
         long promiseAt,

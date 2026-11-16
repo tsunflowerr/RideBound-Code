@@ -100,10 +100,10 @@ public sealed class CommitmentPolicyConfigurationTests
     public void Drop_eta_deadline_is_read_when_present()
     {
         var configuration = CommitmentPolicyConfiguration.Decode(
-            PolicyJson("\"dropEtaDeadlineSlackMs\":30000,\"dropEtaDeadlineRelaxed\":true"));
+            PolicyJson("\"dropEtaDeadlineSlackPermille\":1000,\"dropEtaDeadlineRelaxed\":true"));
 
         Assert.True(configuration.TryGetPolicy("uniform-v1", out var policy));
-        Assert.Equal(new Duration(30_000), policy.DropEtaDeadlineSlack);
+        Assert.Equal(1000, policy.DropEtaDeadlineSlackPermille);
     }
 
     [Fact]
@@ -112,12 +112,10 @@ public sealed class CommitmentPolicyConfigurationTests
         var configuration = CommitmentPolicyConfiguration.Decode(PolicyJson(null));
 
         Assert.True(configuration.TryGetPolicy("uniform-v1", out var policy));
-        Assert.Null(policy.DropEtaDeadlineSlack);
+        Assert.Null(policy.DropEtaDeadlineSlackPermille);
     }
 
     [Theory]
-    [InlineData("\"dropEtaDeadlineSlackMs\":0", "must be positive")]
-    [InlineData("\"dropEtaDeadlineSlackMs\":-1", "canonical non-negative integer")]
     [InlineData(
         "\"dropEtaDeadlineSlack\":30000",
         "Unknown field 'dropEtaDeadlineSlack'")]
@@ -140,7 +138,7 @@ public sealed class CommitmentPolicyConfigurationTests
         // existing behaviour; Program catches it and exits with code 64.
         Assert.ThrowsAny<InvalidOperationException>(
             () => CommitmentPolicyConfiguration.Decode(
-                PolicyJson("\"dropEtaDeadlineSlackMs\":\"30000\"")));
+                PolicyJson("\"dropEtaDeadlineSlackPermille\":\"350\"")));
     }
 
     [Theory]
@@ -157,11 +155,15 @@ public sealed class CommitmentPolicyConfigurationTests
     [Fact]
     public void Relaxed_deadline_is_read_when_present()
     {
+        // The deadline keys of the final SHHZ71 policy.
         var relaxed = CommitmentPolicyConfiguration.Decode(
-            PolicyJson("\"dropEtaDeadlineSlackMs\":30000,\"dropEtaDeadlineRelaxed\":true"));
+            PolicyJson(
+                "\"dropEtaDeadlineSlackPermille\":1000,\"dropEtaDeadlineRelaxed\":true,"
+                + "\"dropEtaShadowAllocation\":true"));
 
         Assert.True(relaxed.TryGetPolicy("uniform-v1", out var deadline));
-        Assert.Equal(new Duration(30_000), deadline.DropEtaDeadlineSlack);
+        Assert.Equal(1000, deadline.DropEtaDeadlineSlackPermille);
+        Assert.True(deadline.DropEtaShadowAllocation);
     }
 
     [Theory]
@@ -173,7 +175,7 @@ public sealed class CommitmentPolicyConfigurationTests
         "'dropEtaDeadlineRelaxed' must be a boolean")]
     [InlineData(
         "\"dropEtaDeadlineRelaxed\":true",
-        "'dropEtaDeadlineRelaxed' requires 'dropEtaDeadlineSlackMs'")]
+        "'dropEtaDeadlineRelaxed' requires 'dropEtaDeadlineSlackPermille'")]
     [InlineData(
         "\"dropEtaDeadlineRelaxedMs\":30000",
         "Unknown field 'dropEtaDeadlineRelaxedMs'")]
@@ -215,10 +217,10 @@ public sealed class CommitmentPolicyConfigurationTests
             archived.ContentHash.Value);
         var policyId = Assert.Single(archived.PolicyIds);
         Assert.True(archived.TryGetPolicy(policyId, out var policy));
-        Assert.Null(policy.DropEtaDeadlineSlack);
+        Assert.Null(policy.DropEtaDeadlineSlackPermille);
 
         var deadline = JsonNode.Parse(reference)!;
-        deadline["policies"]![0]!["dropEtaDeadlineSlackMs"] = 30_000;
+        deadline["policies"]![0]!["dropEtaDeadlineSlackPermille"] = 350;
         deadline["policies"]![0]!["dropEtaDeadlineRelaxed"] = true;
 
         Assert.NotEqual(
@@ -238,10 +240,8 @@ public sealed class CommitmentPolicyConfigurationTests
         Assert.True(budget.TryGetPolicy("uniform-v1", out var rce));
         Assert.Equal(350, rce.DropEtaBudgetSlackPermille);
         Assert.Null(rce.DropEtaDeadlineSlackPermille);
-        Assert.Null(rce.DropEtaDeadlineSlack);
         Assert.True(deadline.TryGetPolicy("uniform-v1", out var eohz));
         Assert.Equal(350, eohz.DropEtaDeadlineSlackPermille);
-        Assert.Null(eohz.DropEtaDeadlineSlack);
         Assert.Null(eohz.DropEtaBudgetSlackPermille);
         Assert.True(absent.TryGetPolicy("uniform-v1", out var plain));
         Assert.Null(plain.DropEtaBudgetSlackPermille);
@@ -253,9 +253,6 @@ public sealed class CommitmentPolicyConfigurationTests
     [InlineData("\"dropEtaBudgetSlackPermille\":0", "must be positive")]
     [InlineData("\"dropEtaBudgetSlackPermille\":1001", "'dropEtaBudgetSlackPermille' must be 1 to 1000")]
     [InlineData("\"dropEtaDeadlineSlackPermille\":1001", "'dropEtaDeadlineSlackPermille' must be 1 to 1000")]
-    [InlineData(
-        "\"dropEtaDeadlineSlackMs\":30000,\"dropEtaDeadlineSlackPermille\":350",
-        "'dropEtaDeadlineSlackMs' cannot be combined with 'dropEtaDeadlineSlackPermille'")]
     [InlineData("\"dropEtaSlackPermille\":350", "Unknown field 'dropEtaSlackPermille'")]
     public void Invalid_slack_proportional_settings_are_rejected(string extraFields, string expectedMessage)
     {
@@ -441,7 +438,7 @@ public sealed class CommitmentPolicyConfigurationTests
         Assert.Equal(Removed, Message("\"dropEtaRevisionLimitMs\":\"30000\""));
         Assert.Equal(
             Removed,
-            Message("\"dropEtaDeadlineSlackMs\":30000,\"dropEtaDeadlineRelaxed\":true," + Cap));
+            Message("\"dropEtaDeadlineSlackPermille\":350,\"dropEtaDeadlineRelaxed\":true," + Cap));
 
         Assert.Contains("not a canonical integer", Message("\"dropEtaRevisionLimitMs\":1.5"));
         Assert.Contains("Null is not permitted", Message("\"dropEtaRevisionLimitMs\":null"));
@@ -473,13 +470,12 @@ public sealed class CommitmentPolicyConfigurationTests
             "Commitment 'dropEtaDeadlineTwoSided' (the two-sided deadline): removed; see commit "
             + "ebca912 (branch research/final-real-runs-2026-11-06)";
         const string TwoSided = "\"dropEtaDeadlineTwoSided\":true";
-        const string Slack = "\"dropEtaDeadlineSlackMs\":30000,";
+        const string Slack = "\"dropEtaDeadlineSlackPermille\":350,";
         string Message(string extraFields) =>
             Assert.ThrowsAny<Exception>(
                 () => CommitmentPolicyConfiguration.Decode(PolicyJson(extraFields))).Message;
 
         Assert.Equal(Removed, Message(Slack + TwoSided));
-        Assert.Equal(Removed, Message("\"dropEtaDeadlineSlackPermille\":350," + TwoSided));
         Assert.Equal(Removed, Message(Slack + "\"dropEtaDeadlineTwoSided\":false"));
         Assert.Equal(Removed, Message("\"dropEtaDeadlineTwoSided\":false"));
         Assert.Equal(Removed, Message(Slack + "\"dropEtaDeadlineTwoSided\":\"yes\""));
@@ -492,10 +488,6 @@ public sealed class CommitmentPolicyConfigurationTests
         Assert.StartsWith(
             "'dropEtaDeadlineRelaxed' requires",
             Message(TwoSided + ",\"dropEtaDeadlineRelaxed\":true"),
-            StringComparison.Ordinal);
-        Assert.StartsWith(
-            "'dropEtaDeadlineSlackMs' cannot be combined with 'dropEtaDeadlineSlackPermille'",
-            Message(Slack + "\"dropEtaDeadlineSlackPermille\":350," + TwoSided),
             StringComparison.Ordinal);
         Assert.StartsWith(
             "Commitment 'dropEtaRevisionLimitMs' (the per-decision revision cap): removed",
@@ -524,7 +516,6 @@ public sealed class CommitmentPolicyConfigurationTests
         const string Removed =
             "Commitment 'dropEtaDeadlineRelaxed' false, or a deadline without it (the strict deadline): removed; "
             + "see commit ebca912 (branch research/final-real-runs-2026-11-06)";
-        const string Slack = "\"dropEtaDeadlineSlackMs\":30000";
         const string Permille = "\"dropEtaDeadlineSlackPermille\":350";
         const string Strict = "\"dropEtaDeadlineRelaxed\":false";
         const string Relaxed = "\"dropEtaDeadlineRelaxed\":true";
@@ -534,9 +525,7 @@ public sealed class CommitmentPolicyConfigurationTests
         bool Decodes(string? extraFields) =>
             CommitmentPolicyConfiguration.Decode(PolicyJson(extraFields)).TryGetPolicy("uniform-v1", out _);
 
-        Assert.Equal(Removed, Message(Slack));
         Assert.Equal(Removed, Message(Permille));
-        Assert.Equal(Removed, Message(Slack + "," + Strict));
         Assert.Equal(Removed, Message(Permille + "," + Strict));
         Assert.Equal(Removed, Message(Strict));
         Assert.Equal(Removed, Message(Strict + ",\"dropEtaBudgetSlackPermille\":350"));
@@ -544,22 +533,18 @@ public sealed class CommitmentPolicyConfigurationTests
             Removed,
             Message("\"dropEtaDeadlineSlackPermille\":1000,\"dropEtaShadowAllocation\":true"));
 
-        Assert.Contains("Null is not permitted", Message(Slack + ",\"dropEtaDeadlineRelaxed\":null"));
+        Assert.Contains("Null is not permitted", Message(Permille + ",\"dropEtaDeadlineRelaxed\":null"));
         Assert.StartsWith(
             "'dropEtaDeadlineRelaxed' must be a boolean",
-            Message(Slack + ",\"dropEtaDeadlineRelaxed\":\"no\""),
-            StringComparison.Ordinal);
-        Assert.StartsWith(
-            "'dropEtaDeadlineSlackMs' cannot be combined with 'dropEtaDeadlineSlackPermille'",
-            Message(Slack + "," + Permille),
+            Message(Permille + ",\"dropEtaDeadlineRelaxed\":\"no\""),
             StringComparison.Ordinal);
         Assert.StartsWith(
             "Commitment 'dropEtaDeadlineTwoSided' (the two-sided deadline): removed",
-            Message(Slack + ",\"dropEtaDeadlineTwoSided\":false"),
+            Message(Permille + ",\"dropEtaDeadlineTwoSided\":false"),
             StringComparison.Ordinal);
         Assert.StartsWith(
             "Commitment 'dropEtaRevisionLimitMs' (the per-decision revision cap): removed",
-            Message(Slack + ",\"dropEtaRevisionLimitMs\":60000"),
+            Message(Permille + ",\"dropEtaRevisionLimitMs\":60000"),
             StringComparison.Ordinal);
         Assert.StartsWith(
             "Commitment 'freezeHorizonMs' and 'freezeHorizonLocks' (the freeze horizon): removed",
@@ -570,16 +555,59 @@ public sealed class CommitmentPolicyConfigurationTests
             Assert.Throws<InvalidDataException>(
                 () => CommitmentPolicyConfiguration.Decode(
                     Encoding.UTF8.GetBytes(
-                        Encoding.UTF8.GetString(PolicyJson(Slack)).Replace(
+                        Encoding.UTF8.GetString(PolicyJson(Permille)).Replace(
                             "\"budgetBasis\":\"decisionInduced\"",
                             "\"budgetBasis\":\"visible\"",
                             StringComparison.Ordinal)))).Message);
 
-        Assert.True(Decodes(Slack + "," + Relaxed));
         Assert.True(Decodes(Permille + "," + Relaxed));
         Assert.True(Decodes("\"dropEtaDeadlineSlackPermille\":1000,\"dropEtaShadowAllocation\":true," + Relaxed));
         Assert.True(Decodes("\"dropEtaBudgetSlackPermille\":350"));
         Assert.True(Decodes(null));
+    }
+
+    [Fact]
+    public void The_removed_fixed_ms_deadline_is_refused_with_a_pointer_to_the_archive()
+    {
+        // The key is refused, whatever its value; a deadline is always slack-proportional. The check runs
+        // before the relaxed-deadline check, so the checks before it keep their messages.
+        const string Removed =
+            "Commitment 'dropEtaDeadlineSlackMs' (the fixed-ms deadline): removed; see commit "
+            + "ebca912 (branch research/final-real-runs-2026-11-06)";
+        const string Fixed = "\"dropEtaDeadlineSlackMs\":30000";
+        const string Relaxed = "\"dropEtaDeadlineRelaxed\":true";
+        string Message(string extraFields) =>
+            Assert.ThrowsAny<Exception>(
+                () => CommitmentPolicyConfiguration.Decode(PolicyJson(extraFields))).Message;
+
+        Assert.Equal(Removed, Message(Fixed + "," + Relaxed));
+        Assert.Equal(Removed, Message(Fixed));
+        Assert.Equal(Removed, Message("\"dropEtaDeadlineSlackMs\":0," + Relaxed));
+        Assert.Equal(Removed, Message("\"dropEtaDeadlineSlackMs\":-1"));
+        Assert.Equal(Removed, Message("\"dropEtaDeadlineSlackMs\":\"30000\""));
+        Assert.Equal(Removed, Message(Fixed + ",\"dropEtaDeadlineSlackPermille\":350," + Relaxed));
+        Assert.Equal(Removed, Message(Fixed + "," + Relaxed + ",\"dropEtaDeadlineTwoSided\":true"));
+        Assert.Equal(Removed, Message(Fixed + "," + Relaxed + ",\"dropEtaRevisionLimitMs\":60000"));
+        Assert.Equal(Removed, Message(Fixed + "," + Relaxed + ",\"freezeHorizonMs\":300000"));
+
+        Assert.Contains("Null is not permitted", Message("\"dropEtaDeadlineSlackMs\":null"));
+        Assert.Contains("not a canonical integer", Message("\"dropEtaDeadlineSlackMs\":1.5"));
+        Assert.StartsWith(
+            "'dropEtaDeadlineRelaxed' must be a boolean",
+            Message(Fixed + ",\"dropEtaDeadlineRelaxed\":\"yes\""),
+            StringComparison.Ordinal);
+        Assert.StartsWith(
+            "'dropEtaDeadlineSlackPermille' must be 1 to 1000",
+            Message(Fixed + ",\"dropEtaDeadlineSlackPermille\":1001"),
+            StringComparison.Ordinal);
+        Assert.StartsWith(
+            "'dropEtaShadowAllocation' requires exactly one of",
+            Message(Fixed + "," + Relaxed + ",\"dropEtaShadowAllocation\":true"),
+            StringComparison.Ordinal);
+        Assert.Equal("'dropEtaDeadlineRelaxed' requires 'dropEtaDeadlineSlackPermille'.", Message(Relaxed));
+        Assert.True(
+            CommitmentPolicyConfiguration.Decode(PolicyJson("\"dropEtaDeadlineSlackPermille\":1000," + Relaxed))
+                .TryGetPolicy("uniform-v1", out _));
     }
 
     private static byte[] PolicyJson(string? extraFields)

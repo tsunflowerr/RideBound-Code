@@ -86,8 +86,7 @@ public sealed class CommitmentLockEvaluator
 
         // The deadline witness goes last, so a lock witness keeps its position
         // and callers reading the first witness still see the lock.
-        if (policy.DropEtaDeadlineSlack is not null
-            || policy.DropEtaDeadlineSlackPermille is not null)
+        if (policy.DropEtaDeadlineSlackPermille is not null)
         {
             AddDeadlineWitness(
                 ordered,
@@ -186,8 +185,8 @@ public sealed class CommitmentLockEvaluator
                 nameof(anchor));
         }
 
-        // Fixed slack, or the slack-proportional share of this rider's first promise (scaled by
-        // its Shadow class under a shadow-allocated policy).
+        // The slack-proportional share of this rider's first promise (scaled by its Shadow class
+        // under a shadow-allocated policy).
         var slack = policy.DeadlineSlackFor(anchor, request.MaxRideTime, shadowAllocation)
             ?? throw new InvalidOperationException("A deadline rule has no slack.");
 
