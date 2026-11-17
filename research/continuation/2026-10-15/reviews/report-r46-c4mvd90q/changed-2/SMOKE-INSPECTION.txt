@@ -1,4 +1,0 @@
-smokeVerdictSha256 94cb7fd59a62898d6dbaffea3c151db544f169b2bbd873bbf502c874e93f9f3b
-inspected-by: synthetic regression fixture
-inspection: accepted
-changed

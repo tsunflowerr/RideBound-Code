@@ -1,0 +1,19 @@
+* text=auto
+.editorconfig text eol=lf
+.gitattributes text eol=lf
+.gitignore text eol=lf
+*.cs text eol=lf
+*.csproj text eol=lf
+*.props text eol=lf
+*.targets text eol=lf
+*.json text eol=lf
+*.md text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.slnx text eol=lf
+
+# Test assets compared byte for byte (golden vectors, transcripts, recorded stdout): never convert line endings.
+core/protocol/fixtures/** -text
+*.ndjson -text
+*.hex -text
+core/tests/RideBound.Runner.Tests/Final/Fixtures/** -text

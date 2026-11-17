@@ -1,1 +1,0 @@
-{"schema": "stage1b-extract-v1", "mode": "dryrun", "dryRun": false, "roleSources": {"CF-U": "SF-U", "CF-C30": "SF-C30", "SF-U": "SF-U", "SF-C30": "SF-C30"}}

@@ -1,6 +1,0 @@
-tier1 driver exit=0
-tier1 check exit=0
-tier2 driver exit=0
-tier2 check exit=1
-snow driver exit=0
-snow check exit=0

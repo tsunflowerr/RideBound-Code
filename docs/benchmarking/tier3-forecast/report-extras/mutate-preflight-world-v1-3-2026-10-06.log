@@ -1,9 +1,0 @@
-KILLED: ratio looks one bin ahead -> 23 checks, 6 failure(s)
-KILLED: hold from bin 7 -> (no output)
-KILLED: no leakage guard -> 23 checks, 1 failure(s)
-KILLED: no K=1 shortcut, divide by k*m(b+1) -> 23 checks, 8 failure(s)
-KILLED: snapshot not scaled -> 23 checks, 3 failure(s)
-KILLED: bin by rounding -> 23 checks, 1 failure(s)
-KILLED: profile from first day only -> 23 checks, 1 failure(s)
-KILLED: K range 1..9 -> 23 checks, 1 failure(s)
-8/8 mutants killed

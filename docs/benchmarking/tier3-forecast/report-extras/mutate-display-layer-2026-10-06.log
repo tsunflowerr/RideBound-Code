@@ -1,9 +1,0 @@
-KILLED: one-sided floor removed -> 23 checks, 1 failure(s)
-KILLED: scenario day allowed as causal source -> PASS past or current time (p <= t) returns p
-KILLED: incident day not excluded -> 23 checks, 1 failure(s)
-KILLED: minimum history 1 -> 23 checks, 2 failure(s)
-KILLED: growth applied inside the current bin -> 23 checks, 4 failure(s)
-KILLED: weight applied inversely -> 23 checks, 1 failure(s)
-KILLED: hold ignored in forecast weight -> 23 checks, 1 failure(s)
-KILLED: no early exit inside a bin -> RuntimeError: stretch did not converge
-8/8 mutants killed

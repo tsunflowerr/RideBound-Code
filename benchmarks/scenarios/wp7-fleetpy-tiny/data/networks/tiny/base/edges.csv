@@ -1,7 +1,0 @@
-from_node,to_node,distance,travel_time,source_edge_id
-0,1,1000,1,wp7-0-1
-1,0,1000,1,wp7-1-0
-1,2,1000,1,wp7-1-2
-2,1,1000,1,wp7-2-1
-0,2,2000,2,wp7-0-2
-2,0,2000,2,wp7-2-0

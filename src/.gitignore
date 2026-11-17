@@ -1,0 +1,32 @@
+# .NET build output
+**/bin/
+**/obj/
+TestResults/
+coverage/
+*.trx
+
+# IDE and operating-system files
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+.DS_Store
+Thumbs.db
+
+# Local configuration and secrets
+.env
+.env.*
+!.env.example
+appsettings.*.local.json
+secrets.json
+
+# Experiment output and downloaded/vendor content
+tmp/
+vendor/
+
+# Python bytecode: a stray .pyc inside the repository changes the
+# git-visible inventory, and the matrix preflight aborts a job when that
+# inventory drifts mid-run.
+__pycache__/
+*.pyc

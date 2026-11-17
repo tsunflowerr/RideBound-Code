@@ -1,8 +1,0 @@
-PASS constant differences: point = lo = hi 
-PASS point = cell-weighted stratum means 0.08
-PASS bootstrap interval brackets the point [0.020000000000000018, 0.16000000000000003]
-PASS two single-cell clusters: bootstrap range is [-0.1, 0] [-0.1, 0.0]
-PASS cluster-t two clusters: df 1, half width 12.706 * |a-b|/2 -0.6853 0.5852999999999999
-PASS cluster-t constant: zero width 
-PASS same seed gives the same interval 
-7 checks, 0 failure(s)

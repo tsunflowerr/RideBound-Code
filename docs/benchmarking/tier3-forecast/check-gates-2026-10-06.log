@@ -1,5 +1,0 @@
-# check_gates.py
-S1 Mplus-30F-d20181112-s10-r1-w07-S1: status pass; ratio lines 9 -> PASS
-E1 Mplus-30-d20181115-s10-r4-w08 vs C:\RideBoundData\research\tier3-t38-v1\Mplus-30-d20181115-s10-r4-w08: decisions same; table same; served same; alighted same; frames same -> PASS
-E2 C-30-d20181115-s10-r2-w07 vs C:\RideBoundData\research\tier3-t38-v1\C-30-d20181115-s10-r2-w07: decisions same; table same; served same; alighted same; frames same; sham ratio lines 8, all 1.000000: True -> PASS
-GATES PASSED

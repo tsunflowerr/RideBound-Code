@@ -1,2 +1,0 @@
-smokeVerdictSha256 b07e8a859a4ddec6a6309b2a574cc7ca84bf35aaef32759374d683ad6e3f61aa
-inspection: accepted

@@ -1,5 +1,0 @@
-# family_a_two_sided.py (sensitivity; two-sided display); C-30; 21 active weekday cells
-active weekday  n=21 | Y naive 0.0601 two-sided 0.0017 | E naive 0.0000 two-sided 0.0008 | Vis naive 0.0748 two-sided 0.0132 | ext +11.6s
-w07             n= 8 | Y naive 0.1444 two-sided 0.0027 | E naive 0.0000 two-sided 0.0020 | Vis naive 0.1707 two-sided 0.0174 | ext +27.8s
-w08             n= 8 | Y naive 0.0135 two-sided 0.0018 | E naive 0.0000 two-sided 0.0000 | Vis naive 0.0256 two-sided 0.0120 | ext +7.7s
-w17             n= 5 | Y naive 0.0000 two-sided 0.0000 | E naive 0.0000 two-sided 0.0000 | Vis naive 0.0000 two-sided 0.0086 | ext -8.2s
