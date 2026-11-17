@@ -2,8 +2,8 @@ namespace RideBound.Algorithms.Shareability;
 
 /// <summary>
 /// Free-flow network of the time-integrated shareability score of Elmi, Moylan, Alonso-Mora
-/// and Fielbaum (2026), as the comparison emulator defines it (wf15 SPEC 2.3 and 4.2;
-/// netfull.js): all-pairs free-flow seconds D (row-major from -> to, closed integer APSP),
+/// and Fielbaum (2026), as the comparison emulator defines it
+/// (src/emulator/network.js): all-pairs free-flow seconds D (row-major from -> to, closed integer APSP),
 /// its transpose, the directed edge list in CSR form for shortest-path reconstruction, and
 /// the zone of every node. Pure data: no map provider, no file format.
 /// </summary>
@@ -152,7 +152,7 @@ public sealed class ShareabilityNetwork
 
     /// <summary>
     /// One shortest free-flow path a -> b: a greedy step to the out-neighbour u with
-    /// w(cur, u) + D[u][b] == D[cur][b], the smallest u on ties (SPEC 4.7; sscore.js pathOf).
+    /// w(cur, u) + D[u][b] == D[cur][b], the smallest u on ties (sscore.js pathOf).
     /// Exact for integer weights and the closed integer APSP. The edge sum is checked
     /// against D. Cached; the cache never changes a result.
     /// </summary>

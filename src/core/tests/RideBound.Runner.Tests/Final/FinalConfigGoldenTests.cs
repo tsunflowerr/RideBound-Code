@@ -7,7 +7,7 @@ using RideBound.Contracts.Serialization;
 namespace RideBound.Runner.Tests.Final;
 
 /// <summary>
-/// Safety net for the refactor (TARGET-DESIGN phase S, step S3). The final experiment's Runner configuration,
+/// The final experiment's Runner configuration,
 /// driven through the real CLI process exactly like the simulator adapter drives it:
 /// <list type="bullet">
 /// <item>T1: every stdout byte equals the recording made with the Runner at commit ebca912;</item>

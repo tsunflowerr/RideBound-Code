@@ -239,7 +239,7 @@ public sealed class CommitmentPolicy
     }
 
     /// <summary>
-    /// Shadow Control (ADR-089 GĐ4): an allowed rider gets its whole slack and a guaranteed rider
+    /// Shadow Control: an allowed rider gets its whole slack and a guaranteed rider
     /// none, so the class scales the policy's one slack-proportional limit, a budget or a deadline
     /// of exactly 1000 permille. With both, the class would have no single meaning.
     /// </summary>
@@ -249,7 +249,7 @@ public sealed class CommitmentPolicy
 
     /// <summary>
     /// The rider's drop slack at the first published promise, scaled by a permille share
-    /// (Elmi et al. 2026, Ordinary Control, as formalised in the wf14 preregistration):
+    /// (Elmi et al. 2026, Ordinary Control):
     /// round(permille / 1000 * max(0, pickup0 + maxRide - drop0)), half away from zero.
     /// The slack is the room the ride-time limit leaves after the first promise, so it is
     /// fixed when the promise opens and never re-measured. The arithmetic is in IEEE double,
@@ -355,7 +355,7 @@ public sealed class CommitmentPolicy
     }
 
     /// <summary>
-    /// ADR-089 GĐ4: Shadow Control (Elmi et al. 2026). The rider's class, frozen at its first
+    /// Shadow Control (Elmi et al. 2026). The rider's class, frozen at its first
     /// promise, scales the 1000-permille slack-proportional budget (SHRC) or deadline (SHHZ).
     /// </summary>
     public bool DropEtaShadowAllocation { get; }

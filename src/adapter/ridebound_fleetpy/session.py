@@ -17,16 +17,16 @@ FLEETPY_VERSION = "1.0.2"
 FLEETPY_COMMIT = "053aa9d4fcfde91c5d303435d5748f9206c071b0"
 ADAPTER_ID = "fleetpy-ridebound"
 ADAPTER_VERSION = "1.0.0"
-# The declared valid range for the Runner frame bound is 1 MiB..64 MiB
-# (ADR-039). This is a resource guard, not a correctness invariant: a denser
-# scenario legitimately produces a larger full-state checkpoint, and exceeding
-# the bound is a typed fail-closed error rather than silent truncation. A
-# contended peak-window grid with long per-vehicle routes overran 16 MiB, so the
-# adapter now requests the declared ceiling and the observed frame sizes are
-# recorded so the headroom stays visible.
+# The frame bound of both directions when no setting raises it: 64 MiB. The client checks
+# frames in both directions against it; the Runner gets the input bound as --maximum-line-bytes
+# (its own default is 1 MiB). This is a resource guard, not a correctness invariant: a denser
+# scenario legitimately produces a larger full-state checkpoint, and exceeding the bound is a
+# typed fail-closed error rather than silent truncation. A contended peak-window grid with long
+# per-vehicle routes overran 16 MiB, so the adapter requests 64 MiB, and the observed frame
+# sizes are recorded so the headroom stays visible.
 RUNNER_MAXIMUM_INPUT_LINE_BYTES = 64 * 1024 * 1024
 RUNNER_MAXIMUM_OUTPUT_LINE_BYTES = 64 * 1024 * 1024
-# ADR-089 S3: the Runner accepts --maximum-line-bytes up to 1 GiB. A full-node Via cell
+# The Runner accepts --maximum-line-bytes up to 1 GiB. A full-node Via cell
 # needs it (travel snapshots of ~130 MB, final checkpoints up to ~0.8 GB), so the operator
 # setting `ridebound_maximum_line_bytes` raises both bounds for one run. It can only raise
 # them: each bound is the larger of the setting and its constant above.
@@ -268,10 +268,10 @@ class RideBoundSessionSettings:
     # `candidateGeneration.waitingRiderRelocation`. The adapter then infers and checks the one
     # waiting rider a decision may move between vehicles (relocation.py).
     waiting_rider_relocation: bool = False
-    # ADR-089 GĐ4: true when the WP4 configuration declares `planningForecast`. The Runner
+    # True when the WP4 configuration declares `planningForecast`. The Runner
     # then owns the pickup window and the maximum trip; FleetPy keeps capacity and structure.
     planning_forecast: bool = False
-    # ADR-089 S3: raises the frame bound of both directions; None keeps the 64 MiB constants.
+    # Raises the frame bound of both directions; None keeps the 64 MiB constants.
     maximum_line_bytes: int | None = None
 
     @classmethod
@@ -446,7 +446,7 @@ class RideBoundProtocolSession:
         self._manifest_hash: str | None = None
 
     def _line_bound(self, constant: int) -> int:
-        # The constant is read at call time, as before, so launchers that patch it keep working.
+        # The constant is read at call time, so a caller that patches it gets the patched value.
         return max(self.settings.maximum_line_bytes or 0, constant)
 
     def _new_client(self):

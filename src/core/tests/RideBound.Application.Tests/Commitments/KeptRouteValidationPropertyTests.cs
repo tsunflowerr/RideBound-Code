@@ -11,7 +11,7 @@ using RideBound.Domain.Vehicles;
 namespace RideBound.Application.Tests.Commitments;
 
 /// <summary>
-/// Refactor safety net S3: under the final commitment policies (SHRC71 = rule C budget, SHHZ71 = relaxed
+/// Under the final commitment policies (SHRC71 = rule C budget, SHHZ71 = relaxed
 /// deadline; G2 and their insertion-only twins), the kept route (the no-op: every vehicle keeps its route) always
 /// passes the commitment validator, whatever the world did since the last decision. This is why removing
 /// forced-reference recovery (<c>commitmentRecovery: no-worse-than-reference-v1</c> is now a no-op) changes no final

@@ -12,7 +12,7 @@ using RideBound.Domain.Vehicles;
 namespace RideBound.Application.Tests.Commitments;
 
 /// <summary>
-/// Slack-proportional budgets (Elmi et al. 2026 Ordinary Control, wf14 formalisation) through the
+/// Slack-proportional budgets (Elmi et al. 2026 Ordinary Control) through the
 /// real validator and ledger. One rider, max ride 1000 ms, 100 ms per arc: the first promise at
 /// t = 1000 picks up at 1100 ms and drops at 1200 ms, so the first-promise slack is
 /// 1100 + 1000 - 1200 = 900 ms and 35% of it is round(315.0) = 315 ms.

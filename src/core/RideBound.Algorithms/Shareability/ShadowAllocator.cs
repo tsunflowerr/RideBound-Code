@@ -18,8 +18,8 @@ namespace RideBound.Algorithms.Shareability;
 /// <param name="Alpha">Smoothing alpha of the zone rates.</param>
 /// <param name="Threshold">theta: a score at or below it makes the rider guaranteed.</param>
 /// <param name="NetworkNodes">Run node identifier -> network node index, for every node the run can name. The
-/// identifiers are the simulator adapter's opaque ones, so the map is part of the cell's input (ADR-089 GĐ4 gate,
-/// 2026-11-04: the identifiers are not the network's own node numbers).</param>
+/// identifiers are the simulator adapter's opaque ones, not the network's own node numbers, so the map is part of
+/// the cell's input.</param>
 public sealed record ShadowAllocationInputs(
     ShareabilityNetwork Network,
     double Kappa,
@@ -37,8 +37,8 @@ public sealed record ShadowAllocationInputs(
     IReadOnlyDictionary<string, int> NetworkNodes);
 
 /// <summary>
-/// ADR-089 GĐ4: Shadow Control classes for the riders whose first promise was published in a
-/// decision, from the staged state of that decision (the comparison emulator, engine17.js:742-776):
+/// Shadow Control classes for the riders whose first promise was published in a
+/// decision, from the staged state of that decision (the comparison emulator's scoreNewPromises in engine.js):
 /// the score context is the assigned vehicle's start, current arc, load and capacity and its route
 /// with the projected service times T and headrooms h (pickup: 0 once promised, else latest - T;
 /// drop: max(0, pickup + max ride - T), capped for a co-rider promised earlier by its remaining

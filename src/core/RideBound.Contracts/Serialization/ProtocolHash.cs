@@ -61,7 +61,7 @@ public static class ProtocolHash
             canonicalDecision);
 
     /// <summary>
-    /// ADR-089, light audit: the decision hash chains the previous decision, the manifest, the
+    /// Light audit: the decision hash chains the previous decision, the manifest, the
     /// event batch, the state identity (epoch, sequence, simulation time and the state hash field)
     /// and the decision, but not the canonical online state, which is not hashed per decision in
     /// this mode. Its own domain keeps it from being mistaken for a v1 hash.

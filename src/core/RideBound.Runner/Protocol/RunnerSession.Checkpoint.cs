@@ -46,7 +46,7 @@ public sealed partial class RunnerSession
                 envelope);
         }
 
-        // ADR-089: the response is the canonical envelope line the envelope path wrote, built
+        // The response is the canonical envelope line of the full checkpoint, built
         // around the cached canonical state instead of from copies of it. The shell is the same
         // checkpoint with an empty online state; its canonical line is split at that empty
         // object and the state's own canonical bytes are written there. Canonical JSON writes an

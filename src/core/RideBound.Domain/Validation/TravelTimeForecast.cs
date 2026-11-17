@@ -4,11 +4,11 @@ namespace RideBound.Domain.Validation;
 
 /// <summary>
 /// Time-of-day forecast of travel times, used only where the dispatcher projects a plan
-/// (closed-loop forecast of the comparison emulator, engine17.js legF :151-167, :454).
+/// (the closed-loop forecast of the comparison emulator, legF in src/emulator/engine.js).
 /// A leg that takes w ms under the current snapshot is integrated over fixed bins: weight 1
 /// in the bin of the evaluation time b0, weight profile[b] / profile[b0] in any other bin
 /// (the profile is held after its last value). The arrival is rounded to whole milliseconds,
-/// ties up (the integer convention of the adapter-mode emulator, engine_wf15_clint.js).
+/// ties up (the integer convention of the adapter-mode emulator).
 /// The arithmetic is the emulator's, in IEEE double, step for step. Physical motion is not
 /// affected: the simulator moves vehicles on its own travel times.
 /// </summary>

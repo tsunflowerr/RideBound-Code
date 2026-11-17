@@ -12,7 +12,7 @@ using RideBound.Domain.Validation;
 namespace RideBound.Algorithms.Tests.Policies;
 
 /// <summary>
-/// The WP8 budget frontier is only interpretable if a commitment budget binds every
+/// A comparison of budget arms is only meaningful if a commitment budget binds every
 /// arm exactly as configured. That property is not an operational convention — it is
 /// decided by the effective policies that <c>SolverBackedRidePoolingPolicy</c> hands
 /// the runner, which the validator then scores the decision against. These tests pin

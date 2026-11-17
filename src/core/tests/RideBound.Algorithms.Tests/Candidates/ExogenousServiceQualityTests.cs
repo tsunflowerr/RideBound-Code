@@ -12,10 +12,10 @@ using RideBound.Domain.Vehicles;
 namespace RideBound.Algorithms.Tests.Candidates;
 
 /// <summary>
-/// ADR-045. Worsening travel can push an already committed route past a
-/// service-quality deadline. Before ADR-045 that pruned the safety no-op, left
-/// the vehicle with zero candidates and killed the run — which is exactly how
-/// the WP9 smoke failed, in both arms. These lock the replacement semantics:
+/// Worsening travel can push an already committed route past a
+/// service-quality deadline. If that pruned the safety no-op, the vehicle would
+/// be left with zero candidates and the run would stop. These tests pin the
+/// rule that applies instead:
 /// the no-op survives, the breach is reported, and no candidate is allowed to
 /// hide its own damage behind it.
 /// </summary>
@@ -88,7 +88,7 @@ public sealed class ExogenousServiceQualityTests
         Assert.True(result.Diagnostics!.IsComplete);
         var vehicle = Assert.Single(result.VehicleCandidates!);
 
-        // ADR-047: relief reaches the safety no-op and nothing else. A changed
+        // Relief reaches the safety no-op and nothing else. A changed
         // candidate carrying the breached incumbent is pruned against the
         // published 150 ms bound, not the 5,000 ms the traffic already caused —
         // so RideBound never proposes a plan the simulator would reject.

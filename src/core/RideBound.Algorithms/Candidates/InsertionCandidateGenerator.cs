@@ -139,10 +139,10 @@ public sealed partial class InsertionCandidateGenerator
         var prunedById =
             new Dictionary<string, CandidatePruneWitness>(StringComparer.Ordinal);
 
-        // ADR-045. Probe the unchanged active route first. Whatever it can no
+        // Probe the unchanged active route first. Whatever it can no
         // longer honour on the two service-quality dimensions is exogenous by
         // construction. The resulting relaxation is applied only to the safety
-        // no-op; ADR-047 keeps every changed candidate strictly contractual.
+        // no-op; every changed candidate stays strictly contractual.
         var probe = _validator.ProbeServiceQuality(
             state.Run,
             vehicle.Id,
@@ -186,13 +186,13 @@ public sealed partial class InsertionCandidateGenerator
             return VehicleGenerationResult.Failure(noOpFailure);
         }
 
-        // ADR-047. The relief exists to keep the safety no-op alive, and the
+        // The relief exists to keep the safety no-op alive, and the
         // no-op is never handed to the simulator: the adapter only submits a
         // plan when the route actually changed. Every *changed* candidate is
         // therefore validated against the published contractual bounds, with no
         // relief at all. Anything looser would let RideBound propose a plan that
-        // FleetPy's own `VehiclePlan.is_feasible` rejects — which is exactly how
-        // three Panel B jobs died, one of them by 13 ms on a pickup window.
+        // FleetPy's own `VehiclePlan.is_feasible` rejects (a job stops on such a
+        // rejection, even when a pickup window is missed by a few milliseconds).
         var exploration = ExploreBestFirst(
             state,
             vehicle,

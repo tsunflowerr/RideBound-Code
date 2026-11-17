@@ -300,7 +300,7 @@ def main(argv=None):
                                        "planningForecast": forecast_block(inputs["forecast"]["profile"])},
                    "FS-G2-SHHZ71-N": {**wp4, "shadowAllocation": shadow}}
         for arm, config in configs.items():
-            value = json.loads(js_json(config))  # what the old Python step read back from the JavaScript step
+            value = json.loads(js_json(config))  # the config parsed back from its JSON.stringify text
             value["shadowAllocation"]["networkNodes"] = nodes
             files[f"wp4/{arm}/{cell}.json"] = json.dumps(value, indent=2) + "\n"
 
@@ -310,7 +310,7 @@ def main(argv=None):
     summary = {"cells": len(cells), "nodes": sum(len(inputs["globalOf"]) for inputs in cells.values()),
                "sha256": {path.relative_to(out).as_posix(): hashlib.sha256(path.read_bytes()).hexdigest()
                           for path in sorted(out.rglob("*.json"))}}
-    # Text mode as before: the recorded CONFIGS-V2.json files were written on Windows, with CRLF line ends.
+    # Text mode, so the line ends are the platform's (CRLF on Windows), as in the recorded CONFIGS-V2.json files.
     (out / "CONFIGS-V2.json").write_text(json.dumps(summary, indent=1), encoding="utf-8")
     print(f"{summary['cells']} cells, {summary['nodes']} node ids; {len(summary['sha256'])} files")
     return 0

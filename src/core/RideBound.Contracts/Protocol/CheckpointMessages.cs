@@ -159,7 +159,7 @@ public static class CheckpointPayloadCodec
     }
 
     /// <summary>
-    /// ADR-089: the same hash as <see cref="CalculateHash(CheckpointContent)"/> for a content whose
+    /// The same hash as <see cref="CalculateHash(CheckpointContent)"/> for a content whose
     /// online state is given as canonical bytes, in parts, so a Via-sized state is hashed without
     /// being copied. <paramref name="shell"/> carries an empty object as its online state; the
     /// canonical content is the shell's with that empty object replaced by
@@ -204,7 +204,7 @@ public static class CheckpointPayloadCodec
     }
 
     /// <summary>
-    /// ADR-089: the payload of <paramref name="shell"/> under a hash computed for the full
+    /// The payload of <paramref name="shell"/> under a hash computed for the full
     /// content (<see cref="CalculateHash(CheckpointContent, IReadOnlyList{ReadOnlyMemory{byte}})"/>).
     /// <see cref="Encode"/> cannot be used because it checks the hash against the shell.
     /// </summary>

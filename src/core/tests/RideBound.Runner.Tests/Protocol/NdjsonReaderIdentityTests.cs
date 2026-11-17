@@ -4,7 +4,7 @@ using RideBound.Runner.Protocol;
 namespace RideBound.Runner.Tests.Protocol;
 
 /// <summary>
-/// ADR-089: the buffered reader must return exactly what the archived byte-at-a-time reader
+/// The buffered reader must return exactly what the archived byte-at-a-time reader
 /// returned (kind, bytes, error code and message) for any byte stream, read size and line limit.
 /// </summary>
 public sealed class NdjsonReaderIdentityTests

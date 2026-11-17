@@ -203,7 +203,7 @@ public sealed class CommitmentPolicyConfigurationTests
     public void The_archived_reference_configuration_keeps_its_hash_and_the_relaxed_deadline_off()
     {
         // wp14-c1-h6-reference-v1.json is byte-identical to the C-30 configuration of every
-        // archived T3.8 run (ADR-078); its canonical hash must not move. Adding a deadline
+        // archived T3.8 run; its canonical hash must not move. Adding a deadline
         // gives a different configuration, so the arms of a comparison stay distinguishable.
         var reference = File.ReadAllText(Path.Combine(
             TestPaths.Root(),

@@ -348,7 +348,7 @@ public sealed class OnlineStateCheckpointCodecTests
     [Fact]
     public void Shadow_allocations_round_trip_on_every_state_path_and_are_absent_by_default()
     {
-        // ADR-089 GĐ4: the fast writer, the reference canonicalizer and the checkpoint codec.
+        // Shadow Control: the fast writer, the reference canonicalizer and the checkpoint codec.
         var (run, _, promises, travel) = SingleRiderState();
         var plain = new OnlineState(run, travel, 5, travel.SnapshotHash, promises);
         var shadow = plain with

@@ -6,7 +6,7 @@ using RideBound.Domain.Routes;
 namespace RideBound.Domain.Tests.Commitments;
 
 /// <summary>
-/// RB-WP14-005 factor F2. A ratcheted ETA lock rejects only movement that makes the
+/// A ratcheted ETA lock rejects only movement that makes the
 /// promise later, matching the one-sided guarantee used in the ride-pooling
 /// literature. An exact lock keeps rejecting any movement at all.
 /// </summary>

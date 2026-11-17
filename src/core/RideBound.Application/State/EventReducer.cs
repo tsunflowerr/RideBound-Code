@@ -10,7 +10,7 @@ namespace RideBound.Application.State;
 
 /// <summary>
 /// Applies an event batch to the online state. A passenger observed boarding after the latest pickup is accepted
-/// and recorded as an <see cref="ObservedLatePickup"/> (ADR-076); the accepted window is unchanged.
+/// and recorded as an <see cref="ObservedLatePickup"/>; the accepted window is unchanged.
 /// </summary>
 public sealed class EventReducer
 {

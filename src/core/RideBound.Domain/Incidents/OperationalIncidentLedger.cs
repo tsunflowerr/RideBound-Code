@@ -18,7 +18,7 @@ public readonly record struct IncidentId
 }
 
 /// <summary>
-/// ADR-076 (exploratory). A rider observed boarding after the latest pickup of the accepted
+/// A rider observed boarding after the latest pickup of the accepted
 /// window. The window is not relaxed: the record keeps both times, and the gap is a service
 /// violation of its own, separate from commitment breaches.
 /// </summary>

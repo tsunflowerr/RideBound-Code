@@ -4,10 +4,9 @@ using RideBound.Domain.Common;
 namespace RideBound.Algorithms.Tests.Shareability;
 
 /// <summary>
-/// ADR-089 GĐ4 Shadow gate, 2026-11-04: the first real Shadow job failed at its first promise with
-/// "Node 'node-825512e8…' is not a network node". Run node identifiers are the simulator adapter's
-/// opaque ones (node- + SHA-256 of the FleetPy node), not "node-%06d" network numbers, so the
-/// allocator now reads them through the cell's networkNodes map and never parses them.
+/// Run node identifiers are the simulator adapter's opaque ones (node- + SHA-256 of the FleetPy
+/// node, such as "node-825512e8…"), not "node-%06d" network numbers, so the allocator reads
+/// them through the cell's networkNodes map and never parses them.
 /// </summary>
 public sealed class ShadowAllocatorNodeMapTests
 {

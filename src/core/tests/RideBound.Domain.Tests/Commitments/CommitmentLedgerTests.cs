@@ -192,8 +192,8 @@ public sealed class CommitmentLedgerTests
     }
 
     /// <summary>
-    /// ADR-089: the persistent publication set must reject every identifier any earlier entry
-    /// used (the initial promise and earlier revisions), as the old scan of every entry did.
+    /// The persistent publication set must reject every identifier any earlier entry
+    /// used (the initial promise and earlier revisions).
     /// </summary>
     [Fact]
     public void Revision_rejects_the_publication_identifier_of_any_earlier_entry()

@@ -343,7 +343,7 @@ function simulate(P, opts = {}) {
       cur = s.node;
     }
     EV.lockOk = lockOk; EV.nd = nd;
-    if (withSlack) { // ForwardSlackProfile.cs:198-235
+    if (withSlack) { // C#: ForwardSlackProfileBuilder.Build
       let cert = null;
       for (let k = len - 1; k >= 0; k--) {
         const prop = cert === null ? null : waitArr[k] + cert;
@@ -711,8 +711,8 @@ function simulate(P, opts = {}) {
   }
 
   // Apply the selected plan: the chosen routes, the accepted requests and the G2 move. Every other new request is
-  // deferred if some admissible candidate of a non-forced vehicle served it (RollingCostPolicy.cs:166-221), else
-  // rejected. Returns the accepted requests.
+  // deferred if some admissible candidate of a non-forced vehicle served it (C#: SelectionApplier.ApplySelection),
+  // else rejected. Returns the accepted requests.
   function applyPlan(dec, plan, forced, pools, relocs) {
     const { Q } = dec;
     const chosenRoutes = plan.ch.map(c => (c.noop ? null : c));
@@ -746,7 +746,7 @@ function simulate(P, opts = {}) {
     return accepted;
   }
 
-  // Publications for the promised riders (CommitmentDecisionValidator.cs:558-597; PromiseDeltaCalculator.cs:63-155):
+  // Publications for the promised riders (C#: CommitmentDecisionValidator.CheckRevision, PromiseDeltaCalculator):
   // the routes as applied are projected (pPk/pDr); a rider whose drop or pickup ETA differs from the kept-route ETA
   // (e, ek) or from its last publication gets a revision; c = p - e is the dispatch change charged to the ledger.
   function publish(dec) {
@@ -866,7 +866,7 @@ function simulate(P, opts = {}) {
     return accepted;
   }
 
-  function isMaterial(oPk, nPk, oDr, nDr) { // MaterialRevisionRule (CommitmentPolicy.cs:98-115): 1 s raw, 60 s bucket
+  function isMaterial(oPk, nPk, oDr, nDr) { // MaterialRevisionRule.IsMaterial (CommitmentPolicy.cs): 1 s raw, 60 s bucket
     return Math.abs(nPk - oPk) >= 1000 || Math.abs(nDr - oDr) >= 1000
       || Math.floor(oPk / 60000) !== Math.floor(nPk / 60000) || Math.floor(oDr / 60000) !== Math.floor(nDr / 60000);
   }

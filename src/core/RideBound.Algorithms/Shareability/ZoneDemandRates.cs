@@ -5,7 +5,7 @@ public sealed record ZoneWeights(IReadOnlyList<double> Origin, IReadOnlyList<dou
 
 /// <summary>
 /// Per-cell zone demand rates lambda_z (requests per second) of the shareability score, as the
-/// comparison emulator defines them (wf15 SPEC 4.5; lambda.js), in the same floating-point order:
+/// comparison emulator defines them (lambda.js), in the same floating-point order:
 /// <list type="bullet">
 /// <item>observations obs^i[z]: requests with arrival in [i*I, (i+1)*I) and origin (destination) zone z,
 /// rejected ones included; zero after the last observed interval;</item>

@@ -6,13 +6,13 @@ using RideBound.Algorithms.Shareability;
 namespace RideBound.Runner.Configuration;
 
 /// <summary>
-/// ADR-089 GĐ4 (exploratory): the `shadowAllocation` key of the WP4 configuration. Per-cell
+/// The `shadowAllocation` key of the WP4 configuration. Per-cell
 /// Shadow Control inputs (the comparison emulator's makeCellCtx and frozen threshold) and the full
 /// free-flow network, read from a directory whose two files must match the given SHA-256 values:
 /// D.u16 (N*N little-endian uint16 seconds) and network.json (N, nZones, csrStart, csrTo, csrW,
 /// zoneIdx). Doubles are decimal strings because canonical JSON holds integers only.
 /// `networkNodes` maps every run node identifier of the cell (the simulator adapter's opaque ids) to its
-/// network node index; made from the adapter's own identifier function (ADR-089 GĐ4 gate, 2026-11-04).
+/// network node index; made from the adapter's own identifier function.
 /// </summary>
 public static class ShadowAllocationConfiguration
 {

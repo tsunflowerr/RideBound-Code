@@ -382,7 +382,7 @@ public sealed class CommitmentDecisionValidator
             anchor = initialEntry.PublishedPromise.Projection;
         }
 
-        // ADR-089 GĐ4: under Shadow Control the rider's class, frozen at its first promise,
+        // Under Shadow Control the rider's class, frozen at its first promise,
         // scales its slack-proportional budget or deadline.
         var shadowAllocation = policy.DropEtaShadowAllocation
             ? ledger.ShadowAllocationOf(request.Id)

@@ -257,7 +257,7 @@ public sealed class SelectionApplier
             run = moved.Run!;
         }
 
-        // Without a move this is the archived per-vehicle loop; with one, it was applied above.
+        // Without a move this loop applies each selected vehicle plan; with one, the plans were applied above.
         foreach (var plan in (relocation is not null
                          ? Array.Empty<SelectedVehiclePlan>()
                          : selection.VehiclePlans)

@@ -143,9 +143,9 @@ public static class CommitmentFailureCodes
     public const string PhaseLock = "COMMITMENT_PHASE_LOCK";
 
     /// <summary>
-    /// The candidate moves the drop ETA outside the deadline measured from the
-    /// rider's initial promise. Unlike a phase lock, which compares with the
-    /// exogenous projection, a deadline can be tripped by exogenous drift alone.
+    /// The candidate moves the drop ETA past the deadline measured from the
+    /// rider's initial promise. The deadline is relaxed: it fails only when the drop
+    /// ETA is also later than the exogenous projection, so drift alone never trips it.
     /// </summary>
     public const string DeadlineExceeded = "COMMITMENT_DEADLINE_EXCEEDED";
 

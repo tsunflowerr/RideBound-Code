@@ -178,8 +178,7 @@ public sealed class CommitmentPolicyConfiguration :
         var deadlinePermille = OptionalPermille(element, "dropEtaDeadlineSlackPermille");
         var relocation = OptionalBoolean(element, "waitingRiderRelocation");
 
-        // ADR-089 GĐ4 (exploratory): Shadow Control. Optional; omitted keeps every configuration
-        // written before it, with its content hash.
+        // Shadow Control. Optional; omitted means false: the policy has no Shadow classes.
         var shadowAllocation = OptionalBoolean(element, "dropEtaShadowAllocation");
 
         if (shadowAllocation && !CommitmentPolicy.ShadowScalesOneLimit(budgetPermille, deadlinePermille))
@@ -255,8 +254,8 @@ public sealed class CommitmentPolicyConfiguration :
             relocation,
             shadowAllocation);
 
-        // Removed options are checked after every other check of the policy, so a policy that one of
-        // those checks refuses keeps that message.
+        // The other removed options are checked after every other check of the policy, so a policy that
+        // one of those checks refuses keeps that message. The fixed-ms deadline is refused earlier (above).
         if (element.TryGetProperty("freezeHorizonMs", out _)
             || element.TryGetProperty("freezeHorizonLocks", out _))
         {

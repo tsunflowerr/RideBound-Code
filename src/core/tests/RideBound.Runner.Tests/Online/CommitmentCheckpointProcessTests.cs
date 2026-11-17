@@ -64,7 +64,7 @@ public sealed class CommitmentCheckpointProcessTests
     }
 
     /// <summary>
-    /// ADR-089: the streamed checkpoint line equals, byte for byte, the line the envelope path
+    /// The streamed checkpoint line equals, byte for byte, the line the envelope path
     /// builds from the same content (old hash, Encode, envelope, canonical NDJSON). Checked on every
     /// checkpoint of the session in both audit modes.
     /// </summary>

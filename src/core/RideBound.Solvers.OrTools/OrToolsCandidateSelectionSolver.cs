@@ -54,7 +54,7 @@ public sealed class OrToolsCandidateSelectionSolver : ICandidateSelectionSolver
             }
 
             // The first pass builds the model; each later pass only appends the equalities of the
-            // levels proven since, which yields the model a fresh build would (ADR-089).
+            // levels proven since, which yields the model a fresh build would.
             var built = context is null
                 ? BuildModel(problem, new ModelIndex(problem), fixedBounds)
                 : ExtendModel(context, fixedBounds, boundsInModel);
@@ -243,7 +243,7 @@ public sealed class OrToolsCandidateSelectionSolver : ICandidateSelectionSolver
 
     /// <summary>
     /// Builds the model of one lexicographic pass. The model is the same, variable for variable
-    /// and constraint for constraint, as the archived builder's (ADR-089; the model-identity
+    /// and constraint for constraint, as the archived builder's (the model-identity
     /// tests compare the CP-SAT protos byte for byte): the lookups come from
     /// <paramref name="index"/> instead of a scan of every option per vehicle, request and level,
     /// and an objective is created only when a pass uses it, because creating an expression
@@ -325,7 +325,7 @@ public sealed class OrToolsCandidateSelectionSolver : ICandidateSelectionSolver
     /// <summary>
     /// Brings the previous pass's model to the next pass: clears the objective and appends the
     /// equalities of the bounds proven since, in order. A fresh build adds the same equalities
-    /// after the same base constraints, so the model is identical (ADR-089).
+    /// after the same base constraints, so the model is identical.
     /// </summary>
     internal static BuildResult ExtendModel(
         ModelContext context,

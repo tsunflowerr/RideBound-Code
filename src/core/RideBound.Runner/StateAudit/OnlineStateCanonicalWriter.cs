@@ -115,7 +115,7 @@ public static class OnlineStateCanonicalWriter
         root.Member("runId"u8).String(state.Run.Id.Value);
         root.Member("scenarioId"u8).String(state.Run.ScenarioId.Value);
 
-        // ADR-089 GĐ4: only under Shadow Control, so every other state keeps its bytes.
+        // Written only when not empty, so a state without Shadow classes has no such member.
         if (state.Commitments.ShadowAllocations.Count != 0)
         {
             root.Member("shadowAllocations"u8);
@@ -652,7 +652,7 @@ public static class OnlineStateCanonicalWriter
             _ => throw new ArgumentException("Unknown shadow allocation class.", nameof(value)),
         };
 
-    /// <summary>ADR-089 GĐ4: the shadowAllocations array, sorted by request identifier.</summary>
+    /// <summary>The shadowAllocations array, sorted by request identifier.</summary>
     internal static void WriteShadowAllocations(CanonicalBuffer buffer, CommitmentLedger ledger)
     {
         buffer.Byte((byte)'[');

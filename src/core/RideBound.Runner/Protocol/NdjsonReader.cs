@@ -16,19 +16,19 @@ public sealed record NdjsonReadResult(
     string? ErrorMessage = null);
 
 /// <remarks>
-/// ADR-089: a line is read a buffer at a time (the delimiter found with a vectorized search) and
-/// checked with <see cref="Utf8.IsValid(ReadOnlySpan{byte})"/>, instead of one awaited byte at a
-/// time and a strict UTF-16 decode of the whole line. Results are the same: a line counts every
+/// A line is read a buffer at a time (the delimiter found with a vectorized search) and
+/// checked with <see cref="Utf8.IsValid(ReadOnlySpan{byte})"/>, not one awaited byte at a
+/// time with a strict UTF-16 decode of the whole line. A line counts every
 /// byte before the line feed (a trailing carriage return included) against the limit, an oversize
-/// line is discarded up to its line feed, and only well-formed UTF-8 is accepted. A 125 MiB travel
-/// snapshot no longer costs about 600 MB of temporary memory.
+/// line is discarded up to its line feed, and only well-formed UTF-8 is accepted. Reading a buffer
+/// at a time avoids about 600 MB of temporary memory for a 125 MiB travel snapshot.
 /// </remarks>
 public sealed class NdjsonReader
 {
     public const int DefaultMaximumLineBytes = 1_048_576;
 
     /// <summary>
-    /// ADR-089: the largest --maximum-line-bytes (was 64 MiB). A travelTimesUpdated snapshot of a
+    /// The largest --maximum-line-bytes. A travelTimesUpdated snapshot of a
     /// full 512-request Via cell (824–858 nodes, about 700,000 arcs) is about 125 MiB.
     /// </summary>
     public const int MaximumConfigurableLineBytes = 1_073_741_824;

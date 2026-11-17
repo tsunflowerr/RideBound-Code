@@ -136,7 +136,7 @@ public sealed class ExactSmallCommitmentDifferentialTests
     [Fact]
     public void Cost_first_C1_ranks_the_same_gated_candidates_by_cost_and_picks_a_cheaper_plan()
     {
-        // ADR-078, end to end below the Runner: the solver sees exactly the candidates the C1
+        // End to end below the Runner: the solver sees exactly the candidates the C1
         // assessment keeps, ranked with the C1 levels (cost-first), and the decision is the plan an
         // independent pick over those candidates gives: most new requests, then lowest cost, then
         // lowest candidate id. The Runner's validation accepts it.

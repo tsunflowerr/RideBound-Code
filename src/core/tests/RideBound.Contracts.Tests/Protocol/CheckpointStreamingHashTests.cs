@@ -5,7 +5,7 @@ using RideBound.Contracts.Serialization;
 namespace RideBound.Contracts.Tests.Protocol;
 
 /// <summary>
-/// ADR-089: the streamed checkpoint hash and the shell split must reproduce the envelope path
+/// The streamed checkpoint hash and the shell split must reproduce the envelope path
 /// exactly, for any split of the canonical state into parts.
 /// </summary>
 public sealed class CheckpointStreamingHashTests

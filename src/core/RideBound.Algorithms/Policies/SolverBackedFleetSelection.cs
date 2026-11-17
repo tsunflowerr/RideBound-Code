@@ -231,9 +231,9 @@ public sealed class SolverBackedFleetSelector
                     "operational-cost",
                     candidate => candidate.Schedule.OperationalCost));
 
-            // G2 "prefer-keep" (emulator engine.js 584-596): among equal cost, fewer relocation
+            // G2 "prefer-keep" (the emulator's pickFrom in engine.js): among equal cost, fewer relocation
             // candidates win before the identity tie-break. Added only when a G2 option exists,
-            // so every other decision keeps the archived hierarchy.
+            // so a decision without one has no such level.
             if (allCandidates.Any(candidate => candidate.RelocationRole is not null))
             {
                 objectives.Add(

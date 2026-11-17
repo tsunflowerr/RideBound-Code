@@ -6,7 +6,7 @@ using RideBound.Runner.Configuration;
 
 namespace RideBound.Runner.Tests.Configuration;
 
-/// <summary>ADR-089 GĐ4: the shadowAllocation block, in particular its networkNodes map (Shadow gate, 2026-11-04).</summary>
+/// <summary>The shadowAllocation block, in particular its networkNodes map.</summary>
 public sealed class ShadowAllocationConfigurationTests : IDisposable
 {
     private readonly DirectoryInfo _network = Directory.CreateTempSubdirectory("rb-shadow-network-");

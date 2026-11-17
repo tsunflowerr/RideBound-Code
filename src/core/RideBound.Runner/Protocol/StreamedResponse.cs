@@ -3,9 +3,9 @@ using RideBound.Contracts.Protocol;
 namespace RideBound.Runner.Protocol;
 
 /// <summary>
-/// ADR-089: a response written to the output stream part by part instead of being built as one
+/// A response written to the output stream part by part instead of being built as one
 /// envelope. The final checkpoint of a Via-sized job is one line of several hundred MiB, and
-/// building it as an envelope held five to seven copies of it and ran out of memory. The parts are
+/// building it as an envelope would hold five to seven copies of it and run out of memory. The parts are
 /// exactly the canonical bytes <see cref="NdjsonWriter"/> writes for the equivalent envelope.
 /// </summary>
 public sealed class StreamedResponse

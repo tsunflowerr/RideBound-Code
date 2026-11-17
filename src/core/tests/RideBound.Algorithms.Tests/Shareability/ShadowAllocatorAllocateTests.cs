@@ -12,7 +12,7 @@ using RideBound.Domain.Vehicles;
 namespace RideBound.Algorithms.Tests.Shareability;
 
 /// <summary>
-/// Direct test of <see cref="ShadowAllocator.Allocate"/> (refactor safety net S3; the Runner calls it after every
+/// Direct test of <see cref="ShadowAllocator.Allocate"/> (the Runner calls it after every
 /// decision that opens first promises). Tiny 4-node network and cell inputs of the final-config goldens. Vehicle
 /// v-1 serves r-1 (promised earlier, n-1 -> n-3) and r-2 (first promise in this decision, n-1 -> n-2) on the route
 /// p1, p2, d2, d1. The test rebuilds the score context from the documented rules and scores it with

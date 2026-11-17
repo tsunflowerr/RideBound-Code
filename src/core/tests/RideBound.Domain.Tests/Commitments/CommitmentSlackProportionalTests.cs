@@ -6,8 +6,8 @@ using RideBound.Domain.Routes;
 namespace RideBound.Domain.Tests.Commitments;
 
 /// <summary>
-/// Research probe for the slack-proportional budgets of Elmi et al. (2026) Ordinary Control as
-/// formalised in the wf14 preregistration: each rider's budget is
+/// Research probe for the slack-proportional budgets of Elmi et al. (2026) Ordinary Control:
+/// each rider's budget is
 /// round(alpha * max(0, pickup0 + maxRide - drop0)), fixed at the first promise. It is used either
 /// as the rider's drop_eta_total_ms hard limit (rule C, RCE) or as its deadline slack (EO, EOHZ).
 /// </summary>
@@ -231,7 +231,7 @@ public sealed class CommitmentSlackProportionalTests
     [Fact]
     public void A_shadow_class_gives_a_guaranteed_rider_nothing_and_an_allowed_rider_its_whole_slack()
     {
-        // ADR-089 GĐ4: bSH = round(aSH * slack) with slack 300_000 here (SHRC budget, SHHZ deadline).
+        // Shadow: bSH = round(aSH * slack) with slack 300_000 here (SHRC budget, SHHZ deadline).
         var guaranteed = new ShadowAllocation(ShadowAllocationClass.Guaranteed, "12.5");
         var allowed = new ShadowAllocation(ShadowAllocationClass.Allowed, "80");
         var rule = Policy(budgetPermille: 1000, shadow: true);

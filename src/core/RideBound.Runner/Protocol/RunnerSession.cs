@@ -36,7 +36,7 @@ public sealed record RunnerSessionResult(
     }
 
     /// <summary>
-    /// ADR-089: set when the response is written part by part (the checkpoint);
+    /// Set when the response is written part by part (the checkpoint);
     /// <see cref="Response"/> then decodes it on demand.
     /// </summary>
     public StreamedResponse? Streamed { get; }
@@ -82,7 +82,7 @@ public sealed partial class RunnerSession
     private EventReductionCoordinator? _onlineCoordinator;
     private readonly OnlineStateCanonicalCache _canonicalCache = new();
 
-    // ADR-089: `auditHash: light-v1` in the WP4 configuration.
+    // `auditHash: light-v1` in the WP4 configuration.
     private readonly bool _lightAudit;
 
     private CanonicalStateBytes? _committedCanonical;

@@ -122,7 +122,7 @@ internal static class OnlineStateReferenceCanonicalizer
             writer.WritePropertyName("incidentLedger");
             WriteIncidentLedger(writer, state.Incidents);
 
-            // ADR-089 GĐ4: only under Shadow Control.
+            // Only under Shadow Control.
             if (state.Commitments.ShadowAllocations.Count != 0)
             {
                 writer.WritePropertyName("shadowAllocations");
@@ -500,7 +500,7 @@ internal static class OnlineStateReferenceCanonicalizer
 
         writer.WriteEndArray();
 
-        // ADR-076: written only when non-empty, so a state without a late boarding keeps
+        // Written only when non-empty, so a state without a late boarding keeps
         // its canonical bytes and hash.
         if (ledger.LatePickups.Count != 0)
         {

@@ -64,7 +64,7 @@ public sealed class PhysicalPlanValidator
     /// Projects a vehicle's <em>unchanged</em> active route under the current
     /// travel snapshot and reports every service-quality deadline it no longer
     /// meets. Nothing here is a decision: the route is the one already in force,
-    /// so a breach it produces is exogenous by construction (ADR-045).
+    /// so a breach it produces is exogenous by construction.
     ///
     /// <para>Structural violations are not relaxed. If the active route fails
     /// one, the probe fails closed and the caller must keep treating it as a
@@ -106,8 +106,8 @@ public sealed class PhysicalPlanValidator
     }
 
     /// <summary>
-    /// Validates a candidate route under the vehicle's own exogenous relief
-    /// (ADR-045): the probe is derived from the unchanged active route, so the
+    /// Validates a candidate route under the vehicle's own exogenous relief:
+    /// the probe is derived from the unchanged active route, so the
     /// relaxation admits exactly the deadlines traffic has already broken and
     /// nothing the candidate breaks itself. Call sites that re-check a route the
     /// generator produced must use this, otherwise a candidate the generator

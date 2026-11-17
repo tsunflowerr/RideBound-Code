@@ -5,7 +5,7 @@ using RideBound.Tests;
 namespace RideBound.Runner.Tests.Configuration;
 
 /// <summary>
-/// RB-WP14-005. Each declared factor level must differ from the H6 reference in
+/// Each declared factor level must differ from the H6 reference in
 /// exactly the one way it claims, otherwise the frontier cannot be attributed to a
 /// factor.
 /// </summary>

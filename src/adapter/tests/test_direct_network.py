@@ -126,7 +126,7 @@ class DirectNetworkTests(unittest.TestCase):
         self.assertEqual(set(left), set(right))
         for key in left:
             # After the update 0->1 is no longer a shortest path: NetworkBasic routes around it, the direct network
-            # does not. The complete-graph direct network is only valid on a closure, which the preflight checks.
+            # does not. The complete-graph direct network is only valid on a closure, which run_job.check_closure checks.
             if key[0][0] == 0 and (key[0][1] in (None, 1)) and key[1][0] == 1:
                 continue
             self.assertCostsEqual(left[key], right[key])

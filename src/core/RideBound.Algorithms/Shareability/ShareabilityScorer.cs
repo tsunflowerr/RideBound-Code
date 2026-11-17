@@ -53,7 +53,7 @@ public sealed record ShareabilityScore(
 /// <summary>
 /// Time-integrated shareability score of a rider at its first promise (Elmi, Moylan,
 /// Alonso-Mora and Fielbaum 2026, Eq. 3-4, 9, 11), ported from the comparison emulator's
-/// production scorer (sscore.js makeScorer, wf15 SPEC 4) operation for operation, so that the
+/// production scorer (sscore.js makeScorer) operation for operation, so that the
 /// IEEE double results are identical:
 /// <list type="bullet">
 /// <item>main nodes: vehicle start + route stops, consecutive coincident stops merged;</item>
@@ -217,7 +217,7 @@ public sealed class ShareabilityScorer
         int PickupMain,
         int DropMain);
 
-    // main nodes (SPEC 4.3): the vehicle start, then the route stops, consecutive stops at one node merged
+    // main nodes: the vehicle start, then the route stops, consecutive stops at one node merged
     private static MainNodes FindMainNodes(ShareabilityContext context, IReadOnlyList<int> globalOf)
     {
         var stops = context.Stops;

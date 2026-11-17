@@ -152,7 +152,7 @@ public sealed partial class RunnerSession
 
         if (_lightAudit)
         {
-            // ADR-089 light audit: the state hash stays the identity hash computed above.
+            // Light audit: the state hash stays the identity hash computed above.
             _committedCanonical = null;
         }
         else
@@ -287,7 +287,7 @@ public sealed partial class RunnerSession
         EventSequence.TryCreate(nextSequence, out var nextEventSequence);
         SimulationTimeMilliseconds.TryCreate(nextSimTime, out var nextSimulationTime);
 
-        // ADR-089 light audit: the staged state is identified, not hashed.
+        // Light audit: the staged state is identified, not hashed.
         var lightStateAfterHash = _lightAudit
             ? ProtocolHash.CalculateStateIdentityHash(
                 nextEpochId!,

@@ -98,7 +98,7 @@ public sealed class DispatchStep
         {
             // The policy already validated this decision, so a rejection here is an
             // internal inconsistency. The commitment code is not a protocol error
-            // code, and encoding it used to throw; it is kept in the message.
+            // code, and encoding it as one would throw; it is kept in the message.
             var witness = validation.Witnesses[0];
             return DispatchStepResult.Failure(
                 $"{witness.Code}: {witness.Message}");
@@ -127,9 +127,9 @@ public sealed class DispatchStep
             stateToStage = bridged.State!;
         }
 
-        // ADR-089 GĐ4: Shadow Control. Every rider whose first promise this decision publishes
+        // Shadow Control. Every rider whose first promise this decision publishes
         // gets its frozen class now, from this staged state, so the next decision reads it and
-        // the state hash and checkpoint carry it (engine17.js:742-776).
+        // the state hash and checkpoint carry it (the emulator's scoreNewPromises in engine.js).
         if (_shadowAllocator is not null)
         {
             var opened = publications

@@ -63,14 +63,14 @@ public sealed record ServiceQualityBreach
 /// (<c>MAX_RIDE_TIME</c> and <c>PICKUP_WINDOW</c>), derived from the exogenous
 /// projection of a vehicle's unchanged active route.
 ///
-/// <para>ADR-045 splits the physical constraints into two classes. Structural
+/// <para>The physical constraints fall into two classes. Structural
 /// constraints (connectivity, precedence, capacity, frozen prefix, onboard and
 /// accepted preservation, plan version, overflow) are invariants of a
 /// well-formed plan: violating one is a defect, never a consequence of traffic,
 /// so they stay strict everywhere. Service-quality constraints are promises
 /// about time; worsening travel can breach them without anyone deciding
 /// anything. Enforcing those continuously deletes the safety no-op and kills the
-/// run, which is what blocked WP9.</para>
+/// run.</para>
 ///
 /// <para>The relaxed bound is <c>max(contractual, exogenous)</c>. Because the
 /// exogenous value is what the unchanged active route already realizes, the
@@ -80,7 +80,7 @@ public sealed record ServiceQualityBreach
 /// inserted request) have no entry and stay strictly contractual, so a request
 /// can never be accepted into a route that cannot serve it.</para>
 ///
-/// <para>ADR-047 narrows where the relief may be applied. The candidate
+/// <para>The relief is applied in one place only. The candidate
 /// generator grants it to the safety no-op only; every changed candidate is
 /// generated under <see cref="Strict"/>. The reason is external: the simulator
 /// keeps its own hard feasibility check and applies it to any plan RideBound

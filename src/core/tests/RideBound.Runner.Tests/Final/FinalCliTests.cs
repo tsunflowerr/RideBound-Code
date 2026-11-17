@@ -1,7 +1,7 @@
 namespace RideBound.Runner.Tests.Final;
 
 /// <summary>
-/// T2 of the refactor safety net: the command line of the Runner. It accepts exactly the form the final runs used
+/// T2: the command line of the Runner. It accepts exactly the form the final runs used
 /// (FinalRun.Arguments), with or without the trailing line limit. Every other form exits 64 without reading stdin;
 /// the forms the Runner accepted at ebca912 (the online and conformance modes, no arguments, and the shorter
 /// commitment forms) name the commit where they still run.

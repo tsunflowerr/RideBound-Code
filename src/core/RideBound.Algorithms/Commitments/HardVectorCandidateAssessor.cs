@@ -187,7 +187,7 @@ public sealed class HardVectorCandidateAssessor
             {
                 // A rule removed the safety no-op but kept another candidate. The
                 // caller's selection model needs exactly one no-op per vehicle, so
-                // this state used to die later as a generic model-mapping failure.
+                // without this check the state would fail later as a generic model-mapping failure.
                 // Failing here with the no-op's own rejection changes no successful
                 // run of such a caller. The cited rejection may come from any stage.
                 var noOpValidation = hardValidationWitnesses.TryGetValue(

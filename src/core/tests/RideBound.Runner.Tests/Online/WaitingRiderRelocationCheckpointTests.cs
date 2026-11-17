@@ -17,7 +17,7 @@ using RideBound.Runner.StateAudit;
 namespace RideBound.Runner.Tests.Online;
 
 /// <summary>
-/// Review gap S2: a state in which one waiting rider was moved (G2) must checkpoint and restore exactly, with the
+/// A state in which one waiting rider was moved (G2) must checkpoint and restore exactly, with the
 /// rider on the receiver, both accepted sets and the switch-count revision in its ledger; a checkpoint that puts the
 /// rider back on the donor without its route must not restore.
 /// </summary>

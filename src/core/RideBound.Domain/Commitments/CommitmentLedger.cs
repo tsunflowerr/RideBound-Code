@@ -139,10 +139,10 @@ public sealed record CommitmentLedgerAppendResult
 }
 
 /// <remarks>
-/// ADR-089: the ledger is persistent. Each append shares the unchanged histories and keeps the
-/// set of every publication identifier, so an append no longer rebuilds the history map or scans
+/// The ledger is persistent. Each append shares the unchanged histories and keeps the
+/// set of every publication identifier, so an append does not rebuild the history map or scan
 /// every entry of every rider for a duplicate publication (on a Via job, 79,000 entries and about
-/// 27 appends per decision). The enumeration order of <see cref="Histories"/> was already
+/// 27 appends per decision). The enumeration order of <see cref="Histories"/> is
 /// unspecified (hash order of the request identifiers); every reader sorts or looks up by key.
 /// </remarks>
 public sealed class CommitmentLedger
@@ -165,8 +165,8 @@ public sealed class CommitmentLedger
         _histories;
 
     /// <summary>
-    /// ADR-089 GĐ4: Shadow Control class of every rider with a promise, frozen at its first
-    /// promise; empty unless a shadow-allocated policy runs (then the canonical state is as before).
+    /// Shadow Control class of every rider with a promise, frozen at its first promise; empty
+    /// unless a shadow-allocated policy runs (the canonical state then has no shadowAllocations member).
     /// </summary>
     public IReadOnlyDictionary<RequestId, ShadowAllocation> ShadowAllocations =>
         _shadowAllocations;

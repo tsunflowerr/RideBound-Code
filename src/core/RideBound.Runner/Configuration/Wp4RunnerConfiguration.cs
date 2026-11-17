@@ -44,12 +44,12 @@ public sealed class Wp4RunnerConfiguration
         };
 
     /// <summary>
-    /// ADR-089 GĐ4 (exploratory). Optional; omitted means every projected leg is the snapshot
-    /// time (as before, same content hash). `{ "profile": [f0, f1, …], "binMs": 900000 }`
+    /// Optional; omitted means every projected leg is the snapshot
+    /// time. `{ "profile": [f0, f1, …], "binMs": 900000 }`
     /// turns on the closed-loop planning forecast (<see cref="TravelTimeForecast"/>): the
     /// profile is the forecast traffic factor of each bin from the run start, held after the
     /// last value. Only the dispatcher's projections change; the simulator moves vehicles as
-    /// before.
+    /// it does without a forecast.
     /// </summary>
     private static readonly IReadOnlySet<string> PlanningForecastFields = Fields(
         "profile",
@@ -73,7 +73,7 @@ public sealed class Wp4RunnerConfiguration
     private const string InitialAcceptanceTrigger = "initial-acceptance";
 
     /// <summary>
-    /// ADR-076. Required, and the only accepted value: a boarding after the latest pickup is accepted as a fact and
+    /// Required, and the only accepted value: a boarding after the latest pickup is accepted as a fact and
     /// recorded. The late-boarding rejection, which "reject" or an absent key selected, is refused. The FleetPy
     /// adapter reads the same key and then leaves service windows to the Runner.
     /// </summary>
@@ -81,8 +81,8 @@ public sealed class Wp4RunnerConfiguration
     private const string RejectLateBoarding = "reject";
 
     /// <summary>
-    /// ADR-089. `auditHash` omitted or `full-v1` hashes the whole canonical online state for every
-    /// decision, as before. `light-v1` binds each decision to the event batch and the state
+    /// `auditHash` omitted or `full-v1` hashes the whole canonical online state for every
+    /// decision. `light-v1` binds each decision to the event batch and the state
     /// identity only (epoch, next event sequence, simulation time), with its own decision-hash
     /// domain; the checkpoint hash still covers the whole state. No decision changes.
     /// </summary>
@@ -90,7 +90,7 @@ public sealed class Wp4RunnerConfiguration
     public const string LightAuditHash = "light-v1";
 
     /// <summary>
-    /// ADR-078. Required, and the only accepted value: the C1 ranking is cost-first. The stability-first
+    /// Required, and the only accepted value: the C1 ranking is cost-first. The stability-first
     /// ranking, which "stability-first" or an absent key selected, is refused.
     /// </summary>
     public const string CostFirstSelectionOrder = "cost-first";
@@ -180,14 +180,14 @@ public sealed class Wp4RunnerConfiguration
 
     public SolverBackedRidePoolingPolicyOptions? SolverPolicyOptions { get; }
 
-    /// <summary>True only for `auditHash: light-v1` (ADR-089).</summary>
+    /// <summary>True only for `auditHash: light-v1`.</summary>
     public bool UsesLightAuditHash { get; }
 
     /// <summary>The planning forecast of `planningForecast`; null when the key is omitted.</summary>
     public TravelTimeForecast? PlanningForecast { get; }
 
     /// <summary>
-    /// ADR-089 GĐ4: Shadow Control inputs of `shadowAllocation`; null when the key is omitted. A
+    /// Shadow Control inputs of `shadowAllocation`; null when the key is omitted. A
     /// commitment policy with `dropEtaShadowAllocation` needs them, and they need such a policy.
     /// </summary>
     public ShadowAllocationInputs? ShadowAllocation { get; }
@@ -430,7 +430,7 @@ public sealed class Wp4RunnerConfiguration
                 + "'candidateGeneration.waitingRiderRelocation'.");
         }
 
-        // ADR-089 GĐ4: Shadow classes are assigned for every rider of a run, so every policy is
+        // Shadow classes are assigned for every rider of a run, so every policy is
         // shadow-allocated when the inputs are given, and the inputs are given when one is.
         var shadowPolicies = commitmentConfiguration.PolicyIds
             .Count(id => commitmentConfiguration.TryGetPolicy(id, out var policy)

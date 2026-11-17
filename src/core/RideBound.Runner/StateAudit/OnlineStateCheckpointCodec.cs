@@ -41,7 +41,7 @@ public static class OnlineStateCheckpointCodec
             var appliedEpoch = Integer(element, "appliedEpoch");
             var simulationTime = new SimTime(Integer(element, "simulationTimeMs"));
 
-            // ADR-076: only a rider with a recorded late pickup may rehydrate a pickup after
+            // Only a rider with a recorded late pickup may rehydrate a pickup after
             // its latest pickup; ValidateRelations then matches every record to its rider.
             var latePickupRequests = LatePickupRequestIds(
                 element.GetProperty("incidentLedger"));
@@ -95,7 +95,7 @@ public static class OnlineStateCheckpointCodec
             var commitments = ReadCommitmentLedger(
                 element.GetProperty("commitmentLedger"));
 
-            // ADR-089 GĐ4: present only under Shadow Control; the canonical round trip below
+            // Present only under Shadow Control; the canonical round trip below
             // rejects any other shape.
             if (shadowAllocation && element.TryGetProperty("shadowAllocations", out var shadowElement))
             {
@@ -503,7 +503,7 @@ public static class OnlineStateCheckpointCodec
             return "A post-genesis checkpoint requires travel state and a vehicle.";
         }
 
-        // ADR-076: each late-pickup record names a boarded rider with exactly that pickup, and
+        // Each late-pickup record names a boarded rider with exactly that pickup, and
         // a rider may only have boarded after its latest pickup when such a record exists.
         foreach (var late in incidents.LatePickups)
         {

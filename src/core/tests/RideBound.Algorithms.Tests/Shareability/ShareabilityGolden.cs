@@ -5,8 +5,9 @@ namespace RideBound.Algorithms.Tests.Shareability;
 
 /// <summary>
 /// Reader and checker of golden shareability scores produced by the comparison emulator's own
-/// scorer (gen_golden.js over sscore.js makeScorer and lambda.js; the source hashes are in the
-/// file). A case passes only when every double is bit-identical and every count is equal.
+/// scorer (sscore.js makeScorer and lambda.js; src/emulator/export_network.js toy writes the cases;
+/// the source hashes are in the file). A case passes only when every double is bit-identical and
+/// every count is equal.
 /// Also linked into the full-network gate outside the repository.
 /// </summary>
 internal static class ShareabilityGolden

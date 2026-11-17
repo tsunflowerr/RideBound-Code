@@ -265,7 +265,7 @@ class RunnerClient:
         assert process is not None and process.stdout is not None
         # The pipes are unbuffered (bufsize=0), and readline on a raw pipe makes one system call
         # per byte. A buffer over process.stdout itself reads 1 MiB at a time and returns the same
-        # lines; once shutdown closes process.stdout, the next read fails as before.
+        # lines. Once shutdown closes process.stdout, a later read fails and the except below queues the error.
         stdout = io.BufferedReader(process.stdout, buffer_size=1024 * 1024)
         try:
             while True:

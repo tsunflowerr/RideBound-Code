@@ -196,7 +196,7 @@ public sealed class SolverBackedFleetSelectionTests
     }
 
     /// <summary>
-    /// ADR-078. Vehicle 1 has only its no-op; vehicle 2 can serve the request for cost 20 (v2-dear) or for
+    /// Vehicle 1 has only its no-op; vehicle 2 can serve the request for cost 20 (v2-dear) or for
     /// cost 10 (v2-cheap).
     /// </summary>
     private static (VehicleCandidateSet[] Sets, Dictionary<string, HardVectorCandidateAssessment> Hard)

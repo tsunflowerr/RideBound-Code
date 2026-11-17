@@ -51,7 +51,7 @@ public sealed partial class RunnerSession
     }
 
     /// <summary>
-    /// ADR-089: under the light audit a state is identified by its epoch, next event sequence
+    /// Under the light audit a state is identified by its epoch, next event sequence
     /// and simulation time; the checkpoint hash is what binds a restored state's content.
     /// </summary>
     private static Sha256Hex? LightStateIdentityHash(OnlineState state) =>
@@ -63,7 +63,7 @@ public sealed partial class RunnerSession
 
     /// <summary>
     /// stateAfterHash of the staged state: OnlineStateHash.v1 over cached canonical segments
-    /// (exact), or under the light audit (ADR-089) the state identity hash the caller
+    /// (exact), or under the light audit the state identity hash the caller
     /// computed, without writing the state.
     /// </summary>
     private Sha256Hex HashStagedState(

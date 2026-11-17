@@ -71,7 +71,7 @@ public sealed class CanonicalSegments
         return true;
     }
 
-    /// <summary>Compares the bytes of two segment lists without joining either (ADR-089).</summary>
+    /// <summary>Compares the bytes of two segment lists without joining either.</summary>
     public bool ContentEquals(CanonicalSegments other)
     {
         ArgumentNullException.ThrowIfNull(other);

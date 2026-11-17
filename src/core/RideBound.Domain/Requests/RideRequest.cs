@@ -273,7 +273,7 @@ public sealed record RideRequest
             : InvalidTransition(RequestLifecycle.CancelledAfterAcceptance);
 
     /// <summary>
-    /// ADR-076: a boarding after the latest pickup is accepted as an observed fact; the
+    /// A boarding after the latest pickup is accepted as an observed fact; the
     /// accepted window is left unchanged, so the caller records the gap as a separate
     /// service violation. A boarding before the earliest pickup is rejected.
     /// </summary>

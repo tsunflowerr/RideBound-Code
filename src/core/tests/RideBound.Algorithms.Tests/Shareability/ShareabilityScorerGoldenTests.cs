@@ -8,7 +8,7 @@ public sealed class ShareabilityScorerGoldenTests
     [Fact]
     public void Scores_and_zone_weights_are_bit_identical_to_the_emulator_on_toy_networks()
     {
-        // 24 cells x 10 contexts from the emulator's sscore.js / lambda.js (gen_golden.js toy, seed 20261103).
+        // 24 cells x 10 contexts from the emulator's sscore.js / lambda.js (export_network.js toy, seed 20261103).
         using var stream = typeof(ShareabilityScorerGoldenTests).Assembly
             .GetManifestResourceStream("RideBound.Algorithms.Tests.Shareability.shareability-golden-toy.json")!;
         using var document = JsonDocument.Parse(stream);

@@ -1150,7 +1150,7 @@ public sealed class Wp4RunnerConfigurationTests
     [Fact]
     public void A_planning_forecast_is_optional_closed_and_parsed_to_the_exact_doubles()
     {
-        // ADR-089 GĐ4: omitted keeps the archived content hash; factors are decimal strings
+        // Omitted keeps the archived content hash; factors are decimal strings
         // because canonical JSON holds integers only.
         var commitment = CommitmentConfiguration();
         string WithForecast(string value) => FinalJson(json => json["planningForecast"] = JsonNode.Parse(value));

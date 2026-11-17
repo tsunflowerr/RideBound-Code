@@ -170,14 +170,14 @@ class RunnerServiceBoundsSettingTests(unittest.TestCase):
         with self.assertRaises(AdapterFailure) as failure:
             settings({"lateBoarding": "record-v2"})
         self.assertEqual("RBWP7_WP4_LATE_BOARDING_INVALID", failure.exception.code)
-        # ADR-089 GĐ4
+        # planning forecast
         self.assertFalse(settings({"lateBoarding": "record-v1"}).planning_forecast)
         self.assertTrue(
             settings({"lateBoarding": "record-v1", "planningForecast": {"profile": []}}).planning_forecast
         )
 
     def test_planning_forecast_key_needs_an_object(self) -> None:
-        # ADR-089 GĐ4
+        # the planning forecast key
         from ridebound_fleetpy.session import runner_plans_with_forecast
 
         path = pathlib.Path("wp4.json")
@@ -319,7 +319,7 @@ class FleetControlContractTests(unittest.TestCase):
         )
 
     def test_recording_late_boarding_drops_only_the_latest_arrival_bound(self) -> None:
-        # ADR-076. The pickup window and the maximum trip stay; only the latest arrival,
+        # Late boarding: the pickup window and the maximum trip stay; only the latest arrival,
         # which FleetPy anchors on the original window, is dropped.
         control = self._plan_control()
 
@@ -372,8 +372,8 @@ class FleetControlContractTests(unittest.TestCase):
         self.assertEqual("RBWP7_FLEETPY_PLAN_INFEASIBLE", over.exception.code)
 
     def test_under_a_planning_forecast_the_runner_owns_pickup_window_and_maximum_trip(self) -> None:
-        # ADR-089 GĐ4 (forecast gate 2026-11-04: FleetPy priced a forecast-planned pickup
-        # 0.88 s after its latest time at the current travel times). The plan that FleetPy
+        # FleetPy prices a forecast-planned pickup at the current travel times, so it can find
+        # it later than its latest time (0.88 s in a real job). The plan that FleetPy
         # vetoes without a forecast (latest pickup 0 s, reached at 1 s) is accepted, and both
         # time bounds are empty; the earliest pickup hold stays.
         control = self._plan_control(latest_pickup=0, planning_forecast=True)

@@ -313,7 +313,7 @@ public sealed class Wp4RunnerIntegrationTests
     [Fact]
     public void A_late_boarding_is_recorded_and_survives_checkpoint_restore()
     {
-        // ADR-076. r-1 may be picked up in [1000, 2000] ms and boards at 2500 ms. The rider is
+        // Late boarding: r-1 may be picked up in [1000, 2000] ms and boards at 2500 ms. The rider is
         // onboard, the window is unchanged, the 500 ms gap is one record, and the record
         // survives checkpoint/restore.
         var commitment = CommitmentConfiguration();
@@ -380,7 +380,7 @@ public sealed class Wp4RunnerIntegrationTests
     }
 
     /// <summary>
-    /// ADR-089: under `auditHash: light-v1` every decision field except the hashes is the same
+    /// Under `auditHash: light-v1` every decision field except the hashes is the same
     /// as under the full audit; the state hash is the state identity hash; the decision hash
     /// differs; and a light checkpoint restores into a light session.
     /// </summary>

@@ -93,7 +93,7 @@ class PromiseAction:
     reason_code: str
     source_event_sequence: int
     # The projection's vehicle as sent, kept only for the G2 move check; it is never mapped
-    # or validated here, so decisions without G2 parse exactly as before.
+    # or validated here, so it never makes a decision fail to parse.
     vehicle_id: str | None = None
 
 

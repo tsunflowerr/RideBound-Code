@@ -63,8 +63,8 @@ class SessionLineBoundsTests(unittest.TestCase):
         self.assertEqual(64 * MIB, protocol._client.options["maximum_output_line_bytes"])
 
     def test_launcher_patches_still_apply_and_a_setting_never_lowers_them(self) -> None:
-        # bridge_launcher_via.py raises the output bound by patching the module constant; a
-        # client made later (restart) reads the constant at that time, as before.
+        # A launcher may raise the output bound by patching the module constant; a
+        # client made later reads the constant at that time.
         original = session.RUNNER_MAXIMUM_OUTPUT_LINE_BYTES
         try:
             plain = session.RideBoundProtocolSession(settings(None), FakeClient)

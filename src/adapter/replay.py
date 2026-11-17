@@ -98,7 +98,7 @@ def peak_rss_mib(process):
 def replay_runner(command, transcript, *, env=None, stderr=None, max_line=2**30, stall_seconds=900.0) -> dict:
     started = time.time()
     # Raw pipes (bufsize=0) under one 1 MiB buffer each: a BufferedReader over an already-buffered pipe waits for a
-    # full buffer and deadlocks the hello exchange (replay_runner.py, 2026-10-22).
+    # full buffer and deadlocks the hello exchange.
     process = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=stderr, env=env,
                                bufsize=0)
     reader, writer = io.BufferedReader(process.stdout, 1 << 20), io.BufferedWriter(process.stdin, 1 << 20)
@@ -200,7 +200,7 @@ class AdapterReplay:
 
     def __init__(self, transcript):
         self.transcript, self.expected = str(transcript), records(transcript)
-        self.position = 0  # frames seen so far; a client made after a Runner restart plays back from here
+        self.position = 0  # frames seen so far; a client made later starts its playback here
         self.first, self.rebound = None, False  # rebound: initializeRun differed only in its build identity
 
     def factory(self, command, artifact_paths, **options):

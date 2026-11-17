@@ -123,8 +123,8 @@ class InProgressServiceLegTests(unittest.TestCase):
         self.assertEqual([W], plan.list_plan_stops[0].get_list_boarding_rids())
 
     def test_a_late_boarding_at_the_served_stop_does_not_make_the_plan_infeasible(self) -> None:
-        # As in the stopped jobs: A boards a few seconds after its latest pickup (recorded by the Runner,
-        # ADR-076). The copy drops the started stop's latest-time bounds; FleetPy's stored stop keeps them.
+        # As in the stopped jobs: A boards a few seconds after its latest pickup (recorded by the Runner).
+        # The copy drops the started stop's latest-time bounds; FleetPy's stored stop keeps them.
         control, vehicle, pickup_a, drop_a = self._boarding_vehicle(latest_pickup=NOW - 3)
 
         plan = control._fleetpy_plan(0, self._g2_route(pickup_a, drop_a), NOW)

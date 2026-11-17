@@ -62,7 +62,7 @@ public sealed record ForwardSlackProfileBuildResult
 public interface IForwardSlackProfileBuilder
 {
     /// <param name="serviceQuality">
-    /// The vehicle's exogenous service-quality relaxation (ADR-045), or
+    /// The vehicle's exogenous service-quality relaxation, or
     /// <c>null</c> for strict contractual deadlines. The profile certifies delay
     /// against the same bounds the physical validator enforces; if the two
     /// disagreed, a route the validator accepts could still lose its slack

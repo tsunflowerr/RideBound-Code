@@ -1050,7 +1050,7 @@ class RideBoundFleetControl(FleetControlBase):
         if stop.kind == "pickup":
             if prq.o_pos != position:
                 raise _fail("RBWP7_PICKUP_NODE_MISMATCH", "$.route.stop.nodeId", repr(stop.raw_request))
-            # ADR-089 GĐ4: under a planning forecast the Runner validates the pickup window with
+            # Under a planning forecast the Runner validates the pickup window with
             # forecast travel times and FleetPy would price it at the current ones, so the window
             # is the Runner's alone (late boardings are recorded, `lateBoarding: record-v1`). The
             # earliest pickup stays: it is a hold the vehicle executes, not a check.
@@ -1069,7 +1069,7 @@ class RideBoundFleetControl(FleetControlBase):
         if stop.kind == "dropOff":
             if prq.d_pos != position:
                 raise _fail("RBWP7_DROPOFF_NODE_MISMATCH", "$.route.stop.nodeId", repr(stop.raw_request))
-            # ADR-076: FleetPy's latest arrival is `t_pu_latest + max_trip_time`, anchored on
+            # FleetPy's latest arrival is `t_pu_latest + max_trip_time`, anchored on
             # the original window; the Runner bounds a boarded rider by the actual boarding
             # plus the maximum ride, which `max_trip_time_dict` already checks from the real
             # boarding time. The two agree for every on-time rider; only a late boarding makes
@@ -1077,9 +1077,9 @@ class RideBoundFleetControl(FleetControlBase):
             # record-v1`), so the anchored bound is left empty and the effective bound is
             # boarding + maximum trip. The pickup window and the maximum trip stay as an
             # independent cross-check: the Runner validates every changed candidate without
-            # allowance, but after an in-batch cancellation the relieved no-op (ADR-047) is
-            # re-sent too, and these checks can then reject it; that path predates ADR-076.
-            # ADR-089 GĐ4: the maximum trip likewise, under a planning forecast.
+            # allowance, but after an in-batch cancellation the relieved no-op is
+            # re-sent too, and these checks can then reject it.
+            # Under a planning forecast the maximum trip is the Runner's alone too, like the pickup window.
             max_trip = {} if self._rb_planning_forecast else {stop.raw_request: prq.max_trip_time}
             return BoardingPlanStop(
                 position,

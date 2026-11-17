@@ -6,7 +6,7 @@ using RideBound.Domain.Common;
 namespace RideBound.Solvers.OrTools.Tests;
 
 /// <summary>
-/// ADR-089: the indexed model builder must produce the same CP-SAT model as the archived builder,
+/// The indexed model builder must produce the same CP-SAT model as the archived builder,
 /// byte for byte, for every lexicographic pass. Same model and same parameters give the same
 /// solve, so every recorded decision stays reproducible.
 /// </summary>

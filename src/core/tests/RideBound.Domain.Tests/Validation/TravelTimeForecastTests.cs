@@ -9,7 +9,8 @@ public sealed class TravelTimeForecastTests
     [Fact]
     public void Arrivals_equal_the_adapter_mode_emulator_leg_function()
     {
-        // 40 random profiles x 75 legs from legF of engine_wf15_clint.js (gen_forecast_golden.js, seed 20261103).
+        // 40 random profiles x 75 legs from the adapter-mode emulator's legF (seed 20261103).
+        // src/emulator/tests/forecast_leg.test.js checks engine.js against the same file.
         using var stream = typeof(TravelTimeForecastTests).Assembly
             .GetManifestResourceStream("RideBound.Domain.Tests.Validation.travel-forecast-golden.json")!;
         using var document = JsonDocument.Parse(stream);
