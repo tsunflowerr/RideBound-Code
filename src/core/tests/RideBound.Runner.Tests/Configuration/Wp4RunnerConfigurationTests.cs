@@ -1003,7 +1003,7 @@ public sealed class Wp4RunnerConfigurationTests
         + "absent key selected: removed; see commit ebca912 (branch research/final-real-runs-2026-11-06)";
 
     /// <summary>
-    /// Text of the Tier-3 WP4 configuration `ridebound-scratchpad/tang3/configs/wp4-tier3-v2.json`
+    /// Text of the Tier-3 WP4 configuration file `wp4-tier3-v2.json`
     /// (file SHA-256 66e9b59249d9491d520f3ed592e8c878a0d3b100e39432d5f4b73321617b4518), the one
     /// every archived T3.8 run used. The binding hashes its canonical form, so the whitespace of
     /// this copy does not matter. It has no `selectionObjectiveOrder` key, so the Runner refuses it;

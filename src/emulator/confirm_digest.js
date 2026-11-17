@@ -1,4 +1,4 @@
-// So các dòng kết quả chạy lại ở máy nhà với dấu vân tay của máy công ty (expected/*.tsv).
+// So các dòng kết quả của một lần chạy lại với dấu vân tay đã niêm phong (expected/*.tsv).
 // Cách dùng: node confirm_digest.js <expected.tsv> <rows.ndjson> [--panel F14|F16]
 // Khóa so: cell, config, mode, arm, flatRatio, fcIndex, nVeh, variant, g2PenaltyMs, fenceTolMs, panel.
 // So: served, visRev60, late60First, pDisp, breachDeadline60, sumTV5 và sig (dấu vân tay từng khách).
