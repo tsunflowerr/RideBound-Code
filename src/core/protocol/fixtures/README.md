@@ -1,36 +1,30 @@
-# Contract fixtures
+# Thông điệp mẫu của giao thức
 
-Các fixture trong thư mục này là UTF-8 không BOM và dùng LF trong source.
-`RideBound.Contracts.Tests` tìm fixture từ repository root, không phụ thuộc
-current working directory hoặc path separator của hệ điều hành.
+Thư mục này chứa các thông điệp mẫu của giao thức v1, đúng và sai, cho test C#. Mọi file là UTF-8 không BOM, dòng kết
+thúc bằng LF. `src/.gitattributes` đánh dấu thư mục này `-text`, nên git không bao giờ đổi byte của chúng.
 
-Mỗi fixture protocol sau smoke harness phải khai báo support level theo
-`docs/06-event-contract-and-determinism.md`:
+Test tìm file qua `FixtureLoader` (`src/core/tests/RideBound.Contracts.Tests/Fixtures/`): bắt đầu từ thư mục chứa
+`RideBound.slnx`, rồi vào `protocol/fixtures`. Vì vậy test không phụ thuộc thư mục hiện hành hay dấu phân cách đường
+dẫn của hệ điều hành.
 
-- `schema-only`;
-- `runner-executable`;
-- `future-behavior`.
+Giá trị mong đợi (byte chuẩn hóa, hash) được ghi sẵn trong file. Test chỉ so, không bao giờ tự ghi lại chúng.
 
-Golden canonical bytes/hash là source-controlled oracle. Test không được tự cập
-nhật expected vector khi chạy.
+| Thư mục | Nội dung | Test đọc |
+|---|---|---|
+| `canonical/` | một phong bì có khóa không theo thứ tự, và byte chuẩn hóa mong đợi (hex) | `CanonicalJsonTests` |
+| `compatibility/` | phiên bản schema và trường lạ: 1 đúng, 3 sai | `ProtocolVersionCompatibilityTests` |
+| `golden/required/` | 10 kịch bản, mỗi kịch bản có `input.json` và `metadata.json` | `GoldenFixtureTests`, `RunnerSessionTests` (kịch bản 09), `OnlineEventMapperTests` (kịch bản 08) |
+| `harness/` | một file nhỏ để thử `FixtureLoader` | `FixtureLoaderTests` |
+| `hash/` | các cặp đầu vào và SHA-256 mong đợi của manifest, trạng thái và quyết định | `GoldenFixtureTests` |
+| `hello/` | `hello`, `helloAck` (cả dạng hạ cấp), một capability lạ | `HelloMessageTests`, `SchemaAssetTests`, `CapabilityNegotiatorTests`, `InitializeRunValidatorTests`, `Wp4RunnerIntegrationTests` |
+| `initialize/` | `initializeRun`, `initialized`, một manifest có `roundingRule` sai | `InitializeRunMessageTests`, `ProtocolHashTests`, `SchemaAssetTests`, `InitializeRunValidatorTests`, `Wp4RunnerIntegrationTests` |
+| `protocol/` | phong bì đúng, loại thông điệp lạ, `eventSeq` đặt ở phong bì | `ProtocolEnvelopeTests` |
+| `wp2/` | lô sự kiện khởi đầu và lô của epoch thứ hai, một xe có tuyến thiếu `mutableSuffix` | `OnlineEventContractTests`, `OnlineEventMapperTests`, `Wp4RunnerIntegrationTests` |
 
-Thư mục hiện có:
+`metadata.json` của mỗi kịch bản trong `golden/required/` ghi `supportLevel`:
+- `runner-executable`: Runner chạy kịch bản này trong test. Chỉ kịch bản 09 (sự kiện lặp, xử lý một lần) có mức này.
+- `future-behavior`: 9 kịch bản còn lại. Test kiểm dạng của chúng (JSON chuẩn hóa, hợp đồng lô sự kiện); không test nào
+  chạy chúng như một phiên Runner.
 
-- `compatibility/`: hành vi version/error chính xác;
-- `hello/`: capability được cung cấp và kết quả lựa chọn;
-- `initialize/`: manifest bất biến và danh tính state ban đầu;
-- `protocol/`: boundary envelope chung;
-- `canonical/`: vector canonical byte chính xác;
-- `hash/`: vector manifest/state/decision SHA-256 có input và expected hash;
-- `golden/required/`: đúng 10 scenario bắt buộc; 9 scenario
-  `future-behavior`, riêng duplicate là `runner-executable`;
-- `runner/`: full tiny NDJSON transcript, exact output và final decision hash;
-- `wp2/`: typed bootstrap/epoch-two payload cùng invalid full-vehicle case;
-  executable qua mapper/atomic reducer nhưng chưa phải B1 decision;
-- `harness/`: dữ liệu smoke cho fixture loader.
-
-Q1 chỉ tính `golden/required/09-duplicate-event-idempotent` và transcript trong
-`runner/` là behavior executable. Các scenario accept/reject, budget, incident
-và checkpoint chỉ được nâng behavior support tại đúng WP2/WP3 ticket tương ứng.
-Việc thay `fixtureIntent` bằng typed payload không tự nâng accept/reject fixture
-thành runner-executable trước `RB-WP2-010`.
+`GoldenFixtureTests` kiểm đúng các con số này. Tên `wp2` là tên cũ (gói việc 2); nó được giữ vì test đọc đúng đường
+dẫn này.
