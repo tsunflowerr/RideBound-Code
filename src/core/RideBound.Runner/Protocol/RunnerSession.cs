@@ -63,10 +63,9 @@ public sealed partial class RunnerSession
     private readonly ICommitmentPolicyProvider _commitmentPolicies;
     private readonly IStopDistanceLookup _stopDistances;
     private readonly Sha256Hex _commitmentPolicyConfigurationHash;
-    private readonly CommitmentDecisionValidator _commitmentValidator = new();
     private readonly Wp4RunnerConfiguration _wp4Configuration;
     private readonly RideBound.Algorithms.Shareability.ShadowAllocator? _shadowAllocator;
-    private readonly DispatchStep? _dispatchStep;
+    private readonly DispatchStep _dispatchStep;
     private readonly bool _useManifestSolverSeed;
     private HelloPayload? _hello;
     private HelloAckPayload? _helloAcknowledgement;
@@ -119,23 +118,14 @@ public sealed partial class RunnerSession
             : null;
         _lightAudit = wp4Configuration.UsesLightAuditHash;
         _useManifestSolverSeed = useManifestSolverSeed;
-        _dispatchStep = wp4Configuration.SolverPolicyOptions is not null
-            ? new DispatchStep(
-                solverBackedPolicy
-                    ?? new SolverBackedRidePoolingPolicy(
-                        new OrToolsCandidateSelectionSolver(),
-                        commitmentValidator: _commitmentValidator),
-                _commitmentValidator,
-                _shadowAllocator)
-            : null;
-
-        if (useManifestSolverSeed
-            && wp4Configuration.SolverPolicyOptions is null)
-        {
-            throw new ArgumentException(
-                "Manifest solver seeding requires a solver-backed WP4 configuration.",
-                nameof(useManifestSolverSeed));
-        }
+        var commitmentValidator = new CommitmentDecisionValidator();
+        _dispatchStep = new DispatchStep(
+            solverBackedPolicy
+                ?? new SolverBackedRidePoolingPolicy(
+                    new OrToolsCandidateSelectionSolver(),
+                    commitmentValidator: commitmentValidator),
+            commitmentValidator,
+            _shadowAllocator);
     }
 
     public RunnerSessionStatus Status { get; private set; } = RunnerSessionStatus.New;

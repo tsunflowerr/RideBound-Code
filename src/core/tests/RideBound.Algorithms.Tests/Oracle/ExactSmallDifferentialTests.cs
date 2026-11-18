@@ -60,7 +60,7 @@ public sealed class ExactSmallDifferentialTests
 
         var oracleSelection = ExactSmallOracle.Select(oracle, productionIds);
         var productionDecision =
-            new SelectionApplier().Decide(state, AlgorithmTestData.SmallGeneration);
+            new ReferenceSelectionPolicy().Decide(state, AlgorithmTestData.SmallGeneration);
 
         Assert.True(
             productionDecision.IsSuccess,

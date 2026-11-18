@@ -1,3 +1,5 @@
+// Reference code for the tests only; the Runner does not use it.
+
 using RideBound.Algorithms.Candidates;
 using RideBound.Domain.Common;
 

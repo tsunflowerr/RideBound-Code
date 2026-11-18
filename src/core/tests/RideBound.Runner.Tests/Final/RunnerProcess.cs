@@ -36,14 +36,6 @@ internal static class RunnerProcess
             startInfo.ArgumentList.Add(argument);
         }
 
-        // The final runs set none of the Runner's diagnostic environment switches; keep the child free of them.
-        foreach (var name in startInfo.Environment.Keys
-                     .Where(key => key.StartsWith("RIDEBOUND_", StringComparison.OrdinalIgnoreCase))
-                     .ToArray())
-        {
-            startInfo.Environment.Remove(name);
-        }
-
         using var timeout = new CancellationTokenSource(Timeout);
         using var process = Process.Start(startInfo)
             ?? throw new InvalidOperationException("The Runner process did not start.");

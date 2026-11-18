@@ -224,7 +224,7 @@ public sealed class ExactSmallCommitmentDifferentialTests
             1);
 
         AlgorithmTestData.AssertGeneratedInFull(fixture.State, AlgorithmTestData.SmallGeneration);
-        var b1 = new SelectionApplier().Decide(
+        var b1 = new ReferenceSelectionPolicy().Decide(
             fixture.State,
             AlgorithmTestData.SmallGeneration);
         AlgorithmTestData.AssertGeneratedInFull(context.ReducedState, AlgorithmTestData.SmallGeneration);

@@ -155,7 +155,7 @@ public sealed class Wp4RunnerConfiguration
         string policyId,
         string policyVersion,
         CandidateGenerationOptions candidateGeneration,
-        SolverBackedRidePoolingPolicyOptions? solverPolicyOptions,
+        SolverBackedRidePoolingPolicyOptions solverPolicyOptions,
         bool usesLightAuditHash,
         TravelTimeForecast? planningForecast,
         ShadowAllocationInputs? shadowAllocation)
@@ -178,7 +178,7 @@ public sealed class Wp4RunnerConfiguration
 
     public CandidateGenerationOptions CandidateGeneration { get; }
 
-    public SolverBackedRidePoolingPolicyOptions? SolverPolicyOptions { get; }
+    public SolverBackedRidePoolingPolicyOptions SolverPolicyOptions { get; }
 
     /// <summary>True only for `auditHash: light-v1`.</summary>
     public bool UsesLightAuditHash { get; }
@@ -204,9 +204,7 @@ public sealed class Wp4RunnerConfiguration
     public SolverBackedRidePoolingPolicyOptions CreateSolverPolicyOptionsForRun(
         long manifestSolverSeed)
     {
-        var source = SolverPolicyOptions
-            ?? throw new InvalidOperationException(
-                "The selected WP4 policy does not use the solver-backed path.");
+        var source = SolverPolicyOptions;
         var sourceExecution = source.ExecutionBudget;
         var sourceSolver = sourceExecution.SolverBudget;
         var solver = DeterministicSolverBudget.Create(
@@ -444,13 +442,8 @@ public sealed class Wp4RunnerConfiguration
                 "'shadowAllocation' and 'dropEtaShadowAllocation' on every commitment policy go together.");
         }
 
-        SolverBackedRidePoolingPolicyOptions? solverOptions = null;
-
-        if (hasSolver)
-        {
-            var budget = ReadSolverBudget(solverElement);
-            solverOptions = new SolverBackedRidePoolingPolicyOptions(policyKind, budget);
-        }
+        // RequireVariantFields has refused a file without solverExecution.
+        var solverOptions = new SolverBackedRidePoolingPolicyOptions(policyKind, ReadSolverBudget(solverElement));
 
         // The initial-acceptance trigger is removed: a promise always opens at the booking confirmation, so
         // initialPromiseTrigger must name it. An absent key selected initial-acceptance and is refused too. Checked

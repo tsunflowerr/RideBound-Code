@@ -74,21 +74,14 @@ public sealed class DispatchStep
                 solved.Witness!.Message);
         }
 
-        var decision = DispatchDecisionResult.Success(
-            solved.Decision!.Decision);
+        var decision = solved.Decision!.Decision;
         var validationPolicies = solved.Decision.EffectivePolicies;
-
-        if (!decision.IsSuccess)
-        {
-            return DispatchStepResult.Failure(
-                decision.Witness!.Message);
-        }
 
         var validation = _commitmentValidator.Validate(
             new CommitmentValidationContext(
                 context.BeforeEventState,
                 context.ReducedState,
-                decision.Decision!.ProposedState,
+                decision.ProposedState,
                 validationPolicies,
                 context.StopDistances,
                 context.PublicationScope,
@@ -107,7 +100,7 @@ public sealed class DispatchStep
         var stateToStage = validation.ValidatedState!;
         IReadOnlyList<PromisePublication> publications = validation.Publications;
 
-        if (decision.Decision.GenerationDiagnostics is { } diagnostics
+        if (decision.GenerationDiagnostics is { } diagnostics
             && diagnostics.ExogenousServiceQualityBreaches.Count != 0)
         {
             var bridged = _breachBridge.Apply(
@@ -143,7 +136,7 @@ public sealed class DispatchStep
         }
 
         return DispatchStepResult.Success(
-            decision.Decision,
+            decision,
             stateToStage,
             publications);
     }

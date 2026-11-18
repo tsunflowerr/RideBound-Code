@@ -83,13 +83,13 @@ public sealed partial class RunnerSession
             sourceEventSequence);
 
         // Decide, validate again, record exogenous breaches and give new riders their Shadow class.
-        var dispatched = _dispatchStep!.Run(
+        var dispatched = _dispatchStep.Run(
             context,
             _wp4Configuration.CandidateGeneration,
             _useManifestSolverSeed
                 ? _wp4Configuration.CreateSolverPolicyOptionsForRun(
                     _identity!.Manifest.MasterSeed)
-                : _wp4Configuration.SolverPolicyOptions!);
+                : _wp4Configuration.SolverPolicyOptions);
 
         if (!dispatched.IsSuccess)
         {

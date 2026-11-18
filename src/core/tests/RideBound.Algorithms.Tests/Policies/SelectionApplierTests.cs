@@ -25,7 +25,7 @@ public sealed class SelectionApplierTests
         var state = AlgorithmTestData.CreateState([request], [near, far]);
 
         AlgorithmTestData.AssertGeneratedInFull(state, Options);
-        var result = new SelectionApplier().Decide(state, Options);
+        var result = new ReferenceSelectionPolicy().Decide(state, Options);
 
         Assert.True(result.IsSuccess, result.Witness?.Message);
         var accepted = Assert.Single(
@@ -70,7 +70,7 @@ public sealed class SelectionApplierTests
             ? AlgorithmTestData.VehicleOne
             : AlgorithmTestData.VehicleTwo;
 
-        var result = new SelectionApplier().Decide(state, Options);
+        var result = new ReferenceSelectionPolicy().Decide(state, Options);
 
         Assert.True(result.IsSuccess, result.Witness?.Message);
         var selected = result.Decision!.VehiclePlans.Single(
@@ -90,7 +90,7 @@ public sealed class SelectionApplierTests
             ]);
 
         AlgorithmTestData.AssertGeneratedInFull(state, Options);
-        var result = new SelectionApplier().Decide(state, Options);
+        var result = new ReferenceSelectionPolicy().Decide(state, Options);
 
         Assert.True(result.IsSuccess, result.Witness?.Message);
         Assert.Equal(2, result.Decision!.VehiclePlans.Count);
@@ -111,7 +111,7 @@ public sealed class SelectionApplierTests
             [AlgorithmTestData.Vehicle(capacity: 4)]);
 
         AlgorithmTestData.AssertGeneratedInFull(state, Options);
-        var result = new SelectionApplier().Decide(state, Options);
+        var result = new ReferenceSelectionPolicy().Decide(state, Options);
 
         Assert.True(result.IsSuccess, result.Witness?.Message);
         var action = Assert.Single(result.Decision!.RequestActions);
@@ -143,7 +143,7 @@ public sealed class SelectionApplierTests
             ]);
 
         AlgorithmTestData.AssertGeneratedInFull(state, Options);
-        var result = new SelectionApplier().Decide(state, Options);
+        var result = new ReferenceSelectionPolicy().Decide(state, Options);
 
         Assert.True(result.IsSuccess, result.Witness?.Message);
         var action = Assert.Single(result.Decision!.RequestActions);
@@ -173,7 +173,7 @@ public sealed class SelectionApplierTests
             [AlgorithmTestData.Vehicle()]);
 
         AlgorithmTestData.AssertGeneratedInFull(state, Options);
-        var result = new SelectionApplier().Decide(state, Options);
+        var result = new ReferenceSelectionPolicy().Decide(state, Options);
 
         Assert.True(result.IsSuccess, result.Witness?.Message);
         Assert.Single(
@@ -238,7 +238,7 @@ public sealed class SelectionApplierTests
             RideBound.Domain.Commitments.CommitmentLedger.Empty);
 
         AlgorithmTestData.AssertGeneratedInFull(state, Options);
-        var result = new SelectionApplier().Decide(state, Options);
+        var result = new ReferenceSelectionPolicy().Decide(state, Options);
 
         Assert.True(result.IsSuccess, result.Witness?.Message);
         Assert.Equal(

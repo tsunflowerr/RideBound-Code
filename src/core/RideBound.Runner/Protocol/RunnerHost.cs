@@ -56,7 +56,8 @@ public static class RunnerHost
         }
         catch (ArgumentException error)
         {
-            // A refused combination of settings, reported like Program's configuration errors.
+            // Program passes decoded, non-null settings; a library caller that passes null gets this. Exit 64, like
+            // Program's configuration errors.
             await diagnostics.WriteLineAsync(
                 $"Invalid runner configuration: {error.Message}").ConfigureAwait(false);
             return 64;

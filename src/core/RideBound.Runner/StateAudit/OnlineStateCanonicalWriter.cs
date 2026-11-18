@@ -151,7 +151,7 @@ public static class OnlineStateCanonicalWriter
         return builder.Build();
     }
 
-    /// <summary>OnlineStateCanonicalizer.CalculateHash over already built canonical bytes.</summary>
+    /// <summary>OnlineStateHash.v1 of canonical bytes already built.</summary>
     public static Sha256Hex HashV1(CanonicalSegments canonical)
     {
         using var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);

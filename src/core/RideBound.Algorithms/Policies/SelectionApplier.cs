@@ -1,5 +1,4 @@
 using RideBound.Algorithms.Candidates;
-using RideBound.Algorithms.Commitments;
 using RideBound.Application.State;
 using RideBound.Domain.Common;
 using RideBound.Domain.Requests;
@@ -8,73 +7,11 @@ using RideBound.Domain.Validation;
 
 namespace RideBound.Algorithms.Policies;
 
-public sealed class SelectionApplier
+/// <summary>
+/// Checks a selected fleet plan against the physical rules and applies it to the reduced state.
+/// </summary>
+public static class SelectionApplier
 {
-    private readonly InsertionCandidateGenerator _generator;
-    private readonly CandidateFleetSelector _selector;
-    private readonly PhysicalPlanValidator _validator;
-
-    public SelectionApplier(
-        InsertionCandidateGenerator? generator = null,
-        CandidateFleetSelector? selector = null,
-        PhysicalPlanValidator? validator = null)
-    {
-        _generator = generator ?? new InsertionCandidateGenerator();
-        _selector = selector ?? new CandidateFleetSelector();
-        _validator = validator ?? new PhysicalPlanValidator();
-    }
-
-    public DispatchDecisionResult Decide(
-        OnlineState state,
-        CandidateGenerationOptions options,
-        CommitmentCandidateFilter? commitmentFilter = null)
-    {
-        ArgumentNullException.ThrowIfNull(state);
-        ArgumentNullException.ThrowIfNull(options);
-
-        var generated = _generator.Generate(state, options);
-
-        if (!generated.IsSuccess)
-        {
-            return DispatchDecisionResult.Failure(
-                new RollingCostWitness(
-                    DecisionFailureCodes.CandidateGenerationFailed,
-                    generated.Witness!.Message,
-                    generated.Witness.VehicleId,
-                    generated.Witness.RequestId,
-                    Dimension: generated.Witness.Dimension));
-        }
-
-        var candidates = commitmentFilter is null
-            ? generated.VehicleCandidates!
-            : commitmentFilter.Filter(state, generated.VehicleCandidates!);
-        var selection = _selector.Select(candidates);
-
-        if (!selection.IsSuccess)
-        {
-            return DispatchDecisionResult.Failure(selection.Witness!);
-        }
-
-        var validationFailure = ValidateSelection(
-            state,
-            selection.Selection!,
-            _validator);
-
-        if (validationFailure is not null)
-        {
-            return DispatchDecisionResult.Failure(validationFailure);
-        }
-
-        var applied = ApplySelection(
-            state,
-            selection.Selection!,
-            candidates);
-
-        return applied.IsSuccess
-            ? applied
-            : DispatchDecisionResult.Failure(applied.Witness!);
-    }
-
     /// <summary>
     /// The selected waiting-rider move (G2): null when no selected plan has a relocation role,
     /// otherwise exactly one donor and one receiver of the same rider, the donor being the
