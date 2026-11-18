@@ -10,7 +10,7 @@
 //   configs  INS        insertion only
 //            G2         insertion, plus moving at most one waiting rider to one of the 8 nearest vehicles per decision
 //   arms     U          no limit on dispatch changes
-//            EOHZ<a>    Elmi's relaxed fence: the pickup may move up to B = round(a/100 x slack) past the first promise,
+//            EOHZ<a>    Elmi's relaxed fence: the drop time may move up to B = round(a/100 x slack) past the first promise,
 //                       but never tighter than the keep-route projection; a = 0, 10, 20, 35, 50, 75, 100
 //            RCE<a>     Rule C: the changes of a rider, summed in absolute value, stay within the same B (a per-rider ledger)
 //            SHHZ<x>    the relaxed fence with the Shadow budget: 0 for guaranteed riders, the full slack for allowed riders

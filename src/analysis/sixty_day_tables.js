@@ -7,7 +7,7 @@
 //   configs  INS   insertion only
 //            G2    insertion, plus moving at most one waiting rider to one of the 8 nearest vehicles per decision
 //   arms     U     no limit on dispatch changes
-//            EO35  Elmi's strict fence: the pickup may move up to B = round(0.35 x slack) past the first promise
+//            EO35  Elmi's strict fence: the drop time may move up to B = round(0.35 x slack) past the first promise
 //            EOHZ35 the relaxed fence: as EO35, but never tighter than the keep-route projection
 //            RCE35 Rule C: the changes of a rider, summed in absolute value, stay within B (a per-rider ledger)
 //            SHF, SHHZ, SHRC  the same three rules with the Shadow budget: 0 for guaranteed riders, the full slack
@@ -30,8 +30,9 @@
 //
 // Output, in this order:
 //   TOTALS, SECONDARY and S16: the 60-day study's own analysis, ported from its pre-registered script. These lines are
-//     byte-identical to lines 30-118 of the stored study report (expected/confirm-shadow-report.txt); the lines before
-//     them need the run manifests and the earlier study's rows, and the lines after them need the per-rider score dump.
+//     byte-identical to expected/confirm-shadow-report.txt, which holds lines 30-118 of the study's stored report; the
+//     lines before them need the run manifests and the earlier study's rows, and the lines after them need the
+//     per-rider score dump.
 //     The SECONDARY list and its predicted directions are the study's pre-registration.
 //   REPORT TABLES: the two tables of the system report §6 at the report's precision. They print the true values: the
 //     report shows G2 burden U 9.1 and SHF71 12.0, rounded twice from TOTALS' 9.05 and 11.95; the values are 9.0 and 11.9.

@@ -47,8 +47,9 @@ BIN_SECONDS = 900
 # The Runner may need minutes for one answer on a full-node cell, and its frames reach about 0.8 GB.
 RUNNER_TIMEOUT_SECONDS = 900
 MAXIMUM_LINE_BYTES = 2**30
-# Legacy names (WP7, WP6, Manhattan) kept on the Via runs: they go into the frames, so new frames stay
-# byte-identical to the recorded runs. The other wire strings (adapter, FleetPy, hello) live in session.py.
+# Legacy names (WP7, WP6, Manhattan) kept on the Via runs. The first four go into the frames, so new frames stay
+# byte-identical to the recorded runs; FLEET_NAME only fills FleetPy's op_fleet_composition setting. The other wire
+# strings (adapter, FleetPy, hello) live in session.py.
 RUN_ID_PREFIX = "wp7-medium-"
 SCENARIO_ID = "fleetpy-manhattan-v1-medium-wp7-physical-closure"
 SERVICE_CLASS = "fleetpy-tlc-public-derivative-v1"
@@ -549,7 +550,8 @@ def run_fleet(args, source, driver, values, output, source_hash):
             }
             semantic_hash = hashlib.sha256(b"RideBound.Wp7ActualFleetPyMedium.v1\0" + canonical(semantic)).hexdigest()
         except BaseException:
-            # The Runner answers an unexpected exception with a generic error and writes the detail to its stderr.
+            # On a failure, print the Runner's stderr. For an unexpected exception the Runner sends a generic error
+            # frame and writes only the exception's type name there.
             print(f"[runner-stderr]\n{control._rb_session._client.diagnostics}\n[end runner-stderr]", file=sys.stderr,
                   flush=True)
             raise
@@ -730,7 +732,8 @@ def accumulate(rows):
 def audit(decisions, acknowledged, state, transcript):
     """The signed audit rows (one per ledger entry and ETA: v = the promise before, e = the kept route, p = the
     published value) rebuilt from the final ledger, and the job summary. Every ledger publication must be an
-    acknowledged promisePublished action with the same p, and |e - v|, |p - e|, |p - v| must equal the ledger deltas."""
+    acknowledged promisePublished action with the same p, and |e - v|, |p - e|, |p - v| must equal the ledger deltas.
+    riders.audit_table builds the same table from a transcript; change the two together."""
     requests = {request["requestId"]: request for request in state["requests"]}
     actions = published_actions(decisions, acknowledged)
     rows, table, seen = [], [], set()

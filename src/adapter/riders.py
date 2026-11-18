@@ -142,7 +142,7 @@ def read_transcript(path):
 
 
 def audit_table(state, actions):
-    """One row per ledger entry and coordinate, the table an evidence file stores:
+    """One row per ledger entry and coordinate, the table that run_job.audit stores in evidence.json.gz:
     (requestId, coordinate, sequence, kind, publishedAtMs, v, e, p, x = e - v, c = p - e, z = p - v, closed),
     with v the promise in force before the entry, e the kept-route ETA and p the published ETA. A pickup revision
     published at or after the boarding is closed."""

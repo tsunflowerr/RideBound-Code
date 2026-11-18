@@ -17,7 +17,8 @@
 // TV5 = total movement of the shown drop time, counting only moves of 5 s or more (seconds per served rider).
 //
 // expected/ holds the stored results of the original scripts (synth_real_30d.py, d1_split.py, d1_gap.py,
-// compare_via_full.py, eta_metrics.py and promise.js at commit ebca912), with their local path fields removed.
+// compare_via_full.py and eta_metrics.py at commit ebca912, and promise.js, a script of the final report that is not
+// in that commit), with their local path fields removed.
 //
 // Output file (same name in expected/)        Report    Rebuilt by
 //   f14-, f16-riders-compare.json             §3        ridersCompare()   real vs predicted, rider by rider

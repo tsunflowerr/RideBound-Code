@@ -1,6 +1,7 @@
 // Exact emulation of the identifiers RideBound uses for its final tie-break (candidate-id-rank levels):
-//   adapter ids (mapping.py:20-77: "<ns>-" + sha256(typed frame)), travel snapshot hash (mapping.py:303-333),
-//   generated stop ids and candidate ids (CandidateIdentity.cs:41-87, 89-104, 164-237).
+//   adapter ids (mapping.py _typed_frame and CanonicalIdRegistry: "<ns>-" + sha256(typed frame)), travel snapshot
+//   hash (mapping.py travel_snapshot), generated stop ids and candidate ids (CandidateIdentity.cs Create,
+//   CreateStopId, WriteStop, WriteFrame).
 'use strict';
 const crypto = require('crypto');
 

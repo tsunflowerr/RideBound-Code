@@ -16,7 +16,8 @@
 //
 // Statistics. The unit is the day:
 //   X of a window = mean of X over the 3 resamples; X of a day = X(w08) + X(w17). The rows must cover exactly 30 days,
-//   and every config x mode x arm used here needs 3 resamples in each window of each day; otherwise the script stops.
+//   and every config x mode x arm used here needs 3 rows in each window of each day; otherwise the script stops. The
+//   resample names are not checked, so a window with one row twice and one resample missing still passes.
 //   A rate is computed per day (count * 1000 / served of that day; per window for the window tables);
 //   a level is the mean over the 30 days.
 //   A contrast A - B pairs the two sides by day: mean, 95 % t interval with the fixed quantile t(0.975, 29) = 2.045

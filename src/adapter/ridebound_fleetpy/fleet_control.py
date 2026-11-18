@@ -118,6 +118,8 @@ class RideBoundFleetControl(FleetControlBase):
         self._rb_initialized = False
         self._rb_closed = False
         self._rb_publications: list[dict[str, Any]] = []
+        # The last checkpoint. Nothing reads it; holding it keeps the final checkpoint in memory until the control
+        # object goes, as on the final runs.
         self._rb_last_checkpoint: dict[str, Any] | None = None
         self._rb_checkpoint_binding_hash: str | None = None
         self._rb_graph_nodes: tuple[Any, ...] | None = None

@@ -19,7 +19,7 @@
 //   data      --data <dir>  data root (shlib.js): cells, network, prior, frozen parameters, forecast index. Relative paths of
 //             --out, --frozen, --prior, --days-file resolve against <dir>/wf15; --flat, --fc-index, --scen against the current folder
 //   cells     --set discovery|confirm | --scen dir1,dir2   [--exclude d1,d2] [--days a..b] [--days-file f] [--win w08|w17]
-//             [--first-days n] [--cells cellA,cellB]
+//             [--first-days n] [--cells cellA,cellB] [--max-cells n (the first n cells)]
 //   configs   --configs INS,G2 (default both)
 //   arms      --arms U,EOHZ35,SHHZ50 (both configs) | --arms-INS ... --arms-G2 ...
 //             --x 0,10,...,100 | --x star   expands bare Shadow names (SHF, SHHZ, SHRC) to SHHZ<x>; 'star' = frozen x*
@@ -27,7 +27,11 @@
 //             --log  score logging also for non-Shadow arms (U-log runs)
 //   threshold --frozen frozen/shadow-params.json (x*, theta*, alphaS, strideMs); x = 0 and x = 100 need no threshold source
 //   params    --alphaS a (default: frozen, else results/alpha_calibration.json) --stride ms (default: frozen, else 0)
+//             --prior <csv> (lambda prior; default <data>/wf15/work/prior_prevhour.csv)
 //   output    --part label  --workers n (at most 4)
+//   forecast  --fc N|CL|PAD|CLc (default N)  --flat <json> (PAD: flat ratio per "config|win|armBase")
+//             --fc-index <json> (CLc: causal per-target index)
+//   rows      --panel <label>  --variant <label>  (row fields; part of the resume key)
 // The research options --ref, --cmp-ref, --hashes, --truncate, --repeat, --order, --engine, --dump, --dump-arms, --pi, --fence-tol,
 // --audit and the oracle and random score modes are removed (see REMOVED below), and the run manifest no longer lists code hashes.
 // The removed engine arms (NC OC RR FZ NCE OCE SHNC) fail in engine.parseArm with the same note.
