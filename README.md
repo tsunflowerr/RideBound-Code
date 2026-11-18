@@ -109,7 +109,7 @@ git log --format='%h %s' --grep='^\[2\.14g\]'
 
 | Công cụ | Phiên bản | Cần cho |
 |---|---|---|
-| .NET SDK | 10.0.301 trở lên (`src/core/global.json`, `rollForward: latestFeature`). Đã thử với 10.0.400. | `src/core` |
+| .NET SDK | 10.0.301 trở lên, trong dòng 10.0 (`src/core/global.json`, `rollForward: latestFeature` không nhận SDK 11). Đã thử với 10.0.400. | `src/core` |
 | Node.js | 20 (đã thử 20.20.2). Chỉ dùng module có sẵn, không cần `npm install`. | `src/emulator`, `src/analysis` |
 | git | bản clone **đầy đủ** (không dùng `--depth`), vì vài lệnh đọc commit `ebca912` | §9, chỉ số dự báo nhân quả |
 | bash, `sha256sum`, `gzip`, `awk` | Linux, macOS, hoặc Git Bash trên Windows | các lệnh trong README |
@@ -447,7 +447,11 @@ node src/analysis/report_tables.js --data src/analysis/data                     
 node src/analysis/report_tables.js --data src/analysis/data --out $OUT/report                # ghi các file kết quả
 ```
 
-- Dùng `--check` để so. File do `--out` ghi không giống từng byte file trong `expected/`, vì các giá trị "open" in thành `—`.
+- Dùng `--check` để so. Trong 11 file do `--out` ghi, chỉ `synth-real-30d.md`, `promise.json` và `promise.md` giống
+  từng byte file trong `expected/`. Các file còn lại khác vì: giá trị "open" in thành `—` (file chữ) hoặc thành `null`
+  hay bị bỏ (JSON); JSON được ghi theo cách của JavaScript (thụt lề 1 dấu cách, `-27.0` thành `-27`); vài số thực khác
+  ở vài chữ số cuối (giá trị p của phép kiểm dấu chính xác, và biên khoảng tin cậy trong JSON); `d1-gap.txt` đã lưu
+  dùng xuống dòng CRLF.
 - Giá trị "open" (397 + 1.086 + 2.732) cần dữ liệu không đi kèm repo: chuỗi thời gian của adapter cho hai nhánh tách,
   transcript và evidence từng khách. Repo không có lệnh dựng lại chúng; giá trị đã lưu nằm trong `src/analysis/expected/`.
 - Dự đoán chế độ adapter (`*-adapter-*predictions.tsv.gz`) là kết quả đã niêm phong; bộ sinh chúng không công khai.
@@ -526,6 +530,7 @@ gzip -dc src/analysis/data/f14-real-riders.tsv.gz | cmp - f14.tsv && echo same
   các lần chạy cuối (ba file này chỉ phụ thuộc vào mẫu; đã kiểm ở máy kiểm trên bộ dữ liệu nhỏ của
   `tests/test_make_job_configs.py`).
 - Chuỗi `--network` đi nguyên vào cấu hình (`shadowAllocation.networkDirectory`), nên vào cả các hash trong frame.
+  Runner mở thư mục này từ thư mục đang chạy bước 3, nên hãy dùng đường dẫn tuyệt đối.
   Cấu hình chỉ giống từng byte cấu hình đã dùng khi chuỗi này giống chuỗi cũ. Vì thế so lần chạy mới với lần chạy đã ghi
   bằng `replay.py compare`, phép so bỏ qua hash.
 - Bước 3: `--workers` = min(số nhân CPU, (RAM tính bằng GB − 4) // 7). Mỗi job ghi vào `runs/<nhánh>-<ô>/`:
@@ -553,8 +558,8 @@ của từng script và các phép từ chối ở mục 10.
 | G7 | Byte của cấu hình cuối | so sha256 các file cấu hình của gói chạy (mẫu WP4 cuối, các file commitment, `CONFIGS-V2.json` của F14 và F16) với mục 7; so từng file WP4 của job, sau khi bỏ khối `shadowAllocation` và `planningForecast`, với mẫu; `grep -E "stopServiceDurationMs\|maximumRidersPerVehicle\|skipConstantObjectiveLevels\|solverExecutionEvidenceProfile"` trên mọi file cấu hình | sha bằng sha ở mục 7; mọi file WP4 của job bằng mẫu; không khóa nào ở trên xuất hiện; `emitSolverExecutionEvidence` chỉ có giá trị `false` |
 | V1 | Phát lại transcript thật qua Runner | `python -B src/adapter/replay.py runner --transcript <job>/transcript-00.ndjson.gz --runner <thư mục publish> --policy-config <commitment.json> --wp4-config <wp4.json>`. Chạy một lần với Runner dựng từ `ebca912`, rồi với Runner dựng từ cây này | mọi frame `runnerToAdapter` bằng nhau, kể cả hash quyết định light-v1 và dòng checkpoint cuối. Tối thiểu: F14 `d20190919-vf-r0-w08` × {SHRC71-CL, SHHZ71-N} |
 | P-FLEET | Test adapter với FleetPy | `RIDEBOUND_FLEETPY_ROOT=<FleetPy> python -B -m unittest discover -s src/adapter/tests -t src/adapter/tests -p "test_*.py"` | 0 bỏ qua; mỗi test cũ cho kết quả như ở `ebca912` (trừ test của mã đã bỏ); test mới (`test_replay`, `test_run_job`, `test_run_campaign`, `test_make_job_configs`, `test_riders`) đều ok. Hiện có 134 test |
-| P-REPLAY | Phát lại transcript qua adapter | `python -B src/adapter/replay.py adapter --transcript <T> --out <x> -- src/adapter/run_job.py <tham số job>`. Tham số job: như lệnh `run_campaign.py --dry-run` in cho job đó, với `--transcript keep`, `--output` là thư mục mới tên `<nhánh>-<ô>`, và `--label` = `runId` của `initializeRun` đã ghi, bỏ tiền tố `wp7-medium-`. Chuỗi chạy cũ trước `run_job.py` (launcher + world wrapper) chỉ có ở các commit trước `5d9f507` | mọi frame `adapterToRunner` bằng nhau, trừ `coreCommitSha` và `binarySha256` trong `initializeRun`. Tối thiểu: hai transcript gate F14 `d20190919-vf-r0-w08` × {SHRC71-CL, SHHZ71-N} |
-| V3 | Một job thật từ đầu | `python -B src/adapter/run_campaign.py --panel f14 ... --cells gate --arms FS-G2-SHRC71-CL` (hoặc `run_job.py` với cùng tham số; 18–25 phút/job); `python -B src/adapter/replay.py compare <job mới> <job đã ghi>`; `python -B src/adapter/riders.py --root <thư mục chứa job mới> --out new.tsv` | frame bằng nhau sau khi bỏ `coreCommitSha` và mọi khóa `*Hash`/`*Sha256`; dòng khách bằng dòng của ô-nhánh đó trong `src/analysis/data/f14-real-riders.tsv.gz` |
+| P-REPLAY | Phát lại transcript qua adapter | `python -B src/adapter/replay.py adapter --transcript <T> --out <x> -- src/adapter/run_job.py <tham số job>`. Tham số job: như lệnh `run_campaign.py --dry-run` in cho job đó, với `--transcript keep`, `--output` là thư mục mới tên `<nhánh>-<ô>`, và `--label` = `runId` của `initializeRun` đã ghi, bỏ tiền tố `wp7-medium-`. Chuỗi chạy cũ trước `run_job.py` (launcher + world wrapper) chỉ có ở các commit trước `5d9f507` | mọi frame `adapterToRunner` bằng nhau từng byte; riêng `initializeRun` được so theo giá trị JSON sau khi bỏ `coreCommitSha` và `binarySha256`. Tối thiểu: hai transcript gate F14 `d20190919-vf-r0-w08` × {SHRC71-CL, SHHZ71-N} |
+| V3 | Một job thật từ đầu | `python -B src/adapter/run_campaign.py --panel f14 ... --cells gate --arms FS-G2-SHRC71-CL` (hoặc `run_job.py` với cùng tham số; 18–25 phút/job); `python -B src/adapter/replay.py compare <job mới> <job đã ghi>`; `python -B src/adapter/riders.py --root <thư mục chứa job mới> --out new.tsv` | mỗi dòng transcript bằng nhau từng byte, hoặc cùng hướng, số thứ tự, `schemaVersion` và độ dài frame, với frame bằng nhau về giá trị JSON sau khi bỏ `coreCommitSha` và mọi khóa `*Hash`/`*Sha256` (phép so này không xét thứ tự khóa); dòng khách bằng dòng của ô-nhánh đó trong `src/analysis/data/f14-real-riders.tsv.gz` |
 | V-TSV | Bảng khách từ các job đã lưu | `python -B src/adapter/riders.py --root <thư mục 168 job F14> --out f14.tsv`, rồi cùng lệnh cho 192 job F16 (`--out f16.tsv`); không đặt `RB_PREFER_EVIDENCE` | sha256 của file bằng `786048fb…` (F14, 58.033 dòng khách) và `fa785fde…` (F16, 67.922 dòng), như trong `MANIFEST.tsv`. Một dòng từ chối là một phát hiện cần báo lại |
 | CFG | Byte của cấu hình job | lệnh `make_job_configs.py` của mục 5.6 với `--data <panel F14> --network <đúng chuỗi networkDirectory cũ> --forecast-gate --out <thư mục mới>`; F16 không có `--forecast-gate` | mọi file bằng từng byte file trong `job-configs-v2/` đã ghi; `CONFIGS-V2.json` của F14 có sha256 `18ed3c1d…` (file này ghi ở chế độ văn bản: CRLF trên Windows) |
 | LIST | Danh sách job | `python -B src/adapter/run_campaign.py --panel f14 ... --dry-run` (và `--cells gate`; F16 tương tự) | các trường của từng job bằng danh sách job đã ghi của các lần chạy cuối |
@@ -875,10 +880,16 @@ Mọi tính năng đã bỏ đều báo lỗi rõ, không bao giờ âm thầm �
   `materialRevisionRule`, kiểu của các khóa boolean và phần nghìn, và phép kiểm Shadow. Vì vậy một hạn chót ms cố định có
   `dropEtaDeadlineRelaxed: true` nhận câu chỉ dẫn, không nhận thông báo
   `'dropEtaDeadlineRelaxed' requires 'dropEtaDeadlineSlackPermille'.`.
+
+  Hai phép kiểm còn giữ nay có thông báo không nêu khóa đã bỏ (vẫn exit 64):
+  `'waitingRiderRelocation' requires 'finalConfirmationLocks' without 'vehicle'.` (trước đây thêm
+  `and 'freezeHorizonLocks'`) và `'dropEtaDeadlineRelaxed' requires 'dropEtaDeadlineSlackPermille'.` (trước đây
+  `requires 'dropEtaDeadlineSlackMs' or 'dropEtaDeadlineSlackPermille'`).
 - Ngoại lệ, không phải exit 64 và không kèm câu chỉ dẫn: thông điệp `restore` với checkpoint có mục sửa lời hứa mang
-  `budgetBasis` `customerVisible`, hoặc vi phạm loại `forcedReference`/`forcedNoWorse`, bị từ chối (`Unknown budget basis.`,
-  `Unknown commitment breach kind.`). Runner hiện nay không ghi ra các giá trị đó; chỉ checkpoint do Runner trước 2.14a
-  hoặc 2.14g ghi mới có thể chứa chúng.
+  `budgetBasis` `customerVisible`, có vi phạm loại `forcedReference`/`forcedNoWorse`, hoặc có trạng thái với mục
+  `planPool` (B5) bị từ chối (`Unknown budget basis.`, `Unknown commitment breach kind.`,
+  `Checkpoint online state is not an exact canonical domain state.`). Runner hiện nay không ghi ra các giá trị đó; chỉ
+  checkpoint do Runner trước 2.05, 2.14a hoặc 2.14g ghi mới có thể chứa chúng.
 - Biến môi trường `RIDEBOUND_STATE_HASH`, `RIDEBOUND_HASH_TIMING`, `RIDEBOUND_CANONICAL_SELFCHECK` bị bỏ qua.
 
 **Bộ mô phỏng (lỗi, exit khác 0):**
@@ -890,8 +901,10 @@ Mọi tính năng đã bỏ đều báo lỗi rõ, không bao giờ âm thầm �
 - `gen17.js`: `--set`, `--work`, `--nodetag`.
 
 **Adapter (Python):** tính năng đã bỏ gây lỗi rõ với cùng câu chỉ dẫn:
-- Cấu hình operator: khóa có tiền tố `op_` (`RBWP7_SETTING_PREFIX_REMOVED`); `ridebound_complete_travel_snapshot_maximum_nodes`
-  bằng 0 hoặc thiếu, tức chế độ snapshot thưa (`RBWP7_SPARSE_TRAVEL_SNAPSHOT_REMOVED`).
+- Cấu hình operator: bản sao có tiền tố `op_` của một khóa `ridebound_*` mà adapter đọc, ví dụ
+  `op_ridebound_timeout_seconds` (`RBWP7_SETTING_PREFIX_REMOVED`; các khóa `op_` của FleetPy như `op_min_wait_time` vẫn
+  dùng như cũ); `ridebound_complete_travel_snapshot_maximum_nodes` bằng 0 hoặc thiếu, tức chế độ snapshot thưa
+  (`RBWP7_SPARSE_TRAVEL_SNAPSHOT_REMOVED`).
 - File WP4 của job thiếu `lateBoarding` hoặc có `lateBoarding: "reject"` (`RBWP7_WP4_LATE_BOARDING_REJECT_REMOVED`, bước 4.LB),
   trước khi Runner khởi động. Giá trị lạ khác vẫn báo `RBWP7_WP4_LATE_BOARDING_INVALID`.
 - `run_job.py`: driver không phải driver full-node (`routingEngine` khác `complete-graph-direct-v1` hoặc `transcriptCompression`
@@ -937,6 +950,12 @@ Giới hạn khác:
   do một bộ sinh không công khai ghi.
 - Một phần §9 (từng khách của 584, 2 trong 11 ô Manhattan, các lần chạy lại phía C#) cần dữ liệu hoặc mã ở commit `ebca912`.
 - Các dòng R6 chỉ dựng lại từ dòng đã ghi, không chạy lại được từ repo.
+- `replay.py compare` cần `transcript-00.ndjson[.gz]` ở cả hai phía. Nếu thiếu: trên hai thư mục job, lệnh in
+  `commit-free identical 0/0` và exit 1; trên hai thư mục gốc, một job có ở cả hai gốc mà chạy với `--transcript drop`
+  (mọi ô trừ ô gate) làm lệnh dừng với `TypeError`. Trên hai thư mục gốc, lệnh chỉ so các job có `summary.json` ở cả
+  hai gốc và không báo job chỉ có ở một gốc; xem số `k/k` ở dòng cuối.
+- Lỗi của file `--wp4-config` (không đọc được hoặc nội dung sai) cũng bắt đầu bằng
+  `Invalid commitment policy configuration:`, như ở `ebca912`; thông báo không phải lúc nào cũng nói lỗi thuộc file nào.
 
 ---
 
