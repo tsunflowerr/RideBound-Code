@@ -264,12 +264,12 @@ const RIDER_FIELDS = ['t0', 'p0', 'A', 'served', 'sumAbsC', 'nonzeroC', 'netC', 
 const norm = v => {   // blank and NaN are equal; numbers compare as whole numbers
   v = (v ?? '').trim();
   if (['', 'NaN', 'nan', 'undefined'].includes(v)) return '';
-  return /^-?d+(.d+)?$/.test(v) ? String(Math.trunc(+v)) : v;
+  return /^-?(\d+\.?\d*|\.\d+)$/.test(v) ? String(Math.trunc(+v)) : v;
 };
 function byCellArm(rows) {   // "role<TAB>cell" -> requestId -> row
   const m = new Map();
   for (const r of rows) {
-    const k = r.role + '	' + r.cell;
+    const k = r.role + '\t' + r.cell;
     if (!m.has(k)) m.set(k, new Map());
     m.get(k).set(r.requestId, r);
   }
@@ -279,7 +279,7 @@ function ridersCompare(realRows, predRows) {
   const real = byCellArm(realRows), predicted = byCellArm(predRows), results = [];
   // A tab sorts before every character of a role, so this is the order (role, cell).
   for (const key of [...real.keys()].sort()) {
-    const [role, cell] = key.split('	'), R = real.get(key), P = predicted.get(key) || new Map();
+    const [role, cell] = key.split('\t'), R = real.get(key), P = predicted.get(key) || new Map();
     const both = [...R.keys()].filter(q => P.has(q))
       .sort((x, y) => (+R.get(x).t0 - +R.get(y).t0) || (x < y ? -1 : x > y ? 1 : 0));   // by booking time, then id
     let identical = 0, firstDifference = null;
@@ -641,5 +641,5 @@ function main(argv) {
   return result.ok ? 0 : 1;
 }
 
-module.exports = { loadData, computeTables, checkTables, summary, signTest, pyFixed, pyRepr, sameLine, T975 };
+module.exports = { loadData, computeTables, checkTables, summary, signTest, pyFixed, pyRepr, sameLine, ridersCompare, T975 };
 if (require.main === module) process.exitCode = main(process.argv.slice(2));

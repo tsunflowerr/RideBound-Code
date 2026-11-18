@@ -91,3 +91,14 @@ test('sameLine: "—" stands for an open value, p may differ only by rounding', 
   assert.ok(RT.sameLine('  x (8/6) p=0.79052734375', '  x (8/6) p=0.7905273437500007'));
   assert.ok(!RT.sameLine('  x (8/6) p=0.79', '  x (8/6) p=0.7905273437500007'));
 });
+
+test('ridersCompare: numbers compare as whole numbers, as compare_via_full.py did', () => {
+  // One rider on each side; only the text of A differs.
+  const rider = A => ({ role: 'FS-G2-SHRC71-CL', cell: 'd20190919-vf-r0-w08', requestId: 'q1', t0: '5', p0: '9', A,
+    served: '1', sumAbsC: '0', nonzeroC: '0', netC: '0', maxAbsC: '0', shared: '0' });
+  const identical = (real, predicted) => RT.ridersCompare([rider(real)], [rider(predicted)]).ridersIdentical;
+  for (const [real, predicted] of [['100.0', '100'], ['12.7', '12'], ['007', '7'], ['-3.9', '-3'], ['5.', '5'], ['.5', '0'], ['', 'NaN']]) {
+    assert.strictEqual(identical(real, predicted), 1, `${real} vs ${predicted}`);
+  }
+  assert.strictEqual(identical('100.5', '101'), 0);   // the decimal part is cut, not rounded
+});

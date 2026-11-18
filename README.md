@@ -311,7 +311,7 @@ Test của bộ mô phỏng, của phần phân tích, và các test adapter kh�
 
 ```bash
 node --test src/emulator/tests        # 25 pass, 3 skip (3 test cần data root đầy đủ)
-node --test src/analysis/tests        # 32 pass
+node --test src/analysis/tests        # 33 pass
 # Với data root đầy đủ: 28 pass
 EMULATOR_DATA=$DATA EMULATOR_CAUSAL_INDEX=$DATA/index-causal-pertarget.json node --test src/emulator/tests
 
