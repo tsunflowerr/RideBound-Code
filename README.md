@@ -310,9 +310,9 @@ node src/emulator/confirm_digest.js demo/expected.tsv demo/rows.ndjson
 Test của bộ mô phỏng, của phần phân tích, và các test adapter không cần FleetPy:
 
 ```bash
-node --test src/emulator/tests        # 25 pass, 3 skip (3 test cần data root đầy đủ)
-node --test src/analysis/tests        # 33 pass
-# Với data root đầy đủ: 28 pass
+node --test src/emulator/tests        # 30 pass, 3 skip (3 test cần data root đầy đủ)
+node --test src/analysis/tests        # 34 pass
+# Với data root đầy đủ: 33 pass
 EMULATOR_DATA=$DATA EMULATOR_CAUSAL_INDEX=$DATA/index-causal-pertarget.json node --test src/emulator/tests
 
 (cd src/adapter/tests && python -B -m unittest test_replay test_run_job test_run_campaign test_make_job_configs test_riders)

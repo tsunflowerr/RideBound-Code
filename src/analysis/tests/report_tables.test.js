@@ -3,6 +3,7 @@
 const test = require('node:test');
 const assert = require('node:assert');
 const path = require('path');
+const { spawnSync } = require('child_process');
 const RT = require('../report_tables.js');
 
 const DIR = path.join(__dirname, '..');
@@ -67,6 +68,9 @@ test('every stored value is rebuilt from the shipped data', () => {
   assert.ok(r.ok, r.report.join('\n'));
   assert.strictEqual(r.values, 9570);
   assert.deepStrictEqual(Object.values(r.open), [397, 1086, 2732]);
+  // "—" in a text line matches any stored value (sameLine), so pin how many open values the two text files have
+  const openMarks = name => allTables()[name].split('—').length - 1;
+  assert.deepStrictEqual([openMarks('d1-split.md'), openMarks('d1-gap.txt')], [37, 132]);
   for (const name of ['synth-real-30d.md', 'promise.md']) assert.ok(r.report.some(l => l.startsWith(name) && l.endsWith('byte-identical')), name);
 });
 
@@ -101,4 +105,15 @@ test('ridersCompare: numbers compare as whole numbers, as compare_via_full.py di
     assert.strictEqual(identical(real, predicted), 1, `${real} vs ${predicted}`);
   }
   assert.strictEqual(identical('100.5', '101'), 0);   // the decimal part is cut, not rounded
+});
+
+test('a wrong option or a missing value stops with the usage line', () => {
+  // both calls stop before the data is read
+  const script = path.join(DIR, 'report_tables.js');
+  for (const args of [['--data', path.join(DIR, 'data'), '--bogus', 'x'], ['--data']]) {
+    const p = spawnSync(process.execPath, [script, ...args], { encoding: 'utf8' });
+    assert.strictEqual(p.status, 1, args.join(' '));
+    assert.strictEqual(p.stdout, '');
+    assert.match(p.stderr, /usage: node report_tables\.js --data <dir> \[--out <dir>\] \[--check <dir>\]/);
+  }
 });

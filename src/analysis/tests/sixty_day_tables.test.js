@@ -53,6 +53,8 @@ test('TOTALS, SECONDARY and S16 are the stored study report\'s lines 30-118 byte
   const block = lines.slice(from, to + 1).join('\n') + '\n';
   assert.strictEqual(crypto.createHash('sha256').update(block).digest('hex'), '02500a2488895b1d18cad42bed5191d7b26c2ec9416e35d3cb49305ccabc4288');
   assert.strictEqual(r.stdout, text);
+  // the whole output, including REPORT TABLES, REPORT PAIRS and GUARANTEED RIDERS (153 lines)
+  assert.strictEqual(crypto.createHash('sha256').update(r.text).digest('hex'), 'f11149be2d21644a3bf7ef853b532a23f1df0fecb097037051bb641554729f63');
 });
 
 test('the report tables: 82 of 84 cells equal the system report; the other 2 are its twice-rounded burden cells', () => {
