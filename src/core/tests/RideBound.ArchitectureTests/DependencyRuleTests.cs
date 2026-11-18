@@ -30,6 +30,11 @@ public sealed class DependencyRuleTests
         var repositoryRoot = TestPaths.Root();
         var projectFiles = FindSourceProjectFiles(repositoryRoot);
 
+        // The lookup must find every project of the policy, so that none is skipped below.
+        Assert.Equal(
+            AllowedReferences.Keys.Order(StringComparer.Ordinal),
+            projectFiles.Select(path => Path.GetFileNameWithoutExtension(path)).Order(StringComparer.Ordinal));
+
         var failures = new List<string>();
 
         foreach (var projectFile in projectFiles)

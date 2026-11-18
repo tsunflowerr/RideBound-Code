@@ -52,6 +52,17 @@ internal static partial class FinalRuns
         new("INS-SHHZ-N.full-v1", "INS-SHHZ-N", "INS-SHHZ", "INS-N-full-v1", "108d93f17e114f8f09d85ba2cece128418327aceadc692687bcdea4627230c0b"),
     ];
 
+    /// <summary>
+    /// The INS-SHRC-CL.light-v1 configuration on a scenario where a rider boards far earlier than promised, so the
+    /// session ends in an error at batch 11 (Fixtures/README.md). It is not in <see cref="All"/>: the theories over
+    /// <see cref="All"/> expect a session that runs to the end.
+    /// </summary>
+    public static readonly FinalRun EarlyBoarding = All.Single(run => run.Name == "INS-SHRC-CL.light-v1") with
+    {
+        Name = "INS-SHRC-CL-early-boarding.light-v1",
+        Arm = "INS-SHRC-CL-early-boarding",
+    };
+
     private static readonly ConcurrentDictionary<string, Lazy<Task<RunnerProcessResult>>> Sessions =
         new(StringComparer.Ordinal);
 

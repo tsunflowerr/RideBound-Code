@@ -94,3 +94,17 @@ In the G2 arms, rider `r-1` is moved from `v-2` to `v-1` at decision 2. The INS 
 
 Restoring from any of the 17 checkpoints of a run reproduces the rest of that run byte for byte
 (`Restore_from_every_checkpoint_reproduces_the_rest_of_the_session`).
+
+## The run that ends in an error
+
+`INS-SHRC-CL-early-boarding.light-v1` (`FinalRuns.EarlyBoarding`) uses the configuration and binding of
+`INS-SHRC-CL.light-v1`. Its scenario, `scenarios/INS-SHRC-CL-early-boarding.ndjson`, has the same lines as
+`INS-SHRC-CL.ndjson` up to batch 10. Then it has its own batch 11 and `shutdown`:
+1. In batch 11, rider `r-1` boards `v-2` at 955,003 ms, about 16 s before its promised pickup (971,401 ms).
+2. An onboard rider keeps its promised pickup, and the projected drop now comes before it. So every candidate of
+   the vehicle is rejected, the kept route too.
+3. The Runner answers `INTERNAL_ERROR` with disposition `failSession`. The checkpoint request after it gets
+   `INVALID_SESSION_STATE`.
+
+The expected file was recorded with the `ebca912` Runner, like the other runs. It keeps the two error lines
+verbatim. The test is `An_early_boarding_session_fails_with_the_error_recorded_at_ebca912`.

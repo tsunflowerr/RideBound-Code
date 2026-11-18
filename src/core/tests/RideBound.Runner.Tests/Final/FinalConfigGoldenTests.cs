@@ -111,6 +111,33 @@ public sealed class FinalConfigGoldenTests
         Assert.Empty(failures.OrderBy(value => value, StringComparer.Ordinal));
     }
 
+    [Fact]
+    public async Task An_early_boarding_session_fails_with_the_error_recorded_at_ebca912()
+    {
+        // Rider r-1 boards about 16 s before its promised pickup. An onboard rider keeps that promised pickup, and at
+        // batch 11 its projected drop comes before it, so the vehicle loses every candidate, the kept route too. The
+        // Runner answers INTERNAL_ERROR and fails the session; the checkpoint request after it is refused.
+        var run = FinalRuns.EarlyBoarding;
+
+        var session = await RunnerProcess.RunAsync(run.Arguments, FinalRuns.FixtureDirectory, FinalRuns.ScenarioLines(run));
+
+        Assert.Equal(0, session.ExitCode);
+        Assert.Equal(
+            ["Protocol error: INTERNAL_ERROR", "Protocol error: INVALID_SESSION_STATE"],
+            session.StandardError.ReplaceLineEndings("\n").Split('\n', StringSplitOptions.RemoveEmptyEntries));
+        FinalRuns.AssertRecordedStdout(run, session.StandardOutput);
+        var output = session.Lines();
+        Assert.Equal(10, output.Count(line => RunnerProcess.MessageType(line) == "decision"));
+        Assert.Equal(
+            ((long?)11, "INTERNAL_ERROR", "failSession",
+                "C1 rejected every generated candidate for this vehicle. No-op rejection: "
+                + "Promise stops, ETA order and service order must be valid."),
+            ReadError(output[^2]));
+        Assert.Equal(
+            ((long?)null, "INVALID_SESSION_STATE", "rejectMessage", "A failed session accepts only shutdown."),
+            ReadError(output[^1]));
+    }
+
     [Theory]
     [MemberData(nameof(Runs))]
     public void The_run_table_binds_each_wp4_file_to_its_commitment_file(string name)
@@ -159,5 +186,19 @@ public sealed class FinalConfigGoldenTests
         return root.GetProperty("messageType").GetString() == "restore"
             && payload.GetProperty("status").GetString() == "restored"
             && payload.GetProperty("checkpointHash").GetString() == checkpointHash;
+    }
+
+    /// <summary>Epoch (null when the line has none), code, disposition and message of an error line.</summary>
+    private static (long? Epoch, string? Code, string? Disposition, string? Message) ReadError(string line)
+    {
+        using var document = JsonDocument.Parse(line);
+        var root = document.RootElement;
+        Assert.Equal("error", root.GetProperty("messageType").GetString());
+        var payload = root.GetProperty("payload");
+        return (
+            root.TryGetProperty("epochId", out var epoch) ? (long?)epoch.GetInt64() : null,
+            payload.GetProperty("code").GetString(),
+            payload.GetProperty("disposition").GetString(),
+            payload.GetProperty("message").GetString());
     }
 }

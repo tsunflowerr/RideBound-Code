@@ -1,5 +1,6 @@
 using RideBound.Algorithms.Candidates;
 using RideBound.Algorithms.Commitments;
+using RideBound.Algorithms.Dispatch;
 using RideBound.Algorithms.Policies;
 using RideBound.Application.Commitments;
 using RideBound.Application.Optimization;
@@ -458,6 +459,55 @@ public sealed class ExactSmallCommitmentDifferentialTests
         Assert.Equal(CommitmentFailureCodes.VehicleHasNoFeasibleCandidate, witness.Code);
         Assert.Equal(ordinalFirst.CandidateId, witness.CandidateId);
         Assert.Contains(". First rejection: ", witness.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void C1_policy_reports_the_assessment_failure_when_a_vehicle_loses_every_candidate()
+    {
+        // The policy asks the assessor to cite the no-op, and stops before the solver.
+        var (_, _, noOp, _, context) = EveryCandidateRejected();
+        var solver = new EnumeratingSolver();
+
+        var result = new SolverBackedRidePoolingPolicy(solver).Decide(
+            context,
+            AlgorithmTestData.SmallGeneration,
+            HardVectorOptions());
+
+        Assert.False(result.IsSuccess);
+        var witness = result.Witness!;
+        Assert.Equal(DecisionFailureCodes.CommitmentAssessmentFailed, witness.Code);
+        Assert.StartsWith(
+            "C1 rejected every generated candidate for this vehicle. No-op rejection: ",
+            witness.Message,
+            StringComparison.Ordinal);
+        Assert.Equal(noOp.CandidateId, witness.CandidateId);
+        Assert.Null(solver.LastProblem);
+    }
+
+    [Fact]
+    public void A_policy_failure_ends_the_dispatch_step_with_the_policy_message_and_nothing_to_stage()
+    {
+        // The Runner sends this message back as INTERNAL_ERROR and fails the session.
+        var (_, _, _, _, context) = EveryCandidateRejected();
+        var step = new DispatchStep(
+            new SolverBackedRidePoolingPolicy(new EnumeratingSolver()),
+            new CommitmentDecisionValidator(),
+            null);
+
+        var result = step.Run(context, AlgorithmTestData.SmallGeneration, HardVectorOptions());
+
+        Assert.False(result.IsSuccess);
+        Assert.StartsWith(
+            "C1 rejected every generated candidate for this vehicle. No-op rejection: ",
+            result.FailureMessage,
+            StringComparison.Ordinal);
+        Assert.EndsWith(
+            "The active request has no exact commitment policy.",
+            result.FailureMessage,
+            StringComparison.Ordinal);
+        Assert.Null(result.Decision);
+        Assert.Null(result.StateToStage);
+        Assert.Null(result.Publications);
     }
 
     [Fact]

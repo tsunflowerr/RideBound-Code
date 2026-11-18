@@ -142,7 +142,7 @@ public sealed class CommitmentPolicyConfigurationTests
     }
 
     [Theory]
-    [InlineData("\"dropEtaDeadlineSlackMs\":null")]
+    [InlineData("\"dropEtaDeadlineSlackPermille\":null")]
     public void A_null_deadline_field_is_rejected_by_canonical_json(string extraFields)
     {
         // Canonicalisation rejects every JSON null before any field is read.
@@ -168,10 +168,10 @@ public sealed class CommitmentPolicyConfigurationTests
 
     [Theory]
     [InlineData(
-        "\"dropEtaDeadlineSlackMs\":30000,\"dropEtaDeadlineRelaxed\":\"yes\"",
+        "\"dropEtaDeadlineSlackPermille\":350,\"dropEtaDeadlineRelaxed\":\"yes\"",
         "'dropEtaDeadlineRelaxed' must be a boolean")]
     [InlineData(
-        "\"dropEtaDeadlineSlackMs\":30000,\"dropEtaDeadlineRelaxed\":1",
+        "\"dropEtaDeadlineSlackPermille\":350,\"dropEtaDeadlineRelaxed\":1",
         "'dropEtaDeadlineRelaxed' must be a boolean")]
     [InlineData(
         "\"dropEtaDeadlineRelaxed\":true",
@@ -194,7 +194,7 @@ public sealed class CommitmentPolicyConfigurationTests
     {
         var error = Assert.Throws<CanonicalJsonException>(
             () => CommitmentPolicyConfiguration.Decode(
-                PolicyJson("\"dropEtaDeadlineSlackMs\":30000,\"dropEtaDeadlineRelaxed\":null")));
+                PolicyJson("\"dropEtaDeadlineSlackPermille\":350,\"dropEtaDeadlineRelaxed\":null")));
 
         Assert.Contains("Null is not permitted", error.Message);
     }
@@ -388,12 +388,12 @@ public sealed class CommitmentPolicyConfigurationTests
             Assert.ThrowsAny<Exception>(
                 () => CommitmentPolicyConfiguration.Decode(PolicyJson(extraFields))).Message;
 
-        Assert.Equal(Removed, Message(Freeze));
-        Assert.Equal(Removed, Message("\"freezeHorizonMs\":300000"));
-        Assert.Equal(Removed, Message("\"freezeHorizonLocks\":[]"));
+        Assert.Equal(Removed, RemovalMessage(Freeze));
+        Assert.Equal(Removed, RemovalMessage("\"freezeHorizonMs\":300000"));
+        Assert.Equal(Removed, RemovalMessage("\"freezeHorizonLocks\":[]"));
         Assert.Equal(
             Removed,
-            Message(
+            RemovalMessage(
                 "\"waitingRiderRelocation\":true,\"finalConfirmationLocks\":[\"pickupStop\"],"
                 + "\"freezeHorizonMs\":60000,\"freezeHorizonLocks\":[\"vehicle\"]"));
 
@@ -433,12 +433,12 @@ public sealed class CommitmentPolicyConfigurationTests
             Assert.ThrowsAny<Exception>(
                 () => CommitmentPolicyConfiguration.Decode(PolicyJson(extraFields))).Message;
 
-        Assert.Equal(Removed, Message(Cap));
-        Assert.Equal(Removed, Message("\"dropEtaRevisionLimitMs\":0"));
-        Assert.Equal(Removed, Message("\"dropEtaRevisionLimitMs\":\"30000\""));
+        Assert.Equal(Removed, RemovalMessage(Cap));
+        Assert.Equal(Removed, RemovalMessage("\"dropEtaRevisionLimitMs\":0"));
+        Assert.Equal(Removed, RemovalMessage("\"dropEtaRevisionLimitMs\":\"30000\""));
         Assert.Equal(
             Removed,
-            Message("\"dropEtaDeadlineSlackPermille\":350,\"dropEtaDeadlineRelaxed\":true," + Cap));
+            RemovalMessage("\"dropEtaDeadlineSlackPermille\":350,\"dropEtaDeadlineRelaxed\":true," + Cap));
 
         Assert.Contains("not a canonical integer", Message("\"dropEtaRevisionLimitMs\":1.5"));
         Assert.Contains("Null is not permitted", Message("\"dropEtaRevisionLimitMs\":null"));
@@ -448,7 +448,7 @@ public sealed class CommitmentPolicyConfigurationTests
             StringComparison.Ordinal);
         Assert.StartsWith(
             "Commitment 'freezeHorizonMs' and 'freezeHorizonLocks' (the freeze horizon): removed",
-            Message(Cap + ",\"freezeHorizonMs\":300000"),
+            RemovalMessage(Cap + ",\"freezeHorizonMs\":300000"),
             StringComparison.Ordinal);
         Assert.Equal(
             "Unknown commitment budgetBasis.",
@@ -475,14 +475,14 @@ public sealed class CommitmentPolicyConfigurationTests
             Assert.ThrowsAny<Exception>(
                 () => CommitmentPolicyConfiguration.Decode(PolicyJson(extraFields))).Message;
 
-        Assert.Equal(Removed, Message(Slack + TwoSided));
-        Assert.Equal(Removed, Message(Slack + "\"dropEtaDeadlineTwoSided\":false"));
-        Assert.Equal(Removed, Message("\"dropEtaDeadlineTwoSided\":false"));
-        Assert.Equal(Removed, Message(Slack + "\"dropEtaDeadlineTwoSided\":\"yes\""));
-        Assert.Equal(Removed, Message(Slack + "\"dropEtaDeadlineTwoSided\":1"));
-        Assert.Equal(Removed, Message(TwoSided));
-        Assert.Equal(Removed, Message(TwoSided + ",\"dropEtaBudgetSlackPermille\":350"));
-        Assert.Equal(Removed, Message(Slack + "\"dropEtaDeadlineRelaxed\":true," + TwoSided));
+        Assert.Equal(Removed, RemovalMessage(Slack + TwoSided));
+        Assert.Equal(Removed, RemovalMessage(Slack + "\"dropEtaDeadlineTwoSided\":false"));
+        Assert.Equal(Removed, RemovalMessage("\"dropEtaDeadlineTwoSided\":false"));
+        Assert.Equal(Removed, RemovalMessage(Slack + "\"dropEtaDeadlineTwoSided\":\"yes\""));
+        Assert.Equal(Removed, RemovalMessage(Slack + "\"dropEtaDeadlineTwoSided\":1"));
+        Assert.Equal(Removed, RemovalMessage(TwoSided));
+        Assert.Equal(Removed, RemovalMessage(TwoSided + ",\"dropEtaBudgetSlackPermille\":350"));
+        Assert.Equal(Removed, RemovalMessage(Slack + "\"dropEtaDeadlineRelaxed\":true," + TwoSided));
 
         Assert.Contains("Null is not permitted", Message("\"dropEtaDeadlineTwoSided\":null"));
         Assert.StartsWith(
@@ -491,7 +491,7 @@ public sealed class CommitmentPolicyConfigurationTests
             StringComparison.Ordinal);
         Assert.StartsWith(
             "Commitment 'dropEtaRevisionLimitMs' (the per-decision revision cap): removed",
-            Message(Slack + TwoSided + ",\"dropEtaRevisionLimitMs\":60000"),
+            RemovalMessage(Slack + TwoSided + ",\"dropEtaRevisionLimitMs\":60000"),
             StringComparison.Ordinal);
         Assert.Equal(
             "Unknown commitment budgetBasis.",
@@ -525,13 +525,13 @@ public sealed class CommitmentPolicyConfigurationTests
         bool Decodes(string? extraFields) =>
             CommitmentPolicyConfiguration.Decode(PolicyJson(extraFields)).TryGetPolicy("uniform-v1", out _);
 
-        Assert.Equal(Removed, Message(Permille));
-        Assert.Equal(Removed, Message(Permille + "," + Strict));
-        Assert.Equal(Removed, Message(Strict));
-        Assert.Equal(Removed, Message(Strict + ",\"dropEtaBudgetSlackPermille\":350"));
+        Assert.Equal(Removed, RemovalMessage(Permille));
+        Assert.Equal(Removed, RemovalMessage(Permille + "," + Strict));
+        Assert.Equal(Removed, RemovalMessage(Strict));
+        Assert.Equal(Removed, RemovalMessage(Strict + ",\"dropEtaBudgetSlackPermille\":350"));
         Assert.Equal(
             Removed,
-            Message("\"dropEtaDeadlineSlackPermille\":1000,\"dropEtaShadowAllocation\":true"));
+            RemovalMessage("\"dropEtaDeadlineSlackPermille\":1000,\"dropEtaShadowAllocation\":true"));
 
         Assert.Contains("Null is not permitted", Message(Permille + ",\"dropEtaDeadlineRelaxed\":null"));
         Assert.StartsWith(
@@ -540,15 +540,15 @@ public sealed class CommitmentPolicyConfigurationTests
             StringComparison.Ordinal);
         Assert.StartsWith(
             "Commitment 'dropEtaDeadlineTwoSided' (the two-sided deadline): removed",
-            Message(Permille + ",\"dropEtaDeadlineTwoSided\":false"),
+            RemovalMessage(Permille + ",\"dropEtaDeadlineTwoSided\":false"),
             StringComparison.Ordinal);
         Assert.StartsWith(
             "Commitment 'dropEtaRevisionLimitMs' (the per-decision revision cap): removed",
-            Message(Permille + ",\"dropEtaRevisionLimitMs\":60000"),
+            RemovalMessage(Permille + ",\"dropEtaRevisionLimitMs\":60000"),
             StringComparison.Ordinal);
         Assert.StartsWith(
             "Commitment 'freezeHorizonMs' and 'freezeHorizonLocks' (the freeze horizon): removed",
-            Message(Strict + ",\"freezeHorizonMs\":300000"),
+            RemovalMessage(Strict + ",\"freezeHorizonMs\":300000"),
             StringComparison.Ordinal);
         Assert.Equal(
             "Unknown commitment budgetBasis.",
@@ -580,15 +580,15 @@ public sealed class CommitmentPolicyConfigurationTests
             Assert.ThrowsAny<Exception>(
                 () => CommitmentPolicyConfiguration.Decode(PolicyJson(extraFields))).Message;
 
-        Assert.Equal(Removed, Message(Fixed + "," + Relaxed));
-        Assert.Equal(Removed, Message(Fixed));
-        Assert.Equal(Removed, Message("\"dropEtaDeadlineSlackMs\":0," + Relaxed));
-        Assert.Equal(Removed, Message("\"dropEtaDeadlineSlackMs\":-1"));
-        Assert.Equal(Removed, Message("\"dropEtaDeadlineSlackMs\":\"30000\""));
-        Assert.Equal(Removed, Message(Fixed + ",\"dropEtaDeadlineSlackPermille\":350," + Relaxed));
-        Assert.Equal(Removed, Message(Fixed + "," + Relaxed + ",\"dropEtaDeadlineTwoSided\":true"));
-        Assert.Equal(Removed, Message(Fixed + "," + Relaxed + ",\"dropEtaRevisionLimitMs\":60000"));
-        Assert.Equal(Removed, Message(Fixed + "," + Relaxed + ",\"freezeHorizonMs\":300000"));
+        Assert.Equal(Removed, RemovalMessage(Fixed + "," + Relaxed));
+        Assert.Equal(Removed, RemovalMessage(Fixed));
+        Assert.Equal(Removed, RemovalMessage("\"dropEtaDeadlineSlackMs\":0," + Relaxed));
+        Assert.Equal(Removed, RemovalMessage("\"dropEtaDeadlineSlackMs\":-1"));
+        Assert.Equal(Removed, RemovalMessage("\"dropEtaDeadlineSlackMs\":\"30000\""));
+        Assert.Equal(Removed, RemovalMessage(Fixed + ",\"dropEtaDeadlineSlackPermille\":350," + Relaxed));
+        Assert.Equal(Removed, RemovalMessage(Fixed + "," + Relaxed + ",\"dropEtaDeadlineTwoSided\":true"));
+        Assert.Equal(Removed, RemovalMessage(Fixed + "," + Relaxed + ",\"dropEtaRevisionLimitMs\":60000"));
+        Assert.Equal(Removed, RemovalMessage(Fixed + "," + Relaxed + ",\"freezeHorizonMs\":300000"));
 
         Assert.Contains("Null is not permitted", Message("\"dropEtaDeadlineSlackMs\":null"));
         Assert.Contains("not a canonical integer", Message("\"dropEtaDeadlineSlackMs\":1.5"));
@@ -609,6 +609,15 @@ public sealed class CommitmentPolicyConfigurationTests
             CommitmentPolicyConfiguration.Decode(PolicyJson("\"dropEtaDeadlineSlackPermille\":1000," + Relaxed))
                 .TryGetPolicy("uniform-v1", out _));
     }
+
+    /// <summary>
+    /// The message of a refusal of a removed option. The refusal must be an InvalidDataException: Program exits
+    /// with code 64 only for the exception types it catches, and another type would stop the Runner with an
+    /// unhandled exception.
+    /// </summary>
+    private static string RemovalMessage(string extraFields) =>
+        Assert.Throws<InvalidDataException>(
+            () => CommitmentPolicyConfiguration.Decode(PolicyJson(extraFields))).Message;
 
     private static byte[] PolicyJson(string? extraFields)
     {

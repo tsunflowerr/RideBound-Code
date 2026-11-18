@@ -63,6 +63,33 @@ public sealed class WaitingRiderRelocationCheckpointTests
         Assert.False(OnlineStateCheckpointCodec.Decode(forgedDocument.RootElement).IsSuccess);
     }
 
+    [Fact]
+    public void A_checkpoint_with_a_removed_budget_basis_or_a_plan_pool_does_not_restore()
+    {
+        // Both were read before the customer-visible basis and the multiple-plan policy were removed.
+        var canonical = OnlineStateCanonicalizer.Canonicalize(MovedState());
+        string? Error(Action<JsonObject> edit)
+        {
+            var copy = JsonNode.Parse(canonical)!.AsObject();
+            edit(copy);
+            using var document = JsonDocument.Parse(copy.ToJsonString());
+            return OnlineStateCheckpointCodec.Decode(document.RootElement).Error;
+        }
+
+        Assert.Equal(
+            "Unknown budget basis.",
+            Error(root =>
+            {
+                var revision = root["commitmentLedger"]!.AsArray()
+                    .SelectMany(history => history!["entries"]!.AsArray())
+                    .Single(entry => (string?)entry!["kind"] == "revision")!;
+                revision["budgetBasis"] = "customerVisible";
+            }));
+        Assert.Equal(
+            "Checkpoint online state is not an exact canonical domain state.",
+            Error(root => root["planPool"] = new JsonObject { ["version"] = 1 }));
+    }
+
     /// <summary>
     /// The validated state of one decision that moves the waiting rider from vehicle-1 to vehicle-2 (both idle at the
     /// pickup node), under a policy with waiting-rider relocation and the pickup ratchet.
