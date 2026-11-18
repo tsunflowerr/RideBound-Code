@@ -54,7 +54,7 @@ src/
     protocol/fixtures/           thông điệp giao thức mẫu cho test C# (41 file) + README
     configs/final/               cấu hình của các lần chạy cuối, cộng các mẫu G2 và INS (mục 7)
     configs/test/                19 cấu hình mà test đọc (test C# và test_mapping.py của adapter)
-    tests/                       7 dự án test (879 test) + TestPaths.cs (tìm thư mục chứa RideBound.slnx)
+    tests/                       7 dự án test (884 test) + TestPaths.cs (tìm thư mục chứa RideBound.slnx)
   adapter/                       Python 3.10 + FleetPy 1.0.2
     ridebound_fleetpy/           gói adapter: phiên giao thức, client của Runner, điều khiển đội xe trong FleetPy
     run_job.py                   một job: FleetPy + Runner -> transcript + evidence.json.gz + summary.json
@@ -255,12 +255,12 @@ Ba bước. Bước 3 chỉ cần dữ liệu công khai.
 ```bash
 cd src/core
 dotnet test RideBound.slnx -c Release
-# Kết quả: 7 dòng "Passed!", tổng 879 test, 0 lỗi
-# (Architecture 9, Contracts 124, Application 104, OrTools 14, Domain 235, Algorithms 174, Runner 219)
+# Kết quả: 7 dòng "Passed!", tổng 884 test, 0 lỗi
+# (Architecture 9, Contracts 124, Application 105, OrTools 14, Domain 235, Algorithms 176, Runner 221)
 cd ../..
 ```
 
-Chỉ 62 test của cấu hình cuối (Runner chạy như tiến trình con, so stdout từng byte với bản ghi ở `ebca912`):
+Chỉ 63 test của cấu hình cuối (Runner chạy như tiến trình con, so stdout từng byte với bản ghi ở `ebca912`):
 
 ```bash
 cd src/core
