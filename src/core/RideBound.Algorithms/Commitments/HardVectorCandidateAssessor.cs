@@ -190,6 +190,9 @@ public sealed class HardVectorCandidateAssessor
                 // without this check the state would fail later as a generic model-mapping failure.
                 // Failing here with the no-op's own rejection changes no successful
                 // run of such a caller. The cited rejection may come from any stage.
+                // No kept rule is known to reach this: the locks and the deadline compare the
+                // candidate with the exogenous projection, which the no-op equals, and the no-op
+                // spends no budget. So no test reaches this branch; it stays as a guard.
                 var noOpValidation = hardValidationWitnesses.TryGetValue(
                     noOpPrune.CandidateId,
                     out var noOpWitness)

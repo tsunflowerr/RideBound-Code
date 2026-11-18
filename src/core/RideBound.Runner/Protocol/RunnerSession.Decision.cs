@@ -16,7 +16,7 @@ public sealed partial class RunnerSession
 {
     /// <summary>
     /// The configured planning forecast rides on every travel snapshot the adapter
-    /// sends (and on a restored one, see ProcessCheckpoint). One instance per snapshot, so the
+    /// sends (and on a restored one, see ProcessRestore). One instance per snapshot, so the
     /// reference comparisons of snapshots keep their meaning; without a forecast the batch is
     /// returned as it is.
     /// </summary>

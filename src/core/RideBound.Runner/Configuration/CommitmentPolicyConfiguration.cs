@@ -23,12 +23,13 @@ public sealed class CommitmentPolicyConfiguration :
         "budgetBasis",
         "limits",
         "materialRevisionRule",
-        // Removed keys, kept here so that ReadPolicy refuses them with the removal text.
+        // The next five are removed keys, kept here so that ReadPolicy refuses them with the removal text.
         "freezeHorizonMs",
         "freezeHorizonLocks",
         "dropEtaRevisionLimitMs",
         "dropEtaDeadlineTwoSided",
         "dropEtaDeadlineSlackMs",
+        // Optional keys.
         "finalConfirmationLocks",
         "ratchetLocks",
         "dropEtaDeadlineRelaxed",

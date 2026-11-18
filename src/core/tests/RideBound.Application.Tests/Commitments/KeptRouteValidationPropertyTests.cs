@@ -295,7 +295,7 @@ public sealed class KeptRouteValidationPropertyTests
     }
 
     /// <summary>
-    /// Complete graph on the 4 nodes; each arc 30-300 s, scaled by a world factor of 0.5x to 3x, and 10x more in a jam.
+    /// Complete graph on the 4 nodes; each arc 30-300 s times its own factor of 0.5x to 3x, and 10x more in a jam.
     /// </summary>
     private static TravelTimeSnapshot Travel(Random random, long version, bool jam)
     {

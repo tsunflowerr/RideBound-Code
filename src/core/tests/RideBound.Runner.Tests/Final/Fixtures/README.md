@@ -1,8 +1,8 @@
 # Final-configuration goldens
 
-Inputs and recorded output for `FinalConfigGoldenTests` and `FinalCliTests`. They pin the behaviour of the
-Runner configuration that the final experiment used, so that a refactor can show it changed nothing. The
-expected output was recorded with the Runner at commit `ebca912`.
+Inputs and recorded output for the tests in `Final/` and for the other Runner tests that use them through
+`FinalRuns`. They pin the behaviour of the Runner configuration that the final experiment used, so that a
+refactor can show it changed nothing. The expected output was recorded with the Runner at commit `ebca912`.
 
 ## Runs
 

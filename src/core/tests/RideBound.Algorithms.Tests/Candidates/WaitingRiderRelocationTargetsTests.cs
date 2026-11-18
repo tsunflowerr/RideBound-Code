@@ -66,7 +66,7 @@ public sealed class WaitingRiderRelocationTargetsTests
     [Fact]
     public void A_cap_of_at_least_the_other_vehicles_needs_no_travel_arc()
     {
-        // No arc reaches node-1 at all; with a cap that does not bind, nothing is looked up.
+        // No arc reaches node-1 at all; a cap that does not bind still keeps every other vehicle.
         var state = Fixture(arcs: [Arc(1, 0, 100)]);
         var donor = state.Run.Vehicles[new VehicleId("vehicle-1")];
         var request = state.Run.Requests[new RequestId("waiting")];

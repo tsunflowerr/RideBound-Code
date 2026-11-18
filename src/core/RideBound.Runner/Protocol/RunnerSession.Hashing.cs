@@ -9,13 +9,13 @@ namespace RideBound.Runner.Protocol;
 public sealed partial class RunnerSession
 {
     /// <summary>
-    /// The canonicalInputState of decisionHash v1 as ordered byte ranges. The original
-    /// CreateCanonicalInput built {"eventBatch", "stateIdentityBefore", "onlineStateBefore"}
-    /// with Utf8JsonWriter, re-parsed both documents and canonicalized the whole object.
-    /// Canonical JSON v1 is compositional (CanonicalJson.cs:78-176: an object is its members
-    /// sorted by ordinal name, each value canonicalized on its own), so the same bytes are
-    /// '{"eventBatch":' + canonical(batch envelope) + ',"onlineStateBefore":' +
-    /// canonical(committed state) + ',"stateIdentityBefore":' + canonical(identity) + '}'.
+    /// The canonicalInputState of decisionHash v1 as ordered byte ranges: the canonical form of the
+    /// object {eventBatch, onlineStateBefore, stateIdentityBefore}, built from its parts without parsing
+    /// them again. Canonical JSON v1 is compositional (CanonicalJson.WriteObject: an object is its members
+    /// sorted by ordinal name, each value canonicalized on its own), so the bytes are '{"eventBatch":' +
+    /// canonical(batch envelope) + ',"onlineStateBefore":' + canonical(committed state) +
+    /// ',"stateIdentityBefore":' + canonical(identity) + '}'. Under the light audit (includeOnlineState
+    /// false) the onlineStateBefore member is left out.
     /// </summary>
     private IReadOnlyList<ReadOnlyMemory<byte>> CreateCanonicalInputParts(
         byte[] canonicalBatch,

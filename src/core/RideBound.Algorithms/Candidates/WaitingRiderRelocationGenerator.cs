@@ -14,7 +14,7 @@ namespace RideBound.Algorithms.Candidates;
 public sealed partial class InsertionCandidateGenerator
 {
     /// <summary>
-    /// G2 (waiting-rider relocation), mirroring the emulator's reference (engine.js 463-497):
+    /// G2 (waiting-rider relocation), mirroring the emulator's reference (generateRelocations in engine.js):
     /// for each donor in ordinal order and each eligible waiting rider w,
     /// <list type="number">
     /// <item>the donor-only route D0 (the suffix without w) must be strictly feasible;</item>
