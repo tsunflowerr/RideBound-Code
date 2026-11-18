@@ -76,6 +76,17 @@ class ReplayTests(unittest.TestCase):
         self.assertIn("nodeOnly", difference["replayed"])
         self.assertEqual(result["framesCompared"], 1)
 
+    def test_runner_mode_fails_a_cut_line_and_output_after_the_last_frame(self):
+        recorded = self.record("base.ndjson")
+        cut = replay.replay_runner([PYTHON, str(FAKE), "partial"], recorded)  # helloAck without its newline
+        self.assertFalse(cut["identical"])
+        self.assertEqual(cut["firstDifference"], {"ordinal": 2, "reason": "no complete Runner line (24 bytes)"})
+        extra = replay.replay_runner([PYTHON, str(FAKE), "trailing"], recorded)  # one more line after shutdown
+        self.assertFalse(extra["identical"])
+        self.assertEqual(extra["framesIdentical"], 5)
+        self.assertEqual(extra["firstDifference"],
+                         {"ordinal": None, "reason": "Runner output after the last recorded frame"})
+
     def test_adapter_mode_rebinds_only_the_build_identity(self):
         recorded = self.record("base.ndjson.gz")
         again = self.folder / "again.ndjson"

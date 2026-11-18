@@ -77,5 +77,19 @@ class SessionLineBoundsTests(unittest.TestCase):
             session.RUNNER_MAXIMUM_OUTPUT_LINE_BYTES = original
 
 
+class TravelSnapshotBoundTests(unittest.TestCase):
+    """The travel snapshot bound is the network's node count; 0 or a missing key asked for the removed sparse mode."""
+
+    def test_the_sparse_travel_snapshot_is_refused(self) -> None:
+        key = "ridebound_complete_travel_snapshot_maximum_nodes"
+        for values in ({}, {key: 0}):
+            with self.subTest(values=values):
+                with self.assertRaises(AdapterFailure) as raised:
+                    session._snapshot_node_count(values)
+                self.assertEqual("RBWP7_SPARSE_TRAVEL_SNAPSHOT_REMOVED", raised.exception.code)
+                self.assertIn("removed; see commit ebca912", raised.exception.detail)
+        self.assertEqual(2, session._snapshot_node_count({key: 2}))
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -316,7 +316,7 @@ node --test src/analysis/tests        # 33 pass
 EMULATOR_DATA=$DATA EMULATOR_CAUSAL_INDEX=$DATA/index-causal-pertarget.json node --test src/emulator/tests
 
 (cd src/adapter/tests && python -B -m unittest test_replay test_run_job test_run_campaign test_make_job_configs test_riders)
-# "Ran 37 tests ... OK". Các test adapter còn lại cần FleetPy (mục 6, P-FLEET).
+# "Ran 42 tests ... OK". Các test adapter còn lại cần FleetPy (mục 6, P-FLEET).
 ```
 
 ---
@@ -545,14 +545,14 @@ gzip -dc src/analysis/data/f14-real-riders.tsv.gz | cmp - f14.tsv && echo same
 
 "Máy nhà" là máy có Python 3.10, FleetPy 1.0.2, transcript và evidence của các lần chạy thật. Máy kiểm của dự án
 không có chúng. Mọi lệnh của mục này là lệnh máy nhà, trừ lệnh `dotnet publish` ở cuối mục.
-Trong các lệnh adapter của README, máy kiểm chỉ chạy phần không cần FleetPy và dữ liệu thật: 37 test ở mục 4, `--help`
+Trong các lệnh adapter của README, máy kiểm chỉ chạy phần không cần FleetPy và dữ liệu thật: 42 test ở mục 4, `--help`
 của từng script và các phép từ chối ở mục 10.
 
 | Id | Kiểm gì | Lệnh | Đạt khi |
 |---|---|---|---|
 | G7 | Byte của cấu hình cuối | so sha256 các file cấu hình của gói chạy (mẫu WP4 cuối, các file commitment, `CONFIGS-V2.json` của F14 và F16) với mục 7; so từng file WP4 của job, sau khi bỏ khối `shadowAllocation` và `planningForecast`, với mẫu; `grep -E "stopServiceDurationMs\|maximumRidersPerVehicle\|skipConstantObjectiveLevels\|solverExecutionEvidenceProfile"` trên mọi file cấu hình | sha bằng sha ở mục 7; mọi file WP4 của job bằng mẫu; không khóa nào ở trên xuất hiện; `emitSolverExecutionEvidence` chỉ có giá trị `false` |
 | V1 | Phát lại transcript thật qua Runner | `python -B src/adapter/replay.py runner --transcript <job>/transcript-00.ndjson.gz --runner <thư mục publish> --policy-config <commitment.json> --wp4-config <wp4.json>`. Chạy một lần với Runner dựng từ `ebca912`, rồi với Runner dựng từ cây này | mọi frame `runnerToAdapter` bằng nhau, kể cả hash quyết định light-v1 và dòng checkpoint cuối. Tối thiểu: F14 `d20190919-vf-r0-w08` × {SHRC71-CL, SHHZ71-N} |
-| P-FLEET | Test adapter với FleetPy | `RIDEBOUND_FLEETPY_ROOT=<FleetPy> python -B -m unittest discover -s src/adapter/tests -t src/adapter/tests -p "test_*.py"` | 0 bỏ qua; mỗi test cũ cho kết quả như ở `ebca912` (trừ test của mã đã bỏ); test mới (`test_replay`, `test_run_job`, `test_run_campaign`, `test_make_job_configs`, `test_riders`) đều ok. Hiện có 128 test |
+| P-FLEET | Test adapter với FleetPy | `RIDEBOUND_FLEETPY_ROOT=<FleetPy> python -B -m unittest discover -s src/adapter/tests -t src/adapter/tests -p "test_*.py"` | 0 bỏ qua; mỗi test cũ cho kết quả như ở `ebca912` (trừ test của mã đã bỏ); test mới (`test_replay`, `test_run_job`, `test_run_campaign`, `test_make_job_configs`, `test_riders`) đều ok. Hiện có 134 test |
 | P-REPLAY | Phát lại transcript qua adapter | `python -B src/adapter/replay.py adapter --transcript <T> --out <x> -- src/adapter/run_job.py <tham số job>`. Tham số job: như lệnh `run_campaign.py --dry-run` in cho job đó, với `--transcript keep`, `--output` là thư mục mới tên `<nhánh>-<ô>`, và `--label` = `runId` của `initializeRun` đã ghi, bỏ tiền tố `wp7-medium-`. Chuỗi chạy cũ trước `run_job.py` (launcher + world wrapper) chỉ có ở các commit trước `5d9f507` | mọi frame `adapterToRunner` bằng nhau, trừ `coreCommitSha` và `binarySha256` trong `initializeRun`. Tối thiểu: hai transcript gate F14 `d20190919-vf-r0-w08` × {SHRC71-CL, SHHZ71-N} |
 | V3 | Một job thật từ đầu | `python -B src/adapter/run_campaign.py --panel f14 ... --cells gate --arms FS-G2-SHRC71-CL` (hoặc `run_job.py` với cùng tham số; 18–25 phút/job); `python -B src/adapter/replay.py compare <job mới> <job đã ghi>`; `python -B src/adapter/riders.py --root <thư mục chứa job mới> --out new.tsv` | frame bằng nhau sau khi bỏ `coreCommitSha` và mọi khóa `*Hash`/`*Sha256`; dòng khách bằng dòng của ô-nhánh đó trong `src/analysis/data/f14-real-riders.tsv.gz` |
 | V-TSV | Bảng khách từ các job đã lưu | `python -B src/adapter/riders.py --root <thư mục 168 job F14> --out f14.tsv`, rồi cùng lệnh cho 192 job F16 (`--out f16.tsv`); không đặt `RB_PREFER_EVIDENCE` | sha256 của file bằng `786048fb…` (F14, 58.033 dòng khách) và `fa785fde…` (F16, 67.922 dòng), như trong `MANIFEST.tsv`. Một dòng từ chối là một phát hiện cần báo lại |

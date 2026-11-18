@@ -96,4 +96,6 @@ for line in sys.stdin:
     elif kind == "checkpoint":
         emit(response("checkpoint", {"checkpointHash": CHECKPOINT_HASH}, incoming))
     elif kind == "shutdown":
+        if MODE == "trailing":
+            emit({"messageType": "extra"})
         raise SystemExit(0)

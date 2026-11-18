@@ -1,5 +1,6 @@
-"""run_job.py without FleetPy: the world factor and the clock boundary, the settings the Runner session gets, the
-input checks, the evidence of a small hand-made job and the order of the job's output files.
+"""run_job.py without FleetPy: the world factor and the clock boundary, the event clock and the travel-time update of
+each bin, the settings the Runner session gets, the input checks, the evidence of a small hand-made job, the job's
+refusals and the order of the job's output files.
 
 The expected evidence is what the old evidence writer (finalize_job.py at commit ebca912) wrote for the same job.
 """
@@ -12,6 +13,7 @@ import json
 import pathlib
 import sys
 import tempfile
+import types
 import unittest
 from unittest import mock
 
@@ -184,6 +186,132 @@ class WorldTests(Folder):
         self.assertEqual(run_job.clock_boundary(None, 900), 1800)
 
 
+class Node:
+    def __init__(self, index):
+        self.node_index, self.edges_to = index, {}
+
+
+class Edge:
+    def __init__(self, travel_time):
+        self.travel_time = travel_time
+
+    def get_tt(self):
+        return self.travel_time
+
+
+class RecordingRouting:
+    """FleetPy's routing as the world update uses it: the nodes, and two calls that are recorded."""
+
+    def __init__(self, nodes, calls):
+        self.nodes, self.calls = nodes, calls
+
+    def _set_edge_tt(self, origin, destination, travel_time):
+        self.calls.append(("set", origin, destination, travel_time))
+
+    def _reset_internal_attributes_after_travel_time_update(self):
+        self.calls.append(("reset",))
+
+
+class RecordingControl:
+    """A fleet control that records its calls. At a trigger a new request gets an offer, except r2, which is
+    rejected; a confirmed request closes at the first trigger 500 s after its confirmation."""
+
+    def __init__(self, calls):
+        self.calls, self._rb_states, self.rq_dict, self.closes_at = calls, {}, {}, {}
+        self._rb_settings = types.SimpleNamespace(service_class=run_job.SERVICE_CLASS,
+                                                  commitment_policy_id=run_job.COMMITMENT_POLICY_ID)
+        self._rb_mapper = types.SimpleNamespace(request=self.protocol_request, raw_request=lambda value: value,
+                                                raw_node=lambda value: value)
+
+    @staticmethod
+    def protocol_request(request, service_class, policy_id):
+        return {"requestId": request.rid, "arrivalTimeMs": request.rq_time * 1000,
+                "earliestPickupMs": request.earliest_start_time * 1000,
+                "latestPickupMs": request.latest_start_time * 1000,
+                "maxRideTimeMs": round(request.max_trip_time * 1000),
+                "partySize": request.nr_pax, "serviceClass": service_class, "commitmentPolicyId": policy_id,
+                "originNodeId": request.o_pos[0], "destinationNodeId": request.d_pos[0]}
+
+    def inform_network_travel_time_update(self, simulation_time):
+        self.calls.append(("world", simulation_time))
+
+    def user_request(self, request, simulation_time):
+        self.calls.append(("request", request.rid, simulation_time))
+        self.rq_dict[request.rid], self._rb_states[request.rid] = request, "new"
+
+    def time_trigger(self, simulation_time):
+        self.calls.append(("trigger", simulation_time))
+        for rid, state in self._rb_states.items():
+            if state == "new":
+                self._rb_states[rid] = "rejected" if rid == "r2" else "offered"
+            elif state == "assigned" and self.closes_at[rid] <= simulation_time:
+                self._rb_states[rid] = "closed"
+
+    def get_current_offer(self, rid):
+        declined = self._rb_states[rid] == "rejected"
+        return types.SimpleNamespace(service_declined=lambda: declined)
+
+    def user_confirms_booking(self, rid, simulation_time):
+        self.calls.append(("confirm", rid, simulation_time))
+        self._rb_states[rid], self.closes_at[rid] = "assigned", simulation_time + 500
+        del self.rq_dict[rid]
+
+    def user_cancels_request(self, rid, simulation_time):
+        self.calls.append(("cancel", rid, simulation_time))
+        self._rb_states[rid] = "closed"
+        del self.rq_dict[rid]
+
+
+class ClockTests(unittest.TestCase):
+    """The event clock (drive) and the travel-time update of each bin, with stub objects in place of FleetPy."""
+
+    def setUp(self):
+        fleetpy_globals = types.ModuleType("src.misc.globals")
+        fleetpy_globals.G_DRIVING_STATUS = ()  # the vehicle states that count as driving
+        stubs = {"src": types.ModuleType("src"), "src.misc": types.ModuleType("src.misc"),
+                 "src.misc.globals": fleetpy_globals}
+        patcher = mock.patch.dict(sys.modules, stubs)
+        patcher.start()
+        self.addCleanup(patcher.stop)
+        self.calls = []
+
+    def test_the_world_sets_every_edge_once_per_bin(self):
+        a, b = Node(0), Node(1)
+        a.edges_to[b], b.edges_to[a] = Edge(10.0), Edge(20.0)
+        world = run_job.WorldTravelTimes(RecordingRouting([a, b], self.calls), (2.0, 3.0, 1.0))
+        with contextlib.redirect_stdout(io.StringIO()):  # the update prints one line per bin
+            for simulation_time in (0, 899, 900, 1799, 2700, 9000):
+                world.update(RecordingControl(self.calls), simulation_time)
+        # Factors: bin 0 -> 1, bin 1 -> 3/2, bin 3 -> 1/2, bin 10 -> 1/2 (the last value holds).
+        self.assertEqual(self.calls, [("set", 0, 1, 10.0), ("set", 1, 0, 20.0), ("reset",), ("world", 0),
+                                      ("set", 0, 1, 15.0), ("set", 1, 0, 30.0), ("reset",), ("world", 900),
+                                      ("set", 0, 1, 5.0), ("set", 1, 0, 10.0), ("reset",), ("world", 2700),
+                                      ("set", 0, 1, 5.0), ("set", 1, 0, 10.0), ("reset",), ("world", 9000)])
+
+    def test_the_clock_stops_at_arrivals_bin_starts_and_drain_steps(self):
+        def request(rid, arrival):
+            return {"requestId": rid, "arrivalTimeMs": arrival * 1000, "earliestPickupMs": arrival * 1000,
+                    "latestPickupMs": (arrival + 600) * 1000, "maxRideTimeMs": 1_200_000, "partySize": 1,
+                    "originNodeId": "n0", "destinationNodeId": "n1"}
+
+        control, request_db = RecordingControl(self.calls), {}
+        routing = RecordingRouting([], [])  # no edges; the test above checks the routing's calls
+        world = run_job.WorldTravelTimes(routing, (1.0, 2.0))
+        requests = [request("r1", 0), request("r2", 600), request("r3", 1000)]
+        with contextlib.redirect_stdout(io.StringIO()):
+            result = run_job.drive(control, [], routing, world, requests, request_db, {"n0": 0, "n1": 1},
+                                   {"maximumDrainSteps": 10, "drainStepSeconds": 200})
+        self.assertEqual(result, (1600, {"r1", "r3"}, {"r2"}))
+        self.assertEqual(request_db, {})
+        # Stops: arrivals at 0, 600 and 1000, the bin start at 900, then drain steps of 200 s until r3 closes.
+        self.assertEqual(self.calls, [
+            ("world", 0), ("trigger", 0), ("request", "r1", 0), ("trigger", 0), ("confirm", "r1", 0), ("trigger", 0),
+            ("request", "r2", 600), ("trigger", 600), ("cancel", "r2", 600),
+            ("world", 900), ("trigger", 900),
+            ("request", "r3", 1000), ("trigger", 1000), ("confirm", "r3", 1000), ("trigger", 1000),
+            ("trigger", 1200), ("trigger", 1400), ("trigger", 1600)])
+
+
 class SettingsTests(Folder):
     def test_the_session_gets_the_final_timeout_line_bound_and_wire_names(self):
         fleetpy = self.tmp / "fleetpy"
@@ -269,29 +397,51 @@ class EvidenceTests(Folder):
             run_job.write_evidence(self.tmp / JOB, ROLE)
         self.assertFalse((self.tmp / JOB / "evidence.json.gz").exists())
 
+    def test_a_transcript_record_that_does_not_match_its_frame_is_refused(self):
+        # Record line 2 (counted from 0) holds frame 3. Each case changes one field of that record.
+        for field, change, message in (
+                ("frameSha256", lambda value: "0" * 64, "transcript-00.ndjson line 2: frame hash mismatch"),
+                ("frameLengthBytes", lambda value: value + 1,
+                 "transcript-00.ndjson.gz: frame 3 does not match its record"),
+                ("ordinal", lambda value: value + 5, "transcript-00.ndjson.gz: ordinals are not 1..n")):
+            with self.subTest(field=field):
+                folder = self.tmp / field / JOB
+                write_transcript(folder, job_frames())
+                transcript = folder / "transcript-00.ndjson.gz"
+                lines = gzip.decompress(transcript.read_bytes()).splitlines(keepends=True)
+                value = json.loads(lines[2])[field]
+                old, new = (f'"{field}":{json.dumps(item)}'.encode("utf-8") for item in (value, change(value)))
+                self.assertEqual(lines[2].count(old), 1)
+                lines[2] = lines[2].replace(old, new)
+                transcript.write_bytes(gzip.compress(b"".join(lines)))
+                with self.assertRaises(RuntimeError) as raised:
+                    run_job.write_evidence(folder, ROLE)
+                self.assertTrue(str(raised.exception).endswith(message), raised.exception)
+                self.assertFalse((folder / "evidence.json.gz").exists())
+
 
 class MainTests(Folder):
-    def main_with_fleet(self, argv, frames):
-        """run_job.main with the fleet run replaced by one that writes the given transcript, and no input or git
-        checks."""
+    def main_with_fleet(self, argv, frames, commit_after="c" * 40):
+        """run_job.main with the fleet run replaced by one that writes the given transcript, and no input checks.
+        The checkout's commit is "c" * 40 before the run and commit_after after it."""
         def run_fleet(args, source, driver, values, out, source_hash):
             self.assertEqual(values, (1.0,))
             write_transcript(out, frames)
             return {"semanticHash": "s" * 64, "resources": {"wallMilliseconds": 1}}
 
         with mock.patch.object(run_job, "read_inputs", return_value=({}, {}, "h" * 64)), \
-                mock.patch.object(run_job, "git_head", return_value="c" * 40), \
+                mock.patch.object(run_job, "git_head", side_effect=["c" * 40, commit_after]), \
                 mock.patch.object(run_job, "run_fleet", run_fleet), contextlib.redirect_stdout(io.StringIO()):
             return run_job.main(argv)
 
-    def run_main(self, output, frames, transcript="keep", role=ROLE):
+    def run_main(self, output, frames, transcript="keep", role=ROLE, commit_after="c" * 40):
         unused = str(self.write("in/unused.json", {}))  # the inputs only the replaced parts read
         argv = ["--label", f"{output.name}-fin2", "--role", role, "--world", str(self.write("in/world.json", WORLD)),
                 "--transcript", transcript, "--output", str(output)]
         for name in ("--fleetpy-root", "--runner-root", "--dotnet", "--commitment-config", "--wp4-config", "--scenario",
                      "--derivative-manifest", "--normalization-report", "--selection-frame", "--driver"):
             argv += [name, unused]
-        return self.main_with_fleet(argv, frames)
+        return self.main_with_fleet(argv, frames, commit_after)
 
     def test_the_command_of_run_campaign_runs(self):
         import run_campaign
@@ -330,6 +480,13 @@ class MainTests(Folder):
                   != "checkpoint"]
         with self.assertRaisesRegex(RuntimeError, "no final checkpoint"):
             self.run_main(output, frames)
+        self.assertEqual(sorted(path.name for path in output.iterdir()),
+                         ["failure-00.json", "run-00.json", "transcript-00.ndjson.gz"])
+
+    def test_a_commit_change_during_the_job_fails_it(self):
+        output = self.tmp / JOB
+        with self.assertRaisesRegex(RuntimeError, "the checkout's commit changed while the job ran"):
+            self.run_main(output, job_frames(), commit_after="d" * 40)
         self.assertEqual(sorted(path.name for path in output.iterdir()),
                          ["failure-00.json", "run-00.json", "transcript-00.ndjson.gz"])
 
