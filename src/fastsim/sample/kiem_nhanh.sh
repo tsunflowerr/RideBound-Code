@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Quick check of the fast simulator on the two sample cells (2019-09-19, 08:00 and 17:00, sample r0):
-#   1. a small data root: the road network (downloaded once from Zenodo), the frozen parameters, the two cells;
+#   1. a small data root: the road network (downloaded once from Zenodo), the frozen parameters, the two cells
+#      (sample/wf14: requests, travel-time matrices, provenance; the Shadow arms read the provenance);
 #   2. the fixtures, made from the cells with the main program's converter (src/adapter/convert_via_full_v2.py);
 #   3. the three drivers of Chapter 5 on both cells (36 cell-arm rows: the rules of Tables 5.4-5.7, the forecast arms of
 #      Tables 5.8-5.10, the 300 s penalty of Table 5.11);
