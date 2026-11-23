@@ -1,0 +1,7 @@
+{
+ "note": "A5 adapter calibration iteration 1",
+ "flat": {
+  "G2|w08|SHRC": 1.033675,
+  "G2|w17|SHRC": 0.98221
+ }
+}

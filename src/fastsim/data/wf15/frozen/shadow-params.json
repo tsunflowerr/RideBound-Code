@@ -1,0 +1,62 @@
+{
+ "version": "wf15-1",
+ "createdAt": "2026-10-22T10:54:26.349Z",
+ "alphaS": 0.15,
+ "intervalMs": 600000,
+ "omegaPms": 600000,
+ "strideMs": 0,
+ "prior": {
+  "csvSha256": "d40e2f3b0c4b7ec4a4caa992f129d205cf618c3d51489776b3a5cfd7e694375b"
+ },
+ "reference": {
+  "arm": "U",
+  "set": "discovery",
+  "scoreMode": "causal",
+  "dumpSha256": "65db2f5a11ead86c464daba35d2e4be42a2eea3f64ed28044cf3f3b806a97030",
+  "refSha256": "ba8dabc37313bc0aecf2a9593cc4aa6408dfc7d5f9a3f1a95268d03a47c8c058"
+ },
+ "x": {
+  "INS": 0.72,
+  "G2": 0.71
+ },
+ "xPct": {
+  "INS": 72,
+  "G2": 71
+ },
+ "theta": {
+  "INS": {
+   "w08": 69.50030332890114,
+   "w17": 54.43353339682125
+  },
+  "G2": {
+   "w08": 66.72067841389695,
+   "w17": 52.494082647339084
+  }
+ },
+ "servedTarget": {
+  "INS": 360.6727272727273,
+  "G2": 364.09090909090907
+ },
+ "servedAtX": {
+  "INS": 360.1909090909091,
+  "G2": 364.3
+ },
+ "realizedGuaranteedShare": {
+  "INS": 0.6908710027510664,
+  "G2": 0.6850996930601652
+ },
+ "randomShare": {
+  "INS": 0.6908710027510664,
+  "G2": 0.6850996930601652
+ },
+ "searchCells": 110,
+ "codeSha256": {
+  "engine": "908a29619f55a134f9ed5a0d35d4be1d3c502f07de78dc6fc704963690e7496f",
+  "sscore": "b295b8a9a86b7085de9c7760ce7594e0b5c6cf08d41714b6fa16f23ead25c2f0",
+  "lambda": "cceb8e6184faa480ea38491c8290857c6cfdb2795ed5830c6ba9ca0e6cc409d3",
+  "netfull": "d62e30c772b55aad008bd12400c4bd4934aebd020ae0e98c165dd6207b8db846",
+  "metrics_sh": "f1ee54cc4b9bdf9394b113b323a035115f948268994e280fb7ad0ece4bd294ed",
+  "run_sh": "4a2e5c5795bdf86e6a880cdf305d29a9bc3958a3c899d1a0415fa6d9210448ab",
+  "shcore": "ba2b9c785d68f3cd7609f99fb7ed2e53ec3f6ebdbc609980527f8cff749fc08b"
+ }
+}

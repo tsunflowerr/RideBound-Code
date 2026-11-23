@@ -12,6 +12,7 @@ Repo có bốn phần:
 | `src/adapter` | Python 3.10 + FleetPy 1.0.2 | Nối Runner vào bộ mô phỏng giao thông FleetPy để chạy "thật": một job, cả đợt F14/F16, sinh cấu hình job, đọc bảng từng khách (mục 5.6). |
 | `src/emulator` | Node 20 | **Bộ mô phỏng so sánh**: cùng luật điều phối, viết lại gọn bằng JavaScript, chạy nhanh trên nhiều ô. Sinh số của §6 và §7. |
 | `src/analysis` | Node 20 | Dựng mọi bảng báo cáo từ dữ liệu đi kèm repo, không cần chạy lại mô phỏng. |
+| `src/fastsim` | Node 20 + Python 3 | **Mô phỏng nhanh của khóa luận** (chế độ khớp FleetPy): bộ đã sinh Bảng 5.4–5.11 và Hình 5.2–5.3 của Chương 5, chạy trên đúng fixture của RideBound C#; kèm tham số đã đóng băng, dòng kết quả gốc và lệnh dựng từng bảng. Xem `src/fastsim/README.md`. |
 
 Quan hệ giữa chúng:
 - Con số chính của báo cáo đến từ bộ mô phỏng (nhanh, chạy được 60 ngày × nhiều luật).
@@ -91,6 +92,12 @@ src/
     data/                        bảng khách của các lần chạy thật, dòng kết quả mô phỏng đã ghi, dự đoán, dữ liệu TLC đã gộp; MANIFEST.tsv
     expected/                    kết quả đã lưu của các script gốc
     tests/
+  fastsim/                       Node 20 + Python 3: mô phỏng nhanh của khóa luận, chế độ khớp FleetPy (src/fastsim/README.md)
+    adapter60/                   bộ chạy đồng bộ, script chạy, danh sách ô, hiệu chỉnh đều, dựng bảng Chương 5
+    engines/  wf20/  wf5/  wf15emu/   engine (làm tròn mỗi chặng dự báo) và các module nó gọi
+    sync-rerun/                  Bảng 5.7, so chữ ký dòng, kiểm tái lập mỗi họ một ô
+    data/                        tham số đã đóng băng (Shadow, prior, chỉ số dự báo), chép vào data root
+    results/                     dòng kết quả gốc của mọi họ chạy; MANIFEST.tsv
 ```
 
 Mọi phiên bản cũ (kể cả các tính năng đã bỏ, các script nghiên cứu và tài liệu cũ) nằm ở commit `ebca912`,

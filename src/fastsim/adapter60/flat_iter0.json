@@ -1,0 +1,7 @@
+{
+ "note": "iteration 0 = default-mode final ratios (wf21/n7 calib/flat_final.json), G2 SHRC only",
+ "flat": {
+  "G2|w08|SHRC": 1.031449,
+  "G2|w17|SHRC": 0.979885
+ }
+}

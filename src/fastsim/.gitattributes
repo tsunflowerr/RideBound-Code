@@ -1,0 +1,2 @@
+# Code, parameters and result rows are checked byte for byte (sha256): never convert their line endings.
+* -text
