@@ -1,0 +1,4 @@
+# Day lists, factors and sha256 lists are compared byte for byte: never convert their line endings.
+data/** -text
+expected/** -text
+*.sql -text
