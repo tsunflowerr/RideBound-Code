@@ -3,11 +3,11 @@
 # (bộ đã dùng cho 30 ngày chạy RideBound đầy đủ). Không sửa bộ chuyển. Không ghi đè (bộ chuyển tự từ chối).
 # Usage: bash convert60.sh   (chạy 6 tiến trình song song)
 set -u
+HERE="$(cd "$(dirname "$0")" && pwd)"
 PY="${PY:-python}"
 CONV="$HERE/../../adapter/convert_via_full_v2.py"
 SRC="${RB_DATA:?set RB_DATA}/wf14/scenarios/weekdays-P512"
 ROOT="${RB_FIXTURE_OUT:?set RB_FIXTURE_OUT to a new fixture root}"
-HERE="$(cd "$(dirname "$0")" && pwd)"
 mkdir -p "$ROOT/logs"
 one() {
   b="$1"                                   # 2019-02-05-w08-r0

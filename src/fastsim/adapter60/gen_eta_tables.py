@@ -5,7 +5,9 @@ from pathlib import Path
 
 sys.stdout.reconfigure(encoding='utf-8')
 HERE = Path(__file__).resolve().parent
-FC = json.loads((HERE / 'full_common.json').read_text(encoding='utf-8'))
+# full_common.json comes from full_common.py, which reads the evidence of the main-program runs (RB_EVIDENCE, not shipped);
+# without it only the fast-simulator blocks are printed.
+FC = json.loads((HERE / 'full_common.json').read_text(encoding='utf-8')) if (HERE / 'full_common.json').exists() else None
 EA = json.loads((HERE / 'eta_analysis.json').read_text(encoding='utf-8')) if (HERE / 'eta_analysis.json').exists() else None
 
 
@@ -27,15 +29,18 @@ LAB = {'rev': 'Khách có giờ trả đổi qua lại (khách/ngày)', 'late': 
        'served': 'Khách phục vụ (khách/ngày)'}
 DEC = {'rev': 2, 'late': 2, 'early': 2, 'tv5': 2, 'init_abs': 2, 'timed_abs': 3, 'served': 2}
 
-print('% ===== 5.5: he thong day du, moi khach vs khach chung')
-print('% so khach:', FC['n'])
-for sc, name in [('day', 'Cả ngày'), ('w08', 'Sáng (8--10h)'), ('w17', 'Chiều (17--19h)')]:
-    print(f'\\multicolumn{{3}}{{@{{}}l}}{{\\textit{{{name}}}}}\\\\')
-    for k in ['rev', 'late', 'tv5', 'init_abs', 'timed_abs']:
-        a, c = FC['diff'][sc]['all'][k], FC['diff'][sc]['common'][k]
-        print(f"{LAB[k]} & {ci(a, DEC[k])} & {ci(c, DEC[k])}\\\\")
-    if sc == 'day':
-        print('%  (phuc vu, mo ra)', ci(FC['diff'][sc]['all']['served']))
+if FC:
+    print('% ===== 5.5: he thong day du, moi khach vs khach chung')
+    print('% so khach:', FC['n'])
+    for sc, name in [('day', 'Cả ngày'), ('w08', 'Sáng (8--10h)'), ('w17', 'Chiều (17--19h)')]:
+        print(f'\\multicolumn{{3}}{{@{{}}l}}{{\\textit{{{name}}}}}\\\\')
+        for k in ['rev', 'late', 'tv5', 'init_abs', 'timed_abs']:
+            a, c = FC['diff'][sc]['all'][k], FC['diff'][sc]['common'][k]
+            print(f"{LAB[k]} & {ci(a, DEC[k])} & {ci(c, DEC[k])}\\\\")
+        if sc == 'day':
+            print('%  (phuc vu, mo ra)', ci(FC['diff'][sc]['all']['served']))
+else:
+    print('% ===== 5.5: bo qua (khong co full_common.json; can bang chung cua chuong trinh chinh)')
 if EA:
     print('\n% ===== 5.4: bang muc (N, PAD, CL, CLc)')
     for lab, nm in [('N', 'Không dự báo'), ('PAD', 'Hiệu chỉnh đều'), ('CL', 'Dự báo theo giờ, chuẩn hóa cả tháng'), ('CLc', 'Dự báo theo giờ, tham chiếu tháng trước')]:

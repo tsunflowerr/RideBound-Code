@@ -55,6 +55,8 @@ cd src/core && dotnet restore RideBound.slnx && cd ../..
 - `environment.lock.yml` ghi bản build của Windows 64-bit; trên hệ khác dùng cùng số phiên bản và bỏ phần build.
 - Trên Windows (Git Bash), Node không hiểu đường dẫn dạng `/c/...` trong biến môi trường. Khi cần đường dẫn tuyệt đối,
   dùng `$(pwd -W)`; các lệnh dưới viết `$(pwd -W 2>/dev/null || pwd)` để chạy được cả trên Linux và macOS.
+- Các lệnh viết `python`. Nếu Python của môi trường `fleetpy-1.0.2` không nằm trên PATH (chưa `conda activate`), thay
+  `python` bằng đường dẫn đầy đủ tới nó, và đặt `export PY=<đường dẫn đó>` cho các script `.sh`.
 
 ---
 
@@ -62,8 +64,9 @@ cd src/core && dotnet restore RideBound.slnx && cd ../..
 
 ### 2.1 Mô phỏng nhanh trên hai ô mẫu (5–10 phút)
 
-`src/fastsim/sample/` chứa đầu vào của hai ô: ngày 19/9/2019, khung 8:00–10:00 và 17:00–19:00, mẫu nhu cầu r0
-(512 yêu cầu, 62 xe). Lệnh dưới dựng một data root nhỏ (tải mạng đường từ Zenodo một lần), chuyển hai ô thành fixture
+`src/fastsim/sample/wf14/` chứa đầu vào của hai ô: ngày 19/9/2019, khung 8:00–10:00 và 17:00–19:00, mẫu nhu cầu r0
+(512 yêu cầu, 62 xe). Mỗi ô gồm file yêu cầu, ma trận thời gian đi và provenance; cả sáu file trùng sha256 với ô đã dùng
+cho báo cáo (`src/datagen/expected/wf14-60day-cells.sha256`). Lệnh dưới dựng một data root nhỏ (tải mạng đường từ Zenodo một lần), chuyển hai ô thành fixture
 bằng bộ chuyển của chương trình chính, chạy mô phỏng nhanh với các cấu hình của Chương 5 rồi so từng dòng kết quả với
 `expected.tsv`.
 
@@ -84,6 +87,8 @@ mục 2.1 (dùng lại `demo/`), có FleetPy và .NET. Một lượt cần 15–
 ```bash
 export RB_DATA=$(cd demo && (pwd -W 2>/dev/null || pwd))/data
 P=demo/fixtures; C=d20190919-vf-r0-w08; A=FS-G2-SHHZ71-N; F=src/core/configs/final
+DOTNET=$(command -v dotnet)       # đường dẫn đầy đủ tới file chạy dotnet (Linux, macOS)
+# Windows (Git Bash): DOTNET="C:/Program Files/dotnet/dotnet.exe"   (run_job.py kiểm file này có tồn tại)
 
 # 1. Driver của lượt chạy (từ driver mà bộ chuyển đã ghi)
 python -B src/adapter/make_run_drivers.py write $P/drivers/$C.driver.json $P/drivers-run/$C.driver.json complete-graph-direct-v1 gzip-v1
@@ -104,7 +109,7 @@ python -B src/adapter/make_job_configs.py --data $P --network $(cd demo && (pwd 
 
 # 6. Lượt chạy
 DOTNET_GCHeapHardLimit=0x180000000 python -B src/adapter/run_job.py --label $A-$C-fin2 --role $A \
-  --fleetpy-root FleetPy --runner-root runner --dotnet dotnet \
+  --fleetpy-root FleetPy --runner-root runner --dotnet "$DOTNET" \
   --commitment-config $P/job-configs-v2/commitment/SHHZ71.json --wp4-config $P/job-configs-v2/wp4/$A/$C.json \
   --scenario $P/fixtures/$C/scenario-content.json --derivative-manifest $P/fixtures/$C/derivative-manifest.json \
   --normalization-report $P/fixtures/$C/normalization-report.json --selection-frame $P/fixtures/$C/selection-frame.json \
@@ -118,8 +123,8 @@ node src/fastsim/sample/compare_riders.js demo/real.tsv $P/predictions/fullsys-f
 
 Kết quả mong đợi: dòng `FS-G2-SHHZ71-N|d20190919-vf-r0-w08` kết thúc bằng `IDENTICAL`, tức mọi khách giống nhau trên
 chín trường (giờ đặt, giờ báo đầu, giờ đến, phục vụ hay không, tổng và số lần đổi do điều phối, thay đổi ròng, thay đổi
-lớn nhất, có đi chung không). Trên toàn bộ 360 lượt của báo cáo, phép so này cho 125.871/125.964 khách giống nhau và
-353/360 lượt giống hoàn toàn.
+lớn nhất, có đi chung không). Lần kiểm trên Windows: 335/335 khách giống nhau, 22 phút, RAM đỉnh khoảng 5 GB. Trên
+toàn bộ 360 lượt của báo cáo, phép so này cho 125.871/125.964 khách giống nhau và 353/360 lượt giống hoàn toàn.
 
 ### 2.3 Test
 
@@ -214,7 +219,10 @@ Dựng bảng từ thư mục kết quả vừa chạy (`RB_RESULTS` vẫn đặ
 | 5.4, 5.5, 5.6, 5.11; Hình 5.3; quy mô đội xe | `python aggregate.py` rồi `python gen_tables.py`; `python shadow_scope.py` | Tên khối trong `gen_tables.py` là số bảng cũ: "Bảng 5.5" = 5.4, "Bảng 5.6" = 5.5 và 5.6 (cột G2+Shadow), "Ngân sách" = Hình 5.3, "Bảng 5.12" = quy mô đội xe, "Bảng 5.13" = 5.11 |
 | Hình 5.2 | `python make_figs.py` (cần matplotlib) | ghi vào `RB_FIGURES` hoặc `src/fastsim/results/figures` |
 | 5.7 | `node ../sync-rerun/table57.js $RB_RESULTS/nce-oce60` | |
-| 5.8, 5.9, 5.10 | `python eta_analysis.py` | đọc `$RB_RESULTS/eta30` |
+| 5.8, 5.9, 5.10 | `PYTHONHASHSEED=0 python eta_analysis.py` rồi `python gen_eta_tables.py` | `eta_analysis.py` đọc `$RB_RESULTS/eta30`, in các mức và ghi `eta_analysis.json`; `gen_eta_tables.py` in các hiệu kèm khoảng tin cậy 95 %. Tên khối là số bảng cũ: "5.4: bang muc" = 5.8, "hieu du bao - hieu chinh deu" = 5.9, "5.6: phan ra" = 5.10. Khối "5.5" (= Bảng 5.3, chương trình chính) chỉ in khi có `full_common.json` |
+
+`PYTHONHASHSEED=0` cố định thứ tự cộng của `eta_analysis.py` (nó cộng số thực theo thứ tự duyệt một `set`). Thiếu biến này,
+`eta_analysis.json` giữa hai lần chạy lệch nhau ở chữ số thứ 13; bảng in ra không đổi.
 
 `calib_pad.py` chọn hệ số hiệu chỉnh đều sao cho thời lượng báo đầu trung bình lệch dự báo không quá 0,5 giây, tối đa
 sáu vòng. Hệ số cuối là `flat_iter5.json`; các file nó ghi lại phải giống bản trong repo (`git status` không thấy thay đổi).
@@ -244,9 +252,9 @@ node src/datagen/export_network.js manhattan network-golden.json 1 1 1 $NET $RB_
 M="--network $NET --g2-rce35 $F/templates/G2-RCE35.json --g2-eohz35 $F/templates/G2-EOHZ35.json --wp4-template $F/wp4-via-g2k8-a1-fast.json"
 python -B src/adapter/make_job_configs.py --data $P14 $M --forecast-gate
 python -B src/adapter/make_job_configs.py --data $P16 $M
-# 4. Chạy cả đợt (Runner dựng như mục 2.2, bước 5)
-python -B src/adapter/run_campaign.py --panel f14 --data $P14 --out runs --logs logs --fleetpy-root FleetPy --runner-root runner --dotnet dotnet --workers 2
-python -B src/adapter/run_campaign.py --panel f16 --data $P16 --out runs --logs logs --fleetpy-root FleetPy --runner-root runner --dotnet dotnet --workers 2
+# 4. Chạy cả đợt (Runner dựng như mục 2.2, bước 5; DOTNET đặt như mục 2.2)
+python -B src/adapter/run_campaign.py --panel f14 --data $P14 --out runs --logs logs --fleetpy-root FleetPy --runner-root runner --dotnet "$DOTNET" --workers 2
+python -B src/adapter/run_campaign.py --panel f16 --data $P16 --out runs --logs logs --fleetpy-root FleetPy --runner-root runner --dotnet "$DOTNET" --workers 2
 # 5. Bảng từng khách và phép so của mục 5.2
 python -B src/adapter/riders.py --root runs --out riders.tsv --sequences sequences.tsv
 cat $P14/predictions/fullsys-f14-predictions.tsv <(tail -n +2 $P16/predictions/fullsys-f16-predictions.tsv) > predictions.tsv
@@ -271,7 +279,7 @@ node src/fastsim/sample/compare_riders.js riders.tsv predictions.tsv
 | Chọn phương án cho cả đội xe (CP-SAT, thứ tự mục tiêu) | `src/core/RideBound.Algorithms/Policies/SolverBackedFleetSelection.cs`, `src/core/RideBound.Solvers.OrTools/OrToolsCandidateSelectionSolver.cs` |
 | Shadow (điểm đi chung, cường độ nhu cầu) | `src/core/RideBound.Algorithms/Shareability/`, `src/fastsim/wf20/runner/sscore.js`, `lambda.js` |
 | Dự báo thời gian đi | `src/core/RideBound.Domain/Validation/TravelTimeForecast.cs`, `src/fastsim/wf20/scripts/forecast.js` |
-| Cùng các luật trong mô phỏng nhanh | `src/fastsim/engines/engine_wf15_clint.js` (bảng `ADMIT`, `decide`, `selectPlan`, `publish`) |
+| Cùng các luật trong mô phỏng nhanh | `src/fastsim/engines/engine_wf15_clint.js` (`admits` và `charge`: các cách giới hạn; `decide`: một quyết định; `selectPlan`: chọn cho cả đội xe) |
 | Bộ điều khiển sự kiện trong FleetPy | `src/adapter/run_job.py`, `src/adapter/ridebound_fleetpy/fleet_control.py` |
 
 ---
@@ -280,5 +288,7 @@ node src/fastsim/sample/compare_riders.js riders.tsv predictions.tsv
 
 - Chạy lại 360 lượt của chương trình chính cần máy mạnh và nhiều ngày; mục 2.2 chạy một lượt và so với mô phỏng nhanh.
 - Repo không có script tính sẵn Bảng 5.2–5.3 từ bảng từng khách của 360 lượt; quy tắc tính nằm ở mục 5.1 của báo cáo.
+  `src/fastsim/adapter60/full_common.py` tính các số của Bảng 5.3 từ tệp bằng chứng của các lượt chạy cuối
+  (`publication-projection-f14/f16.jsonl.gz`, biến `RB_EVIDENCE`); các tệp này không đi kèm repo.
 - Ngưỡng Shadow được dùng ở dạng đã đóng băng; phép hiệu chuẩn 55 ngày không nằm trong repo.
 - Bước DuckDB của mục 3.1 đọc dữ liệu TLC trực tiếp từ trang của TLC; nếu TLC đổi đường dẫn, cần sửa biến `source`.
