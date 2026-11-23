@@ -35,3 +35,4 @@ __pycache__/
 fastsim/adapter60/aggregate.json
 fastsim/adapter60/eta_analysis.json
 fastsim/adapter60/full_common.json
+fastsim/results/
