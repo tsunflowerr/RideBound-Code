@@ -6,7 +6,7 @@
 set -u
 OUTROOT="${1:?scratch dir}"
 HERE="$(cd "$(dirname "$0")/../adapter60" && pwd)"
-STORE="${RB_STORE:-$(cd "$(dirname "$0")/../results" && pwd)}"
+STORE="${RB_STORE:?set RB_STORE to the folder of the stored result rows}"
 ROOTS="${RB_ROOTS:?set RB_ROOTS to the fixture roots, separated by ;}"
 FLEET_ROOTS="${RB_FLEET81_ROOT:?set RB_FLEET81_ROOT}"
 mkdir -p "$OUTROOT"

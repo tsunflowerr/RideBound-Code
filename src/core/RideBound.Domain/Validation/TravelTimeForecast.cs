@@ -4,7 +4,7 @@ namespace RideBound.Domain.Validation;
 
 /// <summary>
 /// Time-of-day forecast of travel times, used only where the dispatcher projects a plan
-/// (the closed-loop forecast of the comparison emulator, legF in src/emulator/engine.js).
+/// (the closed-loop forecast of the comparison emulator, legF in src/fastsim/engines/engine_wf15_clint.js).
 /// A leg that takes w ms under the current snapshot is integrated over fixed bins: weight 1
 /// in the bin of the evaluation time b0, weight profile[b] / profile[b0] in any other bin
 /// (the profile is held after its last value). The arrival is rounded to whole milliseconds,

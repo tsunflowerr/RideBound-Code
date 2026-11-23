@@ -10,7 +10,7 @@ public sealed class TravelTimeForecastTests
     public void Arrivals_equal_the_adapter_mode_emulator_leg_function()
     {
         // 40 random profiles x 75 legs from the adapter-mode emulator's legF (seed 20261103).
-        // src/emulator/tests/forecast_leg.test.js checks engine.js against the same file.
+        // src/fastsim/engines/engine_wf15_clint.js (legF) is that leg function.
         using var stream = typeof(TravelTimeForecastTests).Assembly
             .GetManifestResourceStream("RideBound.Domain.Tests.Validation.travel-forecast-golden.json")!;
         using var document = JsonDocument.Parse(stream);

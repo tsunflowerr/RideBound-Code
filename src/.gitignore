@@ -30,3 +30,8 @@ vendor/
 # inventory drifts mid-run.
 __pycache__/
 *.pyc
+
+# Outputs of the fast-simulator scripts (they write next to themselves; see src/fastsim/README.md)
+fastsim/adapter60/aggregate.json
+fastsim/adapter60/eta_analysis.json
+fastsim/adapter60/full_common.json

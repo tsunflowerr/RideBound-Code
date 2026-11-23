@@ -3,7 +3,7 @@ namespace RideBound.Algorithms.Shareability;
 /// <summary>
 /// Free-flow network of the time-integrated shareability score of Elmi, Moylan, Alonso-Mora
 /// and Fielbaum (2026), as the comparison emulator defines it
-/// (src/emulator/network.js): all-pairs free-flow seconds D (row-major from -> to, closed integer APSP),
+/// (src/datagen/network.js): all-pairs free-flow seconds D (row-major from -> to, closed integer APSP),
 /// its transpose, the directed edge list in CSR form for shortest-path reconstruction, and
 /// the zone of every node. Pure data: no map provider, no file format.
 /// </summary>

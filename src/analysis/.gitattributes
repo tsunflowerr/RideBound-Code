@@ -1,3 +1,0 @@
-# Stored results and shipped data are compared byte for byte: never convert their line endings.
-data/** -text
-expected/** -text
