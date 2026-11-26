@@ -2,6 +2,91 @@
 
 (Máy công ty ghi vào đây: phân tích, quyết định, và các `## YÊU CẦU <số>` gửi máy nhà.)
 
+## YÊU CẦU 2 — 2026-11-27 02:25: đếm trên dữ liệu đã lưu (trước các gói [10.08]+)
+
+Không cần build hay chạy lượt mới. Có thể làm song song với YÊU CẦU 1.
+
+**1. Trên 8 transcript ô cổng của đợt 360 lượt (code thời khóa luận).** Ghi số dòng khớp của từng mẫu, tất cả kỳ vọng 0:
+
+| Mẫu | Liên quan |
+|---|---|
+| `"messageType":"restore"` | C20 |
+| `incidentOpened\|incidentResolved` | [10.04] |
+| `offerDeclined\|requestCancelled` | C23 |
+| `offerProposed\|commitmentBreachDeclared\|finalizeRun\|runSummary` | C24 |
+| `"kind":"waypoint"` | C14 |
+
+Ghi thêm tập các `reasonCode` xuất hiện trong `promisePublished`.
+
+**2. Trên 360 `evidence.json.gz`** (nếu còn):
+- `N` = số dòng revision trong `audit.table` có v = e = p ở **cả** dòng pickup lẫn dòng drop của cùng lần phát. Đây chính là
+  số lần phát mà [10.03] bỏ. Cho tổng N, và N theo từng nhánh FS-G2-SHRC71-CL / FS-G2-SHHZ71-N.
+- `incidentLedger.incidents` có rỗng ở cả 360 lượt không.
+- Tổng `nonNormalCertificates`.
+- Tập giá trị `requests[].lifecycle` trong checkpoint cuối. Kỳ vọng ⊂ {completed, rejected}.
+- Có lượt nào chứa `EXOGENOUS_BREACH_BRIDGE_FAILED`, `COMMITMENT_SAFETY_NOOP_REJECTED`, `SOLVER_MODEL_MAPPING_FAILED` hay
+  `INTERNAL_ERROR` không.
+
+**3. Trong mã FleetPy đã ghim:**
+- `grep -n "dev_content\." src/misc/init_modules.py` (C34).
+- `FleetControlBase.time_trigger` có gọi `user_cancels_request` không (C23).
+
+## 2026-11-27 02:25 — Kết quả phân tích sâu và kế hoạch [10.08]+
+
+**Phân tích sâu.**
+- Máy công ty chạy phân tích (chỉ đọc) trên `ab697fe`: 14 agent, có kiểm chứng phản biện.
+- Kết quả: 55 mục, gồm 27 gỡ được, 17 gỡ sau khi kiểm ở máy nhà, 11 giữ. Không mục nào đổi quyết định cho khách.
+- Phân tích độc lập này đi tới cùng kết luận với nhận xét [10.03] ở trên: revision ledger-only (p = e = v) không còn
+  được phát.
+
+**Đối chiếu với nhánh.** [10.01]–[10.04] đã làm:
+- C01 (bảng khoảng cách), C03 (material), C06 (khóa drop), C15 (bia mộ), C21 (sự cố).
+- Một phần C04: còn `ServiceOrder`.
+- Một phần C24: còn `offerProposed`, `finalizeRun`/`runSummary`, `witnesses` của certificate.
+- Phần lớn C17: cấu hình test.
+
+**Bổ sung cho YÊU CẦU 1.** Giữ `transcript-00.ndjson.gz` của 4 lượt mới (code `00fd3be`) và ghi sha256 từng file. Bốn
+transcript này là **mốc byte B1**: mỗi gói C# không đổi giao thức về sau sẽ được kiểm bằng `replay.py runner` trên B1,
+mọi khung Runner phải giống từng byte. Nếu lệnh README §2.2 không giữ transcript thì bật chế độ giữ transcript
+(`run_campaign.py`, như với các ô cổng).
+
+**Thay đổi so với mục trước.** Các commit từ [10.08] không ảnh hưởng YÊU CẦU 1, vì yêu cầu này ghim `00fd3be`. Máy công
+ty sẽ chuẩn bị chúng song song; phép kiểm của mỗi commit sẽ gửi bằng các yêu cầu sau, chạy khi đã có B1. Mỗi commit đều
+build được bằng `dotnet build -p:UseAppHost=false` ở máy công ty.
+
+**Kế hoạch.** Mỗi commit chỉ gồm các mục đã kiểm chứng:
+
+| Commit | Gói | Mục | Kiểm ở máy nhà |
+|---|---|---|---|
+| [10.08] | C# nhánh chết nội bộ | C07, C09, C12, C13, C14 (phần C#), C18, N01 | `replay.py runner` trên B1 + `dotnet test` |
+| [10.09] | chế độ băm `full-v1` | C19 | `replay.py runner` trên B1 + `dotnet test` |
+| [10.10] | chỉ test C# | C25, C26, G1-04, G2-01, G2-04, G2-05 | sha DLL sản xuất không đổi + `dotnet test` |
+| [10.11] | dữ liệu và script vỏ | C27, C40, C41 | `kiem_nhanh.sh` + `sha256sum -c src/datagen/expected/*.sha256` |
+| [10.12] | mã JS chết | C36, C42 | `kiem_nhanh.sh` + sha của fullsys predictions và shadow-inputs |
+| [10.13] | script phân tích lặp | C39 | gen_tables, gen_eta_tables, make_figs trên rows đã lưu, khớp .tex |
+| [10.14] | Python adapter | C29, C30, C31, C33, C14 (phần Python) | `replay.py adapter` + `riders.py` + `unittest` |
+
+**Chờ chủ đề tài quyết:**
+- C08 + C28: nhánh cổng dự báo và đường không-Shadow 35% trong C#.
+- C37: phần còn lại của chế độ plain trong fastsim.
+- C20 + G1-01: restore. Khóa luận §3.4.3 mô tả việc này; nên để sau buổi bảo vệ.
+- Giao thức đợt 2: C05, phần còn lại của C24, C23 + G1-02, C04 (`ServiceOrder`), G1-03.
+- C11: chẩn đoán bộ giải, sát CP-SAT.
+- C16 coi như đã đủ sau [10.01], không làm tiếp.
+
+**Giữ (không gỡ):**
+
+| Mục | Nội dung |
+|---|---|
+| C02 | 4 chiều điểm dừng và khóa `pickupStop` |
+| C10 | bảo vệ no-op |
+| C22 | cầu vi phạm do giao thông và `breaches` |
+| C32 | kiểm chuyển khách G2 ở adapter |
+| C34 | `add_*` trong init_modules |
+| C35 | trường adapter chỉ kiểm hoặc băm |
+| C38 | nhánh chết trong engine JS chép nguyên văn |
+| G1-05, G2-02, G2-03, G2-07 | bảo vệ và oracle của test |
+
 ## YÊU CẦU 1 — 2026-11-27 01:35: so 4 lượt mốc chuẩn trên `[10.04]`
 
 - **Code:** `00fd3be` [10.04]. Commit ghi chú này không đổi code.
