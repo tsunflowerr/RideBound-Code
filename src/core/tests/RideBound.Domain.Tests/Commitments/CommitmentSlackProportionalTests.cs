@@ -305,7 +305,6 @@ public sealed class CommitmentSlackProportionalTests
                     dimension,
                     dimension == CommitmentDimension.DropEtaTotalMs ? dropHardLimit : otherHardLimit,
                     CommitmentPhase.AllActive)),
-            new MaterialRevisionRule(1, null),
             dropEtaBudgetSlackPermille: budgetPermille,
             dropEtaDeadlineSlackPermille: deadlinePermille,
             dropEtaShadowAllocation: shadow);

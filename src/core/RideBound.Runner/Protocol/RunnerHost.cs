@@ -28,7 +28,6 @@ public static class RunnerHost
         Stream output,
         TextWriter diagnostics,
         ICommitmentPolicyProvider commitmentPolicies,
-        IStopDistanceLookup stopDistances,
         Sha256Hex commitmentPolicyConfigurationHash,
         Wp4RunnerConfiguration wp4Configuration,
         bool useManifestSolverSeed,
@@ -48,7 +47,6 @@ public static class RunnerHost
             session = new RunnerSession(
                 RunnerDefaults.CapabilityRequirements,
                 commitmentPolicies: commitmentPolicies,
-                stopDistances: stopDistances,
                 commitmentPolicyConfigurationHash:
                     commitmentPolicyConfigurationHash,
                 wp4Configuration: wp4Configuration,

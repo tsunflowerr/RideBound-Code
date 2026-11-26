@@ -832,7 +832,6 @@ public sealed class Wp4RunnerIntegrationTests
         new(
             RunnerDefaults.CapabilityRequirements,
             commitmentPolicies: commitment,
-            stopDistances: commitment,
             commitmentPolicyConfigurationHash:
                 wp4.BindToCommitmentConfiguration(commitment.ContentHash),
             wp4Configuration: wp4,

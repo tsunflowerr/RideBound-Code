@@ -461,7 +461,7 @@ public sealed class EventDecisionMessageTests
             []);
 
     private static CommitmentVectorContract ZeroVector() =>
-        new(0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+        new(0, 0, 0, 0, 0);
 
     private static PromiseProjectionContract Promise() =>
         new(

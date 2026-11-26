@@ -128,7 +128,6 @@ public sealed class CommitmentRelaxedDeadlineValidatorTests
                     dimension,
                     dimension == CommitmentDimension.DropEtaTotalMs ? dropBudget : null,
                     CommitmentPhase.AllActive)),
-            new MaterialRevisionRule(1, null),
             dropEtaDeadlineSlackPermille: deadlinePermille);
 
     /// <summary>
@@ -206,7 +205,6 @@ public sealed class CommitmentRelaxedDeadlineValidatorTests
             reduced,
             reduced,
             new CommitmentPolicyCatalog([policy]),
-            CommitmentValidatorFixtures.EmptyDistances.Instance,
             "test-scope",
             4);
     }
@@ -229,7 +227,6 @@ public sealed class CommitmentRelaxedDeadlineValidatorTests
             reduced,
             reduced,
             new CommitmentPolicyCatalog([policy]),
-            CommitmentValidatorFixtures.EmptyDistances.Instance,
             "test-scope-next",
             committed.NextEventSequence);
     }

@@ -72,7 +72,6 @@ return await RunnerHost.RunAsync(
     Console.OpenStandardOutput(),
     Console.Error,
     commitmentPolicies: commitmentConfiguration,
-    stopDistances: commitmentConfiguration,
     commitmentPolicyConfigurationHash: wp4Configuration.BindToCommitmentConfiguration(
         commitmentConfiguration.ContentHash),
     wp4Configuration: wp4Configuration,

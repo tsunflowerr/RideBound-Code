@@ -120,14 +120,9 @@ public static class OnlineDecisionActionMapper
         new(
             value.PickupEtaTotalMs,
             value.DropEtaTotalMs,
-            value.MaterialEtaRevisionCount,
             value.VehicleSwitchCount,
-            value.PickupStopRelocationMm,
             value.PickupStopSwitchCount,
-            value.DropStopRelocationMm,
-            value.DropStopSwitchCount,
-            value.IncumbentOrderInversionCount,
-            value.PrePickupInsertedStopCount);
+            value.DropStopSwitchCount);
 
     private static JsonElement MapRequestAction(RequestDecisionAction action)
     {

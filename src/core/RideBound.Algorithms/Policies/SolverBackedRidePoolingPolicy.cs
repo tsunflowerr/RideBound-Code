@@ -340,7 +340,6 @@ public sealed class SolverBackedRidePoolingPolicy
                     context.ReducedState,
                     applied.Decision!.ProposedState,
                     context.Policies,
-                    context.StopDistances,
                     context.PublicationScope,
                     context.SourceEventSequence,
                     RevisionReasonCode: "WP4_SOLVER_SELECTION"));

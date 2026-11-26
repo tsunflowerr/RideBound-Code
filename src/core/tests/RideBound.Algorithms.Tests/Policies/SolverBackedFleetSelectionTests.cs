@@ -154,8 +154,7 @@ public sealed class SolverBackedFleetSelectionTests
                 dimension => new CommitmentDimensionLimit(
                     dimension,
                     null,
-                    CommitmentPhase.AllActive)),
-            new MaterialRevisionRule(1, null));
+                    CommitmentPhase.AllActive)));
         var solverBudget = DeterministicSolverBudget.Create(
             1000,
             1000,
@@ -171,7 +170,6 @@ public sealed class SolverBackedFleetSelectionTests
                     before,
                     state,
                     new CommitmentPolicyCatalog([policy]),
-                    NoDistances.Instance,
                     "bounded-loss",
                     1),
                 new CandidateGenerationOptions(
@@ -399,20 +397,6 @@ public sealed class SolverBackedFleetSelectionTests
                 diagnostics,
                 "TEST_UNKNOWN",
                 "The test solver did not produce an incumbent.");
-        }
-    }
-
-    private sealed class NoDistances : IStopDistanceLookup
-    {
-        public static NoDistances Instance { get; } = new();
-
-        public bool TryGetDistanceMillimeters(
-            NodeId fromNodeId,
-            NodeId toNodeId,
-            out long distanceMillimeters)
-        {
-            distanceMillimeters = 0;
-            return false;
         }
     }
 }

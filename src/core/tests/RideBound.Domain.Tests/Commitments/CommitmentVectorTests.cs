@@ -16,11 +16,6 @@ public sealed class CommitmentVectorTests
                 0,
                 0,
                 0,
-                0,
-                0,
-                0,
-                0,
-                0,
                 0));
     }
 
@@ -32,13 +27,8 @@ public sealed class CommitmentVectorTests
             0,
             0,
             0,
-            0,
-            0,
-            0,
-            0,
-            0,
             0);
-        var one = new CommitmentVector(1, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+        var one = new CommitmentVector(1, 0, 0, 0, 0);
 
         var result = nearLimit.Add(one);
 

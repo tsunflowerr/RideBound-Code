@@ -52,16 +52,10 @@ public sealed class CommitmentBudgetEvaluatorTests
                 CommitmentPhase.AllActive));
         var policy = new CommitmentPolicy(
             "zero-and-infinite",
-            limits,
-            new MaterialRevisionRule(1, null));
+            limits);
         var delta = new CommitmentVector(
             1,
             RideBound.Domain.Common.DomainLimits.MaxCanonicalInteger,
-            0,
-            0,
-            0,
-            0,
-            0,
             0,
             0,
             0);

@@ -6,26 +6,16 @@
   "required": [
     "pickupEtaTotalMs",
     "dropEtaTotalMs",
-    "materialEtaRevisionCount",
     "vehicleSwitchCount",
-    "pickupStopRelocationMm",
     "pickupStopSwitchCount",
-    "dropStopRelocationMm",
-    "dropStopSwitchCount",
-    "incumbentOrderInversionCount",
-    "prePickupInsertedStopCount"
+    "dropStopSwitchCount"
   ],
   "properties": {
     "pickupEtaTotalMs": { "$ref": "definitions.schema.json#/$defs/canonicalNonNegativeInteger" },
     "dropEtaTotalMs": { "$ref": "definitions.schema.json#/$defs/canonicalNonNegativeInteger" },
-    "materialEtaRevisionCount": { "$ref": "definitions.schema.json#/$defs/canonicalNonNegativeInteger" },
     "vehicleSwitchCount": { "$ref": "definitions.schema.json#/$defs/canonicalNonNegativeInteger" },
-    "pickupStopRelocationMm": { "$ref": "definitions.schema.json#/$defs/canonicalNonNegativeInteger" },
     "pickupStopSwitchCount": { "$ref": "definitions.schema.json#/$defs/canonicalNonNegativeInteger" },
-    "dropStopRelocationMm": { "$ref": "definitions.schema.json#/$defs/canonicalNonNegativeInteger" },
-    "dropStopSwitchCount": { "$ref": "definitions.schema.json#/$defs/canonicalNonNegativeInteger" },
-    "incumbentOrderInversionCount": { "$ref": "definitions.schema.json#/$defs/canonicalNonNegativeInteger" },
-    "prePickupInsertedStopCount": { "$ref": "definitions.schema.json#/$defs/canonicalNonNegativeInteger" }
+    "dropStopSwitchCount": { "$ref": "definitions.schema.json#/$defs/canonicalNonNegativeInteger" }
   },
   "additionalProperties": false
 }

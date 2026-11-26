@@ -78,7 +78,6 @@ public sealed partial class RunnerSession
             beforeEventState,
             reduced.ProposedState!,
             _commitmentPolicies,
-            _stopDistances,
             publicationScope,
             sourceEventSequence);
 

@@ -61,7 +61,6 @@ public sealed partial class RunnerSession
     private readonly CapabilityRequirementProfile _requirements;
     private readonly OnlineEventMapper _onlineEventMapper = new();
     private readonly ICommitmentPolicyProvider _commitmentPolicies;
-    private readonly IStopDistanceLookup _stopDistances;
     private readonly Sha256Hex _commitmentPolicyConfigurationHash;
     private readonly Wp4RunnerConfiguration _wp4Configuration;
     private readonly RideBound.Algorithms.Shareability.ShadowAllocator? _shadowAllocator;
@@ -88,7 +87,7 @@ public sealed partial class RunnerSession
     private CanonicalStateBytes? _stagedCanonical;
 
     /// <summary>
-    /// An online commitment session. The commitment policy file supplies the policy catalog and the stop distances,
+    /// An online commitment session. The commitment policy file supplies the policy catalog,
     /// the WP4 file the dispatch policy, and <paramref name="commitmentPolicyConfigurationHash"/> is the binding of
     /// the two files that initializeRun must carry. <paramref name="useManifestSolverSeed"/> seeds the solver with the
     /// manifest's masterSeed instead of the WP4 file's randomSeed (the command line always does);
@@ -97,7 +96,6 @@ public sealed partial class RunnerSession
     public RunnerSession(
         CapabilityRequirementProfile requirements,
         ICommitmentPolicyProvider commitmentPolicies,
-        IStopDistanceLookup stopDistances,
         Sha256Hex commitmentPolicyConfigurationHash,
         Wp4RunnerConfiguration wp4Configuration,
         SolverBackedRidePoolingPolicy? solverBackedPolicy = null,
@@ -105,12 +103,10 @@ public sealed partial class RunnerSession
     {
         ArgumentNullException.ThrowIfNull(requirements);
         ArgumentNullException.ThrowIfNull(commitmentPolicies);
-        ArgumentNullException.ThrowIfNull(stopDistances);
         ArgumentNullException.ThrowIfNull(commitmentPolicyConfigurationHash);
         ArgumentNullException.ThrowIfNull(wp4Configuration);
         _requirements = requirements;
         _commitmentPolicies = commitmentPolicies;
-        _stopDistances = stopDistances;
         _commitmentPolicyConfigurationHash = commitmentPolicyConfigurationHash;
         _wp4Configuration = wp4Configuration;
         _shadowAllocator = wp4Configuration.ShadowAllocation is { } shadowInputs

@@ -124,7 +124,6 @@ public sealed class WaitingRiderRelocationLockTests
                 dimension => dimension == CommitmentDimension.VehicleSwitchCount
                     ? new CommitmentDimensionLimit(dimension, switchLimit, switchPhases)
                     : new CommitmentDimensionLimit(dimension, null, CommitmentPhase.AllActive)),
-            new MaterialRevisionRule(1_000, 60_000),
             finalConfirmationLocks: confirmationLocks,
             ratchetLocks: ratchet,
             waitingRiderRelocation: relocation);

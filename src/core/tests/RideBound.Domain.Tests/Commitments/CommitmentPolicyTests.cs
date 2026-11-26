@@ -46,7 +46,6 @@ public sealed class CommitmentPolicyTests
                     dimension,
                     null,
                     CommitmentPhase.AllActive)),
-            new MaterialRevisionRule(1, null),
             dropEtaDeadlineSlackPermille: permille);
 
     private static CommitmentPolicy CreatePolicy(
@@ -58,6 +57,5 @@ public sealed class CommitmentPolicyTests
                     dimension,
                     null,
                     CommitmentPhase.AllActive)),
-            new MaterialRevisionRule(1, null),
             finalLocks);
 }

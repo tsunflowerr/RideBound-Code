@@ -13,7 +13,6 @@ public sealed class CommitmentCandidateFilter
 {
     private readonly OnlineState _beforeEventState;
     private readonly ICommitmentPolicyProvider _policies;
-    private readonly IStopDistanceLookup _stopDistances;
     private readonly string _publicationScope;
     private readonly long _sourceEventSequence;
     private readonly CommitmentDecisionValidator _validator;
@@ -21,7 +20,6 @@ public sealed class CommitmentCandidateFilter
     public CommitmentCandidateFilter(
         OnlineState beforeEventState,
         ICommitmentPolicyProvider policies,
-        IStopDistanceLookup stopDistances,
         string publicationScope,
         long sourceEventSequence,
         CommitmentDecisionValidator? validator = null)
@@ -30,8 +28,6 @@ public sealed class CommitmentCandidateFilter
             ?? throw new ArgumentNullException(nameof(beforeEventState));
         _policies = policies
             ?? throw new ArgumentNullException(nameof(policies));
-        _stopDistances = stopDistances
-            ?? throw new ArgumentNullException(nameof(stopDistances));
         _publicationScope = publicationScope;
         _sourceEventSequence = sourceEventSequence;
         _validator = validator ?? new CommitmentDecisionValidator();
@@ -75,7 +71,6 @@ public sealed class CommitmentCandidateFilter
                         reducedState,
                         candidateState,
                         _policies,
-                        _stopDistances,
                         _publicationScope,
                         _sourceEventSequence,
                         ScopedVehicleId: set.VehicleId));

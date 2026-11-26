@@ -127,7 +127,6 @@ public sealed class WaitingRiderRelocationCheckpointTests
             "uniform-v1",
             CommitmentDimensionVocabulary.Ordered.Select(
                 dimension => new CommitmentDimensionLimit(dimension, null, CommitmentPhase.AllActive)),
-            new MaterialRevisionRule(1_000, null),
             finalConfirmationLocks: PromiseLock.PickupStop | PromiseLock.PickupEta,
             ratchetLocks: PromiseLock.PickupEta,
             waitingRiderRelocation: true);
@@ -138,7 +137,6 @@ public sealed class WaitingRiderRelocationCheckpointTests
                 reduced,
                 reduced with { Run = candidate },
                 new CommitmentPolicyCatalog([policy]),
-                NoDistances.Instance,
                 "checkpoint-scope",
                 2));
 
@@ -173,16 +171,5 @@ public sealed class WaitingRiderRelocationCheckpointTests
         }
 
         return changed;
-    }
-
-    private sealed class NoDistances : IStopDistanceLookup
-    {
-        public static NoDistances Instance { get; } = new();
-
-        public bool TryGetDistanceMillimeters(NodeId fromNodeId, NodeId toNodeId, out long distanceMillimeters)
-        {
-            distanceMillimeters = 0;
-            return false;
-        }
     }
 }

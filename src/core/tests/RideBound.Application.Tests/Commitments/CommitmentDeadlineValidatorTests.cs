@@ -119,7 +119,6 @@ public sealed class CommitmentDeadlineValidatorTests
                     dimension,
                     null,
                     CommitmentPhase.AllActive)),
-            new MaterialRevisionRule(1, null),
             dropEtaDeadlineSlackPermille: deadlinePermille);
 
     private static CommitmentValidationContext NoOpUnderDrift(
@@ -217,7 +216,6 @@ public sealed class CommitmentDeadlineValidatorTests
             reduced,
             reduced,
             new CommitmentPolicyCatalog([policy]),
-            CommitmentValidatorFixtures.EmptyDistances.Instance,
             "test-scope",
             4);
     }

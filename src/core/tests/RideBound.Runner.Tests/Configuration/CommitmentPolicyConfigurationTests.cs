@@ -21,24 +21,15 @@ public sealed class CommitmentPolicyConfigurationTests
                 "wp3-boundary-test-v1.json")));
 
         Assert.Equal(
-            "d1be06163dd38de567e4489100acd05b74c41cc454300f7b7286b459355e928f",
+            "4dc1fc22218ead45e71553bde7b84c293ee1e2fe3de7dd79134ed106edf3eb3e",
             configuration.ContentHash.Value);
         Assert.True(configuration.TryGetPolicy("uniform-v1", out var policy));
-        Assert.Equal(10, policy.Limits.Count);
+        Assert.Equal(5, policy.Limits.Count);
         Assert.Equal(
             0,
             policy.Limits[
                 CommitmentDimension.VehicleSwitchCount]
                 .HardLimit);
-        Assert.True(configuration.TryGetDistanceMillimeters(
-            new NodeId("same"),
-            new NodeId("same"),
-            out var zero));
-        Assert.Equal(0, zero);
-        Assert.False(configuration.TryGetDistanceMillimeters(
-            new NodeId("a"),
-            new NodeId("b"),
-            out _));
     }
 
     [Fact]
@@ -49,7 +40,6 @@ public sealed class CommitmentPolicyConfigurationTests
             {
               "configurationVersion":"1.0.0",
               "policies":[],
-              "stopDistances":[],
               "silentDefault":true
             }
             """;
@@ -65,18 +55,10 @@ public sealed class CommitmentPolicyConfigurationTests
     [InlineData(
         "[\"accepted\",\"accepted\"]",
         "Duplicate commitment phase")]
-    [InlineData(
-        "[\"accepted\"]",
-        "Same-node stop distance")]
-    public void Ambiguous_phase_or_same_node_distance_is_rejected(
+    public void Ambiguous_phase_is_rejected(
         string phases,
         string expectedMessage)
     {
-        var distance = expectedMessage.StartsWith(
-            "Same-node",
-            StringComparison.Ordinal)
-                ? "{\"fromNodeId\":\"n-1\",\"toNodeId\":\"n-1\",\"distanceMm\":7}"
-                : string.Empty;
         var limits = string.Join(
             ",",
             CommitmentDimensionVocabulary.Ordered.Select(
@@ -86,8 +68,8 @@ public sealed class CommitmentPolicyConfigurationTests
         var json =
             $"{{\"configurationVersion\":\"1.0.0\",\"policies\":[{{" +
             "\"policyId\":\"uniform-v1\",\"budgetBasis\":\"decisionInduced\"," +
-            $"\"limits\":[{limits}],\"materialRevisionRule\":{{\"rawEtaThresholdMs\":1}}" +
-            $"}}],\"stopDistances\":[{distance}]}}";
+            $"\"limits\":[{limits}]" +
+            "}]}";
 
         var error = Assert.Throws<InvalidDataException>(
             () => CommitmentPolicyConfiguration.Decode(
@@ -202,8 +184,8 @@ public sealed class CommitmentPolicyConfigurationTests
     [Fact]
     public void The_archived_reference_configuration_keeps_its_hash_and_the_relaxed_deadline_off()
     {
-        // wp14-c1-h6-reference-v1.json is byte-identical to the C-30 configuration of every
-        // archived T3.8 run; its canonical hash must not move. Adding a deadline
+        // wp14-c1-h6-reference-v1.json is the C-30 configuration of the archived T3.8 runs, without the
+        // commitment dimensions that only recorded; its canonical hash must not move. Adding a deadline
         // gives a different configuration, so the arms of a comparison stay distinguishable.
         var reference = File.ReadAllText(Path.Combine(
             TestPaths.Root(),
@@ -213,7 +195,7 @@ public sealed class CommitmentPolicyConfigurationTests
         var archived = CommitmentPolicyConfiguration.Decode(Encoding.UTF8.GetBytes(reference));
 
         Assert.Equal(
-            "f07395f5f2c967e0d89cceb4a55b23c4f896971db071d8c7876f05e20ef09884",
+            "44926e6302862367fca6dc67a5a4551a47e873124f15cc21757a272fcf222d9f",
             archived.ContentHash.Value);
         var policyId = Assert.Single(archived.PolicyIds);
         Assert.True(archived.TryGetPolicy(policyId, out var policy));
@@ -397,7 +379,7 @@ public sealed class CommitmentPolicyConfigurationTests
         return Encoding.UTF8.GetBytes(
             $"{{\"configurationVersion\":\"1.0.0\",\"policies\":[{{" +
             "\"policyId\":\"uniform-v1\",\"budgetBasis\":\"decisionInduced\"," +
-            $"\"limits\":[{limits}],\"materialRevisionRule\":{{\"rawEtaThresholdMs\":1}}" +
-            $"{extra}}}],\"stopDistances\":[]}}");
+            $"\"limits\":[{limits}]" +
+            $"{extra}}}]}}");
     }
 }

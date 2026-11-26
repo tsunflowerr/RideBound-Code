@@ -45,19 +45,14 @@ internal static class CommitmentTestData
         CommitmentDimension dimension,
         long value)
     {
-        var values = new long[10];
+        var values = new long[5];
         values[(int)dimension] = value;
         return new CommitmentVector(
             values[0],
             values[1],
             values[2],
             values[3],
-            values[4],
-            values[5],
-            values[6],
-            values[7],
-            values[8],
-            values[9]);
+            values[4]);
     }
 
     public static CommitmentPolicy Policy(
@@ -71,6 +66,5 @@ internal static class CommitmentTestData
                     dimension,
                     hardLimit,
                     phases)),
-            new MaterialRevisionRule(1_000, 60_000),
             confirmationLocks);
 }

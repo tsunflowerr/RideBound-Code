@@ -47,7 +47,6 @@ public sealed class ExactSmallCommitmentDifferentialTests
             var filter = new CommitmentCandidateFilter(
                 fixture.BeforeEventState,
                 new CommitmentPolicyCatalog([fixture.Policy]),
-                NoDistances.Instance,
                 $"commitment-oracle-{seed}",
                 1);
             var generatedByVehicle = Assert.IsAssignableFrom<
@@ -113,7 +112,6 @@ public sealed class ExactSmallCommitmentDifferentialTests
         var reference = new CommitmentCandidateFilter(
             fixture.BeforeEventState,
             context.Policies,
-            context.StopDistances,
             "c1-reference",
             1).Filter(fixture.State, raw);
 
@@ -214,13 +212,11 @@ public sealed class ExactSmallCommitmentDifferentialTests
                 dimension => new CommitmentDimensionLimit(
                     dimension,
                     null,
-                    CommitmentPhase.AllActive)),
-            new MaterialRevisionRule(1_000, null));
+                    CommitmentPhase.AllActive)));
         var context = new CommitmentMechanismContext(
             fixture.BeforeEventState,
             fixture.State,
             new CommitmentPolicyCatalog([policy]),
-            NoDistances.Instance,
             "c1-unbounded-equivalence",
             1);
 
@@ -271,7 +267,6 @@ public sealed class ExactSmallCommitmentDifferentialTests
             fixture.BeforeEventState,
             fixture.State,
             new CommitmentPolicyCatalog([EtaPolicy(1)]),
-            NoDistances.Instance,
             "c1-exhausted-budget",
             1);
 
@@ -327,7 +322,6 @@ public sealed class ExactSmallCommitmentDifferentialTests
                 context.ReducedState,
                 context.ReducedState with { Run = updated.Value! },
                 context.Policies,
-                context.StopDistances,
                 context.PublicationScope,
                 context.SourceEventSequence,
                 RevisionReasonCode: "C1_HARD_VECTOR",
@@ -356,13 +350,11 @@ public sealed class ExactSmallCommitmentDifferentialTests
                 dimension => new CommitmentDimensionLimit(
                     dimension,
                     null,
-                    CommitmentPhase.AllActive)),
-            new MaterialRevisionRule(1_000, null));
+                    CommitmentPhase.AllActive)));
         var context = new CommitmentMechanismContext(
             fixture.BeforeEventState,
             fixture.State,
             new CommitmentPolicyCatalog([undeclared]),
-            NoDistances.Instance,
             "c1-hard-empty",
             1);
 
@@ -643,7 +635,6 @@ public sealed class ExactSmallCommitmentDifferentialTests
                         dimension,
                         HardLimit(dimension, dropLimit),
                         CommitmentPhase.AllActive)),
-                new MaterialRevisionRule(1_000, null),
                 dropEtaDeadlineSlackPermille: deadlinePermille);
 
         CandidateSelectionProblem Problem(CommitmentPolicy policy)
@@ -706,13 +697,11 @@ public sealed class ExactSmallCommitmentDifferentialTests
                 dimension => new CommitmentDimensionLimit(
                     dimension,
                     null,
-                    CommitmentPhase.AllActive)),
-            new MaterialRevisionRule(1_000, null));
+                    CommitmentPhase.AllActive)));
         var context = new CommitmentMechanismContext(
             fixture.BeforeEventState,
             fixture.State,
             new CommitmentPolicyCatalog([undeclared]),
-            NoDistances.Instance,
             "c1-every-candidate-rejected",
             1);
         return (generated, set, noOp, ordinalFirst, context);
@@ -735,7 +724,6 @@ public sealed class ExactSmallCommitmentDifferentialTests
             context.ReducedState,
             decision.ProposedState,
             context.Policies,
-            context.StopDistances,
             context.PublicationScope,
             context.SourceEventSequence);
 
@@ -837,7 +825,6 @@ public sealed class ExactSmallCommitmentDifferentialTests
                         dimension,
                         null,
                         CommitmentPhase.AllActive)),
-                new MaterialRevisionRule(1_000, null),
                 dropEtaDeadlineSlackPermille: permille));
 
     private static string[] RetainedIds(HardVectorCandidateAssessmentResult result) =>
@@ -883,7 +870,6 @@ public sealed class ExactSmallCommitmentDifferentialTests
             fixture.BeforeEventState with { Commitments = ledger },
             fixture.State with { Commitments = ledger },
             new CommitmentPolicyCatalog([policy]),
-            NoDistances.Instance,
             "c1-deadline",
             1);
     }
@@ -896,7 +882,6 @@ public sealed class ExactSmallCommitmentDifferentialTests
         var filter = new CommitmentCandidateFilter(
             fixture.BeforeEventState,
             new CommitmentPolicyCatalog([policy]),
-            NoDistances.Instance,
             "commitment-monotonicity",
             1);
         return filter.Filter(fixture.State, candidates)
@@ -916,8 +901,7 @@ public sealed class ExactSmallCommitmentDifferentialTests
                         or CommitmentDimension.DropEtaTotalMs
                         ? hardLimit
                         : null,
-                    CommitmentPhase.AllActive)),
-            new MaterialRevisionRule(1_000, null));
+                    CommitmentPhase.AllActive)));
 
     private static CommitmentMechanismContext MechanismContext(
         Fixture fixture,
@@ -926,7 +910,6 @@ public sealed class ExactSmallCommitmentDifferentialTests
             fixture.BeforeEventState,
             fixture.State,
             new CommitmentPolicyCatalog([fixture.Policy]),
-            NoDistances.Instance,
             scope,
             1);
 
@@ -1018,8 +1001,7 @@ public sealed class ExactSmallCommitmentDifferentialTests
                         or CommitmentDimension.DropEtaTotalMs
                         ? limit
                         : null,
-                    CommitmentPhase.AllActive)),
-            new MaterialRevisionRule(1_000, null));
+                    CommitmentPhase.AllActive)));
 
         return new Fixture(
             before,
@@ -1179,18 +1161,4 @@ public sealed class ExactSmallCommitmentDifferentialTests
         SimTime BaselineDrop,
         long HardEtaLimit,
         CommitmentPolicy Policy);
-
-    private sealed class NoDistances : IStopDistanceLookup
-    {
-        public static NoDistances Instance { get; } = new();
-
-        public bool TryGetDistanceMillimeters(
-            NodeId fromNodeId,
-            NodeId toNodeId,
-            out long distanceMillimeters)
-        {
-            distanceMillimeters = 0;
-            return false;
-        }
-    }
 }

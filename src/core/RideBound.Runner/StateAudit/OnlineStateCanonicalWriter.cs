@@ -604,14 +604,9 @@ public static class OnlineStateCanonicalWriter
     {
         var item = new CanonicalObject(buffer);
         item.Member("dropEtaTotalMs"u8).Integer(value.DropEtaTotalMs);
-        item.Member("dropStopRelocationMm"u8).Integer(value.DropStopRelocationMm);
         item.Member("dropStopSwitchCount"u8).Integer(value.DropStopSwitchCount);
-        item.Member("incumbentOrderInversionCount"u8).Integer(value.IncumbentOrderInversionCount);
-        item.Member("materialEtaRevisionCount"u8).Integer(value.MaterialEtaRevisionCount);
         item.Member("pickupEtaTotalMs"u8).Integer(value.PickupEtaTotalMs);
-        item.Member("pickupStopRelocationMm"u8).Integer(value.PickupStopRelocationMm);
         item.Member("pickupStopSwitchCount"u8).Integer(value.PickupStopSwitchCount);
-        item.Member("prePickupInsertedStopCount"u8).Integer(value.PrePickupInsertedStopCount);
         item.Member("vehicleSwitchCount"u8).Integer(value.VehicleSwitchCount);
         item.End();
     }

@@ -1,26 +1,26 @@
-# INS-SHRC-CL-early-boarding.light-v1 stdout: 817190 bytes, sha256 6750ad2131dbb7fe84fe6180906b53f8b53d01f62f204193c176da35c9308ac4
+# INS-SHRC-CL-early-boarding.light-v1 stdout: 688140 bytes, sha256 5ec3449931c55b15c3eea97ca7225864f1cc7197af6f2a12d35f95e00a200ce4
 {"messageType":"helloAck","payload":{"capabilitySelection":{"capabilities":["dynamicTravelTimes","exactEventOrdering","oldPlanProjection"],"maxFleetSize":5000,"maxRequestCount":100000,"positionModel":"directedEdgeProgress","status":"accepted"},"selectedSchemaVersion":"1.0.0"},"schemaVersion":"1.0.0"}
-{"messageType":"initialized","payload":{"initialStateIdentity":{"epochId":0,"nextEventSeq":1,"simTimeMs":0,"stateHash":"6e628e8e7e2dd18386c05ce6c7c114f2ef617cfd8b122265f3bfdfb9a20052fa"},"manifestHash":"f01102cce91416ae626da16f51ddcb2b72eb9ca4d0860c897a32c5e753b5e9a1"},"runId":"final-tiny-run","scenarioId":"final-tiny-v1","schemaVersion":"1.0.0"}
-checkpoint 871 dbace1945022db1fc39f5d1938a5f17916c4e149db8d5b6b23663fcb0b8b9b91
-decision 1967 f92b2fd653ee638d5d24f7e8bd345cdd823b1ff1dcfe6a32c37dc3e02fd1dd6a
-checkpoint 2815 3e6fb6ab9c901eab037feb2b488ce2dab122b86d3f432a0b63526288fb07bcd4
-decision 4488 9cf3ed461c70435848815b9e6dc5f78a1d2814985896bfe360ebb79a28974281
-checkpoint 6793 06799e8f96dc6ae1bf56d91b082216fea722dfbec9bb45010bbc07b63da017bc
-decision 7726 434117c3ce75ac1fe9813ce9fa98036569300947cc06d45f86676ebc4962fcb8
-checkpoint 15570 8b07db4587d2e6fb6b30a4c072cdc91f8f8a6f5c34dfe6e229021e190d5680fc
-decision 9801 981d0d875ac2f735d54153b5ffa707f48c51b6b58d20384dd6da9ea8c9f60101
-checkpoint 29630 3b8c4439f5a0bfd85cb5059767c354d9df67546dcd85ee32fef3db5095162c0e
-decision 13664 28515957a86ed4f703808874ad233e7f74ada56b2a9267278446bf8ac5bb0210
-checkpoint 48264 81fe2bd31035eb072719dbfc7c324105c5900407437ef8661e354bd60b2b56bf
-decision 14925 436ddeeeb3ace7c8bae608c77fb172171d298366488b6be207137454a72d2ec4
-checkpoint 72508 fffe477bcf9f68630c3e9b0f2fa9830b1bb7700e845623b204ee53c3f978a3da
-decision 15299 6198c903c5475de1e6398592dd83bc10a491ab6ab166addbc8bdb814964130c3
-checkpoint 97735 38156a3aff68c411e2b8de575bc5bbf2db3a73ec25d8be735cf77f939dd8f2bf
-decision 15758 00fa214495025973ddbf71f36802a700565244917b13a1b48f283633f6ad53f4
-checkpoint 121909 734d5a76b5ac64859fd3b58c17e4ea8b24f4703b8b95324bd9bc1e7c0d2476dc
-decision 15290 017ded399c24f696a78b885778c0ad4ae8f3e3a26f46eae20cd00d0426a6e3e0
-checkpoint 144681 e7517ffaa0e51fafd367e7682fa3cb62a330d7a22cb10f35c6382a8525804868
-decision 12307 916c047779bf457ce0e9a1f5954139e3fb8e4775ea4c9bffee5f622be1862781
-checkpoint 163949 34d9012d252543e871e7ee492c20506c0d8a9dae12d121db633aca825127196b
+{"messageType":"initialized","payload":{"initialStateIdentity":{"epochId":0,"nextEventSeq":1,"simTimeMs":0,"stateHash":"6e628e8e7e2dd18386c05ce6c7c114f2ef617cfd8b122265f3bfdfb9a20052fa"},"manifestHash":"7d9419674c79ce7075e94f29b861dbe891f94f368ea377d8c7b43ee938031a46"},"runId":"final-tiny-run","scenarioId":"final-tiny-v1","schemaVersion":"1.0.0"}
+checkpoint 871 4ba1b603a9add5666d46e25e09a0a2727510804a9526012a44b2172f19021f43
+decision 1967 177fb9890265471a7c9c93c4e06d0d37299cbef6cb3afad6ca78a479da39bc4e
+checkpoint 2815 e4669d2ab86623442c1fda75d05b34c23553e191eac7c829817ea5e29f3d5830
+decision 3763 3fc9c90336969ecdbdac907a26438af068add558aee627166a42ee42dbd4c0a6
+checkpoint 6068 7549a8fc99f3b861a12dbf2eb8fcabb16e45494de30b3502dba4a158a3ca2f67
+decision 6276 aa8ddcc209ecc2403767d4abca21da1297099cc6d002c0bccbb286f1329c79fd
+checkpoint 13395 cd7a1c8c243317fa04c06b779267b4c97c0378f08ca9751c1b5d48061c267e9d
+decision 7626 9cf6b65c74df80c8afe36aa921b825ef692b32c0bb9a93833ad222f625eeb6e1
+checkpoint 25280 683a899d637386719d03855d566641d298e32c88a6f50dbd38c7c01f7b1dbbb0
+decision 10764 6ee31256f6bc13f3b8f9a32fb3ce4526293f5565efc283ac0ef2ee90be9232f2
+checkpoint 41014 1734e6405ca619fbf52550576c492ac14e9db60e0574de7d02b429894d5f2057
+decision 11300 72d9b2fc5095fdfc4556eebb02645259ad105c2e289ca2f542007cf10e398a1f
+checkpoint 61633 d3eed63dcb8a3d17a12e0c50f2c96f4095e52589ab777501635cd651a87573e9
+decision 11674 0e77e9031346666d4d19ba5d3012684497624aeaff0fd09479f75c6d6c7a194a
+checkpoint 83235 d538dcaacca7db18ca3f9077437e086a51f6195f2efbde7058ec35f4f20b2887
+decision 12133 29d8b9e83206c200c57a487175f3f462bfb9ce6ed448e31f6dd8d8e92443432f
+checkpoint 103784 e104037d6a534b79bd5305d34b642c041f11543463ba2c745b9a512e88594443
+decision 11665 143a3fe87aaed5f1b1cd2ae11a1c77d2992e1fd0546d12a3214d0ac8984f02cf
+checkpoint 122931 932ab9b94bb68c1c8870696a80b1c97a96a0213bf7cb91124d1bf1008c46d5cc
+decision 9407 11c46b4fce734c20db461bfd3cf4ec5e977113c56ee750381cdf78d248341fe8
+checkpoint 139299 af44b417c54296a6546f20481266a766204b9938dd706139863bef4fbf81c7ed
 {"epochId":11,"messageType":"error","payload":{"code":"INTERNAL_ERROR","disposition":"failSession","message":"C1 rejected every generated candidate for this vehicle. No-op rejection: Promise stops, ETA order and service order must be valid."},"runId":"final-tiny-run","scenarioId":"final-tiny-v1","schemaVersion":"1.0.0","simTimeMs":955003}
 {"messageType":"error","payload":{"code":"INVALID_SESSION_STATE","disposition":"rejectMessage","message":"A failed session accepts only shutdown."},"runId":"final-tiny-run","scenarioId":"final-tiny-v1","schemaVersion":"1.0.0"}
