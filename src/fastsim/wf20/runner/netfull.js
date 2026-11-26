@@ -3,8 +3,8 @@
 //   DT       transpose of D (column reads D[n][b] become row reads DT[b][n])
 //   csrStart/csrTo/csrW  out-edges of the edge list (integer travel_time seconds) for shortest-path reconstruction
 //   zoneIdx  node -> zone index (0..nZones-1, zones = TLC taxi zone ids sorted ascending), zoneSize, zoneIds
-// build() runs once in the main thread and places every array in a SharedArrayBuffer; attach() rebuilds the typed-array
-// views in a worker from workerData (no copy). Pure data, no side effects besides reading the network files.
+// build() runs once in the main thread and places every array in a SharedArrayBuffer; attach() adds the zone-id map and
+// the shortest-path cache. Pure data, no side effects besides reading the network files.
 'use strict';
 const path = require('path');
 
@@ -49,12 +49,6 @@ function build() {
   return attach(S);
 }
 
-// workerData-safe description (typed arrays over SharedArrayBuffers are transferred by reference)
-function share(NET) {
-  const { N, nZones, nEdges, D, DT, csrStart, csrTo, csrW, zoneIds, zoneIdx, zoneSize } = NET;
-  return { N, nZones, nEdges, D, DT, csrStart, csrTo, csrW, zoneIds, zoneIdx, zoneSize };
-}
-
 function attach(S) {
   const NET = { ...S };
   NET.zoneOfId = new Map(Array.from(S.zoneIds, (z, i) => [z, i]));
@@ -64,24 +58,4 @@ function attach(S) {
   return NET;
 }
 
-// Toy network for unit tests: nodes 0..N-1, directed edges [[from, to, w], ...], zones per node (any ids).
-function toy(N, edges, zoneOfNode) {
-  const INF = 1e9;
-  const d = new Float64Array(N * N).fill(INF);
-  for (let i = 0; i < N; i++) d[i * N + i] = 0;
-  for (const [a, b, w] of edges) if (w < d[a * N + b]) d[a * N + b] = w;
-  for (let k = 0; k < N; k++) for (let i = 0; i < N; i++) for (let j = 0; j < N; j++) { const v = d[i * N + k] + d[k * N + j]; if (v < d[i * N + j]) d[i * N + j] = v; }
-  const D = new Uint16Array(N * N), DT = new Uint16Array(N * N);
-  for (let i = 0; i < N; i++) for (let j = 0; j < N; j++) { if (d[i * N + j] >= INF) throw new Error('toy: disconnected'); D[i * N + j] = d[i * N + j]; DT[j * N + i] = d[i * N + j]; }
-  const csrStart = new Int32Array(N + 1);
-  for (const [a] of edges) csrStart[a + 1]++;
-  for (let i = 0; i < N; i++) csrStart[i + 1] += csrStart[i];
-  const csrTo = new Int32Array(edges.length), csrW = new Int32Array(edges.length), fill = Int32Array.from(csrStart);
-  for (const [a, b, w] of edges) { const k = fill[a]++; csrTo[k] = b; csrW[k] = w; }
-  const ids = [...new Set(zoneOfNode)].sort((a, b) => a - b);
-  const zoneIds = Int32Array.from(ids), zoneIdx = new Int32Array(N), zoneSize = new Int32Array(ids.length);
-  for (let n = 0; n < N; n++) { zoneIdx[n] = ids.indexOf(zoneOfNode[n]); zoneSize[zoneIdx[n]]++; }
-  return attach({ N, nZones: ids.length, nEdges: edges.length, D, DT, csrStart, csrTo, csrW, zoneIds, zoneIdx, zoneSize });
-}
-
-module.exports = { build, share, attach, toy, NET_MODULE, DATA_DIR, WORK_DIR };
+module.exports = { build };

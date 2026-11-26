@@ -3,8 +3,7 @@
 //              (makeScorer) and lambda.js. The C# test ShareabilityScorerGoldenTests reads it.
 //   manhattan  the FleetPy Manhattan network in the form the C# Runner reads for the Shadow arms: <networkOutDir>/D.u16
 //              (the all-pairs table, N*N uint16) and network.json (N, nZones, csrStart, csrTo, csrW, zoneIdx); a WP4
-//              config names their sha256 as distancesSha256 and graphSha256. A golden file of scores on that network
-//              is written too.
+//              config names their sha256 as distancesSha256 and graphSha256.
 //
 // The cells of one golden share one network and one demand table, like the riders of one emulator cell. Contexts are
 // random but valid (non-decreasing main-node times, target pickup before drop, arc start != arc end); a context the
@@ -14,7 +13,7 @@
 // command line. Existing output files are never overwritten.
 //
 // Usage: node export_network.js toy <out.json> <cells> <casesPerCell> <seed>
-//        node export_network.js manhattan <out.json> <cells> <casesPerCell> <seed> <networkOutDir> <data root>
+//        node export_network.js manhattan <networkOutDir> <data root>
 //   <data root>  the data root, RB_DATA of src/fastsim (network.js reads the network files there)
 // The C# toy golden is "toy <out.json> 24 10 20261103": its bytes from "cells" on are reproduced exactly (the committed
 // file carries the generator name and source hashes of the earlier copies of these files).
@@ -30,7 +29,8 @@ const { makeRefScorer } = require('./ref_scorer.js');
 const SOURCES = { sscore: 'sscore.js', lambda: 'lambda.js', network: 'network.js', refScorer: 'ref_scorer.js' };
 const sha = f => crypto.createHash('sha256').update(fs.readFileSync(f)).digest('hex');
 
-const [mode, out, cellsArg, casesArg, seedArg, netOut, dataRoot] = process.argv.slice(2);
+const [mode, ...args] = process.argv.slice(2);
+const [out, cellsArg, casesArg, seedArg] = args;
 if (!['toy', 'manhattan'].includes(mode) || !out || fs.existsSync(out)) throw new Error('usage, or output exists');
 let h = (Number(seedArg) >>> 0) || 1;
 const rnd = () => { h ^= h << 13; h >>>= 0; h ^= h >>> 17; h ^= h << 5; h >>>= 0; return h / 4294967296; };
@@ -57,11 +57,11 @@ function exportNet(NET) {
 }
 
 function makeCell(NET) {
-  const L = Math.min(NET.N, mode === 'toy' ? ri(2, NET.N) : ri(20, 80));
+  const L = Math.min(NET.N, ri(2, NET.N));
   const all = Array.from({ length: NET.N }, (_, i) => i);
   for (let i = all.length - 1; i > 0; i--) { const j = ri(0, i); [all[i], all[j]] = [all[j], all[i]]; }
   const globalOf = all.slice(0, L);
-  const nReq = ri(0, mode === 'toy' ? 60 : 300);
+  const nReq = ri(0, 60);
   const arrivals = [], zO = [], zD = [];
   for (let k = 0; k < nReq; k++) {
     arrivals.push(ri(0, 7_500_000));
@@ -106,22 +106,23 @@ function makeCtx(L) {
     load0: ri(0, cap), cap, stops, iP, iD, dwell, rq: 'q', ri: 0 };
 }
 
-let NET = null;
 if (mode === 'manhattan') {
+  const [netOut, dataRoot] = args;
   if (!netOut || fs.existsSync(netOut)) throw new Error('network output dir missing or exists');
   if (!dataRoot) throw new Error('manhattan: the data root (RB_DATA of src/fastsim) is missing');
-  NET = NETWORK.build(dataRoot);
+  const NET = NETWORK.build(dataRoot);
   fs.mkdirSync(netOut, { recursive: true });
   fs.writeFileSync(path.join(netOut, 'D.u16'), Buffer.from(NET.D.buffer, NET.D.byteOffset, NET.D.byteLength));
   const e = exportNet(NET); delete e.D;
   fs.writeFileSync(path.join(netOut, 'network.json'), JSON.stringify(e));
+  process.exit(0);
 }
 
 const sources = Object.fromEntries(Object.entries(SOURCES).map(([k, f]) => [k, sha(path.join(__dirname, f))]));
 const result = { generator: 'export_network.js', mode, seed: Number(seedArg), sources, cells: [], skipped: 0,
   refMaxRel: 0 };
 for (let c = 0; c < Number(cellsArg); c++) {
-  const net = mode === 'toy' ? toyNet() : NET;
+  const net = toyNet();
   const { cell, lambda } = makeCell(net);
   const lam = LAM.makeLambda({ nZones: net.nZones, zoneSize: net.zoneSize, N: net.N, arrivals: lambda.arrivals,
     zO: lambda.zO, zD: lambda.zD, priorO: lambda.priorO, priorD: lambda.priorD, phi: lambda.phi, alpha: lambda.alpha,
@@ -149,7 +150,7 @@ for (let c = 0; c < Number(cellsArg); c++) {
   const weights = intervals.map(i => ({ i, causal: lam.wz(i), oracle: lam.wzOracle(i) }))
     .map(w => ({ i: w.i, cO: Array.from(w.causal.O), cD: Array.from(w.causal.D), oO: Array.from(w.oracle.O),
       oD: Array.from(w.oracle.D) }));
-  result.cells.push({ net: mode === 'toy' ? exportNet(net) : 'manhattan', cell, lambda, weights,
+  result.cells.push({ net: exportNet(net), cell, lambda, weights,
     fallbacks: lam.fallbacks, cases });
 }
 fs.writeFileSync(out, JSON.stringify(result));

@@ -98,7 +98,7 @@ mkdir -p $P/predictions
 FS_ONLY=2019-09-19-w08-r0 node src/fastsim/fullsys/emulate_fullsys.js adapter $P $P/predictions/fullsys-f14-predictions.tsv
 
 # 3. Mạng đường cho bộ chấm điểm Shadow của C# (D.u16, network.json)
-node src/datagen/export_network.js manhattan demo/network-golden.json 1 1 1 demo/network $RB_DATA
+node src/datagen/export_network.js manhattan demo/network $RB_DATA
 
 # 4. Cấu hình lượt chạy từ các mẫu của lượt chạy cuối
 python -B src/adapter/make_job_configs.py --data $P --network $(cd demo && (pwd -W 2>/dev/null || pwd))/network \
@@ -247,7 +247,7 @@ done
 node src/fastsim/fullsys/emulate_fullsys.js adapter $P14 $P14/predictions/fullsys-f14-predictions.tsv
 node src/fastsim/fullsys/emulate_fullsys_f16.js adapter $P16 $P16/predictions/fullsys-f16-predictions.tsv
 mkdir -p $P14/predictions-forecast-gate && node src/fastsim/fullsys/emulate_forecast_gate.js $P14 $P14/predictions-forecast-gate/forecast-gate.tsv
-node src/datagen/export_network.js manhattan network-golden.json 1 1 1 $NET $RB_DATA
+node src/datagen/export_network.js manhattan $NET $RB_DATA
 # 3. Cấu hình lượt chạy
 M="--network $NET --g2-rce35 $F/templates/G2-RCE35.json --g2-eohz35 $F/templates/G2-EOHZ35.json --wp4-template $F/wp4-via-g2k8-a1-fast.json"
 python -B src/adapter/make_job_configs.py --data $P14 $M --forecast-gate
