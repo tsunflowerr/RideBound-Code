@@ -207,16 +207,7 @@ function main() {
     let rc = null, globalOf = null;
     const P0 = prepareViaCell(c.vf, root);
     if (P0.meta.permille !== 2000) throw new Error(c.vf + ': permille');
-    if (!args.nveh && P0.fleet.length !== 62) throw new Error(c.vf + ': fleet ' + P0.fleet.length);
-    if (args.nveh) {
-      // A3: fleet-size survey. As scenario.js (fleet.slice(0, nVeh)), keep the first n vehicles of the fixture fleet, which the
-      // converter takes in source order (src.fleet[:NVEH]); fixtures with 81 vehicles come from the same converter with NVEH 81.
-      const n = Number(args.nveh);
-      if (!(Number.isInteger(n) && n >= 1 && n <= P0.fleet.length)) throw new Error('--nveh ' + n + ' > fleet ' + P0.fleet.length);
-      P0.fleet = P0.fleet.slice(0, n);
-      P0.vehIdStr = P0.vehIdStr.slice(0, n);
-      P0.meta.nVeh = n;
-    }
+    if (P0.fleet.length !== 62) throw new Error(c.vf + ': fleet ' + P0.fleet.length);
     if (needShadow) {
       const dir = CELL_DIRS.find(d => fs.existsSync(path.join(d, c.cell + '.json')));
       if (!dir) throw new Error('no plain cell for ' + c.cell);

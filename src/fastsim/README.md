@@ -10,7 +10,8 @@ Shadow của các lượt chạy đó. Cách chạy: `README.md` ở thư mục 
 Các file `.js`, `.py`, `.sh` trong `adapter60/`, `engines/`, `fullsys/`, `wf20/`, `wf5/`, `wf15emu/`, `sync-rerun/`
 được chép nguyên văn từ bản đã chạy cho báo cáo; tên thư mục giữ như lúc đó. Thay đổi duy nhất là đường dẫn: code cũ ghi
 đường dẫn tuyệt đối của máy đã chạy, bản này đọc thư mục dữ liệu từ biến môi trường (`paths.js` cho JS, `os.environ` cho
-Python và shell). Không dòng logic nào bị sửa.
+Python và shell). Không dòng logic nào bị sửa. Ngoại lệ: đã gỡ các tùy chọn mà không lượt chạy nào của báo cáo dùng,
+`--nveh` của `emulate_adapter_pp.js`, `--nveh` và `--g2pen` của `emulate_adapter_eta.js`; kết quả không đổi.
 
 | Thư mục | Nội dung |
 |---|---|
