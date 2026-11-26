@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import pathlib
 import sys
 import tempfile
@@ -13,11 +14,24 @@ from ridebound_fleetpy.errors import AdapterFailure
 from ridebound_fleetpy.runner_client import RunnerClient
 from ridebound_fleetpy.session import _require_declared_commitment_policy
 from ridebound_fleetpy.transcript import ProtocolTranscriptRecorder
-from actual_fleetpy_medium_verify import decode_transcript, verify_bundle
+import replay
 
 
 FAKE = pathlib.Path(__file__).parent / "fixtures" / "fake_runner.py"
 HASH = "a" * 64
+
+
+def decode_transcript(path):
+    """(direction, envelope) of every record, each frame checked against its length and hash as replay.py does."""
+    decoded = []
+    with replay.open_transcript(path) as handle:
+        for line in handle:
+            record = json.loads(line)
+            frame = replay.frame(record)
+            if not replay.same_frame(frame, record):
+                raise RuntimeError(f"{path.name}:{record['ordinal']}: frame length/hash mismatch")
+            decoded.append((record["direction"], json.loads(frame)))
+    return decoded
 
 
 def hello():
@@ -54,7 +68,6 @@ class RunnerClientTests(unittest.TestCase):
     def make_client(self, mode="normal", **options):
         return RunnerClient(
             [sys.executable, str(FAKE), mode],
-            [sys.executable, FAKE],
             timeout_seconds=options.pop("timeout_seconds", 1),
             shutdown_timeout_seconds=options.pop("shutdown_timeout_seconds", 1),
             **options,
@@ -71,7 +84,6 @@ class RunnerClientTests(unittest.TestCase):
         self.assertEqual("b" * 64, checkpoint["payload"]["checkpointHash"])
         client.shutdown()
         self.assertEqual("closed", client.state)
-        self.assertEqual(client.artifact_receipts["before"], client.artifact_receipts["after"])
 
     def test_position_model_mismatch_remains_fail_closed(self) -> None:
         client = self.make_client("node-only")
@@ -177,24 +189,6 @@ class RunnerClientTests(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError, "frame length/hash mismatch"):
                 decode_transcript(path)
 
-    def test_bundle_manifest_rejects_an_unlisted_file(self) -> None:
-        with tempfile.TemporaryDirectory() as directory:
-            root = pathlib.Path(directory)
-            (root / "bundle-manifest.json").write_text(
-                '{"bundleType":"ridebound-wp7-actual-fleetpy-medium-v1",'
-                '"files":[],"schemaVersion":"1.0.0"}\n',
-                encoding="utf-8",
-                newline="\n",
-            )
-            (root / "unlisted.txt").write_text(
-                "mutation\n",
-                encoding="utf-8",
-                newline="\n",
-            )
-
-            with self.assertRaisesRegex(RuntimeError, "bundle inventory differs"):
-                verify_bundle(root)
-
     def test_adversarial_stdout_and_lifecycle_fail_closed(self) -> None:
         expected = {
             "partial": "RBWP7_RUNNER_INCOMPLETE_FRAME",
@@ -239,30 +233,6 @@ class RunnerClientTests(unittest.TestCase):
                     self.assertEqual(code, raised.exception.code)
                 finally:
                     client.shutdown()
-
-    def test_missing_artifact_fails_and_a_changed_one_is_recorded(self) -> None:
-        with tempfile.TemporaryDirectory() as directory:
-            artifact = pathlib.Path(directory) / "artifact.txt"
-            artifact.write_text("before", encoding="utf-8")
-            missing = RunnerClient([sys.executable, str(FAKE)], [artifact.with_suffix(".missing")])
-            with self.assertRaises(AdapterFailure) as raised:
-                missing.start()
-            self.assertEqual("RBWP7_RUNNER_ARTIFACT_MISSING", raised.exception.code)
-
-            client = RunnerClient(
-                [sys.executable, str(FAKE)],
-                [sys.executable, FAKE, artifact],
-                timeout_seconds=1,
-                shutdown_timeout_seconds=1,
-            )
-            client.start()
-            client.negotiate(hello())
-            artifact.write_text("after", encoding="utf-8")
-            client.shutdown()
-            self.assertEqual("closed", client.state)
-            receipts = client.artifact_receipts
-            changed = [new["path"] for old, new in zip(receipts["before"], receipts["after"]) if old != new]
-            self.assertEqual([str(artifact.resolve())], changed)
 
 
 if __name__ == "__main__":

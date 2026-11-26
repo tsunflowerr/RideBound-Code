@@ -203,7 +203,7 @@ class AdapterReplay:
         self.position = 0  # frames seen so far; a client made later starts its playback here
         self.first, self.rebound = None, False  # rebound: initializeRun differed only in its build identity
 
-    def factory(self, command, artifact_paths, **options):
+    def factory(self, command, **options):
         from ridebound_fleetpy.runner_client import RunnerClient
         inner = options.get("transcript_writer")
 
@@ -214,7 +214,7 @@ class AdapterReplay:
 
         options["transcript_writer"] = writer
         playback = [PYTHON, "-I", "-B", str(HERE / "replay.py"), "serve", self.transcript, str(self.position)]
-        return RunnerClient(playback, artifact_paths, **options)
+        return RunnerClient(playback, **options)
 
     def check(self, direction, data):
         if self.first is not None:

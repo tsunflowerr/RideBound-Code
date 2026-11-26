@@ -1,17 +1,14 @@
 from __future__ import annotations
 
-import hashlib
 import io
 import json
 import os
-import pathlib
 import queue
 import re
 import signal
 import subprocess
 import threading
 import time
-from dataclasses import dataclass
 from typing import Any, Callable, Iterable
 
 from .errors import AdapterFailure
@@ -23,12 +20,6 @@ _EOF = object()
 # The Runner's helloAck must select this position model and offer at least these capabilities.
 _POSITION_MODEL = "directedEdgeProgress"
 _REQUIRED_CAPABILITIES = frozenset({"exactEventOrdering", "dynamicTravelTimes", "oldPlanProjection"})
-
-
-@dataclass(frozen=True)
-class ArtifactReceipt:
-    path: str
-    sha256: str
 
 
 class RunnerClient:
@@ -45,7 +36,6 @@ class RunnerClient:
     def __init__(
         self,
         command: Iterable[str],
-        artifact_paths: Iterable[str | pathlib.Path],
         *,
         timeout_seconds: float = 30.0,
         shutdown_timeout_seconds: float = 10.0,
@@ -57,7 +47,6 @@ class RunnerClient:
         self._command = tuple(str(part) for part in command)
         if not self._command:
             raise ValueError("command cannot be empty")
-        self._artifact_paths = tuple(pathlib.Path(path).resolve() for path in artifact_paths)
         if timeout_seconds <= 0 or shutdown_timeout_seconds <= 0:
             raise ValueError("timeouts must be positive")
         if maximum_input_line_bytes < 256 or maximum_output_line_bytes < 256 or maximum_stderr_bytes < 1:
@@ -79,21 +68,10 @@ class RunnerClient:
         self._run_id: str | None = None
         self._scenario_id: str | None = None
         self._pending: dict[str, Any] | None = None
-        self._receipts_before: tuple[ArtifactReceipt, ...] = ()
-        self._receipts_after: tuple[ArtifactReceipt, ...] = ()
 
     @property
     def state(self) -> str:
         return self._state
-
-    @property
-    def artifact_receipts(self) -> dict[str, list[dict[str, str]]]:
-        # Path and SHA-256 of every artifact when the Runner started and after it stopped; a change is recorded here,
-        # not refused.
-        return {
-            "before": [receipt.__dict__.copy() for receipt in self._receipts_before],
-            "after": [receipt.__dict__.copy() for receipt in self._receipts_after],
-        }
 
     @property
     def diagnostics(self) -> str:
@@ -102,7 +80,6 @@ class RunnerClient:
 
     def start(self) -> None:
         self._require_state("created")
-        self._receipts_before = self._hash_artifacts()
         creationflags = 0
         popen_arguments: dict[str, Any] = {}
         if os.name == "nt":
@@ -247,7 +224,6 @@ class RunnerClient:
                 raise AdapterFailure(
                     "RBWP7_RUNNER_STDERR_OVERFLOW", "$runner", str(self._maximum_stderr_bytes)
                 )
-        self._receipts_after = self._hash_artifacts()
         if return_code != 0 and self._state != "failed":
             self._state = "failed"
             raise AdapterFailure("RBWP7_RUNNER_EXIT_NONZERO", "$runner", str(return_code))
@@ -435,18 +411,6 @@ class RunnerClient:
             self._fail("RBWP7_RUNNER_EXITED", str(return_code))
         if self._stderr_overflow.is_set():
             self._fail("RBWP7_RUNNER_STDERR_OVERFLOW", str(self._maximum_stderr_bytes))
-
-    def _hash_artifacts(self) -> tuple[ArtifactReceipt, ...]:
-        receipts: list[ArtifactReceipt] = []
-        for path in sorted(self._artifact_paths, key=lambda item: str(item).casefold()):
-            if not path.is_file():
-                raise AdapterFailure("RBWP7_RUNNER_ARTIFACT_MISSING", "$runner.artifacts", str(path))
-            digest = hashlib.sha256()
-            with path.open("rb") as source:
-                for chunk in iter(lambda: source.read(1024 * 1024), b""):
-                    digest.update(chunk)
-            receipts.append(ArtifactReceipt(str(path), digest.hexdigest()))
-        return tuple(receipts)
 
     def _assert_no_extra_stdout(self) -> None:
         saw_eof = False
