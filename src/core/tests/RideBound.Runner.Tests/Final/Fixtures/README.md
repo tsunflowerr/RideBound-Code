@@ -29,8 +29,10 @@ The Runner runs as a child process, and its working directory is this folder.
 ## Files
 
 **`commitment/`**
-- `SHRC71.json` and `SHHZ71.json` are the commitment configs of the final campaign, byte for byte (SHA-256
-  `d536e48d…` and `9ca0f404…`).
+- `SHRC71.json` and `SHHZ71.json` are, byte for byte, what `src/adapter/make_job_configs.py` writes from
+  `src/core/configs/final/templates/G2-RCE35.json` and `G2-EOHZ35.json` (SHA-256 `40244dbf…` and `f01cf219…`). The
+  configs of the final campaign (`d536e48d…`, `9ca0f404…`) also listed five record-only commitment dimensions that no
+  decision reads; those dimensions were removed later.
 - `INS-SHRC.json` and `INS-SHHZ.json` are their insertion-only twins: `RCE35` / `EOHZ35` with the same slack
   (1000 ‰) and Shadow keys. Compared with the G2 configs, they:
   - add `"vehicle"` to `finalConfirmationLocks`;
