@@ -156,15 +156,10 @@ function optionsFor(c, rc, globalOf, spec) {
     if (!(typeof flatRatio === 'number' && flatRatio > 0.5 && flatRatio < 2)) throw new Error('PAD needs a flat ratio for ' + spec.key);
     o.forecast = { prof, clipPickup: true, flatRatio };
   } else if (spec.fc !== 'N') throw new Error('forecast mode ' + spec.fc);
-  if (G2PEN !== null) {
-    // A5: wf17/r2 drive17.js:38: config G2 = { reopt: { g2: 99, g2Targets: 8, g2PenaltyMs }, lock: 'ratchet' }
-    if (spec.config !== 'G2') throw new Error('--g2pen needs config G2');
-    o.reopt = { ...o.reopt, g2PenaltyMs: G2PEN };
-  }
   return { o, A, rec, theta };
 }
 
-let FLAT = {}, G2PEN = null;
+let FLAT = {};
 function parseArgs(argv) {
   const a = {};
   for (let i = 0; i < argv.length; i++) {
@@ -207,7 +202,6 @@ function etaOf(r) {
 function main() {
   const args = parseArgs(process.argv.slice(2));
   if (args.flat) FLAT = JSON.parse(fs.readFileSync(args.flat, 'utf8')).flat;
-  if (args.g2pen !== undefined) G2PEN = Number(args.g2pen);
   const cells = fs.readFileSync(args.cells, 'utf8').split(/\r?\n/).filter(Boolean).map(n => {
     const m = /^(\d{4}-\d{2}-\d{2})-(w08|w17)-r([0-2])$/.exec(n);
     if (!m) throw new Error('cell ' + n);
@@ -238,16 +232,7 @@ function main() {
     let rc = null, globalOf = null;
     const P0 = prepareViaCell(c.vf, root);
     if (P0.meta.permille !== 2000) throw new Error(c.vf + ': permille');
-    if (!args.nveh && P0.fleet.length !== 62) throw new Error(c.vf + ': fleet ' + P0.fleet.length);
-    if (args.nveh) {
-      // A3: fleet-size survey. As scenario.js (fleet.slice(0, nVeh)), keep the first n vehicles of the fixture fleet, which the
-      // converter takes in source order (src.fleet[:NVEH]); fixtures with 81 vehicles come from the same converter with NVEH 81.
-      const n = Number(args.nveh);
-      if (!(Number.isInteger(n) && n >= 1 && n <= P0.fleet.length)) throw new Error('--nveh ' + n + ' > fleet ' + P0.fleet.length);
-      P0.fleet = P0.fleet.slice(0, n);
-      P0.vehIdStr = P0.vehIdStr.slice(0, n);
-      P0.meta.nVeh = n;
-    }
+    if (P0.fleet.length !== 62) throw new Error(c.vf + ': fleet ' + P0.fleet.length);
     if (needShadow) {
       const dir = CELL_DIRS.find(d => fs.existsSync(path.join(d, c.cell + '.json')));
       if (!dir) throw new Error('no plain cell for ' + c.cell);
@@ -285,7 +270,7 @@ function main() {
       }
       const row = { part: 'ADAPTER', nVeh: P.fleet.length, cell: c.cell, fixture: c.vf, day: c.day, win: c.win, rs: c.rs, config: spec.config, mode: spec.fc,
         arm: spec.key, engine: 'wf15-clint-pp', theta: theta === null ? null : theta,
-        flatRatio: o.forecast && o.forecast.flatRatio !== undefined ? o.forecast.flatRatio : null, g2PenaltyMs: G2PEN, ms, ...MET.metrics(res, A),
+        flatRatio: o.forecast && o.forecast.flatRatio !== undefined ? o.forecast.flatRatio : null, g2PenaltyMs: null, ms, ...MET.metrics(res, A),
         early60First, sumLead, nLead, ...etaSums,
         sig: sha(JSON.stringify(res.riders.map(r => [r.rq, r.served, r.veh, r.p0, r.A, r.revs]))) };
       if (chkRev !== row.visRev60 || chkTv5 !== row.sumTV5) throw new Error('A6 per-rider check failed ' + c.cell + ' ' + spec.role);

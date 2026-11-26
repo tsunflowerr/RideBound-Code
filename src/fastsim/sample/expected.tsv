@@ -1,15 +1,7 @@
 family	driver	cell	config	arm	mode	served	visRev60	sig
 eta30	emulate_adapter_eta	2019-09-19-w08-r0	G2	SHHZ71	CL	331	12	a3e209c6ec08d652fa728daebb1f757ff95f81f1aae980db99ebf3131a68df3b
-eta30	emulate_adapter_eta	2019-09-19-w08-r0	G2	SHHZ71	N	335	16	43cb1ec0c254223421fde245ee3e81ade69784a35966d307f4a4560b27358de1
-eta30	emulate_adapter_eta	2019-09-19-w08-r0	G2	SHRC71	CL	339	6	b7115c3ccb96505dcda5da5ea95f379cf640a29fe6ba60768542cdaba4510a18
-eta30	emulate_adapter_eta	2019-09-19-w08-r0	G2	SHRC71	CLc	338	6	c9b93e2c8869031c2718c10e222fb67e3d4f6eddd2740c1497d3b3de51eb5e30
-eta30	emulate_adapter_eta	2019-09-19-w08-r0	G2	SHRC71	N	332	9	18a420f8316649fc955c7ed5d84d3280a9b16ecf24a810ecf312b281267bedd5
 eta30	emulate_adapter_eta	2019-09-19-w08-r0	G2	SHRC71	PAD	332	8	c20ba3a46ac5b3f716e9e281e309f97588244f5fd72a2109f8e9f9d9795c70d5
 eta30	emulate_adapter_eta	2019-09-19-w17-r0	G2	SHHZ71	CL	381	24	c744e76647cd2b1d23556f3b3ee8eb2d69d90fbbf1d367c356828396bec92d62
-eta30	emulate_adapter_eta	2019-09-19-w17-r0	G2	SHHZ71	N	379	41	e4c329f4fa30a9ddb665fb120399b8ccdf1b3eeb887683acb6aeac0adc743a4c
-eta30	emulate_adapter_eta	2019-09-19-w17-r0	G2	SHRC71	CL	371	21	f68c1cac420017a2599e8e6e1d3f3fcf7e2e21c104a8a25da989e0eaa9c58992
-eta30	emulate_adapter_eta	2019-09-19-w17-r0	G2	SHRC71	CLc	380	21	d053bf2eab95672c8843098ec69b4970df8814bb3e024bf5b454c8a2b74f6db5
-eta30	emulate_adapter_eta	2019-09-19-w17-r0	G2	SHRC71	N	366	28	8fad7e8c8692621f6c94e6eecdba1733377564adaf533dfa1cae7e4ca79f2d1d
 eta30	emulate_adapter_eta	2019-09-19-w17-r0	G2	SHRC71	PAD	370	22	16279e5635a97f1b4ce3c03953ee1ea1aa423f6baf4227fac9f9e8716bc8f0be
 fc30	emulate_adapter	2019-09-19-w08-r0	G2	SHRC71	CL	339	6	b7115c3ccb96505dcda5da5ea95f379cf640a29fe6ba60768542cdaba4510a18
 fc30	emulate_adapter	2019-09-19-w08-r0	G2	SHRC71	CLc	338	6	c9b93e2c8869031c2718c10e222fb67e3d4f6eddd2740c1497d3b3de51eb5e30
