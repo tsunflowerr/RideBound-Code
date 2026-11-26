@@ -19,9 +19,7 @@ public enum PromiseLock
     None = 0,
     Vehicle = 1,
     PickupStop = 2,
-    DropStop = 4,
     PickupEta = 8,
-    DropEta = 16,
 }
 
 public sealed record CommitmentDimensionLimit
@@ -138,9 +136,7 @@ public sealed class CommitmentPolicy
         const PromiseLock allLocks =
             PromiseLock.Vehicle
             | PromiseLock.PickupStop
-            | PromiseLock.DropStop
-            | PromiseLock.PickupEta
-            | PromiseLock.DropEta;
+            | PromiseLock.PickupEta;
 
         if (materialized.Length != CommitmentDimensionVocabulary.Ordered.Count
             || materialized
@@ -159,16 +155,13 @@ public sealed class CommitmentPolicy
                 nameof(finalConfirmationLocks));
         }
 
-        const PromiseLock orderedLocks =
-            PromiseLock.PickupEta | PromiseLock.DropEta;
-
         // A ratchet needs an order on the field. Vehicle and stop identities have
-        // none, so only the two ETA fields can be relaxed this way.
-        if ((ratchetLocks & ~orderedLocks) != 0)
+        // none, so only the pickup ETA can be relaxed this way.
+        if ((ratchetLocks & ~PromiseLock.PickupEta) != 0)
         {
             throw new ArgumentOutOfRangeException(
                 nameof(ratchetLocks),
-                "Only pickup and drop ETA locks can be relaxed to a ratchet.");
+                "Only the pickup ETA lock can be relaxed to a ratchet.");
         }
 
         if (dropEtaBudgetSlackPermille is int budgetPermille

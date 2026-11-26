@@ -124,14 +124,6 @@ public sealed class CommitmentLockEvaluator
                 new CommitmentLockWitness(requestId, "pickup_stop", rule));
         }
 
-        if ((locks & PromiseLock.DropStop) != 0
-            && (previous.DropStopId != candidate.DropStopId
-                || previous.DropNodeId != candidate.DropNodeId))
-        {
-            witnesses.Add(
-                new CommitmentLockWitness(requestId, "drop_stop", rule));
-        }
-
         if ((locks & PromiseLock.PickupEta) != 0
             && Violates(
                 previous.PickupEta,
@@ -140,16 +132,6 @@ public sealed class CommitmentLockEvaluator
         {
             witnesses.Add(
                 new CommitmentLockWitness(requestId, "pickup_eta_ms", rule));
-        }
-
-        if ((locks & PromiseLock.DropEta) != 0
-            && Violates(
-                previous.DropEta,
-                candidate.DropEta,
-                (ratchetLocks & PromiseLock.DropEta) != 0))
-        {
-            witnesses.Add(
-                new CommitmentLockWitness(requestId, "drop_eta_ms", rule));
         }
     }
 

@@ -61,56 +61,6 @@ public sealed class CommitmentDecisionValidatorTests
     }
 
     [Fact]
-    public void A_lock_failure_is_reported_and_the_budget_is_not_checked()
-    {
-        // The candidate moves the drop 10 ms later, over a zero drop budget. With the rider
-        // confirmed, a final-confirmation drop ETA lock also rejects it, and the lock check
-        // comes first and ends the validation.
-        var fixture = CommitmentValidatorFixtures.WithHardLimit(0);
-        var context = fixture.Context;
-        OnlineState Confirmed(OnlineState state) => state with
-        {
-            Run = state.Run.ConfirmWaitingPickup(ApplicationTestData.RequestId).Value!,
-        };
-        CommitmentPolicyCatalog Policies(PromiseLock locks) => new(
-        [
-            new CommitmentPolicy(
-                ApplicationTestData.Request().CommitmentPolicyId,
-                CommitmentDimensionVocabulary.Ordered.Select(
-                    dimension => new CommitmentDimensionLimit(
-                        dimension,
-                        0,
-                        CommitmentPhase.AllActive)),
-                new MaterialRevisionRule(1, null),
-                finalConfirmationLocks: locks),
-        ]);
-        var confirmed = context with
-        {
-            BeforeEventState = Confirmed(context.BeforeEventState),
-            ReducedState = Confirmed(context.ReducedState),
-            CandidateState = Confirmed(context.CandidateState),
-        };
-        var validator = new CommitmentDecisionValidator();
-
-        var budgetOnly = validator.Validate(confirmed with { Policies = Policies(PromiseLock.None) });
-        var locked = validator.Validate(confirmed with { Policies = Policies(PromiseLock.DropEta) });
-
-        Assert.False(budgetOnly.IsValid);
-        Assert.Contains(
-            budgetOnly.Witnesses,
-            value => value.Stage == CommitmentValidationStage.Budget
-                && value.Code == CommitmentFailureCodes.BudgetExceeded);
-        Assert.False(locked.IsValid);
-        Assert.NotEmpty(locked.Witnesses);
-        Assert.All(
-            locked.Witnesses,
-            value => Assert.Equal(CommitmentValidationStage.Lock, value.Stage));
-        Assert.DoesNotContain(
-            locked.Witnesses,
-            value => value.Code == CommitmentFailureCodes.BudgetExceeded);
-    }
-
-    [Fact]
     public void Physical_failure_precedes_commitment_budget_checks()
     {
         var fixture = CommitmentValidatorFixtures.WithHardLimit(0);

@@ -308,9 +308,7 @@ public sealed class CommitmentPolicyConfiguration :
             {
                 "vehicle" => PromiseLock.Vehicle,
                 "pickupStop" => PromiseLock.PickupStop,
-                "dropStop" => PromiseLock.DropStop,
                 "pickupEta" => PromiseLock.PickupEta,
-                "dropEta" => PromiseLock.DropEta,
                 _ => throw new InvalidDataException("Unknown promise lock."),
             };
 
