@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import atexit
-import hashlib
 import math
 from collections import Counter, defaultdict
 from dataclasses import dataclass
@@ -21,7 +20,6 @@ from src.simulation.Offers import TravellerOffer
 from .errors import AdapterFailure
 from .mapping import (
     FleetPyProtocolMapper,
-    canonical_json_bytes,
     seconds_to_milliseconds,
 )
 from .protocol import (
@@ -121,7 +119,6 @@ class RideBoundFleetControl(FleetControlBase):
         # The last checkpoint. Nothing reads it; holding it keeps the final checkpoint in memory until the control
         # object goes, as on the final runs.
         self._rb_last_checkpoint: dict[str, Any] | None = None
-        self._rb_checkpoint_binding_hash: str | None = None
         self._rb_graph_nodes: tuple[Any, ...] | None = None
         self._rb_travel_arc_cache: dict[tuple[Any, Any], Any] = {}
         for vehicle in self.sim_vehicles:
@@ -1103,88 +1100,6 @@ class RideBoundFleetControl(FleetControlBase):
 
     def _record_checkpoint(self, checkpoint):
         self._rb_last_checkpoint = checkpoint
-        self._rb_checkpoint_binding_hash = self._checkpoint_binding_hash(checkpoint)
-
-    def _checkpoint_binding_hash(self, checkpoint):
-        # RunnerClient.request_checkpoint has already checked that checkpointHash is 64 lowercase hex digits.
-        checkpoint_hash = checkpoint["payload"]["checkpointHash"]
-        adapter_state = {
-            "nextEventSeq": self._rb_events.next_event_sequence,
-            "nextEpoch": self._rb_events.next_epoch,
-            "travelVersion": self._rb_travel_version,
-            "travelDirty": self._rb_travel_dirty,
-            "requestStates": [
-                [self._rb_mapper.requests.register(rid), state]
-                for rid, state in sorted(
-                    self._rb_states.items(),
-                    key=lambda item: self._rb_mapper.requests.register(item[0]),
-                )
-            ],
-            "vehicles": [
-                {
-                    "protocol": self._vehicle_snapshot(vehicle.vid),
-                    "physicalLegs": [
-                        self._physical_leg_contract(leg)
-                        for leg in vehicle.assigned_route
-                    ],
-                }
-                for vehicle in sorted(self.sim_vehicles, key=lambda item: repr(item.vid))
-            ],
-            "publications": list(self._rb_publications),
-        }
-        adapter_hash = hashlib.sha256(
-            b"RideBound.FleetPyAdapterState.v1\0"
-            + canonical_json_bytes(adapter_state)
-        ).digest()
-        runner_hash = bytes.fromhex(checkpoint_hash)
-        return hashlib.sha256(
-            b"RideBound.FleetPyCheckpointBinding.v1\0"
-            + runner_hash
-            + adapter_hash
-        ).hexdigest()
-
-    def _physical_leg_contract(self, leg):
-        def request_ids(values):
-            result = []
-            for value in values:
-                raw = (
-                    value.get_rid_struct()
-                    if hasattr(value, "get_rid_struct")
-                    else value.get_rid()
-                    if hasattr(value, "get_rid")
-                    else value
-                )
-                result.append(self._rb_mapper.requests.register(raw))
-            return sorted(result)
-
-        def optional_time(value, path):
-            # FleetPy VehicleRouteLeg uses the exact -1000 sentinel for an
-            # unspecified earliest bound. It is representation metadata, not a
-            # negative simulation timestamp.
-            if type(value).__module__.startswith("numpy") and hasattr(value, "item"):
-                value = value.item()
-            return (
-                None
-                if value is None or value in {-1, -1000, -100_000_000}
-                else seconds_to_milliseconds(value, path)
-            )
-
-        return {
-            "status": leg.status.name,
-            "destination": self._rb_mapper.position(leg.destination_pos),
-            "boardingRequestIds": request_ids(leg.rq_dict.get(1, [])),
-            "alightingRequestIds": request_ids(leg.rq_dict.get(-1, [])),
-            "locked": bool(leg.locked),
-            "durationMs": optional_time(leg.duration, "$.physicalLeg.duration"),
-            "earliestStartMs": optional_time(
-                leg.earliest_start_time,
-                "$.physicalLeg.earliestStartTime",
-            ),
-            "earliestEndMs": optional_time(
-                leg.earliest_end_time,
-                "$.physicalLeg.earliestEndTime",
-            ),
-        }
 
     def _require_vehicle(self, vid):
         if isinstance(vid, bool) or not isinstance(vid, int) or vid < 0 or vid >= len(self.sim_vehicles):

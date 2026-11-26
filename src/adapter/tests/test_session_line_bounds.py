@@ -19,13 +19,13 @@ def settings(maximum_line_bytes: int | None) -> session.RideBoundSessionSettings
     return session.RideBoundSessionSettings(
         path, path, path, path, path, path, path,
         "run-1", "scenario-1", 1, "service", "policy", 60, 2, None,
-        "policy-id", "policy-version", "a" * 64, "b" * 40, (path,),
+        "policy-id", "policy-version", "a" * 64, "b" * 40,
         maximum_line_bytes=maximum_line_bytes,
     )
 
 
 class FakeClient:
-    def __init__(self, command, artifacts, **options) -> None:
+    def __init__(self, command, **options) -> None:
         self.command = command
         self.options = options
 

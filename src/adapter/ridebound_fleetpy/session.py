@@ -263,7 +263,6 @@ class RideBoundSessionSettings:
     policy_version: str
     policy_binding_hash: str
     core_commit: str
-    artifact_paths: tuple[pathlib.Path, ...]
     # G2 (exploratory): true when the WP4 configuration declares
     # `candidateGeneration.waitingRiderRelocation`. The adapter then infers and checks the one
     # waiting rider a decision may move between vehicles (relocation.py).
@@ -328,61 +327,6 @@ class RideBoundSessionSettings:
                     "$.operator.ridebound_transcript_path",
                     str(transcript_path),
                 )
-        adapter_root = pathlib.Path(__file__).parents[1]
-        fleetpy_artifacts = (
-            fleetpy_root / "LICENSE",
-            fleetpy_root / "environment.yml",
-            fleetpy_root / "src" / "fleetctrl" / "FleetControlBase.py",
-            fleetpy_root / "src" / "routing" / "NetworkBase.py",
-            fleetpy_root / "src" / "simulation" / "Vehicles.py",
-            fleetpy_root / "src" / "misc" / "init_modules.py",
-        )
-        adapter_artifacts = (
-            adapter_root / "environment.lock.yml",
-            adapter_root / "capability-matrix.json",
-            *sorted((adapter_root / "ridebound_fleetpy").glob("*.py")),
-        )
-        scenario_root_value = _setting(attributes, "ridebound_scenario_root")
-        if scenario_root_value is None:
-            scenario_artifacts: tuple[pathlib.Path, ...] = ()
-        else:
-            scenario_root = pathlib.Path(str(scenario_root_value)).resolve()
-            scenario_artifacts = tuple(
-                sorted(path for path in scenario_root.rglob("*") if path.is_file())
-            )
-        additional_value = _setting(attributes, "ridebound_additional_artifacts", ())
-        if isinstance(additional_value, str):
-            additional_values = (additional_value,)
-        elif isinstance(additional_value, (list, tuple)) and all(
-            isinstance(value, str) and value for value in additional_value
-        ):
-            additional_values = tuple(additional_value)
-        else:
-            raise _fail(
-                "RBWP7_SETTING_ARTIFACT_LIST_INVALID",
-                "$.operator.ridebound_additional_artifacts",
-                repr(additional_value),
-            )
-        additional_artifacts = tuple(
-            pathlib.Path(value).resolve() for value in additional_values
-        )
-        published = tuple(sorted(path for path in runner_root.iterdir() if path.is_file()))
-        artifacts = (
-            dotnet,
-            commitment,
-            wp4,
-            *published,
-            *fleetpy_artifacts,
-            *adapter_artifacts,
-            *scenario_artifacts,
-            *additional_artifacts,
-        )
-        artifacts = tuple(
-            dict.fromkeys(path.resolve() for path in artifacts)
-        )
-        missing = [str(path) for path in artifacts if not path.is_file()]
-        if missing:
-            raise _fail("RBWP7_ARTIFACT_MISSING", "$.artifacts", repr(missing))
         return cls(
             dotnet,
             runner_root,
@@ -403,7 +347,6 @@ class RideBoundSessionSettings:
             policy_version,
             wp4_policy_binding_hash(commitment, wp4),
             _git_commit(repository),
-            tuple(path.resolve() for path in artifacts),
             waiting_rider_relocation,
             planning_forecast,
             _maximum_line_bytes(attributes),
@@ -452,7 +395,6 @@ class RideBoundProtocolSession:
     def _new_client(self):
         return self._client_factory(
             self._command,
-            self.settings.artifact_paths,
             timeout_seconds=self.settings.timeout_seconds,
             maximum_input_line_bytes=self._line_bound(RUNNER_MAXIMUM_INPUT_LINE_BYTES),
             maximum_output_line_bytes=self._line_bound(RUNNER_MAXIMUM_OUTPUT_LINE_BYTES),
@@ -466,10 +408,6 @@ class RideBoundProtocolSession:
     @property
     def manifest_hash(self) -> str | None:
         return self._manifest_hash
-
-    @property
-    def artifact_receipts(self) -> dict[str, list[dict[str, str]]]:
-        return self._client.artifact_receipts
 
     def initialize(
         self,

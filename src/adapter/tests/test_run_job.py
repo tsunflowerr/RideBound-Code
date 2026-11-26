@@ -315,16 +315,14 @@ class ClockTests(unittest.TestCase):
 class SettingsTests(Folder):
     def test_the_session_gets_the_final_timeout_line_bound_and_wire_names(self):
         fleetpy = self.tmp / "fleetpy"
-        for name in ("LICENSE", "environment.yml", "src/fleetctrl/FleetControlBase.py", "src/routing/NetworkBase.py",
-                     "src/simulation/Vehicles.py", "src/misc/init_modules.py"):
-            self.write(f"fleetpy/{name}", "")
+        fleetpy.mkdir()
         args = argparse.Namespace(
             dotnet=self.write("dotnet", ""), runner_root=self.write("runner/RideBound.Runner.dll", "").parent,
             commitment_config=self.write("c.json", {"policies": [{"policyId": run_job.COMMITMENT_POLICY_ID}]}),
             wp4_config=self.write("w.json", {"policyId": "ridebound-hard-vector", "policyVersion": "1",
                                              "lateBoarding": "record-v1"}),
             fleetpy_root=fleetpy, label=JOB + "-fin2", master_seed=7)
-        operator = run_job.operator_settings(args, [self.write("scenario.json", {})], 96, self.tmp / "t.ndjson.gz")
+        operator = run_job.operator_settings(args, 96, self.tmp / "t.ndjson.gz")
         settings = RideBoundSessionSettings.from_attributes(operator)
         clients = []
 
@@ -333,7 +331,7 @@ class SettingsTests(Folder):
             return mock.Mock()
 
         RideBoundProtocolSession(settings, client_factory=client_factory).close()
-        (command, _artifacts), options = clients[0]
+        (command,), options = clients[0]
         self.assertEqual(command[-2:], ("--maximum-line-bytes", "1073741824"))
         self.assertEqual((options["timeout_seconds"], options["maximum_input_line_bytes"],
                           options["maximum_output_line_bytes"]), (900, 2**30, 2**30))
@@ -424,10 +422,10 @@ class MainTests(Folder):
     def main_with_fleet(self, argv, frames, commit_after="c" * 40):
         """run_job.main with the fleet run replaced by one that writes the given transcript, and no input checks.
         The checkout's commit is "c" * 40 before the run and commit_after after it."""
-        def run_fleet(args, source, driver, values, out, source_hash):
+        def run_fleet(args, source, driver, values, out):
             self.assertEqual(values, (1.0,))
             write_transcript(out, frames)
-            return {"semanticHash": "s" * 64, "resources": {"wallMilliseconds": 1}}
+            return {"resources": {"wallMilliseconds": 1}}
 
         with mock.patch.object(run_job, "read_inputs", return_value=({}, {}, "h" * 64)), \
                 mock.patch.object(run_job, "git_head", side_effect=["c" * 40, commit_after]), \
@@ -466,8 +464,7 @@ class MainTests(Folder):
             self.assertEqual(names, sorted(["EVIDENCE.sha256", "bundle-manifest.json", "evidence.json.gz",
                                             "run-00.json", "summary.json"] + kept))
             summary = json.loads((output / "summary.json").read_text(encoding="utf-8"))
-            self.assertEqual((summary["status"], summary["semanticHash"], summary["runs"][0]["repeat"]),
-                             ("pass", "s" * 64, 0))
+            self.assertEqual((summary["status"], summary["runs"][0]["repeat"]), ("pass", 0))
             manifest = json.loads((output / "bundle-manifest.json").read_text(encoding="utf-8"))
             self.assertEqual([item["path"] for item in manifest["files"]], [name for name in names
                                                                            if name != "bundle-manifest.json"])

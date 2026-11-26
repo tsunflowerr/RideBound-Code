@@ -28,7 +28,7 @@ def settings(folder, transcript, runner, commit="b" * 40):
         wp4_config=unused, fleetpy_root=unused, repository_root=unused, run_id="run-1", scenario_id="scenario-1",
         master_seed=1, service_class="service", commitment_policy_id="policy", timeout_seconds=30,
         complete_travel_snapshot_maximum_nodes=2, transcript_path=transcript, policy_id="policy-id",
-        policy_version="policy-version", policy_binding_hash="a" * 64, core_commit=commit, artifact_paths=(runner,),
+        policy_version="policy-version", policy_binding_hash="a" * 64, core_commit=commit,
     )
 
 

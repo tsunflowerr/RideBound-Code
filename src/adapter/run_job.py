@@ -9,7 +9,7 @@ evidence is written at the end.
 The inputs are one full-node Via cell (fixture files, run driver, world) and one arm (commitment and WP4
 configuration). The output folder must not exist and its name must be <role>-<cell>. It receives:
   transcript-00.ndjson.gz  every protocol frame (deleted at the end with --transcript drop)
-  run-00.json              what the run did (accepted and rejected requests, publications, final time) and its resources
+  run-00.json              the run's status and its resources
   evidence.json.gz         what the rider tables read from the transcript, and EVIDENCE.sha256 with its SHA-256
   summary.json             "status": "pass", written only after the evidence has been read back
   bundle-manifest.json     size and SHA-256 of every file above
@@ -41,8 +41,6 @@ import traceback
 ADAPTER_ROOT = pathlib.Path(__file__).parent.resolve()
 REPOSITORY_ROOT = ADAPTER_ROOT.parents[1]
 VEHICLE_DIRECTORY = ADAPTER_ROOT / "assets"  # wp7_tiny.csv: the FleetPy vehicle type, 4 seats
-# Its files are only hashed with the other job artifacts (run-00.json counts them), never read.
-SCENARIO_ROOT = ADAPTER_ROOT / "assets" / "wp7-fleetpy-medium"
 BIN_SECONDS = 900
 # The Runner may need minutes for one answer on a full-node cell, and its frames reach about 0.8 GB.
 RUNNER_TIMEOUT_SECONDS = 900
@@ -164,7 +162,7 @@ class WorldTravelTimes:
 
 def materialize_network(root, source):
     """FleetPy network files (nodes.csv, edges.csv, crs.info) for the scenario's travel snapshot; returns the node
-    index of every node id and the hash of that mapping."""
+    index of every node id."""
     arcs = source["travelSnapshots"][0]["arcs"]
     nodes = sorted({arc["fromNodeId"] for arc in arcs} | {arc["toNodeId"] for arc in arcs})
     node_index = {node_id: index for index, node_id in enumerate(nodes)}
@@ -184,8 +182,7 @@ def materialize_network(root, source):
                              ordinal])
     with (base / "crs.info").open("x", encoding="ascii", newline="") as target:
         target.write("EPSG:32632\n")
-    mapping_hash = hashlib.sha256(b"RideBound.Wp7MediumNodeMap.v1\0" + canonical(node_index)).hexdigest()
-    return node_index, mapping_hash
+    return node_index
 
 
 def check_closure(source, node_index):
@@ -275,8 +272,8 @@ def assert_request_round_trip(control, source, node_index):
         raise RuntimeError(f"{source['requestId']}: FleetPy PlanRequest identity/node round-trip drift")
 
 
-def operator_settings(args, artifacts, maximum_nodes, transcript):
-    """The fleet control's operator settings: Runner, configurations, files to hash, and the run's wire names."""
+def operator_settings(args, maximum_nodes, transcript):
+    """The fleet control's operator settings: Runner, configurations, and the run's wire names."""
     return {
         "op_vr_control_func_dict": "ridebound-external-runner",  # FleetPy's G_OP_VR_CTRL_F
         "op_fleet_composition": FLEET_NAME,  # FleetPy's G_OP_FLEET
@@ -286,8 +283,6 @@ def operator_settings(args, artifacts, maximum_nodes, transcript):
         "ridebound_wp4_config": str(args.wp4_config.resolve()),
         "ridebound_fleetpy_root": str(args.fleetpy_root.resolve()),
         "ridebound_repository_root": str(REPOSITORY_ROOT),
-        "ridebound_scenario_root": str(SCENARIO_ROOT),
-        "ridebound_additional_artifacts": [str(path) for path in artifacts],
         "ridebound_run_id": RUN_ID_PREFIX + args.label,
         "ridebound_scenario_id": SCENARIO_ID,
         "ridebound_master_seed": args.master_seed,
@@ -492,13 +487,12 @@ def check_drained(control, vehicles, request_db, requests, accepted, rejected):
         raise RuntimeError("accepted/initial-promise conservation failed")
 
 
-def run_fleet(args, source, driver, values, output, source_hash):
+def run_fleet(args, source, driver, values, output):
     """Run the cell through FleetPy with the Runner deciding, then take the final checkpoint; returns run-00.json."""
     import psutil
     from src.misc.globals import G_DIR_DATA, G_DIR_OUTPUT, G_SKIP_OUTPUT
     from src.simulation.Vehicles import SimulationVehicle
     from src.misc.init_modules import load_fleet_control_module
-    from ridebound_fleetpy.mapping import seconds_to_milliseconds
     from ridebound_fleetpy.direct_network import CompleteGraphDirectNetwork
 
     started = time.perf_counter()
@@ -506,7 +500,7 @@ def run_fleet(args, source, driver, values, output, source_hash):
     cpu_before, rss_before = process.cpu_times(), process.memory_info().rss
     with tempfile.TemporaryDirectory(prefix="ridebound-job-") as temporary:
         temporary = pathlib.Path(temporary)
-        node_index, node_mapping_hash = materialize_network(temporary / "network", source)
+        node_index = materialize_network(temporary / "network", source)
         check_closure(source, node_index)
         routing = CompleteGraphDirectNetwork(str(temporary / "network"))
         check_routing(routing, source, node_index)
@@ -516,11 +510,7 @@ def run_fleet(args, source, driver, values, output, source_hash):
         for vehicle, start in zip(vehicles, source["fleet"], strict=True):
             vehicle.pos = (node_index[start["position"]["nodeId"]], None, None)
             vehicle.soc = 1.0
-        script = pathlib.Path(__file__).resolve()
-        artifacts = [args.scenario.resolve(), args.derivative_manifest.resolve(), args.normalization_report.resolve(),
-                     args.selection_frame.resolve(), VEHICLE_DIRECTORY / "wp7_tiny.csv", script,
-                     script.with_name("actual_fleetpy_medium_verify.py")]
-        operator = operator_settings(args, artifacts, driver["completeTravelSnapshotMaximumNodes"],
+        operator = operator_settings(args, driver["completeTravelSnapshotMaximumNodes"],
                                      output / "transcript-00.ndjson.gz")
         scenario = {"n_cpu_per_sim": 1, "start_time": 0, G_SKIP_OUTPUT: 1, "scenario_name": SCENARIO_ID}
         directories = {G_DIR_DATA: str(temporary), G_DIR_OUTPUT: str(temporary)}
@@ -528,27 +518,10 @@ def run_fleet(args, source, driver, values, output, source_hash):
                                                                      directories)
         try:
             world = WorldTravelTimes(routing, values)
-            now, accepted, rejected = drive(control, vehicles, routing, world, requests, request_db, node_index,
-                                            driver)
+            _, accepted, rejected = drive(control, vehicles, routing, world, requests, request_db, node_index,
+                                          driver)
             check_drained(control, vehicles, request_db, requests, accepted, rejected)
             control.checkpoint_runner()
-            semantic = {
-                "sourceScenarioContentSha256": source_hash,
-                "nodeMappingHash": node_mapping_hash,
-                "manifestHash": control._rb_session.manifest_hash,
-                "checkpointBindingHash": control._rb_checkpoint_binding_hash,
-                "requestCount": len(requests),
-                "acceptedRequestIds": sorted(accepted),
-                "rejectedRequestIds": sorted(rejected),
-                "publicationCount": len(control._rb_publications),
-                "publicationDigest": hashlib.sha256(canonical(control._rb_publications)).hexdigest(),
-                "travelSnapshotVersion": control._rb_travel_version,
-                "nextEventSeq": control._rb_events.next_event_sequence,
-                "nextEpoch": control._rb_events.next_epoch,
-                "finalSimulationTimeMs": seconds_to_milliseconds(now, "$.medium.finalSimulationTime"),
-                "finalVehiclePositions": [list(vehicle.pos) for vehicle in vehicles],
-            }
-            semantic_hash = hashlib.sha256(b"RideBound.Wp7ActualFleetPyMedium.v1\0" + canonical(semantic)).hexdigest()
         except BaseException:
             # On a failure, print the Runner's stderr. For an unexpected exception the Runner sends a generic error
             # frame and writes only the exception's type name there.
@@ -557,14 +530,11 @@ def run_fleet(args, source, driver, values, output, source_hash):
             raise
         finally:
             control.close()
-        receipts = control._rb_session.artifact_receipts
         # The control registered close() to run at exit, which would keep it, and the final checkpoint it holds, in
         # memory while the evidence is read. It is closed now, so let it go.
         atexit.unregister(control.close)
     cpu_after = process.cpu_times()
     return {"schemaVersion": "1.0.0", "status": "succeeded", "label": args.label, "repeat": 0,
-            "semanticHash": semantic_hash, "semantic": semantic, "artifactCount": len(receipts["before"]),
-            "artifactReceiptsEqual": receipts["before"] == receipts["after"],
             "resources": {"wallMilliseconds": round((time.perf_counter() - started) * 1000),
                           "userCpuMilliseconds": round((cpu_after.user - cpu_before.user) * 1000),
                           "systemCpuMilliseconds": round((cpu_after.system - cpu_before.system) * 1000),
@@ -950,7 +920,7 @@ def main(argv=None):
     commit = git_head(REPOSITORY_ROOT)
     output.mkdir(parents=True, exist_ok=False)
     try:
-        report = run_fleet(args, source, driver, values, output, source_hash)
+        report = run_fleet(args, source, driver, values, output)
         write_new(output / "run-00.json", report)
         after = git_head(REPOSITORY_ROOT)
         if after != commit:
@@ -966,8 +936,8 @@ def main(argv=None):
                                                "failureMessage": str(failure), "traceback": traceback.format_exc()})
         raise
     summary = {"schemaVersion": "1.0.0", "status": "pass", "label": args.label, "repeatCount": 1,
-               "semanticHash": report["semanticHash"], "sourceScenarioContentSha256": source_hash,
-               "runs": [{"repeat": 0, "semanticHash": report["semanticHash"], "resources": report["resources"]}]}
+               "sourceScenarioContentSha256": source_hash,
+               "runs": [{"repeat": 0, "resources": report["resources"]}]}
     write_new(output / "summary.json", summary)
     write_bundle_manifest(output)
     print(canonical(summary).decode("utf-8"), flush=True)
