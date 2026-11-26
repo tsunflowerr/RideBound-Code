@@ -4,7 +4,6 @@ using RideBound.Contracts.Protocol;
 using RideBound.Contracts.Serialization;
 using RideBound.Domain.Common;
 using RideBound.Domain.Runs;
-using RideBound.Runner.StateAudit;
 
 namespace RideBound.Runner.Protocol;
 
@@ -147,21 +146,9 @@ public sealed partial class RunnerSession
             OnlineState.Create(
                 run,
                 _identity.Manifest.TravelTimeSnapshotHash.Value));
-        _stagedCanonical = null;
 
-        if (_lightAudit)
-        {
-            // Light audit: the state hash stays the identity hash computed above.
-            _committedCanonical = null;
-        }
-        else
-        {
-            var initialCanonical = CanonicalOf(_onlineCoordinator.CommittedState);
-            _committedCanonical = new CanonicalStateBytes(
-                _onlineCoordinator.CommittedState,
-                initialCanonical);
-            _stateHash = OnlineStateCanonicalWriter.HashV1(initialCanonical);
-        }
+        // Light audit: the state hash stays the identity hash computed above.
+        _committedCanonical = null;
 
         Status = RunnerSessionStatus.Initialized;
 
@@ -287,12 +274,10 @@ public sealed partial class RunnerSession
         SimulationTimeMilliseconds.TryCreate(nextSimTime, out var nextSimulationTime);
 
         // Light audit: the staged state is identified, not hashed.
-        var lightStateAfterHash = _lightAudit
-            ? ProtocolHash.CalculateStateIdentityHash(
-                nextEpochId!,
-                nextEventSequence!,
-                nextSimulationTime!)
-            : null;
+        var lightStateAfterHash = ProtocolHash.CalculateStateIdentityHash(
+            nextEpochId!,
+            nextEventSequence!,
+            nextSimulationTime!);
         var online = BuildOnlineDecision(
             envelope,
             canonicalBatchHash,
@@ -320,19 +305,12 @@ public sealed partial class RunnerSession
             ProtocolHash.ZeroHash);
         var canonicalDecision = CanonicalJson.Canonicalize(
             DecisionPayloadCodec.Encode(shell, hashProjection: true));
-        var decisionHash = _lightAudit
-            ? ProtocolHash.CalculateDecisionHashLight(
-                _previousDecisionHash,
-                _manifestHash,
-                _identity!.Manifest.PolicyVersion,
-                CreateCanonicalInputParts(canonicalBatch, includeOnlineState: false),
-                canonicalDecision)
-            : ProtocolHash.CalculateDecisionHash(
-                _previousDecisionHash,
-                _manifestHash,
-                _identity!.Manifest.PolicyVersion,
-                CreateCanonicalInputParts(canonicalBatch, includeOnlineState: true),
-                canonicalDecision);
+        var decisionHash = ProtocolHash.CalculateDecisionHashLight(
+            _previousDecisionHash,
+            _manifestHash,
+            _identity!.Manifest.PolicyVersion,
+            CreateCanonicalInputParts(canonicalBatch),
+            canonicalDecision);
         var decision = shell with { DecisionHash = decisionHash };
         var response = CreateEnvelope(
             "decision",
@@ -406,15 +384,8 @@ public sealed partial class RunnerSession
                 envelope);
         }
 
-        // The acknowledged state is the staged object itself
-        // (EventReductionCoordinator.ApplyDecisionAcknowledgement), so its canonical
-        // bytes are the ones hashed for stateAfterHash.
-        _committedCanonical =
-            _stagedCanonical is { } staged
-                && ReferenceEquals(staged.State, _onlineCoordinator.CommittedState)
-                ? staged
-                : null;
-        _stagedCanonical = null;
+        // The committed state changed; its canonical bytes are written when a checkpoint asks for them.
+        _committedCanonical = null;
 
         _appliedEpoch = _pending.Epoch;
         _nextEventSequence = _pending.NextEventSequence;

@@ -10,9 +10,6 @@ public static class ProtocolHash
     private static readonly byte[] ManifestDomain =
         "RideBound.ManifestHash.v1\0"u8.ToArray();
 
-    private static readonly byte[] DecisionDomain =
-        "RideBound.DecisionHash.v1\0"u8.ToArray();
-
     private static readonly byte[] StateIdentityDomain =
         "RideBound.StateIdentityHash.v1\0"u8.ToArray();
 
@@ -27,38 +24,6 @@ public static class ProtocolHash
             ManifestDomain,
             [new HashFrame("canonicalManifest", canonical)]);
     }
-
-    public static Sha256Hex CalculateDecisionHash(
-        Sha256Hex previousDecisionHash,
-        Sha256Hex manifestHash,
-        string policyVersion,
-        ReadOnlySpan<byte> canonicalInputState,
-        ReadOnlySpan<byte> canonicalDecision) =>
-        CalculateDecisionHash(
-            previousDecisionHash,
-            manifestHash,
-            policyVersion,
-            [canonicalInputState.ToArray()],
-            canonicalDecision);
-
-    /// <summary>
-    /// The same decisionHash v1 as above, with canonicalInputState given as ordered byte
-    /// ranges whose concatenation is the canonical input. The hashed byte stream is
-    /// identical; the input is never materialized or copied.
-    /// </summary>
-    public static Sha256Hex CalculateDecisionHash(
-        Sha256Hex previousDecisionHash,
-        Sha256Hex manifestHash,
-        string policyVersion,
-        IReadOnlyList<ReadOnlyMemory<byte>> canonicalInputStateParts,
-        ReadOnlySpan<byte> canonicalDecision) =>
-        CalculateDecisionHash(
-            DecisionDomain,
-            previousDecisionHash,
-            manifestHash,
-            policyVersion,
-            canonicalInputStateParts,
-            canonicalDecision);
 
     /// <summary>
     /// Light audit: the decision hash chains the previous decision, the manifest, the

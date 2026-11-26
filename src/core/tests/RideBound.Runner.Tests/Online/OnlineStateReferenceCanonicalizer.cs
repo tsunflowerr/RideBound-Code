@@ -1,10 +1,6 @@
 using System.Buffers;
-using System.Buffers.Binary;
-using System.Security.Cryptography;
-using System.Text;
 using System.Text.Json;
 using RideBound.Application.State;
-using RideBound.Contracts.Protocol;
 using RideBound.Contracts.Serialization;
 using RideBound.Domain.Commitments;
 using RideBound.Domain.Common;
@@ -15,15 +11,12 @@ using RideBound.Domain.Routes;
 namespace RideBound.Runner.Tests.Online;
 
 /// <summary>
-/// Test oracle for the canonical online state (OnlineStateHash.v1). It writes the state with Utf8JsonWriter and then
+/// Test oracle for the canonical online state. It writes the state with Utf8JsonWriter and then
 /// canonicalizes the JSON with CanonicalJson.Canonicalize, independently of the Runner's direct writer
 /// (OnlineStateCanonicalWriter), which must produce exactly the same bytes (OnlineStateReferenceCanonicalizerTests).
 /// </summary>
 internal static class OnlineStateReferenceCanonicalizer
 {
-    private static readonly byte[] DomainPrefix =
-        "RideBound.OnlineStateHash.v1\0"u8.ToArray();
-
     /// <summary>The original v1 path: Utf8JsonWriter followed by CanonicalJson.Canonicalize.</summary>
     public static byte[] CanonicalizeReference(OnlineState state)
     {
@@ -148,18 +141,6 @@ internal static class OnlineStateReferenceCanonicalizer
         }
 
         return CanonicalJson.Canonicalize(buffer.WrittenSpan);
-    }
-
-    /// <summary>The original v1 hash path (reference for differential tests).</summary>
-    public static Sha256Hex CalculateHashReference(OnlineState state)
-    {
-        var canonical = CanonicalizeReference(state);
-        var buffer = new ArrayBufferWriter<byte>();
-        buffer.Write(DomainPrefix);
-        WriteFrame(buffer, "canonicalOnlineState", canonical);
-        var text = Convert.ToHexStringLower(SHA256.HashData(buffer.WrittenSpan));
-        Sha256Hex.TryCreate(text, out var hash);
-        return hash!;
     }
 
     private static void WriteRequest(Utf8JsonWriter writer, RideRequest request)
@@ -556,24 +537,6 @@ internal static class OnlineStateReferenceCanonicalizer
         }
 
         writer.WriteEndArray();
-    }
-
-    private static void WriteFrame(
-        IBufferWriter<byte> writer,
-        string tag,
-        ReadOnlySpan<byte> value)
-    {
-        var tagBytes = Encoding.UTF8.GetBytes(tag);
-        var header = writer.GetSpan(sizeof(ushort));
-        BinaryPrimitives.WriteUInt16BigEndian(
-            header,
-            checked((ushort)tagBytes.Length));
-        writer.Advance(sizeof(ushort));
-        writer.Write(tagBytes);
-        header = writer.GetSpan(sizeof(ulong));
-        BinaryPrimitives.WriteUInt64BigEndian(header, (ulong)value.Length);
-        writer.Advance(sizeof(ulong));
-        writer.Write(value);
     }
 
     /// <summary>The same class names as the writer, written out again so that the oracle does not call the code it checks.</summary>

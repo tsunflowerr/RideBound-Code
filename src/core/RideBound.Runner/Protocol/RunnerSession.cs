@@ -79,11 +79,7 @@ public sealed partial class RunnerSession
     private EventReductionCoordinator? _onlineCoordinator;
     private readonly OnlineStateCanonicalCache _canonicalCache = new();
 
-    // `auditHash: light-v1` in the WP4 configuration.
-    private readonly bool _lightAudit;
-
     private CanonicalStateBytes? _committedCanonical;
-    private CanonicalStateBytes? _stagedCanonical;
 
     /// <summary>
     /// An online commitment session. The commitment policy file supplies the policy catalog,
@@ -109,7 +105,6 @@ public sealed partial class RunnerSession
         _shadowAllocator = wp4Configuration.ShadowAllocation is { } shadowInputs
             ? new RideBound.Algorithms.Shareability.ShadowAllocator(shadowInputs)
             : null;
-        _lightAudit = wp4Configuration.UsesLightAuditHash;
         var commitmentValidator = new CommitmentDecisionValidator();
         _dispatchStep = new DispatchStep(
             solverBackedPolicy

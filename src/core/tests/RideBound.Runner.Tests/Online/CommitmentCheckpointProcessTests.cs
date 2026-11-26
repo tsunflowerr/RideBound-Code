@@ -66,12 +66,12 @@ public sealed class CommitmentCheckpointProcessTests
     /// <summary>
     /// The streamed checkpoint line equals, byte for byte, the line the envelope path
     /// builds from the same content (old hash, Encode, envelope, canonical NDJSON). Checked on every
-    /// checkpoint of the session in both audit modes.
+    /// checkpoint of the session.
     /// </summary>
     [Fact]
     public async Task Streamed_checkpoint_line_equals_the_envelope_path_line()
     {
-        foreach (var name in new[] { "FS-G2-SHRC71-CL.light-v1", "FS-G2-SHRC71-CL.full-v1" })
+        foreach (var name in new[] { "FS-G2-SHRC71-CL.light-v1" })
         {
             var run = await FinalRuns.SessionAsync(FinalRuns.Get(name));
             Assert.Equal(0, run.ExitCode);

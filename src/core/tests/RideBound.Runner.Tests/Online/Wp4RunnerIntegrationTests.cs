@@ -380,20 +380,15 @@ public sealed class Wp4RunnerIntegrationTests
     }
 
     /// <summary>
-    /// Under `auditHash: light-v1` every decision field except the hashes is the same
-    /// as under the full audit; the state hash is the state identity hash; the decision hash
-    /// differs; and a light checkpoint restores into a light session.
+    /// Under `auditHash: light-v1` the state hash is the state identity hash, and a light
+    /// checkpoint restores into a light session.
     /// </summary>
     [Fact]
     public void Light_audit_changes_only_hash_fields_and_restores()
     {
         var commitment = CommitmentConfiguration();
-        var full = CreateSession(FinalWp4Configuration(commitment), commitmentConfiguration: commitment);
         var lightWp4 = LightAuditConfiguration(commitment);
         var light = CreateSession(lightWp4, commitmentConfiguration: commitment);
-
-        Assert.True(lightWp4.UsesLightAuditHash);
-        Assert.False(full.Wp4.UsesLightAuditHash);
 
         var bootstrap = ReadFixture("wp2/valid-bootstrap-event-batch.json");
         var booking = Encoding.UTF8.GetBytes(
@@ -411,17 +406,11 @@ public sealed class Wp4RunnerIntegrationTests
 
         foreach (var (batch, epoch, sequence, simTime) in steps)
         {
-            var fullResponse = full.Session.Process(batch).Response!;
             var lightResponse = light.Session.Process(batch).Response!;
-            var fullDecision = DecisionPayloadCodec.Decode(fullResponse.Payload);
             var lightDecision = DecisionPayloadCodec.Decode(lightResponse.Payload);
-            Assert.True(fullDecision.IsSuccess, fullDecision.Error?.Message);
             Assert.True(lightDecision.IsSuccess, lightDecision.Error?.Message);
-            actionsCompared += fullDecision.Value!.Actions.Count;
+            actionsCompared += lightDecision.Value!.Actions.Count;
 
-            Assert.Equal(WithoutHashes(fullResponse.Payload), WithoutHashes(lightResponse.Payload));
-            Assert.Null(full.Session.Process(
-                DecisionApplied(epoch, simTime, fullDecision.Value.DecisionHash.Value)).Response);
             Assert.Null(light.Session.Process(
                 DecisionApplied(epoch, simTime, lightDecision.Value!.DecisionHash.Value)).Response);
             EpochId.TryCreate(epoch, out var epochId);
@@ -430,7 +419,6 @@ public sealed class Wp4RunnerIntegrationTests
             Assert.Equal(
                 ProtocolHash.CalculateStateIdentityHash(epochId!, nextSequence!, time!),
                 lightDecision.Value.StateAfterHash);
-            Assert.NotEqual(fullDecision.Value.DecisionHash, lightDecision.Value.DecisionHash);
         }
 
         Assert.True(actionsCompared > 0);
@@ -448,47 +436,8 @@ public sealed class Wp4RunnerIntegrationTests
         Assert.Equal(2, restoredSession.Session.AppliedEpoch);
     }
 
-    /// <summary>
-    /// The decision payload without its hash-valued fields (every member named *Hash, at any
-    /// depth): those are the only fields the audit mode may change.
-    /// </summary>
-    private static string WithoutHashes(JsonElement payload)
-    {
-        var node = JsonNode.Parse(payload.GetRawText())!;
-        Strip(node);
-        return node.ToJsonString();
-
-        static void Strip(JsonNode? value)
-        {
-            switch (value)
-            {
-                case JsonObject item:
-                    foreach (var name in item.Select(member => member.Key)
-                                 .Where(key => key.EndsWith("Hash", StringComparison.Ordinal))
-                                 .ToArray())
-                    {
-                        item.Remove(name);
-                    }
-
-                    foreach (var member in item)
-                    {
-                        Strip(member.Value);
-                    }
-
-                    break;
-                case JsonArray list:
-                    foreach (var element in list)
-                    {
-                        Strip(element);
-                    }
-
-                    break;
-            }
-        }
-    }
-
     [Theory]
-    [InlineData("full-v1", false)]
+    [InlineData("full-v1", null)]
     [InlineData("light-v1", true)]
     [InlineData("light", null)]
     [InlineData("v2", null)]
@@ -503,9 +452,7 @@ public sealed class Wp4RunnerIntegrationTests
             return;
         }
 
-        Assert.Equal(
-            light.Value,
-            FinalWp4Configuration(commitment, auditHash: value).UsesLightAuditHash);
+        FinalWp4Configuration(commitment, auditHash: value);
     }
 
     private static Wp4RunnerConfiguration LightAuditConfiguration(

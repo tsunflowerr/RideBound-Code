@@ -6,7 +6,7 @@ refactor can show it changed nothing. The expected output was recorded with the 
 
 ## Runs
 
-There are 12 runs: 6 arms, each with 2 audit modes.
+There are 6 runs: 6 arms, each in the `light-v1` audit mode, the mode the final runs used.
 
 | arm | commitment | WP4 |
 |---|---|---|
@@ -16,10 +16,6 @@ There are 12 runs: 6 arms, each with 2 audit modes.
 | FS-G2-SHRC71-N | `SHRC71` | `G2-N-*` |
 | INS-SHRC-CL | `INS-SHRC` | `INS-CL-*` |
 | INS-SHHZ-N | `INS-SHHZ` | `INS-N-*` |
-
-The two audit modes:
-- `light-v1`, the mode the final runs used;
-- `full-v1`.
 
 Every run uses the final runs' argument vector:
 
@@ -44,7 +40,7 @@ The Runner runs as a child process, and its working directory is this folder.
 **`wp4/`**
 - `G2-*` comes from `wp4-via-g2k8-a1`. `INS-*` comes from `wp4-via-ins-a1`, which has no
   `candidateGeneration.waitingRiderRelocation`.
-- `*-light-v1` adds `auditHash` `light-v1`. `*-full-v1` has no `auditHash` key, which means full-v1.
+- `*-light-v1` adds `auditHash` `light-v1`.
 - All of them set `emitSolverExecutionEvidence` to `false`.
 - All of them have a `shadowAllocation` block on the tiny network: priors `[3,1]` / `[2,4]`, threshold
   `0.01`. Both Shadow classes occur in the SHRC71 and INS arms; the SHHZ71 arms record only `guaranteed`.
@@ -88,7 +84,7 @@ In the G2 arms, rider `r-1` is moved from `v-2` to `v-1` at decision 2. The INS 
 1. A separate driver ran the `ebca912` Runner. It handled the protocol the same way as `RunnerProcess.cs`
    and the ADR-090 byte harness.
 2. The same driver, given the original absolute-path configs, reproduced the stdout SHA-256 of the extended
-   byte harness for all 12 runs.
+   byte harness for every run.
 3. With the relative path, the output is the same once the 64-hex hash values are masked. Only the
    configuration hash changes, and with it every hash that depends on it.
 

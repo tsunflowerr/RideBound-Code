@@ -14,7 +14,7 @@ namespace RideBound.Runner.Tests.Final;
 /// <summary>
 /// The final experiment's Runner configuration on a tiny closed-loop scenario (Fixtures/README.md): the four final
 /// arms (G2 = insertion plus waiting-rider relocation) and the two insertion-only (INS) arms, each in the final
-/// runs' light-v1 audit mode and in full-v1, with solver evidence off.
+/// runs' light-v1 audit mode, with solver evidence off.
 /// </summary>
 internal sealed record FinalRun(string Name, string Arm, string Commitment, string Wp4, string Binding)
 {
@@ -39,17 +39,11 @@ internal static partial class FinalRuns
     public static readonly IReadOnlyList<FinalRun> All =
     [
         new("FS-G2-SHRC71-CL.light-v1", "FS-G2-SHRC71-CL", "SHRC71", "G2-CL-light-v1", "cbfc7ec9477a1fe18b7e8aeeef2643311c437f63a3542141a99541d0af9caf49"),
-        new("FS-G2-SHRC71-CL.full-v1", "FS-G2-SHRC71-CL", "SHRC71", "G2-CL-full-v1", "cdbb708ee543f2911a5caf22fd888349a67135257d4f945505bfad4869de29b9"),
         new("FS-G2-SHHZ71-N.light-v1", "FS-G2-SHHZ71-N", "SHHZ71", "G2-N-light-v1", "33b3c31313db349f081e946501cfc952858b50f36b4a8ed2413c0fbae971cf79"),
-        new("FS-G2-SHHZ71-N.full-v1", "FS-G2-SHHZ71-N", "SHHZ71", "G2-N-full-v1", "5831c89aa3404e53c634d1afa2e61651e292ae5c07a3b78a32025218c503b909"),
         new("FS-G2-SHHZ71-CL.light-v1", "FS-G2-SHHZ71-CL", "SHHZ71", "G2-CL-light-v1", "853f81fc3a44547b2f5423c5bdf367f301a18c65a99bdcf708541d656644f259"),
-        new("FS-G2-SHHZ71-CL.full-v1", "FS-G2-SHHZ71-CL", "SHHZ71", "G2-CL-full-v1", "ef9b2f87b8b031b2e465efa566f6961eeda0cc43ab8b0ec90e825eef99a11a75"),
         new("FS-G2-SHRC71-N.light-v1", "FS-G2-SHRC71-N", "SHRC71", "G2-N-light-v1", "477379d625d2c66cf227b2bea07c74df9f5e0c48abaeb6172839a3b741668673"),
-        new("FS-G2-SHRC71-N.full-v1", "FS-G2-SHRC71-N", "SHRC71", "G2-N-full-v1", "1d98063cc6931652a689eb25fcd7768760eac1ae8c51cf44b8e3177b27205272"),
         new("INS-SHRC-CL.light-v1", "INS-SHRC-CL", "INS-SHRC", "INS-CL-light-v1", "b324ff89bb1a8fa5910a25cf7fb0f66c548ba332c5212fb047f4515f46ed5458"),
-        new("INS-SHRC-CL.full-v1", "INS-SHRC-CL", "INS-SHRC", "INS-CL-full-v1", "5ab138c359c44a7bd277bb2adb953b5277cde26ae03e58f57dffffed1a12e372"),
         new("INS-SHHZ-N.light-v1", "INS-SHHZ-N", "INS-SHHZ", "INS-N-light-v1", "cb5a783aeb0997f85b43fcfaad53931f56fcc8072fcc4f575823432cb58533f6"),
-        new("INS-SHHZ-N.full-v1", "INS-SHHZ-N", "INS-SHHZ", "INS-N-full-v1", "491056298140afad6bf8ecdaffbd00d4ff5661192f3840dfb18f648c02d12af6"),
     ];
 
     /// <summary>
@@ -126,14 +120,14 @@ internal static partial class FinalRuns
     }
 
     /// <summary>
-    /// The final C1 configuration for tests that build their own small scenario: Fixtures/wp4/INS-N-full-v1.json
-    /// (policy ridebound-hard-vector with selectionObjectiveOrder cost-first, booking-confirmation promises, full-v1
+    /// The final C1 configuration for tests that build their own small scenario: Fixtures/wp4/INS-N-light-v1.json
+    /// (policy ridebound-hard-vector with selectionObjectiveOrder cost-first, booking-confirmation promises, light-v1
     /// audit, solver evidence off) without its shadowAllocation block. Shadow needs a commitment configuration with
     /// dropEtaShadowAllocation and the fixture network, which those tests do not use.
     /// </summary>
     public static JsonObject FinalC1Wp4WithoutShadow()
     {
-        var wp4 = JsonNode.Parse(File.ReadAllText(Path.Combine(FixtureDirectory, "wp4", "INS-N-full-v1.json")))!
+        var wp4 = JsonNode.Parse(File.ReadAllText(Path.Combine(FixtureDirectory, "wp4", "INS-N-light-v1.json")))!
             .AsObject();
         Assert.True(wp4.Remove("shadowAllocation"));
         return wp4;

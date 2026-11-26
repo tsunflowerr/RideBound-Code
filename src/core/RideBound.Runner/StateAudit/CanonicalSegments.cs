@@ -1,5 +1,3 @@
-using System.Security.Cryptography;
-
 namespace RideBound.Runner.StateAudit;
 
 /// <summary>
@@ -22,14 +20,6 @@ public sealed class CanonicalSegments
     public int PartCount => _parts.Count;
 
     public IReadOnlyList<ArraySegment<byte>> Parts => _parts;
-
-    public void AppendTo(IncrementalHash hash)
-    {
-        foreach (var part in _parts)
-        {
-            hash.AppendData(part.AsSpan());
-        }
-    }
 
     public void CopyTo(Span<byte> destination)
     {
