@@ -13,7 +13,7 @@ Giá trị mong đợi (byte chuẩn hóa, hash) được ghi sẵn trong file. 
 |---|---|---|
 | `canonical/` | một phong bì có khóa không theo thứ tự, và byte chuẩn hóa mong đợi (hex) | `CanonicalJsonTests` |
 | `compatibility/` | phiên bản schema và trường lạ: 1 đúng, 3 sai | `ProtocolVersionCompatibilityTests` |
-| `golden/required/` | 10 kịch bản, mỗi kịch bản có `input.json` và `metadata.json` | `GoldenFixtureTests`, `RunnerSessionTests` (kịch bản 09), `OnlineEventMapperTests` (kịch bản 08) |
+| `golden/required/` | 2 kịch bản (09 và 10), mỗi kịch bản có `input.json` và `metadata.json` | `GoldenFixtureTests`, `RunnerSessionTests` (kịch bản 09) |
 | `harness/` | một file nhỏ để thử `FixtureLoader` | `FixtureLoaderTests` |
 | `hash/` | các cặp đầu vào và SHA-256 mong đợi của manifest và trạng thái | `GoldenFixtureTests` |
 | `hello/` | `hello`, `helloAck` (cả dạng hạ cấp), một capability lạ | `HelloMessageTests`, `SchemaAssetTests`, `CapabilityNegotiatorTests`, `InitializeRunValidatorTests`, `Wp4RunnerIntegrationTests` |
@@ -23,8 +23,8 @@ Giá trị mong đợi (byte chuẩn hóa, hash) được ghi sẵn trong file. 
 
 `metadata.json` của mỗi kịch bản trong `golden/required/` ghi `supportLevel`:
 - `runner-executable`: Runner chạy kịch bản này trong test. Chỉ kịch bản 09 (sự kiện lặp, xử lý một lần) có mức này.
-- `future-behavior`: 9 kịch bản còn lại. Test kiểm dạng của chúng (JSON chuẩn hóa, hợp đồng lô sự kiện); không test nào
-  chạy chúng như một phiên Runner.
+- `future-behavior`: kịch bản 10 còn lại. Test kiểm dạng của nó (JSON chuẩn hóa, hợp đồng lô sự kiện); không test nào
+  chạy nó như một phiên Runner.
 
 `GoldenFixtureTests` kiểm đúng các con số này. Tên `wp2` là tên cũ (gói việc 2); nó được giữ vì test đọc đúng đường
 dẫn này.

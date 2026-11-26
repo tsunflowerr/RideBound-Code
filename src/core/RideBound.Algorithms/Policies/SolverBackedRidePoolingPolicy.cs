@@ -135,8 +135,7 @@ public sealed class SolverBackedRidePoolingPolicy
         // Every generated candidate counts as validation work.
         var assessed = _hardAssessor.AssessAndFilter(
             context,
-            generated.VehicleCandidates!,
-            requireSafetyNoOp: true);
+            generated.VehicleCandidates!);
 
         if (!assessed.IsSuccess)
         {

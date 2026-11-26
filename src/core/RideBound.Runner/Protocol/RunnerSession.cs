@@ -56,8 +56,6 @@ public sealed record RunnerSessionResult(
 //   RunnerSession.Checkpoint.cs  checkpoint and restore.
 public sealed partial class RunnerSession
 {
-    public const int RetainedBatchResponseCount = 1;
-
     private readonly CapabilityRequirementProfile _requirements;
     private readonly OnlineEventMapper _onlineEventMapper = new();
     private readonly ICommitmentPolicyProvider _commitmentPolicies;

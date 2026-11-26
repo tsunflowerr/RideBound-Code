@@ -76,7 +76,6 @@ public sealed class RunnerSessionTests
         Assert.Equal(hashBeforeRetry, session.PreviousDecisionHash);
         Assert.Equal(0, session.AppliedEpoch);
         Assert.Equal(RunnerSessionStatus.AwaitingDecisionApplied, session.Status);
-        Assert.Equal(1, RunnerSession.RetainedBatchResponseCount);
     }
 
     [Fact]
