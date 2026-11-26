@@ -12,7 +12,7 @@
 // D comes from Dijkstra run from every node. That takes seconds, so D is cached in
 // <dataRoot>/wf6/via-many-days/work/ff_apsp_u16.bin (N*N uint16, little-endian; its sha256 is in
 // expected/network.sha256), and a cache file of the right size is used as it is.
-// Every array lives in a SharedArrayBuffer: share() hands the network to worker threads without a copy, and attach()
+// Every array lives in a SharedArrayBuffer, and attach()
 // adds the per-thread parts (zone lookup, shortest-path cache). toy() builds a small network for tests with the same
 // code.
 'use strict';
@@ -167,12 +167,6 @@ function allPairs(N, csrStart, csrTo, csrW) {
   return D;
 }
 
-// workerData-safe description (typed arrays over SharedArrayBuffers are passed by reference)
-function share(NET) {
-  const { N, nZones, nEdges, D, DT, csrStart, csrTo, csrW, zoneIds, zoneIdx, zoneSize } = NET;
-  return { N, nZones, nEdges, D, DT, csrStart, csrTo, csrW, zoneIds, zoneIdx, zoneSize };
-}
-
 function attach(S) {
   const NET = { ...S };
   NET.zoneOfId = new Map(Array.from(S.zoneIds, (z, i) => [z, i]));
@@ -182,4 +176,4 @@ function attach(S) {
   return NET;
 }
 
-module.exports = { build, share, attach, toy };
+module.exports = { build, toy };

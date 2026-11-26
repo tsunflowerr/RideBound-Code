@@ -31,7 +31,6 @@
 //     expected/wf14-60day-cells.sha256 (its summary-weekdays.json is the one the r2 run writes)
 //   F16: --days data/days_F16.csv --seedtag wf17-fresh --fmax 512:96, --resample 0, 1, 2, copying
 //     summary-weekdays.json to summary-weekdays-r<k>.json after each run; expected/wf17-f16-cells.sha256
-// The options --set, --work and --nodetag of the research copy are removed (see REMOVED_NOTE).
 'use strict';
 const fs = require('fs');
 const path = require('path');
@@ -39,12 +38,10 @@ const zlib = require('zlib');
 const crypto = require('crypto');
 const NETWORK = require('./network.js');
 
-const REMOVED_NOTE = 'removed; see commit ebca912 (branch research/final-real-runs-2026-11-06)';
 const USAGE = 'usage: node gen17.js --days <days.csv> --windows <via_windows.csv> --factors <factors.json[.gz]> '
   + '--data <data root> --out <dir> [--resample k] [--seedtag tag] [--fmax n:fleet,...]';
 const REQUIRED = ['days', 'windows', 'factors', 'data', 'out'];
 const OPTIONAL = ['resample', 'seedtag', 'fmax'];
-const REMOVED = ['set', 'work', 'nodetag'];
 
 function fail(message) { console.error(message); process.exit(2); }
 
@@ -52,7 +49,6 @@ function parseArgs(argv) {
   const args = {};
   for (let i = 0; i < argv.length; i += 2) {
     const key = argv[i].startsWith('--') ? argv[i].slice(2) : '';
-    if (REMOVED.includes(key)) fail(`--${key}: ${REMOVED_NOTE}`);
     if (![...REQUIRED, ...OPTIONAL].includes(key) || key in args || argv[i + 1] === undefined) fail(USAGE);
     args[key] = argv[i + 1];
   }

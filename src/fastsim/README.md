@@ -11,7 +11,12 @@ Các file `.js`, `.py`, `.sh` trong `adapter60/`, `engines/`, `fullsys/`, `wf20/
 được chép nguyên văn từ bản đã chạy cho báo cáo; tên thư mục giữ như lúc đó. Thay đổi duy nhất là đường dẫn: code cũ ghi
 đường dẫn tuyệt đối của máy đã chạy, bản này đọc thư mục dữ liệu từ biến môi trường (`paths.js` cho JS, `os.environ` cho
 Python và shell). Không dòng logic nào bị sửa. Ngoại lệ: đã gỡ các tùy chọn mà không lượt chạy nào của báo cáo dùng,
-`--nveh` của `emulate_adapter_pp.js`, `--nveh` và `--g2pen` của `emulate_adapter_eta.js`; kết quả không đổi.
+`--nveh` của `emulate_adapter_pp.js`, `--nveh` và `--g2pen` của `emulate_adapter_eta.js`; kết quả không đổi. Cũng đã gỡ
+các hàm và export không ai gọi: `runTask` của `wf20/scripts/shcore.js` cùng những gì chỉ nó dùng, phần thừa của
+`wf20/scripts/shlib.js`, `share` và `toy` của `wf20/runner/netfull.js`, mọi hàm trừ `readCsv` của `wf5/nyclib.js`, phần
+thừa của `wf15emu/lib.js` và `wf15emu/normalizer_emul.js`; kết quả không đổi. Chú thích trong `adapter60/emulate_adapter*.js`
+và `fullsys/emulate_fullsys*.js` còn trích `shcore.runTask` và `shcore.js:<dòng>`: các trích dẫn đó ứng với bản `ab697fe`,
+trước khi gỡ.
 
 | Thư mục | Nội dung |
 |---|---|

@@ -1,46 +1,15 @@
-// Shared helpers: fixture loading, traffic profile, id mapping, statistics.
+// Shared helpers: fixture loading, id mapping.
 'use strict';
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 
 // LOCAL COPY (2026-10-22, home machine): only these path constants differ from the bundle's code/wf5/runner/lib.js.
-// SP was a folder of the machine that ran it. Fixtures come from the reference worktree at 7435661 (same committed bytes);
-// factors.json was rebuilt from the FleetPy *_tt_factors.csv (96 rows per day; 2018-11-11 skipped: 672 rows);
-// riders.tsv / results.json are the bundle's code/step0/src/costcap copies.
+// SP was a folder of the machine that ran it. Fixtures come from the reference worktree at 7435661 (same committed bytes).
 const SP = require('../paths.js').DATA;
 const FIXTURE_ROOT = SP + '/wp9-confirmatory-fixed-panel-v2';   // default only: the Chapter 5 drivers always pass the fixture folder
-const FACTORS_FILE = SP + '/data/factors.json';
-const RIDERS_TSV = SP + '/data/riders.tsv';
-const RESULTS_JSON = SP + '/data/results.json';
-
-const DAYS = ['20181114', '20181115', '20181116', '20181117', '20181118'];
-const CELLS = [];
-for (const d of DAYS) for (const r of [1, 2, 3, 4]) CELLS.push(`d${d}-s10-r${r}`);
 
 const BIN_MS = 900000;
-const WINDOW_START_BIN = 32; // 08:00 = 28800 s = bin 32 of the day
-const HOLD_BIN = 8;          // measured_base reads [start, start+7200] and holds the last value
-
-let factorCache = null;
-function loadFactors() {
-  if (!factorCache) factorCache = JSON.parse(fs.readFileSync(FACTORS_FILE, 'utf8'));
-  return factorCache;
-}
-
-// Anchored real-traffic-only world (W5: sigma 0, shockRate 0, exponent 1, windowStart 28800):
-// f(b) = F[32 + min(b, 8)] / F[32]  (preflight_world.py:67-93 measured_base; world_v1.py:103-120 AnchoredWorld)
-// startBin: 15-min bin of the world windowStart (32 = 08:00 for the w08 panel; 68 = 17:00 for w17 fresh cells).
-function trafficProfile(cell, startBin = WINDOW_START_BIN) {
-  const day = cell.slice(1, 5) + '-' + cell.slice(5, 7) + '-' + cell.slice(7, 9);
-  const F = loadFactors()[day];
-  if (!F || F.length !== 96) throw new Error('no factors for ' + day);
-  if (startBin + HOLD_BIN >= 96) throw new Error('window past end of day');
-  const base = F[startBin];
-  const prof = [];
-  for (let b = 0; b <= HOLD_BIN; b++) prof.push(F[startBin + b] / base);
-  return prof; // index by min(bin, 8)
-}
 
 // panelRoot: fixture panel folder (default: the frozen w08 panel A, wp9-confirmatory-fixed-panel-v2)
 function loadCell(cell, panelRoot = FIXTURE_ROOT) {
@@ -87,44 +56,7 @@ function rqId(raw) {
   return 'rq-' + crypto.createHash('sha256').update(framed).digest('hex');
 }
 
-// Round half to even (Python Decimal ROUND_HALF_EVEN / C# banker's rounding used by the mapper).
-function roundHalfEven(x) {
-  const f = Math.floor(x);
-  const d = x - f;
-  if (d > 0.5) return f + 1;
-  if (d < 0.5) return f;
-  return f % 2 === 0 ? f : f + 1;
-}
-
-function quantile(arr, p) {
-  if (!arr.length) return NaN;
-  const s = Float64Array.from(arr).sort();
-  const i = (s.length - 1) * p;
-  const lo = Math.floor(i), hi = Math.ceil(i);
-  return s[lo] + (s[hi] - s[lo]) * (i - lo);
-}
-
-function readRidersTsv(file = RIDERS_TSV) {
-  const lines = fs.readFileSync(file, 'utf8').split(/\r?\n/).filter(Boolean);
-  const hdr = lines[0].split('\t');
-  const ix = Object.fromEntries(hdr.map((h, i) => [h, i]));
-  return lines.slice(1).map(l => {
-    const f = l.split('\t');
-    const num = k => (f[ix[k]] === '' ? NaN : Number(f[ix[k]]));
-    return {
-      role: f[ix.role], cell: f[ix.cell], rq: f[ix.requestId], life: f[ix.lifecycle],
-      t0: num('t0'), p0: num('p0'), D0: num('D0'), A: num('A'), served: f[ix.served] === '1',
-      S: num('sumAbsC'), k: num('nonzeroC'), net: num('netC'), M: num('maxAbsC'), shared: f[ix.shared] === '1',
-    };
-  });
-}
-
-// Fresh cells (not part of panel A, no archived runs): wp14 development panel, days 12/13 Nov, windows 08:00 and 17:00.
-const FRESH_ROOT = SP + '/wp14-development-panel-v1';  // default only, as above
-const FRESH_CELLS = [];
-for (const d of ['20181112', '20181113']) for (const r of [1, 2, 3, 4]) for (const w of ['w08', 'w17']) FRESH_CELLS.push(`d${d}-s10-r${r}-${w}`);
-
 module.exports = {
-  SP, FIXTURE_ROOT, FRESH_ROOT, FRESH_CELLS, CELLS, DAYS, BIN_MS, HOLD_BIN, RIDERS_TSV, RESULTS_JSON,
-  trafficProfile, loadCell, rqId, roundHalfEven, quantile, readRidersTsv, loadFactors,
+  BIN_MS,
+  loadCell,
 };
