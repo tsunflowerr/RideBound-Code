@@ -15,7 +15,7 @@ Giá trị mong đợi (byte chuẩn hóa, hash) được ghi sẵn trong file. 
 | `compatibility/` | phiên bản schema và trường lạ: 1 đúng, 3 sai | `ProtocolVersionCompatibilityTests` |
 | `golden/required/` | 10 kịch bản, mỗi kịch bản có `input.json` và `metadata.json` | `GoldenFixtureTests`, `RunnerSessionTests` (kịch bản 09), `OnlineEventMapperTests` (kịch bản 08) |
 | `harness/` | một file nhỏ để thử `FixtureLoader` | `FixtureLoaderTests` |
-| `hash/` | các cặp đầu vào và SHA-256 mong đợi của manifest, trạng thái và quyết định | `GoldenFixtureTests` |
+| `hash/` | các cặp đầu vào và SHA-256 mong đợi của manifest và trạng thái | `GoldenFixtureTests` |
 | `hello/` | `hello`, `helloAck` (cả dạng hạ cấp), một capability lạ | `HelloMessageTests`, `SchemaAssetTests`, `CapabilityNegotiatorTests`, `InitializeRunValidatorTests`, `Wp4RunnerIntegrationTests` |
 | `initialize/` | `initializeRun`, `initialized`, một manifest có `roundingRule` sai | `InitializeRunMessageTests`, `ProtocolHashTests`, `SchemaAssetTests`, `InitializeRunValidatorTests`, `Wp4RunnerIntegrationTests` |
 | `protocol/` | phong bì đúng, loại thông điệp lạ, `eventSeq` đặt ở phong bì | `ProtocolEnvelopeTests` |

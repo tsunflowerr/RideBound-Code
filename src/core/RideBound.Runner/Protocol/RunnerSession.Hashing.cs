@@ -9,33 +9,20 @@ namespace RideBound.Runner.Protocol;
 public sealed partial class RunnerSession
 {
     /// <summary>
-    /// The canonicalInputState of decisionHash v1 as ordered byte ranges: the canonical form of the
-    /// object {eventBatch, onlineStateBefore, stateIdentityBefore}, built from its parts without parsing
+    /// The canonicalInputState of the light decision hash as ordered byte ranges: the canonical form of the
+    /// object {eventBatch, stateIdentityBefore}, built from its parts without parsing
     /// them again. Canonical JSON v1 is compositional (CanonicalJson.WriteObject: an object is its members
     /// sorted by ordinal name, each value canonicalized on its own), so the bytes are '{"eventBatch":' +
-    /// canonical(batch envelope) + ',"onlineStateBefore":' + canonical(committed state) +
-    /// ',"stateIdentityBefore":' + canonical(identity) + '}'. Under the light audit (includeOnlineState
-    /// false) the onlineStateBefore member is left out.
+    /// canonical(batch envelope) + ',"stateIdentityBefore":' + canonical(identity) + '}'.
     /// </summary>
     private IReadOnlyList<ReadOnlyMemory<byte>> CreateCanonicalInputParts(
-        byte[] canonicalBatch,
-        bool includeOnlineState)
+        byte[] canonicalBatch)
     {
         var parts = new List<ReadOnlyMemory<byte>>
         {
             "{\"eventBatch\":"u8.ToArray(),
             canonicalBatch,
         };
-
-        if (includeOnlineState)
-        {
-            parts.Add(",\"onlineStateBefore\":"u8.ToArray());
-
-            foreach (var part in CanonicalOf(_onlineCoordinator!.CommittedState).Parts)
-            {
-                parts.Add(part);
-            }
-        }
 
         var identity = new CanonicalBuffer(160);
         identity.Raw(",\"stateIdentityBefore\":"u8);
@@ -62,38 +49,14 @@ public sealed partial class RunnerSession
             : null;
 
     /// <summary>
-    /// stateAfterHash of the staged state: OnlineStateHash.v1 over cached canonical segments
-    /// (exact), or under the light audit the state identity hash the caller
-    /// computed, without writing the state.
-    /// </summary>
-    private Sha256Hex HashStagedState(
-        OnlineState state,
-        Sha256Hex? lightStateHash,
-        ref CanonicalSegments? canonical)
-    {
-        if (lightStateHash is not null)
-        {
-            return lightStateHash;
-        }
-
-        canonical = CanonicalOf(state);
-        return OnlineStateCanonicalWriter.HashV1(canonical);
-    }
-
-    /// <summary>
-    /// Canonical bytes of a state: reused when the state is the committed or staged object
-    /// already hashed, otherwise built with the per-entity fragment cache.
+    /// Canonical bytes of a state: reused when the state is the committed object
+    /// already written, otherwise built with the per-entity fragment cache.
     /// </summary>
     private CanonicalSegments CanonicalOf(OnlineState state)
     {
         if (_committedCanonical is { } committed && ReferenceEquals(committed.State, state))
         {
             return committed.Canonical;
-        }
-
-        if (_stagedCanonical is { } staged && ReferenceEquals(staged.State, state))
-        {
-            return staged.Canonical;
         }
 
         return OnlineStateCanonicalWriter.Write(state, _canonicalCache);

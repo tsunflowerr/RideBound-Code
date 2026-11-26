@@ -133,9 +133,7 @@ public sealed partial class RunnerSession
         }
 
         var restoredCanonical = CanonicalOf(state);
-        var calculatedStateHash = _lightAudit
-            ? LightStateIdentityHash(state)
-            : OnlineStateCanonicalWriter.HashV1(restoredCanonical);
+        var calculatedStateHash = LightStateIdentityHash(state);
 
         if (state.Run.Id.Value != _identity!.RunId.Value
             || state.Run.ScenarioId.Value != _identity.ScenarioId.Value
@@ -158,7 +156,6 @@ public sealed partial class RunnerSession
 
         _onlineCoordinator = new EventReductionCoordinator(state);
         _committedCanonical = new CanonicalStateBytes(state, restoredCanonical);
-        _stagedCanonical = null;
         _appliedEpoch = checkpoint.Content.AppliedEpoch;
         _nextEventSequence = checkpoint.Content.NextEventSequence;
         _simulationTimeMilliseconds = checkpoint.Content.SimulationTimeMs;

@@ -12,14 +12,14 @@ namespace RideBound.Runner.Tests.Online;
 /// The commitment rules of a Runner session: a promise is published with a produced certificate and enters the
 /// commitment ledger only when its decision is acknowledged; a restored checkpoint continues exactly like the
 /// uninterrupted session; no checkpoint is taken while a decision is pending. Checked on the final experiment's
-/// configuration, the T1 session FS-G2-SHRC71-CL.full-v1 of <see cref="FinalRuns"/> (full-v1: the state hash covers
-/// the whole online state), run inside the test process. Its policy opens a promise when the booking is confirmed,
+/// configuration, the T1 session FS-G2-SHRC71-CL.light-v1 of <see cref="FinalRuns"/>, run inside the test process.
+/// Its policy opens a promise when the booking is confirmed,
 /// so the decision for epoch 1 accepts the first rider without a promise and the decision for epoch 2 publishes the
 /// first one.
 /// </summary>
 public sealed class CommitmentRunnerSessionTests
 {
-    private static readonly FinalRun Run = FinalRuns.Get("FS-G2-SHRC71-CL.full-v1");
+    private static readonly FinalRun Run = FinalRuns.Get("FS-G2-SHRC71-CL.light-v1");
 
     [Fact]
     public void Initial_promise_publication_and_produced_certificate_commit_atomically_on_ack()

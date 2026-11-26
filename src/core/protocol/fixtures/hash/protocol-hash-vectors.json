@@ -3,14 +3,6 @@
     "sourceFixture": "../initialize/valid-initialize-run.json",
     "expectedSha256": "1f5d3769c091b3ac9e20ac7eeecd386cc0f0235d03cceccd6422db8518ab4534"
   },
-  "decision": {
-    "previousDecisionHash": "0000000000000000000000000000000000000000000000000000000000000000",
-    "manifestHash": "1111111111111111111111111111111111111111111111111111111111111111",
-    "policyVersion": "1.0.0",
-    "canonicalInputState": "{\"epochId\":1,\"events\":[1,2]}",
-    "canonicalDecision": "{\"actions\":[],\"status\":\"notProduced\"}",
-    "expectedSha256": "9939c29a73091766d1acda00984496c5e54aa66fa56fcd258604852accb98c4f"
-  },
   "initialStateIdentity": {
     "canonicalValue": "{\"epochId\":0,\"nextEventSeq\":1,\"simTimeMs\":0}",
     "expectedSha256": "6e628e8e7e2dd18386c05ce6c7c114f2ef617cfd8b122265f3bfdfb9a20052fa"

@@ -12,7 +12,7 @@ public sealed class FinalGenerationLimitsTests
 {
     [Theory]
     [InlineData("SHHZ71.json", "G2-N-light-v1.json", 8)]
-    [InlineData("SHRC71.json", "G2-CL-full-v1.json", 8)]
+    [InlineData("SHRC71.json", "G2-CL-light-v1.json", 8)]
     [InlineData("INS-SHRC.json", "INS-CL-light-v1.json", null)]
     public void The_final_wp4_files_decode_to_the_final_generation_limits(string commitment, string wp4, int? targets)
     {

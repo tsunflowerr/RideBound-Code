@@ -43,12 +43,10 @@ public sealed class Wp4RunnerConfiguration
         "binMs");
 
     /// <summary>
-    /// `auditHash` omitted or `full-v1` hashes the whole canonical online state for every
-    /// decision. `light-v1` binds each decision to the event batch and the state
+    /// `auditHash` omitted or `light-v1` binds each decision to the event batch and the state
     /// identity only (epoch, next event sequence, simulation time), with its own decision-hash
-    /// domain; the checkpoint hash still covers the whole state. No decision changes.
+    /// domain; the checkpoint hash still covers the whole state. Any other value is refused.
     /// </summary>
-    public const string FullAuditHash = "full-v1";
     public const string LightAuditHash = "light-v1";
 
     /// <summary>
@@ -96,7 +94,6 @@ public sealed class Wp4RunnerConfiguration
         string policyVersion,
         CandidateGenerationOptions candidateGeneration,
         SolverBackedRidePoolingPolicyOptions solverPolicyOptions,
-        bool usesLightAuditHash,
         TravelTimeForecast? planningForecast,
         ShadowAllocationInputs? shadowAllocation)
     {
@@ -107,7 +104,6 @@ public sealed class Wp4RunnerConfiguration
         PolicyVersion = policyVersion;
         CandidateGeneration = candidateGeneration;
         SolverPolicyOptions = solverPolicyOptions;
-        UsesLightAuditHash = usesLightAuditHash;
     }
 
     public Sha256Hex ContentHash { get; }
@@ -119,9 +115,6 @@ public sealed class Wp4RunnerConfiguration
     public CandidateGenerationOptions CandidateGeneration { get; }
 
     public SolverBackedRidePoolingPolicyOptions SolverPolicyOptions { get; }
-
-    /// <summary>True only for `auditHash: light-v1`.</summary>
-    public bool UsesLightAuditHash { get; }
 
     /// <summary>The planning forecast of `planningForecast`; null when the key is omitted.</summary>
     public TravelTimeForecast? PlanningForecast { get; }
@@ -229,14 +222,11 @@ public sealed class Wp4RunnerConfiguration
 
         var generation = ReadGeneration(root.GetProperty("candidateGeneration"));
 
-        var usesLightAuditHash = root.TryGetProperty("auditHash", out _)
-            ? Text(root, "auditHash") switch
-            {
-                FullAuditHash => false,
-                LightAuditHash => true,
-                _ => throw new InvalidDataException("Unknown auditHash."),
-            }
-            : false;
+        if (root.TryGetProperty("auditHash", out _)
+            && Text(root, "auditHash") != LightAuditHash)
+        {
+            throw new InvalidDataException("Unknown auditHash.");
+        }
 
         TravelTimeForecast? planningForecast = null;
 
@@ -341,7 +331,6 @@ public sealed class Wp4RunnerConfiguration
             policyVersion,
             generation,
             solverOptions,
-            usesLightAuditHash,
             planningForecast,
             shadowAllocation);
     }

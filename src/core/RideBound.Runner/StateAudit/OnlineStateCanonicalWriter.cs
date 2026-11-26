@@ -1,9 +1,6 @@
-using System.Buffers.Binary;
 using System.Runtime.CompilerServices;
-using System.Security.Cryptography;
 using RideBound.Application.State;
 using RideBound.Application.Travel;
-using RideBound.Contracts.Protocol;
 using RideBound.Domain.Commitments;
 using RideBound.Domain.Common;
 using RideBound.Domain.Incidents;
@@ -33,7 +30,7 @@ public sealed class OnlineStateCanonicalCache
 }
 
 /// <summary>
-/// Direct writer of the canonical online state (OnlineStateHash.v1). It produces exactly the
+/// Direct writer of the canonical online state. It produces exactly the
 /// bytes of the reference path OnlineStateReferenceCanonicalizer.CanonicalizeReference, a test
 /// oracle in Runner.Tests (Utf8JsonWriter + CanonicalJson.Canonicalize), with member names in
 /// ordinal order as CanonicalJson sorts them. With a cache, unchanged entities are reused by
@@ -41,11 +38,6 @@ public sealed class OnlineStateCanonicalCache
 /// </summary>
 public static class OnlineStateCanonicalWriter
 {
-    private static readonly byte[] DomainPrefix =
-        "RideBound.OnlineStateHash.v1\0"u8.ToArray();
-
-    private static readonly byte[] FrameTag = "canonicalOnlineState"u8.ToArray();
-
     public static CanonicalSegments Write(OnlineState state, OnlineStateCanonicalCache? cache)
     {
         ArgumentNullException.ThrowIfNull(state);
@@ -147,23 +139,6 @@ public static class OnlineStateCanonicalWriter
         glue.Byte((byte)']');
         root.End();
         return builder.Build();
-    }
-
-    /// <summary>OnlineStateHash.v1 of canonical bytes already built.</summary>
-    public static Sha256Hex HashV1(CanonicalSegments canonical)
-    {
-        using var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
-        hash.AppendData(DomainPrefix);
-        Span<byte> header = stackalloc byte[sizeof(ushort)];
-        BinaryPrimitives.WriteUInt16BigEndian(header, (ushort)FrameTag.Length);
-        hash.AppendData(header);
-        hash.AppendData(FrameTag);
-        Span<byte> length = stackalloc byte[sizeof(ulong)];
-        BinaryPrimitives.WriteUInt64BigEndian(length, (ulong)canonical.Length);
-        hash.AppendData(length);
-        canonical.AppendTo(hash);
-        Sha256Hex.TryCreate(Convert.ToHexStringLower(hash.GetHashAndReset()), out var result);
-        return result!;
     }
 
     private static byte[] Cached<T>(

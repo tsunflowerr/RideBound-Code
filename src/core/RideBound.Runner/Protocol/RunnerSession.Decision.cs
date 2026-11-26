@@ -5,7 +5,6 @@ using RideBound.Application.Events;
 using RideBound.Application.Optimization;
 using RideBound.Contracts.Protocol;
 using RideBound.Runner.Mapping;
-using RideBound.Runner.StateAudit;
 
 namespace RideBound.Runner.Protocol;
 
@@ -41,7 +40,7 @@ public sealed partial class RunnerSession
     private OnlineDecisionBuildResult BuildOnlineDecision(
         ProtocolEnvelope envelope,
         string publicationScope,
-        Sha256Hex? lightStateAfterHash)
+        Sha256Hex lightStateAfterHash)
     {
         if (_onlineCoordinator is null)
         {
@@ -101,9 +100,8 @@ public sealed partial class RunnerSession
         var stateToStage = dispatched.StateToStage!;
         var publications = dispatched.Publications!;
 
-        // One canonicalization and one hash of the staged state per epoch.
-        CanonicalSegments? stagedCanonical = null;
-        var stagedHash = HashStagedState(stateToStage, lightStateAfterHash, ref stagedCanonical);
+        // The staged state is identified, not hashed.
+        var stagedHash = lightStateAfterHash;
 
         // A validated decision keeps no route that a commitment gate rejected, so it is always normal operation
         // and carries no breach witness.
@@ -134,10 +132,6 @@ public sealed partial class RunnerSession
                 ProtocolFailureDisposition.FailSession,
                 staged.Witness!.Message);
         }
-
-        _stagedCanonical = stagedCanonical is null
-            ? null
-            : new CanonicalStateBytes(stateToStage, stagedCanonical);
 
         var actions = OnlineDecisionActionMapper.Map(
                 decision,

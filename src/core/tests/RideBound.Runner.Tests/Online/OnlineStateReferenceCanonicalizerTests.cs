@@ -40,15 +40,6 @@ public sealed class OnlineStateReferenceCanonicalizerTests
             // With a cache: first filled, then read back.
             Assert.Equal(reference, OnlineStateCanonicalWriter.Write(state, cache).ToArray());
             Assert.Equal(reference, OnlineStateCanonicalWriter.Write(state, cache).ToArray());
-
-            var referenceHash = OnlineStateReferenceCanonicalizer.CalculateHashReference(state);
-            Assert.Equal(referenceHash, OnlineStateCanonicalWriter.HashV1(OnlineStateCanonicalWriter.Write(state, null)));
-
-            if (!run.Wp4.EndsWith("light-v1", StringComparison.Ordinal))
-            {
-                // full-v1: the checkpoint's stateHash is OnlineStateHash.v1 of this very state.
-                Assert.Equal(content.GetProperty("stateHash").GetString(), referenceHash.Value);
-            }
         }
     }
 }
