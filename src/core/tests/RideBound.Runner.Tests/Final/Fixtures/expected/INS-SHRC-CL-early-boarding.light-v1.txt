@@ -1,26 +1,26 @@
-# INS-SHRC-CL-early-boarding.light-v1 stdout: 688140 bytes, sha256 5ec3449931c55b15c3eea97ca7225864f1cc7197af6f2a12d35f95e00a200ce4
+# INS-SHRC-CL-early-boarding.light-v1 stdout: 687975 bytes, sha256 7362fd55c7077e1abbce1d6b467f2467e3d03e2f09cd40be65d2446ced5b8ed8
 {"messageType":"helloAck","payload":{"capabilitySelection":{"capabilities":["dynamicTravelTimes","exactEventOrdering","oldPlanProjection"],"maxFleetSize":5000,"maxRequestCount":100000,"positionModel":"directedEdgeProgress","status":"accepted"},"selectedSchemaVersion":"1.0.0"},"schemaVersion":"1.0.0"}
 {"messageType":"initialized","payload":{"initialStateIdentity":{"epochId":0,"nextEventSeq":1,"simTimeMs":0,"stateHash":"6e628e8e7e2dd18386c05ce6c7c114f2ef617cfd8b122265f3bfdfb9a20052fa"},"manifestHash":"7d9419674c79ce7075e94f29b861dbe891f94f368ea377d8c7b43ee938031a46"},"runId":"final-tiny-run","scenarioId":"final-tiny-v1","schemaVersion":"1.0.0"}
-checkpoint 871 4ba1b603a9add5666d46e25e09a0a2727510804a9526012a44b2172f19021f43
+checkpoint 856 156c0265ffd58932eb9066541d88aea1d6d56561c055cd4e8ecbf53c2284b110
 decision 1967 177fb9890265471a7c9c93c4e06d0d37299cbef6cb3afad6ca78a479da39bc4e
-checkpoint 2815 e4669d2ab86623442c1fda75d05b34c23553e191eac7c829817ea5e29f3d5830
+checkpoint 2800 a4ff4689014992504aa3c79c664ee046ca81d1be5e85b623b8aa88cf52ef8ab8
 decision 3763 3fc9c90336969ecdbdac907a26438af068add558aee627166a42ee42dbd4c0a6
-checkpoint 6068 7549a8fc99f3b861a12dbf2eb8fcabb16e45494de30b3502dba4a158a3ca2f67
+checkpoint 6053 eb7aea4950aa6992c0018c0d74427c88013c727429be4f3baa5e21f2752d6a96
 decision 6276 aa8ddcc209ecc2403767d4abca21da1297099cc6d002c0bccbb286f1329c79fd
-checkpoint 13395 cd7a1c8c243317fa04c06b779267b4c97c0378f08ca9751c1b5d48061c267e9d
+checkpoint 13380 79fabe7ae8aca9efc37aa01c64d5f04ec9bfe1440926a729f08180959aea5321
 decision 7626 9cf6b65c74df80c8afe36aa921b825ef692b32c0bb9a93833ad222f625eeb6e1
-checkpoint 25280 683a899d637386719d03855d566641d298e32c88a6f50dbd38c7c01f7b1dbbb0
+checkpoint 25265 83366f57b8b3447016687100850d0361252720b9e7114b3083db56c852b95d10
 decision 10764 6ee31256f6bc13f3b8f9a32fb3ce4526293f5565efc283ac0ef2ee90be9232f2
-checkpoint 41014 1734e6405ca619fbf52550576c492ac14e9db60e0574de7d02b429894d5f2057
+checkpoint 40999 6cbeccf1dba8a86afcb5e1d3b53312de97d825bf478cd5cb0ffc261bc81526e7
 decision 11300 72d9b2fc5095fdfc4556eebb02645259ad105c2e289ca2f542007cf10e398a1f
-checkpoint 61633 d3eed63dcb8a3d17a12e0c50f2c96f4095e52589ab777501635cd651a87573e9
+checkpoint 61618 286741d4177401810160f06a8a09ba924f10b6e4b9f0c766461440db90b380f6
 decision 11674 0e77e9031346666d4d19ba5d3012684497624aeaff0fd09479f75c6d6c7a194a
-checkpoint 83235 d538dcaacca7db18ca3f9077437e086a51f6195f2efbde7058ec35f4f20b2887
+checkpoint 83220 ba5f8539ed7e071bcdf68d4ab0d9ff87475d1cbfa15cc97edba698253192eb51
 decision 12133 29d8b9e83206c200c57a487175f3f462bfb9ce6ed448e31f6dd8d8e92443432f
-checkpoint 103784 e104037d6a534b79bd5305d34b642c041f11543463ba2c745b9a512e88594443
+checkpoint 103769 9ad182076317ba53d8dd1d94101bb8273b9de43f4d03ff1f85f95874a7baae5b
 decision 11665 143a3fe87aaed5f1b1cd2ae11a1c77d2992e1fd0546d12a3214d0ac8984f02cf
-checkpoint 122931 932ab9b94bb68c1c8870696a80b1c97a96a0213bf7cb91124d1bf1008c46d5cc
+checkpoint 122916 7626bd8f60cf975244f6b687016970d1304763a7c2190be63e7b1fad56a81545
 decision 9407 11c46b4fce734c20db461bfd3cf4ec5e977113c56ee750381cdf78d248341fe8
-checkpoint 139299 af44b417c54296a6546f20481266a766204b9938dd706139863bef4fbf81c7ed
+checkpoint 139284 f26daf59a24160ae1ad9477c54b15ff0299bea6f6e4cb39ebe5f55e8f652a5cd
 {"epochId":11,"messageType":"error","payload":{"code":"INTERNAL_ERROR","disposition":"failSession","message":"C1 rejected every generated candidate for this vehicle. No-op rejection: Promise stops, ETA order and service order must be valid."},"runId":"final-tiny-run","scenarioId":"final-tiny-v1","schemaVersion":"1.0.0","simTimeMs":955003}
 {"messageType":"error","payload":{"code":"INVALID_SESSION_STATE","disposition":"rejectMessage","message":"A failed session accepts only shutdown."},"runId":"final-tiny-run","scenarioId":"final-tiny-v1","schemaVersion":"1.0.0"}

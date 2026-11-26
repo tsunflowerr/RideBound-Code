@@ -68,20 +68,6 @@ public sealed record TravelTimesUpdated(
 public sealed record TimerTick(long EventSequence, SimTime SimulationTime)
     : OnlineEvent(EventSequence, SimulationTime);
 
-public sealed record IncidentOpened(
-    long EventSequence,
-    SimTime SimulationTime,
-    IncidentId IncidentId,
-    string ReasonCode,
-    IReadOnlyList<VehicleId> VehicleIds)
-    : OnlineEvent(EventSequence, SimulationTime);
-
-public sealed record IncidentResolved(
-    long EventSequence,
-    SimTime SimulationTime,
-    IncidentId IncidentId)
-    : OnlineEvent(EventSequence, SimulationTime);
-
 public sealed record InternalEventBatch(
     RunIdentifier RunId,
     ScenarioIdentifier ScenarioId,

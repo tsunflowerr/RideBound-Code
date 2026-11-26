@@ -17,7 +17,7 @@ namespace RideBound.Runner.Tests.Online;
 public sealed class OnlineStateCheckpointCodecTests
 {
     [Fact]
-    public void Closed_incident_with_prior_breach_round_trips_exactly()
+    public void An_exogenous_breach_round_trips_exactly()
     {
         var requestId = new RequestId("request-1");
         var vehicleId = new VehicleId("vehicle-1");
@@ -97,38 +97,7 @@ public sealed class OnlineStateCheckpointCodecTests
             new SimTime(0),
             "INITIAL_ACCEPTANCE",
             1).Ledger!;
-        var incidentId = new IncidentId("incident-1");
-        var incidents = OperationalIncidentLedger.Empty.Open(
-            incidentId,
-            "ROAD_CLOSED",
-            [vehicleId],
-            [requestId],
-            2,
-            new SimTime(1)).Ledger!;
-        var delta = new CommitmentVector(1, 0, 0, 0, 0);
-        incidents = incidents.AppendBreach(
-            new CommitmentBreachRecord(
-                "breach-1",
-                incidentId,
-                requestId,
-                promises.Histories[requestId].Current.PublishedPromise,
-                projection,
-                projection,
-                new ThreeWayPromiseDelta(
-                    CommitmentVector.Zero,
-                    delta,
-                    delta),
-                CommitmentVector.Zero,
-                delta,
-                ["pickup_eta_total_ms"],
-                3,
-                1,
-                new SimTime(2))).Ledger!;
-        incidents = incidents.Resolve(
-            incidentId,
-            4,
-            new SimTime(3)).Ledger!;
-        incidents = incidents.AppendBreach(
+        var incidents = OperationalIncidentLedger.Empty.AppendBreach(
             CommitmentBreachRecord.CreateExogenousServiceQuality(
                 "exogenous-breach-1",
                 requestId,
@@ -174,22 +143,10 @@ public sealed class OnlineStateCheckpointCodecTests
         var decoded = OnlineStateCheckpointCodec.Decode(document.RootElement);
 
         Assert.True(decoded.IsSuccess, decoded.Error);
-        var restoredIncident = Assert.Single(
-            decoded.State!.Incidents.Incidents).Value;
-        Assert.False(restoredIncident.IsOpen);
-        Assert.Collection(
-            decoded.State.Incidents.Breaches,
-            breach => Assert.Equal("breach-1", breach.BreachId),
-            breach =>
-            {
-                Assert.Equal("exogenous-breach-1", breach.BreachId);
-                Assert.Equal(
-                    CommitmentBreachKind.ExogenousServiceQuality,
-                    breach.Kind);
-                Assert.Null(breach.IncidentId);
-                Assert.Single(breach.ServiceQualityWitnesses);
-                Assert.Equal(breach.BudgetBefore, breach.AttemptedBudgetAfter);
-            });
+        var breach = Assert.Single(decoded.State!.Incidents.Breaches);
+        Assert.Equal("exogenous-breach-1", breach.BreachId);
+        Assert.Single(breach.ServiceQualityWitnesses);
+        Assert.Equal(breach.BudgetBefore, breach.AttemptedBudgetAfter);
         Assert.Equal(
             OnlineStateCanonicalizer.Canonicalize(state),
             OnlineStateCanonicalizer.Canonicalize(decoded.State));
@@ -205,7 +162,7 @@ public sealed class OnlineStateCheckpointCodecTests
         Assert.Contains("promise/run boundary", rejected.Error);
 
         var forgedExogenous = JsonNode.Parse(document.RootElement.GetRawText())!;
-        forgedExogenous["incidentLedger"]!["breaches"]![1]![
+        forgedExogenous["incidentLedger"]!["breaches"]![0]![
             "attemptedBudgetAfter"]!["pickupEtaTotalMs"] = 1;
         using var forgedDocument = JsonDocument.Parse(
             forgedExogenous.ToJsonString());

@@ -15,8 +15,6 @@ public enum EventType
     PassengerAlighted,
     TravelTimesUpdated,
     TimerTick,
-    IncidentOpened,
-    IncidentResolved,
 }
 
 public sealed record ProtocolEvent(
@@ -55,8 +53,6 @@ public static class EventTypeVocabulary
             EventType.PassengerAlighted => "passengerAlighted",
             EventType.TravelTimesUpdated => "travelTimesUpdated",
             EventType.TimerTick => "timerTick",
-            EventType.IncidentOpened => "incidentOpened",
-            EventType.IncidentResolved => "incidentResolved",
             _ => throw new ArgumentOutOfRangeException(nameof(eventType)),
         };
 }
@@ -260,12 +256,6 @@ internal static class ProtocolEventPayloadCodec
     private static readonly IReadOnlySet<string> TravelWrapperFields =
         Fields("snapshot");
 
-    private static readonly IReadOnlySet<string> IncidentOpenedFields =
-        Fields("incidentId", "reasonCode", "vehicleIds");
-
-    private static readonly IReadOnlySet<string> IncidentResolvedFields =
-        Fields("incidentId");
-
     private static readonly IReadOnlySet<string> EmptyFields =
         Fields();
 
@@ -288,8 +278,6 @@ internal static class ProtocolEventPayloadCodec
                 DecodePassenger(payload, path),
             EventType.TravelTimesUpdated => DecodeTravelTimes(payload, path),
             EventType.TimerTick => DecodeTimerTick(payload, path),
-            EventType.IncidentOpened => DecodeIncidentOpened(payload, path),
-            EventType.IncidentResolved => DecodeIncidentResolved(payload, path),
             _ => Failure(
                 ProtocolPayloadErrorCode.InvalidValue,
                 path,
@@ -366,34 +354,6 @@ internal static class ProtocolEventPayloadCodec
                 break;
             case (EventType.TimerTick, TimerTickEventPayload):
                 writer.WriteStartObject();
-                writer.WriteEndObject();
-                break;
-            case (EventType.IncidentOpened, IncidentOpenedEventPayload incident):
-                RequireIdentifier(incident.IncidentId, nameof(incident.IncidentId));
-                RequireIdentifier(incident.ReasonCode, nameof(incident.ReasonCode));
-                var vehicleIds = NormalizeSet(
-                    incident.VehicleIds,
-                    nameof(incident.VehicleIds));
-                writer.WriteStartObject();
-                writer.WriteString("incidentId", incident.IncidentId);
-                writer.WriteString("reasonCode", incident.ReasonCode);
-                writer.WritePropertyName("vehicleIds");
-                writer.WriteStartArray();
-
-                foreach (var vehicleId in vehicleIds)
-                {
-                    writer.WriteStringValue(vehicleId);
-                }
-
-                writer.WriteEndArray();
-                writer.WriteEndObject();
-                break;
-            case (
-                EventType.IncidentResolved,
-                IncidentResolvedEventPayload resolved):
-                RequireIdentifier(resolved.IncidentId, nameof(resolved.IncidentId));
-                writer.WriteStartObject();
-                writer.WriteString("incidentId", resolved.IncidentId);
                 writer.WriteEndObject();
                 break;
             default:
@@ -597,59 +557,6 @@ internal static class ProtocolEventPayloadCodec
         var error = ProtocolPayloadReader.ValidateObject(payload, path, EmptyFields);
         return error is null
             ? Success(TimerTickEventPayload.Instance)
-            : ProtocolPayloadDecodeResult<ProtocolEventPayload>.Failure(error);
-    }
-
-    private static ProtocolPayloadDecodeResult<ProtocolEventPayload>
-        DecodeIncidentOpened(JsonElement payload, string path)
-    {
-        var objectError = ProtocolPayloadReader.ValidateObject(
-            payload,
-            path,
-            IncidentOpenedFields);
-        var incidentId = ProtocolPayloadReader.ReadRequiredString(
-            payload,
-            path,
-            "incidentId");
-        var reasonCode = ProtocolPayloadReader.ReadRequiredString(
-            payload,
-            path,
-            "reasonCode");
-        var vehicles = ProtocolPayloadReader.ReadRequiredStringSet(
-            payload,
-            path,
-            "vehicleIds",
-            allowEmpty: false);
-        var error = HelloPayloadCodec.FirstError(
-            objectError,
-            incidentId.Error,
-            reasonCode.Error,
-            vehicles.Error);
-
-        return error is null
-            ? Success(
-                new IncidentOpenedEventPayload(
-                    incidentId.Value!,
-                    reasonCode.Value!,
-                    vehicles.Value!))
-            : ProtocolPayloadDecodeResult<ProtocolEventPayload>.Failure(error);
-    }
-
-    private static ProtocolPayloadDecodeResult<ProtocolEventPayload>
-        DecodeIncidentResolved(JsonElement payload, string path)
-    {
-        var objectError = ProtocolPayloadReader.ValidateObject(
-            payload,
-            path,
-            IncidentResolvedFields);
-        var incidentId = ProtocolPayloadReader.ReadRequiredString(
-            payload,
-            path,
-            "incidentId");
-        var error = HelloPayloadCodec.FirstError(objectError, incidentId.Error);
-
-        return error is null
-            ? Success(new IncidentResolvedEventPayload(incidentId.Value!))
             : ProtocolPayloadDecodeResult<ProtocolEventPayload>.Failure(error);
     }
 

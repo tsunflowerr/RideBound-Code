@@ -2,7 +2,6 @@ using RideBound.Application.Events;
 using RideBound.Application.Travel;
 using RideBound.Contracts.Protocol;
 using RideBound.Domain.Common;
-using RideBound.Domain.Incidents;
 using RideBound.Domain.Requests;
 using RideBound.Domain.Routes;
 using RideBound.Domain.Vehicles;
@@ -141,23 +140,6 @@ public sealed class OnlineEventMapper
                     MapTravel(sequence, simTime, travel.Snapshot),
                 TimerTickEventPayload =>
                     EventMappingResult.Success(new TimerTick(sequence, simTime)),
-                IncidentOpenedEventPayload opened =>
-                    EventMappingResult.Success(
-                        new IncidentOpened(
-                            sequence,
-                            simTime,
-                            new IncidentId(opened.IncidentId),
-                            opened.ReasonCode,
-                            opened.VehicleIds
-                                .Select(value => new VehicleId(value))
-                                .OrderBy(value => value.Value, StringComparer.Ordinal)
-                                .ToArray())),
-                IncidentResolvedEventPayload resolved =>
-                    EventMappingResult.Success(
-                        new IncidentResolved(
-                            sequence,
-                            simTime,
-                            new IncidentId(resolved.IncidentId))),
                 _ => EventMappingResult.Failure(
                     "UNSUPPORTED_EVENT_TYPE",
                     $"Payload '{protocolEvent.Payload.GetType().Name}' is unsupported."),

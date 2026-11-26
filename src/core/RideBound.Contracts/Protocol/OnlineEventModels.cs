@@ -118,14 +118,6 @@ public sealed record TimerTickEventPayload : ProtocolEventPayload
     public static TimerTickEventPayload Instance { get; } = new();
 }
 
-public sealed record IncidentOpenedEventPayload(
-    string IncidentId,
-    string ReasonCode,
-    IReadOnlyList<string> VehicleIds) : ProtocolEventPayload;
-
-public sealed record IncidentResolvedEventPayload(string IncidentId)
-    : ProtocolEventPayload;
-
 internal static class OnlineContractCodec
 {
     private static readonly IReadOnlySet<string> NodePositionFields =

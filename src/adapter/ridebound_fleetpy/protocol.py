@@ -323,7 +323,7 @@ def parse_decision(
                     promise.get("vehicleId") if isinstance(promise.get("vehicleId"), str) else None,
                 )
             )
-        elif decision_type in {"offerProposed", "commitmentBreachDeclared"}:
+        elif decision_type == "offerProposed":
             raise _fail("RBWP7_DECISION_TYPE_UNSUPPORTED", f"{path}.decisionType", decision_type)
         else:
             raise _fail("RBWP7_DECISION_TYPE_UNKNOWN", f"{path}.decisionType", decision_type)

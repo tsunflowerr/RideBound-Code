@@ -387,43 +387,6 @@ internal static class OnlineStateReferenceCanonicalizer
         OperationalIncidentLedger ledger)
     {
         writer.WriteStartObject();
-        writer.WritePropertyName("incidents");
-        writer.WriteStartArray();
-
-        foreach (var incident in ledger.Incidents.Values.OrderBy(
-                     value => value.Id.Value,
-                     StringComparer.Ordinal))
-        {
-            writer.WriteStartObject();
-            writer.WriteString("incidentId", incident.Id.Value);
-            writer.WriteString("reasonCode", incident.ReasonCode);
-            WriteIdentifiers(
-                writer,
-                "affectedVehicleIds",
-                incident.AffectedVehicleIds.Select(value => value.Value));
-            WriteIdentifiers(
-                writer,
-                "affectedRequestIds",
-                incident.AffectedRequestIds.Select(value => value.Value));
-            writer.WriteNumber(
-                "openedEventSeq",
-                incident.OpenedEventSequence);
-            writer.WriteNumber(
-                "openedAtMs",
-                incident.OpenedAt.Milliseconds);
-
-            if (incident.ResolvedEventSequence is long resolvedSequence)
-            {
-                writer.WriteNumber("resolvedEventSeq", resolvedSequence);
-                writer.WriteNumber(
-                    "resolvedAtMs",
-                    incident.ResolvedAt!.Value.Milliseconds);
-            }
-
-            writer.WriteEndObject();
-        }
-
-        writer.WriteEndArray();
         writer.WritePropertyName("breaches");
         writer.WriteStartArray();
 
@@ -432,20 +395,7 @@ internal static class OnlineStateReferenceCanonicalizer
             writer.WriteStartObject();
             writer.WriteString("breachId", breach.BreachId);
 
-            // Exhaustive by kind: an operational record writes its incident, every other kind
-            // writes its own name. A new kind must never fall into another kind's encoding.
-            switch (breach.Kind)
-            {
-                case CommitmentBreachKind.OperationalIncident:
-                    writer.WriteString("incidentId", breach.IncidentId!.Value.Value);
-                    break;
-                case CommitmentBreachKind.ExogenousServiceQuality:
-                    writer.WriteString("kind", "exogenousServiceQuality");
-                    break;
-                default:
-                    throw new InvalidOperationException("Unknown commitment breach kind.");
-            }
-
+            writer.WriteString("kind", "exogenousServiceQuality");
             writer.WriteString("requestId", breach.RequestId.Value);
             writer.WritePropertyName("previousPromise");
             WritePublishedPromise(writer, breach.PreviousPromise);
@@ -468,28 +418,25 @@ internal static class OnlineStateReferenceCanonicalizer
             WriteVector(writer, breach.AttemptedBudgetAfter);
             WriteIdentifiers(writer, "witnessCodes", breach.WitnessCodes);
 
-            if (breach.Kind == CommitmentBreachKind.ExogenousServiceQuality)
+            writer.WritePropertyName("serviceQualityWitnesses");
+            writer.WriteStartArray();
+
+            foreach (var witness in breach.ServiceQualityWitnesses)
             {
-                writer.WritePropertyName("serviceQualityWitnesses");
-                writer.WriteStartArray();
-
-                foreach (var witness in breach.ServiceQualityWitnesses)
-                {
-                    writer.WriteStartObject();
-                    writer.WriteString("requestId", witness.RequestId.Value);
-                    writer.WriteString("code", witness.Code);
-                    writer.WriteString("dimension", witness.Dimension);
-                    writer.WriteNumber(
-                        "contractualMilliseconds",
-                        witness.ContractualMilliseconds);
-                    writer.WriteNumber(
-                        "exogenousMilliseconds",
-                        witness.ExogenousMilliseconds);
-                    writer.WriteEndObject();
-                }
-
-                writer.WriteEndArray();
+                writer.WriteStartObject();
+                writer.WriteString("requestId", witness.RequestId.Value);
+                writer.WriteString("code", witness.Code);
+                writer.WriteString("dimension", witness.Dimension);
+                writer.WriteNumber(
+                    "contractualMilliseconds",
+                    witness.ContractualMilliseconds);
+                writer.WriteNumber(
+                    "exogenousMilliseconds",
+                    witness.ExogenousMilliseconds);
+                writer.WriteEndObject();
             }
+
+            writer.WriteEndArray();
 
             writer.WriteNumber("sourceEventSeq", breach.SourceEventSequence);
             writer.WriteNumber("recordedEpoch", breach.RecordedEpoch);

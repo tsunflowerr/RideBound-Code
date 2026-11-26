@@ -329,34 +329,6 @@ public static class OnlineStateCheckpointCodec
         JsonElement element)
     {
         var ledger = OperationalIncidentLedger.Empty;
-        var resolutions = new List<(IncidentId Id, long EventSeq, SimTime At)>();
-
-        foreach (var value in element.GetProperty("incidents").EnumerateArray())
-        {
-            var id = new IncidentId(Text(value, "incidentId"));
-            var opened = ledger.Open(
-                id,
-                Text(value, "reasonCode"),
-                value.GetProperty("affectedVehicleIds")
-                    .EnumerateArray()
-                    .Select(item => new VehicleId(item.GetString()!)),
-                value.GetProperty("affectedRequestIds")
-                    .EnumerateArray()
-                    .Select(item => new RequestId(item.GetString()!)),
-                Integer(value, "openedEventSeq"),
-                new SimTime(Integer(value, "openedAtMs")));
-            ledger = opened.IsSuccess
-                ? opened.Ledger!
-                : throw new InvalidOperationException(opened.Failure!.Message);
-
-            if (value.TryGetProperty("resolvedEventSeq", out var resolved))
-            {
-                resolutions.Add(
-                    (id,
-                        resolved.GetInt64(),
-                        new SimTime(Integer(value, "resolvedAtMs"))));
-            }
-        }
 
         foreach (var value in element.GetProperty("breaches").EnumerateArray())
         {
@@ -367,76 +339,42 @@ public static class OnlineStateCheckpointCodec
                 value.GetProperty("exogenousProjection"));
             var deltas = ReadDeltas(value.GetProperty("deltas"));
             var budgetBefore = ReadVector(value.GetProperty("budgetBefore"));
-            CommitmentBreachRecord breach;
 
-            if (value.TryGetProperty("kind", out var kind))
+            if (Text(value, "kind") != "exogenousServiceQuality")
             {
-                if (kind.GetString() != "exogenousServiceQuality")
-                {
-                    throw new InvalidOperationException(
-                        "Unknown commitment breach kind.");
-                }
+                throw new InvalidOperationException(
+                    "Unknown commitment breach kind.");
+            }
 
-                breach = CommitmentBreachRecord.CreateExogenousServiceQuality(
-                    Text(value, "breachId"),
-                    requestId,
-                    previousPromise,
-                    exogenousProjection,
-                    ReadPromiseProjection(value.GetProperty("safetyProjection")),
-                    deltas,
-                    budgetBefore,
-                    ReadVector(value.GetProperty("attemptedBudgetAfter")),
-                    value.GetProperty("witnessCodes")
-                        .EnumerateArray()
-                        .Select(item => item.GetString()!),
-                    value.GetProperty("serviceQualityWitnesses")
-                        .EnumerateArray()
-                        .Select(
-                            item => new ServiceQualityBreach(
-                                new RequestId(Text(item, "requestId")),
-                                Text(item, "code"),
-                                Text(item, "dimension"),
-                                Integer(item, "contractualMilliseconds"),
-                                Integer(item, "exogenousMilliseconds"))),
-                    Integer(value, "sourceEventSeq"),
-                    Integer(value, "recordedEpoch"),
-                    new SimTime(Integer(value, "recordedAtMs")));
-            }
-            else
-            {
-                breach = new CommitmentBreachRecord(
-                    Text(value, "breachId"),
-                    new IncidentId(Text(value, "incidentId")),
-                    requestId,
-                    previousPromise,
-                    exogenousProjection,
-                    ReadPromiseProjection(value.GetProperty("safetyProjection")),
-                    deltas,
-                    budgetBefore,
-                    ReadVector(value.GetProperty("attemptedBudgetAfter")),
-                    value.GetProperty("witnessCodes")
-                        .EnumerateArray()
-                        .Select(item => item.GetString()!),
-                    Integer(value, "sourceEventSeq"),
-                    Integer(value, "recordedEpoch"),
-                    new SimTime(Integer(value, "recordedAtMs")));
-            }
+            var breach = CommitmentBreachRecord.CreateExogenousServiceQuality(
+                Text(value, "breachId"),
+                requestId,
+                previousPromise,
+                exogenousProjection,
+                ReadPromiseProjection(value.GetProperty("safetyProjection")),
+                deltas,
+                budgetBefore,
+                ReadVector(value.GetProperty("attemptedBudgetAfter")),
+                value.GetProperty("witnessCodes")
+                    .EnumerateArray()
+                    .Select(item => item.GetString()!),
+                value.GetProperty("serviceQualityWitnesses")
+                    .EnumerateArray()
+                    .Select(
+                        item => new ServiceQualityBreach(
+                            new RequestId(Text(item, "requestId")),
+                            Text(item, "code"),
+                            Text(item, "dimension"),
+                            Integer(item, "contractualMilliseconds"),
+                            Integer(item, "exogenousMilliseconds"))),
+                Integer(value, "sourceEventSeq"),
+                Integer(value, "recordedEpoch"),
+                new SimTime(Integer(value, "recordedAtMs")));
 
             var appended = ledger.AppendBreach(breach);
             ledger = appended.IsSuccess
                 ? appended.Ledger!
                 : throw new InvalidOperationException(appended.Failure!.Message);
-        }
-
-        foreach (var resolution in resolutions)
-        {
-            var closed = ledger.Resolve(
-                resolution.Id,
-                resolution.EventSeq,
-                resolution.At);
-            ledger = closed.IsSuccess
-                ? closed.Ledger!
-                : throw new InvalidOperationException(closed.Failure!.Message);
         }
 
         if (element.TryGetProperty("latePickups", out var latePickups))
@@ -491,7 +429,6 @@ public static class OnlineStateCheckpointCodec
                 || run.Requests.Count != 0
                 || run.Vehicles.Count != 0
                 || commitments.Histories.Count != 0
-                || incidents.Incidents.Count != 0
                 || incidents.Breaches.Count != 0
                 || incidents.LatePickups.Count != 0)
             {
@@ -558,24 +495,6 @@ public static class OnlineStateCheckpointCodec
                 {
                     return "Checkpoint commitment entry crosses its run/event boundary.";
                 }
-            }
-        }
-
-        foreach (var incident in incidents.Incidents.Values)
-        {
-            if (incident.OpenedEventSequence >= nextEventSequence
-                || incident.OpenedAt.Milliseconds
-                    > run.SimulationTime.Milliseconds
-                || incident.ResolvedEventSequence is long resolved
-                    && resolved >= nextEventSequence
-                || incident.ResolvedAt is SimTime resolvedAt
-                    && resolvedAt.Milliseconds > run.SimulationTime.Milliseconds
-                || incident.AffectedVehicleIds.Any(
-                    value => !run.Vehicles.ContainsKey(value))
-                || incident.AffectedRequestIds.Any(
-                    value => !run.Requests.ContainsKey(value)))
-            {
-                return "Checkpoint incident crosses its run/event boundary.";
             }
         }
 

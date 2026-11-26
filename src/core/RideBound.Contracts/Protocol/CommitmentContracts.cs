@@ -37,16 +37,6 @@ public sealed record PromisePublishedActionPayload(
     CommitmentVectorContract BudgetBefore,
     CommitmentVectorContract BudgetAfter) : OnlineDecisionActionPayload;
 
-public sealed record CommitmentBreachDeclaredActionPayload(
-    string BreachId,
-    string IncidentId,
-    string RequestId,
-    long SourceEventSequence,
-    IReadOnlyList<string> WitnessCodes,
-    CommitmentVectorContract BudgetBefore,
-    CommitmentVectorContract AttemptedBudgetAfter)
-    : OnlineDecisionActionPayload;
-
 public sealed record CertificateWitnessContract(
     string Stage,
     string Code,

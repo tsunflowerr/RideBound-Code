@@ -269,18 +269,6 @@ public sealed class EventDecisionMessageTests
                         ZeroVector(),
                         ZeroVector(),
                         ZeroVector()))),
-            DecisionType.CommitmentBreachDeclared =>
-                OnlineDecisionActionCodec.Encode(
-                    new OnlineDecisionAction(
-                        decisionType,
-                        new CommitmentBreachDeclaredActionPayload(
-                            "breach-1",
-                            "incident-1",
-                            "r-1",
-                            1,
-                            ["pickup_eta_total_ms"],
-                            ZeroVector(),
-                            ZeroVector()))),
             _ => ParseObject(
                 $$"""
                 {
@@ -418,11 +406,11 @@ public sealed class EventDecisionMessageTests
         };
         var payload = new DecisionPayload(
             DecisionProductionStatus.Produced,
-            DecisionReasonCodes.IncidentOverride,
+            DecisionReasonCodes.CommitmentBudget,
             [],
             new CertificateShell(
                 CertificateStatus.Produced,
-                DecisionReasonCodes.IncidentOverride,
+                DecisionReasonCodes.CommitmentBudget,
                 nonNormal),
             new SolverStatusShell(SolverStatus.SafeFallback),
             zero!, zero!, zero!, zero!);
@@ -578,12 +566,6 @@ public sealed class EventDecisionMessageTests
                     hash!,
                     [new TravelArcContract("n-1", "n-2", 1)])),
             EventType.TimerTick => TimerTickEventPayload.Instance,
-            EventType.IncidentOpened => new IncidentOpenedEventPayload(
-                "incident-1",
-                "ROAD_CLOSED",
-                ["v-1"]),
-            EventType.IncidentResolved => new IncidentResolvedEventPayload(
-                "incident-1"),
             _ => throw new ArgumentOutOfRangeException(nameof(eventType)),
         };
     }

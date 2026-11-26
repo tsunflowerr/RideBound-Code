@@ -1,21 +1,8 @@
-using System.Collections.Frozen;
 using RideBound.Domain.Commitments;
 using RideBound.Domain.Common;
 using RideBound.Domain.Validation;
 
 namespace RideBound.Domain.Incidents;
-
-public readonly record struct IncidentId
-{
-    public IncidentId(string value)
-    {
-        Value = DomainIdentifier.Require(value, nameof(value));
-    }
-
-    public string Value { get; }
-
-    public override string ToString() => Value;
-}
 
 /// <summary>
 /// A rider observed boarding after the latest pickup of the accepted
@@ -72,149 +59,10 @@ public sealed record ObservedLatePickup
     public long LatenessMilliseconds => ActualPickup.Milliseconds - LatestPickup.Milliseconds;
 }
 
-public sealed record OperationalIncident
-{
-    public OperationalIncident(
-        IncidentId id,
-        string reasonCode,
-        IEnumerable<VehicleId> affectedVehicleIds,
-        IEnumerable<RequestId> affectedRequestIds,
-        long openedEventSequence,
-        SimTime openedAt,
-        long? resolvedEventSequence = null,
-        SimTime? resolvedAt = null)
-    {
-        ArgumentNullException.ThrowIfNull(affectedVehicleIds);
-        ArgumentNullException.ThrowIfNull(affectedRequestIds);
-
-        if (openedEventSequence is < 1 or > DomainLimits.MaxCanonicalInteger)
-        {
-            throw new ArgumentOutOfRangeException(nameof(openedEventSequence));
-        }
-
-        if ((resolvedEventSequence is null) != (resolvedAt is null)
-            || resolvedEventSequence is not null
-                && (resolvedEventSequence <= openedEventSequence
-                    || resolvedEventSequence > DomainLimits.MaxCanonicalInteger)
-            || resolvedAt is not null
-                && resolvedAt.Value.Milliseconds < openedAt.Milliseconds)
-        {
-            throw new ArgumentException(
-                "Incident resolution must be a later, complete event/time pair.");
-        }
-
-        var vehicles = Normalize(affectedVehicleIds, value => value.Value);
-        var requests = Normalize(affectedRequestIds, value => value.Value);
-
-        if (vehicles.Length == 0)
-        {
-            throw new ArgumentException(
-                "An operational incident must affect at least one vehicle.",
-                nameof(affectedVehicleIds));
-        }
-
-        Id = id;
-        ReasonCode = DomainIdentifier.Require(reasonCode, nameof(reasonCode));
-        AffectedVehicleIds = Array.AsReadOnly(vehicles);
-        AffectedRequestIds = Array.AsReadOnly(requests);
-        OpenedEventSequence = openedEventSequence;
-        OpenedAt = openedAt;
-        ResolvedEventSequence = resolvedEventSequence;
-        ResolvedAt = resolvedAt;
-    }
-
-    public IncidentId Id { get; }
-
-    public string ReasonCode { get; }
-
-    public IReadOnlyList<VehicleId> AffectedVehicleIds { get; }
-
-    public IReadOnlyList<RequestId> AffectedRequestIds { get; }
-
-    public long OpenedEventSequence { get; }
-
-    public SimTime OpenedAt { get; }
-
-    public long? ResolvedEventSequence { get; }
-
-    public SimTime? ResolvedAt { get; }
-
-    public bool IsOpen => ResolvedEventSequence is null;
-
-    public OperationalIncident Resolve(long eventSequence, SimTime resolvedAt) =>
-        new(
-            Id,
-            ReasonCode,
-            AffectedVehicleIds,
-            AffectedRequestIds,
-            OpenedEventSequence,
-            OpenedAt,
-            eventSequence,
-            resolvedAt);
-
-    private static T[] Normalize<T>(
-        IEnumerable<T> values,
-        Func<T, string> identifier)
-    {
-        var materialized = values
-            .OrderBy(identifier, StringComparer.Ordinal)
-            .ToArray();
-
-        if (materialized.Select(identifier).Distinct(StringComparer.Ordinal).Count()
-            != materialized.Length)
-        {
-            throw new ArgumentException("Incident entity sets cannot contain duplicates.");
-        }
-
-        return materialized;
-    }
-}
-
-public enum CommitmentBreachKind
-{
-    OperationalIncident,
-    ExogenousServiceQuality,
-}
-
 public sealed record CommitmentBreachRecord
 {
-    public CommitmentBreachRecord(
-        string breachId,
-        IncidentId incidentId,
-        RequestId requestId,
-        PublishedPromise previousPromise,
-        PromiseProjection exogenousProjection,
-        PromiseProjection safetyProjection,
-        ThreeWayPromiseDelta deltas,
-        CommitmentVector budgetBefore,
-        CommitmentVector attemptedBudgetAfter,
-        IEnumerable<string> witnessCodes,
-        long sourceEventSequence,
-        long recordedEpoch,
-        SimTime recordedAt)
-        : this(
-            breachId,
-            CommitmentBreachKind.OperationalIncident,
-            incidentId,
-            requestId,
-            previousPromise,
-            exogenousProjection,
-            safetyProjection,
-            deltas,
-            budgetBefore,
-            attemptedBudgetAfter,
-            witnessCodes,
-            [],
-            sourceEventSequence,
-            recordedEpoch,
-            recordedAt)
-    {
-    }
-
     private CommitmentBreachRecord(
         string breachId,
-        CommitmentBreachKind kind,
-        IncidentId? incidentId,
         RequestId requestId,
         PublishedPromise previousPromise,
         PromiseProjection exogenousProjection,
@@ -273,74 +121,46 @@ public sealed record CommitmentBreachRecord
             .ThenBy(value => value.Dimension, StringComparer.Ordinal)
             .ToArray();
 
-        if (kind == CommitmentBreachKind.ExogenousServiceQuality)
+        if (!ProjectionEquals(exogenousProjection, safetyProjection)
+            || deltas.DecisionInduced != CommitmentVector.Zero
+            || deltas.Exogenous != deltas.Visible
+            || attemptedBudgetAfter != budgetBefore)
         {
-            if (incidentId is not null
-                || !ProjectionEquals(exogenousProjection, safetyProjection)
-                || deltas.DecisionInduced != CommitmentVector.Zero
-                || deltas.Exogenous != deltas.Visible
-                || attemptedBudgetAfter != budgetBefore)
-            {
-                throw new ArgumentException(
-                    "An exogenous breach requires identical no-op projections, " +
-                    "zero decision delta and an unchanged budget.");
-            }
-
-            if (serviceWitnesses.Length == 0
-                || serviceWitnesses.Any(
-                    value => value.RequestId != requestId
-                        || value.ContractualMilliseconds < 0
-                        || value.ExogenousMilliseconds
-                            <= value.ContractualMilliseconds
-                        || value.Code == PhysicalViolationCodes.PickupWindow
-                            && value.Dimension != "latestPickupMs"
-                        || value.Code == PhysicalViolationCodes.MaxRideTime
-                            && value.Dimension != "maxRideTimeMs"
-                        || value.Code is not (
-                            PhysicalViolationCodes.PickupWindow
-                            or PhysicalViolationCodes.MaxRideTime))
-                || serviceWitnesses
-                    .Select(value => (value.RequestId, value.Code, value.Dimension))
-                    .Distinct()
-                    .Count() != serviceWitnesses.Length
-                || !witnesses.SequenceEqual(
-                    serviceWitnesses
-                        .Select(value => value.Code)
-                        .Distinct(StringComparer.Ordinal)
-                        .Order(StringComparer.Ordinal),
-                    StringComparer.Ordinal))
-            {
-                throw new ArgumentException(
-                    "Exogenous breach witnesses must be exact, unique service-quality overruns.",
-                    nameof(serviceQualityWitnesses));
-            }
+            throw new ArgumentException(
+                "An exogenous breach requires identical no-op projections, " +
+                "zero decision delta and an unchanged budget.");
         }
-        else
+
+        if (serviceWitnesses.Length == 0
+            || serviceWitnesses.Any(
+                value => value.RequestId != requestId
+                    || value.ContractualMilliseconds < 0
+                    || value.ExogenousMilliseconds
+                        <= value.ContractualMilliseconds
+                    || value.Code == PhysicalViolationCodes.PickupWindow
+                        && value.Dimension != "latestPickupMs"
+                    || value.Code == PhysicalViolationCodes.MaxRideTime
+                        && value.Dimension != "maxRideTimeMs"
+                    || value.Code is not (
+                        PhysicalViolationCodes.PickupWindow
+                        or PhysicalViolationCodes.MaxRideTime))
+            || serviceWitnesses
+                .Select(value => (value.RequestId, value.Code, value.Dimension))
+                .Distinct()
+                .Count() != serviceWitnesses.Length
+            || !witnesses.SequenceEqual(
+                serviceWitnesses
+                    .Select(value => value.Code)
+                    .Distinct(StringComparer.Ordinal)
+                    .Order(StringComparer.Ordinal),
+                StringComparer.Ordinal))
         {
-            if (incidentId is null || serviceWitnesses.Length != 0)
-            {
-                throw new ArgumentException(
-                    "An operational breach requires an incident and cannot carry exogenous witnesses.");
-            }
-
-            var decisionAfter = budgetBefore.Add(deltas.DecisionInduced);
-            var visibleAfter = budgetBefore.Add(deltas.Visible);
-
-            if ((!decisionAfter.IsSuccess
-                    || decisionAfter.Value != attemptedBudgetAfter)
-                && (!visibleAfter.IsSuccess
-                    || visibleAfter.Value != attemptedBudgetAfter))
-            {
-                throw new ArgumentException(
-                    "Attempted breach budget must equal budgetBefore plus the " +
-                    "decision-induced or customer-visible charged delta.",
-                    nameof(attemptedBudgetAfter));
-            }
+            throw new ArgumentException(
+                "Exogenous breach witnesses must be exact, unique service-quality overruns.",
+                nameof(serviceQualityWitnesses));
         }
 
         BreachId = DomainIdentifier.Require(breachId, nameof(breachId));
-        Kind = kind;
-        IncidentId = incidentId;
         RequestId = requestId;
         PreviousPromise = previousPromise;
         ExogenousProjection = exogenousProjection;
@@ -356,10 +176,6 @@ public sealed record CommitmentBreachRecord
     }
 
     public string BreachId { get; }
-
-    public CommitmentBreachKind Kind { get; }
-
-    public IncidentId? IncidentId { get; }
 
     public RequestId RequestId { get; }
 
@@ -408,8 +224,6 @@ public sealed record CommitmentBreachRecord
 
         return new CommitmentBreachRecord(
             breachId,
-            CommitmentBreachKind.ExogenousServiceQuality,
-            null,
             requestId,
             previousPromise,
             exogenousProjection,
@@ -467,24 +281,18 @@ public sealed record IncidentLedgerResult
 
 public sealed class OperationalIncidentLedger
 {
-    private readonly FrozenDictionary<IncidentId, OperationalIncident> _incidents;
     private readonly IReadOnlyList<CommitmentBreachRecord> _breaches;
     private readonly IReadOnlyList<ObservedLatePickup> _latePickups;
 
     private OperationalIncidentLedger(
-        IEnumerable<KeyValuePair<IncidentId, OperationalIncident>> incidents,
         IEnumerable<CommitmentBreachRecord> breaches,
         IEnumerable<ObservedLatePickup> latePickups)
     {
-        _incidents = incidents.ToFrozenDictionary();
         _breaches = Array.AsReadOnly(breaches.ToArray());
         _latePickups = Array.AsReadOnly(latePickups.ToArray());
     }
 
-    public static OperationalIncidentLedger Empty { get; } = new([], [], []);
-
-    public IReadOnlyDictionary<IncidentId, OperationalIncident> Incidents =>
-        _incidents;
+    public static OperationalIncidentLedger Empty { get; } = new([], []);
 
     public IReadOnlyList<CommitmentBreachRecord> Breaches => _breaches;
 
@@ -506,79 +314,8 @@ public sealed class OperationalIncidentLedger
 
         return IncidentLedgerResult.Success(
             new OperationalIncidentLedger(
-                _incidents,
                 _breaches,
                 _latePickups.Append(latePickup)));
-    }
-
-    public IncidentLedgerResult Open(
-        IncidentId incidentId,
-        string reasonCode,
-        IEnumerable<VehicleId> affectedVehicleIds,
-        IEnumerable<RequestId> affectedRequestIds,
-        long eventSequence,
-        SimTime openedAt)
-    {
-        if (_incidents.ContainsKey(incidentId))
-        {
-            return IncidentLedgerResult.Fail(
-                IncidentFailureCodes.DuplicateIncident,
-                "An incident identifier cannot be opened more than once.",
-                incidentId.Value,
-                "incidentId");
-        }
-
-        var incident = new OperationalIncident(
-            incidentId,
-            reasonCode,
-            affectedVehicleIds,
-            affectedRequestIds,
-            eventSequence,
-            openedAt);
-
-        return IncidentLedgerResult.Success(
-            new OperationalIncidentLedger(
-                _incidents.Append(
-                    new KeyValuePair<IncidentId, OperationalIncident>(
-                        incidentId,
-                        incident)),
-                _breaches,
-                _latePickups));
-    }
-
-    public IncidentLedgerResult Resolve(
-        IncidentId incidentId,
-        long eventSequence,
-        SimTime resolvedAt)
-    {
-        if (!_incidents.TryGetValue(incidentId, out var incident))
-        {
-            return IncidentLedgerResult.Fail(
-                IncidentFailureCodes.UnknownIncident,
-                "Only a known open incident can be resolved.",
-                incidentId.Value,
-                "incidentId");
-        }
-
-        if (!incident.IsOpen)
-        {
-            return IncidentLedgerResult.Fail(
-                IncidentFailureCodes.StaleIncidentTransition,
-                "The incident has already been resolved.",
-                incidentId.Value,
-                "incidentId");
-        }
-
-        return IncidentLedgerResult.Success(
-            new OperationalIncidentLedger(
-                _incidents
-                    .Where(pair => pair.Key != incidentId)
-                    .Append(
-                        new KeyValuePair<IncidentId, OperationalIncident>(
-                            incidentId,
-                            incident.Resolve(eventSequence, resolvedAt))),
-                _breaches,
-                _latePickups));
     }
 
     public IncidentLedgerResult AppendBreach(CommitmentBreachRecord breach)
@@ -598,54 +335,8 @@ public sealed class OperationalIncidentLedger
                 "breachId");
         }
 
-        if (breach.Kind == CommitmentBreachKind.ExogenousServiceQuality)
-        {
-            return IncidentLedgerResult.Success(
-                new OperationalIncidentLedger(
-                    _incidents,
-                    _breaches.Append(breach),
-                    _latePickups));
-        }
-
-        var incidentId = breach.IncidentId!.Value;
-
-        if (!_incidents.TryGetValue(incidentId, out var incident)
-            || !incident.IsOpen)
-        {
-            return IncidentLedgerResult.Fail(
-                IncidentFailureCodes.IncidentNotOpen,
-                "A breach can only be recorded against an open incident.",
-                incidentId.Value,
-                "incidentId");
-        }
-
-        if (!incident.AffectedRequestIds.Contains(breach.RequestId))
-        {
-            return IncidentLedgerResult.Fail(
-                IncidentFailureCodes.RiderNotAffected,
-                "The breach request is not in the incident's affected-rider set.",
-                breach.RequestId.Value,
-                "requestId");
-        }
-
-        if (!incident.AffectedVehicleIds.Contains(
-                breach.PreviousPromise.Projection.VehicleId)
-            || !incident.AffectedVehicleIds.Contains(
-                breach.ExogenousProjection.VehicleId)
-            || breach.SourceEventSequence < incident.OpenedEventSequence
-            || breach.RecordedAt.Milliseconds < incident.OpenedAt.Milliseconds)
-        {
-            return IncidentLedgerResult.Fail(
-                IncidentFailureCodes.BreachIncidentMismatch,
-                "The breach must follow the incident and originate from one " +
-                "of its affected vehicles.",
-                breach.BreachId,
-                "incidentId");
-        }
-
         return IncidentLedgerResult.Success(
             new OperationalIncidentLedger(
-                _incidents,
                 _breaches.Append(breach),
                 _latePickups));
     }
@@ -653,13 +344,6 @@ public sealed class OperationalIncidentLedger
 
 public static class IncidentFailureCodes
 {
-    public const string DuplicateIncident = "DUPLICATE_INCIDENT";
-    public const string UnknownIncident = "UNKNOWN_INCIDENT";
-    public const string StaleIncidentTransition = "STALE_INCIDENT_TRANSITION";
-    public const string UnknownIncidentVehicle = "UNKNOWN_INCIDENT_VEHICLE";
     public const string DuplicateBreach = "DUPLICATE_COMMITMENT_BREACH";
-    public const string IncidentNotOpen = "INCIDENT_NOT_OPEN";
-    public const string RiderNotAffected = "INCIDENT_RIDER_NOT_AFFECTED";
-    public const string BreachIncidentMismatch = "BREACH_INCIDENT_MISMATCH";
     public const string DuplicateLatePickup = "DUPLICATE_LATE_PICKUP";
 }
