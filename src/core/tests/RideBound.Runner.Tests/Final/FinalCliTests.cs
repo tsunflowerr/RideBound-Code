@@ -2,9 +2,8 @@ namespace RideBound.Runner.Tests.Final;
 
 /// <summary>
 /// T2: the command line of the Runner. It accepts exactly the form the final runs used
-/// (FinalRun.Arguments), with or without the trailing line limit. Every other form exits 64 without reading stdin;
-/// the forms the Runner accepted at ebca912 (the online and conformance modes, no arguments, and the shorter
-/// commitment forms) name the commit where they still run.
+/// (FinalRun.Arguments), with or without the trailing line limit. Every other form, including the older ones (the
+/// online and conformance modes, no arguments, and the shorter commitment forms), exits 64 without reading stdin.
 /// </summary>
 public sealed class FinalCliTests
 {
@@ -16,10 +15,6 @@ public sealed class FinalCliTests
     private const string Usage =
         "Usage: RideBound.Runner --mode commitment --policy-config <path> --wp4-config <path> "
         + "--solver-seed-source manifest-master-seed [--maximum-line-bytes <1048576..1073741824>]";
-
-    private const string RemovedForms =
-        "--mode online, --mode conformance, no arguments, and --mode commitment without --wp4-config or "
-        + "--solver-seed-source: removed; see commit ebca912 (branch research/final-real-runs-2026-11-06)";
 
     private const string LineLimit = "--maximum-line-bytes must be an integer from 1048576 through 1073741824.";
 
@@ -50,8 +45,7 @@ public sealed class FinalCliTests
         Assert.Equal(FinalRuns.Sha256(session.StandardOutput), FinalRuns.Sha256(result.StandardOutput));
     }
 
-    /// <summary>The 6-argument form (no manifest seed) printed the final form's bytes at ebca912, because the
-    /// configured randomSeed 7 equals the manifest's masterSeed 7; it is refused now, whatever the input.</summary>
+    /// <summary>The 6-argument form (no manifest seed) is refused, whatever the input.</summary>
     [Fact]
     public async Task The_six_argument_commitment_form_is_rejected_with_exit_64()
     {
@@ -65,7 +59,7 @@ public sealed class FinalCliTests
         AssertRemovedForm(result, "commitment, 6 arguments, final scenario");
     }
 
-    /// <summary>The forms the Runner accepted at ebca912 besides the final one.</summary>
+    /// <summary>Older forms of the command line.</summary>
     [Theory]
     [InlineData("no arguments (online rolling-cost mode)", "")]
     [InlineData("online", "--mode online")]
@@ -122,6 +116,6 @@ public sealed class FinalCliTests
     {
         Assert.True(result.ExitCode == 64, $"{form}: exit code {result.ExitCode}");
         Assert.Empty(result.StandardOutput);
-        Assert.Equal(Usage + Environment.NewLine + RemovedForms + Environment.NewLine, result.StandardError);
+        Assert.Equal(Usage + Environment.NewLine, result.StandardError);
     }
 }

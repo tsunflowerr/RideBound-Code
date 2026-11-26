@@ -3,14 +3,24 @@ using System.Text.Json;
 namespace RideBound.Runner.Configuration;
 
 /// <summary>
-/// JSON readers and the removed-feature pointer shared by the WP4 and the commitment configuration parsers.
+/// JSON readers shared by the WP4 and the commitment configuration parsers.
 /// Their error texts are what a refused configuration reports, so their wording must stay as it is.
 /// </summary>
 internal static class JsonConfig
 {
-    /// <summary>The pointer that every refused removed feature carries.</summary>
-    public const string RemovedFeature =
-        "removed; see commit ebca912 (branch research/final-real-runs-2026-11-06)";
+    /// <summary>
+    /// Requires the string field <paramref name="name"/> to hold <paramref name="value"/>. The final files set such a
+    /// key to the one value the Runner supports; any other value, or no key, is refused.
+    /// </summary>
+    public static void RequireValue(JsonElement element, string name, string value, string path)
+    {
+        if (!element.TryGetProperty(name, out var field)
+            || field.ValueKind != JsonValueKind.String
+            || field.GetString() != value)
+        {
+            throw new InvalidDataException($"'{path}.{name}' must be '{value}'.");
+        }
+    }
 
     /// <summary>A set of field names compared ordinally.</summary>
     public static IReadOnlySet<string> Fields(params string[] names) =>

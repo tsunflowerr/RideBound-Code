@@ -8,9 +8,6 @@ using RideBound.Runner.Protocol;
 const string Usage =
     "Usage: RideBound.Runner --mode commitment --policy-config <path> --wp4-config <path> "
     + "--solver-seed-source manifest-master-seed [--maximum-line-bytes <1048576..1073741824>]";
-const string RemovedForms =
-    "--mode online, --mode conformance, no arguments, and --mode commitment without --wp4-config or "
-    + "--solver-seed-source: removed; see commit ebca912 (branch research/final-real-runs-2026-11-06)";
 
 var runnerArguments = args;
 var maximumLineBytes = NdjsonReader.DefaultMaximumLineBytes;
@@ -42,7 +39,6 @@ if (runnerArguments is not
     ])
 {
     await Console.Error.WriteLineAsync(Usage);
-    await Console.Error.WriteLineAsync(RemovedForms);
     return 64;
 }
 

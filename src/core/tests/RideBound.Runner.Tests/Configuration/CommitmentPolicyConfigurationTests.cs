@@ -175,7 +175,7 @@ public sealed class CommitmentPolicyConfigurationTests
         "'dropEtaDeadlineRelaxed' must be a boolean")]
     [InlineData(
         "\"dropEtaDeadlineRelaxed\":true",
-        "'dropEtaDeadlineRelaxed' requires 'dropEtaDeadlineSlackPermille'")]
+        "'dropEtaDeadlineRelaxed' must be true exactly when 'dropEtaDeadlineSlackPermille' is set.")]
     [InlineData(
         "\"dropEtaDeadlineRelaxedMs\":30000",
         "Unknown field 'dropEtaDeadlineRelaxedMs'")]
@@ -346,278 +346,44 @@ public sealed class CommitmentPolicyConfigurationTests
     }
 
     [Fact]
-    public void The_customer_visible_budget_basis_is_refused_with_a_pointer_to_the_archive()
+    public void Only_the_supported_basis_and_a_relaxed_deadline_are_accepted()
     {
-        // Only decisionInduced is accepted. An unknown basis keeps its message, and so does a
-        // check that runs before the basis is read.
-        byte[] WithBasis(string basis, string? extraFields = null) =>
-            Encoding.UTF8.GetBytes(
-                Encoding.UTF8.GetString(PolicyJson(extraFields)).Replace(
-                    "\"budgetBasis\":\"decisionInduced\"",
-                    $"\"budgetBasis\":\"{basis}\"",
-                    StringComparison.Ordinal));
-
-        var visible = Assert.Throws<InvalidDataException>(
-            () => CommitmentPolicyConfiguration.Decode(WithBasis("customerVisible")));
-        var unknown = Assert.Throws<InvalidDataException>(
-            () => CommitmentPolicyConfiguration.Decode(WithBasis("visible")));
-        var earlier = Assert.Throws<InvalidDataException>(
-            () => CommitmentPolicyConfiguration.Decode(
-                WithBasis("customerVisible", "\"dropEtaDeadlineRelaxed\":true")));
-
-        Assert.Equal(
-            "Commitment budgetBasis 'customerVisible' (the customer-visible budget basis): removed; see commit "
-            + "ebca912 (branch research/final-real-runs-2026-11-06)",
-            visible.Message);
-        Assert.Equal("Unknown commitment budgetBasis.", unknown.Message);
-        Assert.StartsWith("'dropEtaDeadlineRelaxed' requires", earlier.Message, StringComparison.Ordinal);
-        Assert.True(CommitmentPolicyConfiguration.Decode(WithBasis("decisionInduced"))
-            .TryGetPolicy("uniform-v1", out _));
-    }
-
-    [Fact]
-    public void The_removed_freeze_horizon_is_refused_with_a_pointer_to_the_archive()
-    {
-        // Either key is refused, whatever its value. The check runs last in the policy, so a check
-        // that runs before it keeps its message.
-        const string Removed =
-            "Commitment 'freezeHorizonMs' and 'freezeHorizonLocks' (the freeze horizon): removed; see commit "
-            + "ebca912 (branch research/final-real-runs-2026-11-06)";
-        const string Freeze = "\"freezeHorizonMs\":300000,\"freezeHorizonLocks\":[\"pickupEta\"]";
-        string Message(string extraFields) =>
-            Assert.ThrowsAny<Exception>(
-                () => CommitmentPolicyConfiguration.Decode(PolicyJson(extraFields))).Message;
-
-        Assert.Equal(Removed, RemovalMessage(Freeze));
-        Assert.Equal(Removed, RemovalMessage("\"freezeHorizonMs\":300000"));
-        Assert.Equal(Removed, RemovalMessage("\"freezeHorizonLocks\":[]"));
-        Assert.Equal(
-            Removed,
-            RemovalMessage(
-                "\"waitingRiderRelocation\":true,\"finalConfirmationLocks\":[\"pickupStop\"],"
-                + "\"freezeHorizonMs\":60000,\"freezeHorizonLocks\":[\"vehicle\"]"));
-
-        Assert.StartsWith(
-            "'dropEtaDeadlineRelaxed' requires",
-            Message(Freeze + ",\"dropEtaDeadlineRelaxed\":true"),
-            StringComparison.Ordinal);
-        Assert.Equal(
-            "'waitingRiderRelocation' requires 'finalConfirmationLocks' without 'vehicle'.",
-            Message(Freeze + ",\"waitingRiderRelocation\":true,\"finalConfirmationLocks\":[\"vehicle\"]"));
-        Assert.StartsWith(
-            "Only pickup and drop ETA locks can be relaxed to a ratchet.",
-            Message(Freeze + ",\"ratchetLocks\":[\"vehicle\"]"),
-            StringComparison.Ordinal);
-        Assert.Equal(
-            "Unknown commitment budgetBasis.",
+        string Message(string? extraFields, string basis = "decisionInduced") =>
             Assert.Throws<InvalidDataException>(
                 () => CommitmentPolicyConfiguration.Decode(
                     Encoding.UTF8.GetBytes(
-                        Encoding.UTF8.GetString(PolicyJson(Freeze)).Replace(
+                        Encoding.UTF8.GetString(PolicyJson(extraFields)).Replace(
                             "\"budgetBasis\":\"decisionInduced\"",
-                            "\"budgetBasis\":\"visible\"",
-                            StringComparison.Ordinal)))).Message);
-        Assert.True(CommitmentPolicyConfiguration.Decode(PolicyJson(null)).TryGetPolicy("uniform-v1", out _));
-    }
-
-    [Fact]
-    public void The_removed_revision_cap_is_refused_with_a_pointer_to_the_archive()
-    {
-        // The key is refused, whatever its value. The check runs last in the policy, so a check that
-        // runs before it keeps its message.
-        const string Removed =
-            "Commitment 'dropEtaRevisionLimitMs' (the per-decision revision cap): removed; see commit "
-            + "ebca912 (branch research/final-real-runs-2026-11-06)";
-        const string Cap = "\"dropEtaRevisionLimitMs\":60000";
-        string Message(string extraFields) =>
-            Assert.ThrowsAny<Exception>(
-                () => CommitmentPolicyConfiguration.Decode(PolicyJson(extraFields))).Message;
-
-        Assert.Equal(Removed, RemovalMessage(Cap));
-        Assert.Equal(Removed, RemovalMessage("\"dropEtaRevisionLimitMs\":0"));
-        Assert.Equal(Removed, RemovalMessage("\"dropEtaRevisionLimitMs\":\"30000\""));
-        Assert.Equal(
-            Removed,
-            RemovalMessage("\"dropEtaDeadlineSlackPermille\":350,\"dropEtaDeadlineRelaxed\":true," + Cap));
-
-        Assert.Contains("not a canonical integer", Message("\"dropEtaRevisionLimitMs\":1.5"));
-        Assert.Contains("Null is not permitted", Message("\"dropEtaRevisionLimitMs\":null"));
-        Assert.StartsWith(
-            "'dropEtaDeadlineRelaxed' requires",
-            Message(Cap + ",\"dropEtaDeadlineRelaxed\":true"),
-            StringComparison.Ordinal);
-        Assert.StartsWith(
-            "Commitment 'freezeHorizonMs' and 'freezeHorizonLocks' (the freeze horizon): removed",
-            RemovalMessage(Cap + ",\"freezeHorizonMs\":300000"),
-            StringComparison.Ordinal);
-        Assert.Equal(
-            "Unknown commitment budgetBasis.",
-            Assert.Throws<InvalidDataException>(
-                () => CommitmentPolicyConfiguration.Decode(
-                    Encoding.UTF8.GetBytes(
-                        Encoding.UTF8.GetString(PolicyJson(Cap)).Replace(
-                            "\"budgetBasis\":\"decisionInduced\"",
-                            "\"budgetBasis\":\"visible\"",
-                            StringComparison.Ordinal)))).Message);
-    }
-
-    [Fact]
-    public void The_removed_two_sided_deadline_is_refused_with_a_pointer_to_the_archive()
-    {
-        // The key is refused, whatever its value; without it the deadline is one-sided. The check
-        // runs last in the policy, so a check that runs before it keeps its message.
-        const string Removed =
-            "Commitment 'dropEtaDeadlineTwoSided' (the two-sided deadline): removed; see commit "
-            + "ebca912 (branch research/final-real-runs-2026-11-06)";
-        const string TwoSided = "\"dropEtaDeadlineTwoSided\":true";
-        const string Slack = "\"dropEtaDeadlineSlackPermille\":350,";
-        string Message(string extraFields) =>
-            Assert.ThrowsAny<Exception>(
-                () => CommitmentPolicyConfiguration.Decode(PolicyJson(extraFields))).Message;
-
-        Assert.Equal(Removed, RemovalMessage(Slack + TwoSided));
-        Assert.Equal(Removed, RemovalMessage(Slack + "\"dropEtaDeadlineTwoSided\":false"));
-        Assert.Equal(Removed, RemovalMessage("\"dropEtaDeadlineTwoSided\":false"));
-        Assert.Equal(Removed, RemovalMessage(Slack + "\"dropEtaDeadlineTwoSided\":\"yes\""));
-        Assert.Equal(Removed, RemovalMessage(Slack + "\"dropEtaDeadlineTwoSided\":1"));
-        Assert.Equal(Removed, RemovalMessage(TwoSided));
-        Assert.Equal(Removed, RemovalMessage(TwoSided + ",\"dropEtaBudgetSlackPermille\":350"));
-        Assert.Equal(Removed, RemovalMessage(Slack + "\"dropEtaDeadlineRelaxed\":true," + TwoSided));
-
-        Assert.Contains("Null is not permitted", Message("\"dropEtaDeadlineTwoSided\":null"));
-        Assert.StartsWith(
-            "'dropEtaDeadlineRelaxed' requires",
-            Message(TwoSided + ",\"dropEtaDeadlineRelaxed\":true"),
-            StringComparison.Ordinal);
-        Assert.StartsWith(
-            "Commitment 'dropEtaRevisionLimitMs' (the per-decision revision cap): removed",
-            RemovalMessage(Slack + TwoSided + ",\"dropEtaRevisionLimitMs\":60000"),
-            StringComparison.Ordinal);
-        Assert.Equal(
-            "Unknown commitment budgetBasis.",
-            Assert.Throws<InvalidDataException>(
-                () => CommitmentPolicyConfiguration.Decode(
-                    Encoding.UTF8.GetBytes(
-                        Encoding.UTF8.GetString(PolicyJson(Slack + TwoSided)).Replace(
-                            "\"budgetBasis\":\"decisionInduced\"",
-                            "\"budgetBasis\":\"visible\"",
-                            StringComparison.Ordinal)))).Message);
-        Assert.True(
-            CommitmentPolicyConfiguration.Decode(PolicyJson(Slack + "\"dropEtaDeadlineRelaxed\":true"))
-                .TryGetPolicy("uniform-v1", out _));
-    }
-
-    [Fact]
-    public void The_removed_strict_deadline_is_refused_with_a_pointer_to_the_archive()
-    {
-        // A deadline is always relaxed: dropEtaDeadlineRelaxed must be true with a deadline, and false
-        // is refused with or without one. The check runs last in the policy, so a check that runs
-        // before it keeps its message.
-        const string Removed =
-            "Commitment 'dropEtaDeadlineRelaxed' false, or a deadline without it (the strict deadline): removed; "
-            + "see commit ebca912 (branch research/final-real-runs-2026-11-06)";
-        const string Permille = "\"dropEtaDeadlineSlackPermille\":350";
-        const string Strict = "\"dropEtaDeadlineRelaxed\":false";
-        const string Relaxed = "\"dropEtaDeadlineRelaxed\":true";
-        string Message(string extraFields) =>
-            Assert.ThrowsAny<Exception>(
-                () => CommitmentPolicyConfiguration.Decode(PolicyJson(extraFields))).Message;
+                            $"\"budgetBasis\":\"{basis}\"",
+                            StringComparison.Ordinal)))).Message;
         bool Decodes(string? extraFields) =>
             CommitmentPolicyConfiguration.Decode(PolicyJson(extraFields)).TryGetPolicy("uniform-v1", out _);
+        const string Relaxation =
+            "'dropEtaDeadlineRelaxed' must be true exactly when 'dropEtaDeadlineSlackPermille' is set.";
 
-        Assert.Equal(Removed, RemovalMessage(Permille));
-        Assert.Equal(Removed, RemovalMessage(Permille + "," + Strict));
-        Assert.Equal(Removed, RemovalMessage(Strict));
-        Assert.Equal(Removed, RemovalMessage(Strict + ",\"dropEtaBudgetSlackPermille\":350"));
-        Assert.Equal(
-            Removed,
-            RemovalMessage("\"dropEtaDeadlineSlackPermille\":1000,\"dropEtaShadowAllocation\":true"));
+        Assert.Equal("'$.policies[].budgetBasis' must be 'decisionInduced'.", Message(null, "customerVisible"));
+        Assert.Equal("'$.policies[].budgetBasis' must be 'decisionInduced'.", Message(null, "visible"));
+        Assert.Equal(Relaxation, Message("\"dropEtaDeadlineSlackPermille\":350"));
+        Assert.Equal(Relaxation, Message("\"dropEtaDeadlineSlackPermille\":350,\"dropEtaDeadlineRelaxed\":false"));
+        Assert.Equal(Relaxation, Message("\"dropEtaDeadlineRelaxed\":false"));
+        Assert.Equal(Relaxation, Message("\"dropEtaDeadlineRelaxed\":true"));
 
-        Assert.Contains("Null is not permitted", Message(Permille + ",\"dropEtaDeadlineRelaxed\":null"));
-        Assert.StartsWith(
-            "'dropEtaDeadlineRelaxed' must be a boolean",
-            Message(Permille + ",\"dropEtaDeadlineRelaxed\":\"no\""),
-            StringComparison.Ordinal);
-        Assert.StartsWith(
-            "Commitment 'dropEtaDeadlineTwoSided' (the two-sided deadline): removed",
-            RemovalMessage(Permille + ",\"dropEtaDeadlineTwoSided\":false"),
-            StringComparison.Ordinal);
-        Assert.StartsWith(
-            "Commitment 'dropEtaRevisionLimitMs' (the per-decision revision cap): removed",
-            RemovalMessage(Permille + ",\"dropEtaRevisionLimitMs\":60000"),
-            StringComparison.Ordinal);
-        Assert.StartsWith(
-            "Commitment 'freezeHorizonMs' and 'freezeHorizonLocks' (the freeze horizon): removed",
-            RemovalMessage(Strict + ",\"freezeHorizonMs\":300000"),
-            StringComparison.Ordinal);
-        Assert.Equal(
-            "Unknown commitment budgetBasis.",
-            Assert.Throws<InvalidDataException>(
-                () => CommitmentPolicyConfiguration.Decode(
-                    Encoding.UTF8.GetBytes(
-                        Encoding.UTF8.GetString(PolicyJson(Permille)).Replace(
-                            "\"budgetBasis\":\"decisionInduced\"",
-                            "\"budgetBasis\":\"visible\"",
-                            StringComparison.Ordinal)))).Message);
+        foreach (var removed in new[]
+                 {
+                     "freezeHorizonMs", "freezeHorizonLocks", "dropEtaRevisionLimitMs", "dropEtaDeadlineTwoSided",
+                     "dropEtaDeadlineSlackMs",
+                 })
+        {
+            Assert.Equal(
+                $"Unknown field '{removed}' at '$.policies[]'.",
+                Message($"\"{removed}\":1"));
+        }
 
-        Assert.True(Decodes(Permille + "," + Relaxed));
-        Assert.True(Decodes("\"dropEtaDeadlineSlackPermille\":1000,\"dropEtaShadowAllocation\":true," + Relaxed));
+        Assert.True(Decodes("\"dropEtaDeadlineSlackPermille\":350,\"dropEtaDeadlineRelaxed\":true"));
+        Assert.True(Decodes("\"dropEtaDeadlineSlackPermille\":1000,\"dropEtaShadowAllocation\":true,\"dropEtaDeadlineRelaxed\":true"));
         Assert.True(Decodes("\"dropEtaBudgetSlackPermille\":350"));
         Assert.True(Decodes(null));
     }
-
-    [Fact]
-    public void The_removed_fixed_ms_deadline_is_refused_with_a_pointer_to_the_archive()
-    {
-        // The key is refused, whatever its value; a deadline is always slack-proportional. The check runs
-        // before the relaxed-deadline check, so the checks before it keep their messages.
-        const string Removed =
-            "Commitment 'dropEtaDeadlineSlackMs' (the fixed-ms deadline): removed; see commit "
-            + "ebca912 (branch research/final-real-runs-2026-11-06)";
-        const string Fixed = "\"dropEtaDeadlineSlackMs\":30000";
-        const string Relaxed = "\"dropEtaDeadlineRelaxed\":true";
-        string Message(string extraFields) =>
-            Assert.ThrowsAny<Exception>(
-                () => CommitmentPolicyConfiguration.Decode(PolicyJson(extraFields))).Message;
-
-        Assert.Equal(Removed, RemovalMessage(Fixed + "," + Relaxed));
-        Assert.Equal(Removed, RemovalMessage(Fixed));
-        Assert.Equal(Removed, RemovalMessage("\"dropEtaDeadlineSlackMs\":0," + Relaxed));
-        Assert.Equal(Removed, RemovalMessage("\"dropEtaDeadlineSlackMs\":-1"));
-        Assert.Equal(Removed, RemovalMessage("\"dropEtaDeadlineSlackMs\":\"30000\""));
-        Assert.Equal(Removed, RemovalMessage(Fixed + ",\"dropEtaDeadlineSlackPermille\":350," + Relaxed));
-        Assert.Equal(Removed, RemovalMessage(Fixed + "," + Relaxed + ",\"dropEtaDeadlineTwoSided\":true"));
-        Assert.Equal(Removed, RemovalMessage(Fixed + "," + Relaxed + ",\"dropEtaRevisionLimitMs\":60000"));
-        Assert.Equal(Removed, RemovalMessage(Fixed + "," + Relaxed + ",\"freezeHorizonMs\":300000"));
-
-        Assert.Contains("Null is not permitted", Message("\"dropEtaDeadlineSlackMs\":null"));
-        Assert.Contains("not a canonical integer", Message("\"dropEtaDeadlineSlackMs\":1.5"));
-        Assert.StartsWith(
-            "'dropEtaDeadlineRelaxed' must be a boolean",
-            Message(Fixed + ",\"dropEtaDeadlineRelaxed\":\"yes\""),
-            StringComparison.Ordinal);
-        Assert.StartsWith(
-            "'dropEtaDeadlineSlackPermille' must be 1 to 1000",
-            Message(Fixed + ",\"dropEtaDeadlineSlackPermille\":1001"),
-            StringComparison.Ordinal);
-        Assert.StartsWith(
-            "'dropEtaShadowAllocation' requires exactly one of",
-            Message(Fixed + "," + Relaxed + ",\"dropEtaShadowAllocation\":true"),
-            StringComparison.Ordinal);
-        Assert.Equal("'dropEtaDeadlineRelaxed' requires 'dropEtaDeadlineSlackPermille'.", Message(Relaxed));
-        Assert.True(
-            CommitmentPolicyConfiguration.Decode(PolicyJson("\"dropEtaDeadlineSlackPermille\":1000," + Relaxed))
-                .TryGetPolicy("uniform-v1", out _));
-    }
-
-    /// <summary>
-    /// The message of a refusal of a removed option. The refusal must be an InvalidDataException: Program exits
-    /// with code 64 only for the exception types it catches, and another type would stop the Runner with an
-    /// unhandled exception.
-    /// </summary>
-    private static string RemovalMessage(string extraFields) =>
-        Assert.Throws<InvalidDataException>(
-            () => CommitmentPolicyConfiguration.Decode(PolicyJson(extraFields))).Message;
 
     private static byte[] PolicyJson(string? extraFields)
     {

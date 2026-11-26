@@ -15,10 +15,6 @@ namespace RideBound.Runner.Configuration;
 
 public sealed class Wp4RunnerConfiguration
 {
-    /// <summary>
-    /// The allowed root keys. `solverExecutionEvidenceProfile` belongs to the removed solver execution evidence; it
-    /// stays here only so that a file with it gets the removal refusal in <see cref="Decode"/>.
-    /// </summary>
     private static readonly IReadOnlySet<string> RootFields = Fields(
         "configurationVersion",
         "policyId",
@@ -27,21 +23,12 @@ public sealed class Wp4RunnerConfiguration
         "candidateGeneration",
         "solverExecution",
         "emitSolverExecutionEvidence",
-        "solverExecutionEvidenceProfile",
         "commitmentRecovery",
         "lateBoarding",
         "selectionObjectiveOrder",
         "auditHash",
         "planningForecast",
         "shadowAllocation");
-
-    /// <summary>The removed WP4 policyIds, each with the name its refusal gives.</summary>
-    private static readonly IReadOnlyDictionary<string, string> RemovedPolicies =
-        new Dictionary<string, string>(StringComparer.Ordinal)
-        {
-            ["rolling-cost"] = "the rolling-cost policy",
-            ["rolling-penalty"] = "the rolling-penalty policy",
-        };
 
     /// <summary>
     /// Optional; omitted means every projected leg is the snapshot
@@ -56,31 +43,6 @@ public sealed class Wp4RunnerConfiguration
         "binMs");
 
     /// <summary>
-    /// Required, and the only accepted value. Forced-reference recovery and its no-worse extension are removed, so a
-    /// vehicle whose safety no-op a commitment gate rejects always fails closed, and this value is a no-op. It stays
-    /// because the final files set it. The recovery modes, which "fail-closed", "forced-reference-v1" or an absent key
-    /// selected, are refused.
-    /// </summary>
-    private const string NoWorseRecovery = "no-worse-than-reference-v1";
-    private const string FailClosedRecovery = "fail-closed";
-    private const string ForcedReferenceRecovery = "forced-reference-v1";
-
-    /// <summary>
-    /// Required, and the only accepted value: a promise opens when the booking is confirmed. The initial-acceptance
-    /// trigger, which "initial-acceptance" or an absent key selected, is refused.
-    /// </summary>
-    private const string BookingConfirmationTrigger = "booking-confirmation";
-    private const string InitialAcceptanceTrigger = "initial-acceptance";
-
-    /// <summary>
-    /// Required, and the only accepted value: a boarding after the latest pickup is accepted as a fact and
-    /// recorded. The late-boarding rejection, which "reject" or an absent key selected, is refused. The FleetPy
-    /// adapter reads the same key and then leaves service windows to the Runner.
-    /// </summary>
-    private const string RecordLateBoarding = "record-v1";
-    private const string RejectLateBoarding = "reject";
-
-    /// <summary>
     /// `auditHash` omitted or `full-v1` hashes the whole canonical online state for every
     /// decision. `light-v1` binds each decision to the event batch and the state
     /// identity only (epoch, next event sequence, simulation time), with its own decision-hash
@@ -90,28 +52,26 @@ public sealed class Wp4RunnerConfiguration
     public const string LightAuditHash = "light-v1";
 
     /// <summary>
-    /// Required, and the only accepted value: the C1 ranking is cost-first. The stability-first
-    /// ranking, which "stability-first" or an absent key selected, is refused.
+    /// Keys that the final files set to the one value the Runner supports. Each names a behaviour that is fixed in the
+    /// code: a promise opens at the booking confirmation; a vehicle whose safety no-op a commitment gate rejects fails
+    /// closed; a boarding after the latest pickup is recorded (the FleetPy adapter reads the same key and then leaves
+    /// service windows to the Runner); the C1 ranking is cost-first.
     /// </summary>
-    public const string CostFirstSelectionOrder = "cost-first";
+    private static readonly (string Name, string Value)[] FixedRootValues =
+    [
+        ("initialPromiseTrigger", "booking-confirmation"),
+        ("commitmentRecovery", "no-worse-than-reference-v1"),
+        ("lateBoarding", "record-v1"),
+        ("selectionObjectiveOrder", CostFirstSelectionOrder),
+    ];
 
-    /// <summary>
-    /// Required, and the only accepted value: candidates are kept by the service-set stability portfolio. The
-    /// legacy retention, which "legacy-accepted-count-cost-slack" or an absent key selected, is refused.
-    /// </summary>
-    private const string PortfolioRetention = "service-set-stability-portfolio-v1";
-    private const string LegacyRetention = "legacy-accepted-count-cost-slack";
+    public const string CostFirstSelectionOrder = "cost-first";
     private static readonly IReadOnlySet<string> GenerationRequiredFields = Fields(
         "maximumCandidatesPerVehicle",
         "maximumNewRequestsPerVehicle",
         "exactSmallMode",
         "scheduleStrategy",
         "maximumExplorationWorkUnits");
-
-    /// <summary>
-    /// The allowed candidateGeneration keys. `stopServiceDurationMs` belongs to the removed dwell of inserted stops; it
-    /// stays here only so that a file with it gets the removal refusal in <see cref="ReadGeneration"/>.
-    /// </summary>
     private static readonly IReadOnlySet<string> GenerationFields = Fields(
         "maximumCandidatesPerVehicle",
         "maximumNewRequestsPerVehicle",
@@ -119,36 +79,16 @@ public sealed class Wp4RunnerConfiguration
         "scheduleStrategy",
         "maximumExplorationWorkUnits",
         "retentionStrategy",
-        "waitingRiderRelocation",
-        "stopServiceDurationMs");
-
-    /// <summary>
-    /// The allowed waitingRiderRelocation keys. `maximumRidersPerVehicle` belongs to the removed G2 rider cap; it stays
-    /// here only so that a file with it gets the removal refusal in <see cref="ReadGeneration"/>.
-    /// </summary>
+        "waitingRiderRelocation");
     private static readonly IReadOnlySet<string> RelocationGenerationFields = Fields(
-        "maximumRidersPerVehicle",
         "maximumTargetVehicles");
-    private static readonly IReadOnlySet<string> SolverRequiredFields = Fields(
-        "adapterVersion",
-        "maximumGenerationWorkUnits",
-        "maximumValidationWorkUnits",
-        "maximumSolverWorkUnits",
-        "maximumSolverDeterministicTimeMicros",
-        "randomSeed");
-
-    /// <summary>
-    /// The allowed solverExecution keys. `skipConstantObjectiveLevels` belongs to the removed constant-level skip; it
-    /// stays here only so that a file with it gets the removal refusal in <see cref="ReadSolverBudget"/>.
-    /// </summary>
     private static readonly IReadOnlySet<string> SolverFields = Fields(
         "adapterVersion",
         "maximumGenerationWorkUnits",
         "maximumValidationWorkUnits",
         "maximumSolverWorkUnits",
         "maximumSolverDeterministicTimeMicros",
-        "randomSeed",
-        "skipConstantObjectiveLevels");
+        "randomSeed");
 
     private Wp4RunnerConfiguration(
         Sha256Hex contentHash,
@@ -244,7 +184,6 @@ public sealed class Wp4RunnerConfiguration
             out var contentHash);
         using var document = JsonDocument.Parse(canonical);
         var root = document.RootElement;
-        RejectRemovedFeatures(root);
         RequireObject(
             root,
             RootFields,
@@ -252,7 +191,8 @@ public sealed class Wp4RunnerConfiguration
                 "configurationVersion",
                 "policyId",
                 "policyVersion",
-                "candidateGeneration"),
+                "candidateGeneration",
+                "solverExecution"),
             "$");
 
         if (Text(root, "configurationVersion") != "1.0.0")
@@ -276,37 +216,18 @@ public sealed class Wp4RunnerConfiguration
                 "WP4 policyVersion must be an opaque protocol identifier.");
         }
 
-        // Here only an unknown value is refused; the removed initial-acceptance trigger and an absent key are refused
-        // at the end of Decode.
-        if (root.TryGetProperty("initialPromiseTrigger", out _)
-            && Text(root, "initialPromiseTrigger") is not (BookingConfirmationTrigger or InitialAcceptanceTrigger))
+        foreach (var (name, value) in FixedRootValues)
         {
-            throw new InvalidDataException("Unknown initialPromiseTrigger.");
+            RequireValue(root, name, value, "$");
+        }
+
+        // Optional; false is the only supported value (the final files set it).
+        if (OptionalBoolean(root, "emitSolverExecutionEvidence"))
+        {
+            throw new InvalidDataException("'$.emitSolverExecutionEvidence' must be false.");
         }
 
         var generation = ReadGeneration(root.GetProperty("candidateGeneration"));
-        var hasSolver = root.TryGetProperty("solverExecution", out var solverElement);
-        var emitsSolverExecutionEvidence = root.TryGetProperty(
-            "emitSolverExecutionEvidence",
-            out var evidenceElement)
-                && Boolean(evidenceElement, "emitSolverExecutionEvidence");
-        RequireVariantFields(hasSolver);
-
-        // Here only an unknown value is refused; the removed recovery modes and an absent key are refused at the end of
-        // Decode.
-        if (root.TryGetProperty("commitmentRecovery", out _)
-            && Text(root, "commitmentRecovery") is not (NoWorseRecovery or FailClosedRecovery or ForcedReferenceRecovery))
-        {
-            throw new InvalidDataException("Unknown commitmentRecovery.");
-        }
-
-        // Here only an unknown value is refused; the removed late-boarding rejection and an absent key are refused at
-        // the end of Decode.
-        if (root.TryGetProperty("lateBoarding", out _)
-            && Text(root, "lateBoarding") is not (RecordLateBoarding or RejectLateBoarding))
-        {
-            throw new InvalidDataException("Unknown lateBoarding.");
-        }
 
         var usesLightAuditHash = root.TryGetProperty("auditHash", out _)
             ? Text(root, "auditHash") switch
@@ -374,38 +295,6 @@ public sealed class Wp4RunnerConfiguration
             shadowAllocation = ShadowAllocationConfiguration.Read(shadowElement);
         }
 
-        // The C1 ranking is cost-first only. Any other value, or no key (which selected
-        // stability-first), is refused instead of silently ranking cost-first.
-        if (!root.TryGetProperty("selectionObjectiveOrder", out var orderElement)
-            || orderElement.ValueKind != JsonValueKind.String
-            || orderElement.GetString() != CostFirstSelectionOrder)
-        {
-            throw new InvalidDataException(
-                $"WP4 selectionObjectiveOrder must be '{CostFirstSelectionOrder}'. The stability-first ranking, "
-                + $"which 'stability-first' or an absent key selected: {RemovedFeature}");
-        }
-
-        // Solver execution evidence is removed. emitSolverExecutionEvidence stays (the final files set it to false,
-        // and an absent key meant false), so true is refused, and so is any solverExecutionEvidenceProfile. Checked
-        // after the order check, so a file that check refuses keeps its message.
-        if (emitsSolverExecutionEvidence || root.TryGetProperty("solverExecutionEvidenceProfile", out _))
-        {
-            throw new InvalidDataException(
-                "WP4 emitSolverExecutionEvidence true and the 'solverExecutionEvidenceProfile' key "
-                + $"(solver execution evidence): {RemovedFeature}");
-        }
-
-        // The legacy retention is removed, so retentionStrategy must name the portfolio. An absent key selected the
-        // legacy retention and is refused too. Checked after the order and evidence checks, so a file that those
-        // checks refuse keeps its message.
-        if (!root.GetProperty("candidateGeneration").TryGetProperty("retentionStrategy", out var retentionElement)
-            || retentionElement.GetString() != PortfolioRetention)
-        {
-            throw new InvalidDataException(
-                $"WP4 retentionStrategy must be '{PortfolioRetention}'. The legacy retention, "
-                + $"which '{LegacyRetention}' or an absent key selected: {RemovedFeature}");
-        }
-
         // G2 needs both halves: candidates that move a waiting rider, and a policy that lets the
         // rider change vehicle. Either alone would be silently inert, so both are required
         // together.
@@ -442,41 +331,9 @@ public sealed class Wp4RunnerConfiguration
                 "'shadowAllocation' and 'dropEtaShadowAllocation' on every commitment policy go together.");
         }
 
-        // RequireVariantFields has refused a file without solverExecution.
-        var solverOptions = new SolverBackedRidePoolingPolicyOptions(policyKind, ReadSolverBudget(solverElement));
-
-        // The initial-acceptance trigger is removed: a promise always opens at the booking confirmation, so
-        // initialPromiseTrigger must name it. An absent key selected initial-acceptance and is refused too. Checked
-        // last, so a file that any other check refuses keeps its message.
-        if (!root.TryGetProperty("initialPromiseTrigger", out var triggerElement)
-            || triggerElement.GetString() != BookingConfirmationTrigger)
-        {
-            throw new InvalidDataException(
-                $"WP4 initialPromiseTrigger must be '{BookingConfirmationTrigger}'. The initial-acceptance trigger, "
-                + $"which '{InitialAcceptanceTrigger}' or an absent key selected: {RemovedFeature}");
-        }
-
-        // The late-boarding rejection is removed: a late boarding is always recorded, so lateBoarding must be
-        // record-v1. An absent key selected the rejection and is refused too. Checked last, after the trigger.
-        if (!root.TryGetProperty("lateBoarding", out var lateElement)
-            || lateElement.GetString() != RecordLateBoarding)
-        {
-            throw new InvalidDataException(
-                $"WP4 lateBoarding must be '{RecordLateBoarding}'. The late-boarding rejection, "
-                + $"which '{RejectLateBoarding}' or an absent key selected: {RemovedFeature}");
-        }
-
-        // Forced-reference recovery is removed: a vehicle whose safety no-op a commitment gate rejects always fails
-        // closed. commitmentRecovery must still name the no-worse value, which the final files set and which now
-        // changes nothing. The other values and an absent key, which selected a recovery mode, are refused. Checked
-        // last, after lateBoarding.
-        if (!root.TryGetProperty("commitmentRecovery", out var recoveryElement)
-            || recoveryElement.GetString() != NoWorseRecovery)
-        {
-            throw new InvalidDataException(
-                $"WP4 commitmentRecovery must be '{NoWorseRecovery}', which is now a no-op. The recovery modes, "
-                + $"which '{FailClosedRecovery}', '{ForcedReferenceRecovery}' or an absent key selected: {RemovedFeature}");
-        }
+        var solverOptions = new SolverBackedRidePoolingPolicyOptions(
+            policyKind,
+            ReadSolverBudget(root.GetProperty("solverExecution")));
 
         return new Wp4RunnerConfiguration(
             contentHash!,
@@ -491,36 +348,20 @@ public sealed class Wp4RunnerConfiguration
 
     private static CandidateGenerationOptions ReadGeneration(JsonElement element)
     {
+        const string path = "$.candidateGeneration";
         RequireObject(
             element,
             GenerationFields,
             GenerationRequiredFields,
-            "$.candidateGeneration");
+            path);
 
-        // The schedule is always earliest-feasible. The key stays required (the final files set it), and the
-        // origin-hold schedule it could also select is refused.
-        switch (Text(element, "scheduleStrategy"))
-        {
-            case "earliest-feasible":
-                break;
-            case "origin-hold-relocated-wait":
-                throw new InvalidDataException(
-                    "WP4 scheduleStrategy 'origin-hold-relocated-wait' (the origin-hold schedule): "
-                    + RemovedFeature);
-            default:
-                throw new InvalidDataException("Unknown candidate scheduleStrategy.");
-        }
+        // The schedule is always earliest-feasible and candidates are always kept by the service-set stability
+        // portfolio; the final files name both.
+        RequireValue(element, "scheduleStrategy", "earliest-feasible", path);
+        RequireValue(element, "retentionStrategy", "service-set-stability-portfolio-v1", path);
 
-        // Retention is always the service-set stability portfolio. Here only an unknown value is refused; the legacy
-        // value and an absent key are refused in Decode, after the order and evidence checks.
-        if (element.TryGetProperty("retentionStrategy", out _)
-            && Text(element, "retentionStrategy") is not (PortfolioRetention or LegacyRetention))
-        {
-            throw new InvalidDataException("Unknown candidate retentionStrategy.");
-        }
-
-        // G2 (waiting-rider relocation). Absent means off, so every earlier configuration keeps
-        // its canonical bytes and content hash. The target cap is optional: absent means every other vehicle.
+        // G2 (waiting-rider relocation). Absent means off. The target cap is optional: absent means every other
+        // vehicle.
         WaitingRiderRelocationGenerationOptions? relocation = null;
 
         if (element.TryGetProperty("waitingRiderRelocation", out var relocationElement))
@@ -530,31 +371,10 @@ public sealed class Wp4RunnerConfiguration
                 RelocationGenerationFields,
                 Fields(),
                 "$.candidateGeneration.waitingRiderRelocation");
-
-            // The G2 rider cap is removed: every eligible waiting rider is considered, which is what an absent key
-            // meant. The key is refused with any value. Checked in the same place as the old read, so the checks before
-            // it keep their messages; with the key, the checks after it are not reached.
-            if (relocationElement.TryGetProperty("maximumRidersPerVehicle", out _))
-            {
-                throw new InvalidDataException(
-                    "WP4 'candidateGeneration.waitingRiderRelocation.maximumRidersPerVehicle' key (the G2 rider cap): "
-                    + RemovedFeature);
-            }
-
             relocation = new WaitingRiderRelocationGenerationOptions(
                 relocationElement.TryGetProperty("maximumTargetVehicles", out var targets)
                     ? PositiveInt32(targets, "maximumTargetVehicles")
                     : null);
-        }
-
-        // The dwell of inserted stops is removed: they always have none, which is what an absent key meant. The key is
-        // refused with any value, 0 included. Checked in the same place as the old read, so the checks before it keep
-        // their messages; with the key, the checks after it are not reached.
-        if (element.TryGetProperty("stopServiceDurationMs", out _))
-        {
-            throw new InvalidDataException(
-                "WP4 'candidateGeneration.stopServiceDurationMs' key (the dwell of inserted stops): "
-                + RemovedFeature);
         }
 
         var maximumCandidatesPerVehicle = PositiveInt32(
@@ -564,13 +384,10 @@ public sealed class Wp4RunnerConfiguration
             element.GetProperty("maximumNewRequestsPerVehicle"),
             "maximumNewRequestsPerVehicle");
 
-        // The exact-small mode is removed. The key stays required (the final files set it to false), and true is
-        // refused. Read in the same place as before, so the checks before it keep their messages; with true, the
-        // checks after it are not reached.
+        // Required, and false is the only supported value (the final files set it).
         if (Boolean(element.GetProperty("exactSmallMode"), "exactSmallMode"))
         {
-            throw new InvalidDataException(
-                "WP4 exactSmallMode true (the exact-small mode): " + RemovedFeature);
+            throw new InvalidDataException("'$.candidateGeneration.exactSmallMode' must be false.");
         }
 
         return new CandidateGenerationOptions(
@@ -588,7 +405,7 @@ public sealed class Wp4RunnerConfiguration
         RequireObject(
             element,
             SolverFields,
-            SolverRequiredFields,
+            SolverFields,
             "$.solverExecution");
 
         if (Text(element, "adapterVersion")
@@ -614,16 +431,6 @@ public sealed class Wp4RunnerConfiguration
             throw new InvalidDataException(solverBudget.Failure!.Message);
         }
 
-        // The constant-level skip is removed: every lexicographic level is solved, which is what an absent key meant.
-        // The key is refused with any value, false included. Checked right after the three solver values are read,
-        // where the old read was (the budget check above never fails for values these readers return), so the checks
-        // before it keep their messages; with the key, the checks after it are not reached.
-        if (element.TryGetProperty("skipConstantObjectiveLevels", out _))
-        {
-            throw new InvalidDataException(
-                "WP4 'solverExecution.skipConstantObjectiveLevels' key (the constant-level skip): " + RemovedFeature);
-        }
-
         var execution = DeterministicCandidateSelectionExecutionBudget.Create(
             PositiveInteger(
                 element.GetProperty("maximumGenerationWorkUnits"),
@@ -639,80 +446,6 @@ public sealed class Wp4RunnerConfiguration
         }
 
         return execution.Value!;
-    }
-
-    /// <summary>
-    /// Runs before the field checks, so a file that still selects a removed feature is always refused with the
-    /// pointer to the commit that has it: the multiple-plan policy (policyId 'least-commitment-consensus', B5)
-    /// and its 'multiplePlan' block, the policies in <see cref="RemovedPolicies"/>: rolling-cost (B1) and
-    /// rolling-penalty (B2), the fixed-freeze-horizon policy (B3) and its 'fixedFreeze' block, the
-    /// no-reassignment-repair policy (B4) and its 'repair' block, and the soft-hard hybrid policy (policyId
-    /// 'commit-soft-hard-hybrid', C2) and its 'warningProfiles' block. The checks run in the order the features were
-    /// removed, so a file that an earlier check refused keeps its message.
-    /// </summary>
-    private static void RejectRemovedFeatures(JsonElement root)
-    {
-        if (root.ValueKind == JsonValueKind.Object
-            && (root.TryGetProperty("multiplePlan", out _)
-                || root.TryGetProperty("policyId", out var policyId)
-                    && policyId.ValueKind == JsonValueKind.String
-                    && policyId.GetString() == "least-commitment-consensus"))
-        {
-            throw new InvalidDataException(
-                "WP4 policyId 'least-commitment-consensus' and the 'multiplePlan' block "
-                + $"(the multiple-plan policy): {RemovedFeature}");
-        }
-
-        if (root.ValueKind == JsonValueKind.Object
-            && root.TryGetProperty("policyId", out var removedPolicyId)
-            && removedPolicyId.ValueKind == JsonValueKind.String
-            && RemovedPolicies.TryGetValue(removedPolicyId.GetString()!, out var removedPolicy))
-        {
-            throw new InvalidDataException(
-                $"WP4 policyId '{removedPolicyId.GetString()}' ({removedPolicy}): {RemovedFeature}");
-        }
-
-        if (root.ValueKind == JsonValueKind.Object
-            && (root.TryGetProperty("fixedFreeze", out _)
-                || root.TryGetProperty("policyId", out var freezePolicyId)
-                    && freezePolicyId.ValueKind == JsonValueKind.String
-                    && freezePolicyId.GetString() == "fixed-freeze-horizon"))
-        {
-            throw new InvalidDataException(
-                "WP4 policyId 'fixed-freeze-horizon' and the 'fixedFreeze' block "
-                + $"(the fixed-freeze-horizon policy): {RemovedFeature}");
-        }
-
-        if (root.ValueKind == JsonValueKind.Object
-            && (root.TryGetProperty("repair", out _)
-                || root.TryGetProperty("policyId", out var repairPolicyId)
-                    && repairPolicyId.ValueKind == JsonValueKind.String
-                    && repairPolicyId.GetString() == "no-reassignment-repair"))
-        {
-            throw new InvalidDataException(
-                "WP4 policyId 'no-reassignment-repair' and the 'repair' block "
-                + $"(the no-reassignment-repair policy): {RemovedFeature}");
-        }
-
-        if (root.ValueKind == JsonValueKind.Object
-            && (root.TryGetProperty("warningProfiles", out _)
-                || root.TryGetProperty("policyId", out var hybridPolicyId)
-                    && hybridPolicyId.ValueKind == JsonValueKind.String
-                    && hybridPolicyId.GetString() == "commit-soft-hard-hybrid"))
-        {
-            throw new InvalidDataException(
-                "WP4 policyId 'commit-soft-hard-hybrid' and the 'warningProfiles' block "
-                + $"(the soft-hard hybrid policy): {RemovedFeature}");
-        }
-    }
-
-    private static void RequireVariantFields(bool hasSolver)
-    {
-        if (!hasSolver)
-        {
-            throw new InvalidDataException(
-                "WP4 policy variant fields do not match the selected policyId.");
-        }
     }
 
     private static long PositiveInteger(JsonElement element, string name)

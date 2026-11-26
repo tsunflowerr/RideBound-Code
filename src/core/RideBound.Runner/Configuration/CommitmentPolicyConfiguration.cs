@@ -23,12 +23,6 @@ public sealed class CommitmentPolicyConfiguration :
         "budgetBasis",
         "limits",
         "materialRevisionRule",
-        // The next five are removed keys, kept here so that ReadPolicy refuses them with the removal text.
-        "freezeHorizonMs",
-        "freezeHorizonLocks",
-        "dropEtaRevisionLimitMs",
-        "dropEtaDeadlineTwoSided",
-        "dropEtaDeadlineSlackMs",
         // Optional keys.
         "finalConfirmationLocks",
         "ratchetLocks",
@@ -189,20 +183,14 @@ public sealed class CommitmentPolicyConfiguration :
                 + "'dropEtaDeadlineSlackPermille', of 1000.");
         }
 
-        // The fixed-ms deadline is refused here, before the relaxed-deadline check below, so a relaxed
-        // fixed-ms deadline gets the removal text and not that check's message.
-        if (element.TryGetProperty("dropEtaDeadlineSlackMs", out _))
-        {
-            throw new InvalidDataException(
-                "Commitment 'dropEtaDeadlineSlackMs' (the fixed-ms deadline): " + RemovedFeature);
-        }
-
         var hasDeadline = deadlinePermille is not null;
 
-        if (deadlineRelaxed && !hasDeadline)
+        // A deadline is always relaxed: the key must be true exactly when there is a deadline.
+        if (deadlineRelaxed != hasDeadline
+            || (!hasDeadline && element.TryGetProperty("dropEtaDeadlineRelaxed", out _)))
         {
             throw new InvalidDataException(
-                "'dropEtaDeadlineRelaxed' requires 'dropEtaDeadlineSlackPermille'.");
+                "'dropEtaDeadlineRelaxed' must be true exactly when 'dropEtaDeadlineSlackPermille' is set.");
         }
 
         if (budgetPermille is not null
@@ -230,21 +218,11 @@ public sealed class CommitmentPolicyConfiguration :
         }
 
         var policyId = Text(element, "policyId");
-        var budgetBasis = Text(element, "budgetBasis");
 
-        // Every revision is charged by its decision-induced delta; the customer-visible basis is removed.
-        if (budgetBasis == "customerVisible")
-        {
-            throw new InvalidDataException(
-                "Commitment budgetBasis 'customerVisible' (the customer-visible budget basis): " + RemovedFeature);
-        }
+        // Every revision is charged by its decision-induced delta.
+        RequireValue(element, "budgetBasis", "decisionInduced", "$.policies[]");
 
-        if (budgetBasis != "decisionInduced")
-        {
-            throw new InvalidDataException("Unknown commitment budgetBasis.");
-        }
-
-        var policy = new CommitmentPolicy(
+        return new CommitmentPolicy(
             policyId,
             limits,
             new MaterialRevisionRule(rawThreshold, displayBucket),
@@ -254,38 +232,6 @@ public sealed class CommitmentPolicyConfiguration :
             deadlinePermille,
             relocation,
             shadowAllocation);
-
-        // The other removed options are checked after every other check of the policy, so a policy that
-        // one of those checks refuses keeps that message. The fixed-ms deadline is refused earlier (above).
-        if (element.TryGetProperty("freezeHorizonMs", out _)
-            || element.TryGetProperty("freezeHorizonLocks", out _))
-        {
-            throw new InvalidDataException(
-                "Commitment 'freezeHorizonMs' and 'freezeHorizonLocks' (the freeze horizon): " + RemovedFeature);
-        }
-
-        if (element.TryGetProperty("dropEtaRevisionLimitMs", out _))
-        {
-            throw new InvalidDataException(
-                "Commitment 'dropEtaRevisionLimitMs' (the per-decision revision cap): " + RemovedFeature);
-        }
-
-        if (element.TryGetProperty("dropEtaDeadlineTwoSided", out _))
-        {
-            throw new InvalidDataException(
-                "Commitment 'dropEtaDeadlineTwoSided' (the two-sided deadline): " + RemovedFeature);
-        }
-
-        // A deadline is always relaxed, so 'dropEtaDeadlineRelaxed' must be true with a deadline. False, or a deadline
-        // without the key (false was its default), selected the strict deadline.
-        if (!deadlineRelaxed && (hasDeadline || element.TryGetProperty("dropEtaDeadlineRelaxed", out _)))
-        {
-            throw new InvalidDataException(
-                "Commitment 'dropEtaDeadlineRelaxed' false, or a deadline without it (the strict deadline): "
-                + RemovedFeature);
-        }
-
-        return policy;
     }
 
     private static int? OptionalPermille(JsonElement element, string propertyName)
