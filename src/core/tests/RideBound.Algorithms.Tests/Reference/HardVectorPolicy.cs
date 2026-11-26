@@ -209,10 +209,19 @@ public sealed class RideBoundHardVectorPolicy
         var selected = _selector.Select(
             batch.FeasibleCandidateSets,
             batch.Assessments);
+
+        if (selected.IsSuccess
+            && SelectionApplier.ValidateSelection(
+                context.ReducedState,
+                selected.Selection!,
+                _physicalValidator) is { } invalid)
+        {
+            return DispatchDecisionResult.Failure(invalid);
+        }
+
         return RevisionPenaltyPolicy.Finish(
             context,
             batch.FeasibleCandidateSets,
-            selected,
-            _physicalValidator);
+            selected);
     }
 }

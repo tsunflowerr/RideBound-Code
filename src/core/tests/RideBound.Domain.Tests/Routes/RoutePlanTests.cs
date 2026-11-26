@@ -65,7 +65,7 @@ public sealed class RoutePlanTests
 
         Assert.False(result.IsSuccess);
         Assert.Equal(RouteFailureCodes.FrozenPrefix, result.Failure?.Code);
-        Assert.Equal(2, route.AllStops.Count());
+        Assert.Equal(2, route.FrozenPrefix.Count + route.MutableSuffix.Count);
     }
 
     [Fact]

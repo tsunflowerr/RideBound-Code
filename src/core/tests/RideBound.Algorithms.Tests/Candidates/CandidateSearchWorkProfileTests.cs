@@ -32,8 +32,9 @@ public sealed class CandidateSearchWorkProfileTests
         long expectedDistinctSlackProfiles)
     {
         var state = CreateLoadedState(incumbentCount);
+        var builder = new ForwardSlackProfileTests.CountingProfileBuilder();
         var cache = new ForwardSlackProfileCache(
-            new ForwardSlackProfileBuilder(),
+            builder,
             maximumEntries: 1_000_000);
         var generator = new InsertionCandidateGenerator(slackCache: cache);
 
@@ -55,25 +56,26 @@ public sealed class CandidateSearchWorkProfileTests
         // One slack profile per distinct projected route. A regression that
         // reintroduced a duplicate projection or weakened the memo key would
         // move this number even though the decision stayed the same.
-        Assert.Equal(expectedDistinctSlackProfiles, cache.MissCount);
+        Assert.Equal(expectedDistinctSlackProfiles, builder.BuildCount);
     }
 
     [Fact]
     public void Repeated_generation_is_byte_stable_and_adds_no_new_projection()
     {
         var state = CreateLoadedState(4);
+        var builder = new ForwardSlackProfileTests.CountingProfileBuilder();
         var cache = new ForwardSlackProfileCache(
-            new ForwardSlackProfileBuilder(),
+            builder,
             maximumEntries: 1_000_000);
         var generator = new InsertionCandidateGenerator(slackCache: cache);
 
         var first = generator.Generate(state, LoadedOptions);
-        var missesAfterFirst = cache.MissCount;
+        var missesAfterFirst = builder.BuildCount;
         var second = generator.Generate(state, LoadedOptions);
 
         Assert.True(first.IsSuccess, first.Witness?.Message);
         Assert.True(second.IsSuccess, second.Witness?.Message);
-        Assert.Equal(missesAfterFirst, cache.MissCount);
+        Assert.Equal(missesAfterFirst, builder.BuildCount);
         Assert.Equal(
             first.VehicleCandidates!.Single().Candidates
                 .Select(candidate => candidate.CandidateId),

@@ -65,7 +65,6 @@ public sealed partial class RunnerSession
     private readonly Wp4RunnerConfiguration _wp4Configuration;
     private readonly RideBound.Algorithms.Shareability.ShadowAllocator? _shadowAllocator;
     private readonly DispatchStep _dispatchStep;
-    private readonly bool _useManifestSolverSeed;
     private HelloPayload? _hello;
     private HelloAckPayload? _helloAcknowledgement;
     private InitializedSessionIdentity? _identity;
@@ -89,8 +88,7 @@ public sealed partial class RunnerSession
     /// <summary>
     /// An online commitment session. The commitment policy file supplies the policy catalog,
     /// the WP4 file the dispatch policy, and <paramref name="commitmentPolicyConfigurationHash"/> is the binding of
-    /// the two files that initializeRun must carry. <paramref name="useManifestSolverSeed"/> seeds the solver with the
-    /// manifest's masterSeed instead of the WP4 file's randomSeed (the command line always does);
+    /// the two files that initializeRun must carry. The solver is seeded with the manifest's masterSeed;
     /// <paramref name="solverBackedPolicy"/> replaces the OR-Tools policy in tests.
     /// </summary>
     public RunnerSession(
@@ -98,8 +96,7 @@ public sealed partial class RunnerSession
         ICommitmentPolicyProvider commitmentPolicies,
         Sha256Hex commitmentPolicyConfigurationHash,
         Wp4RunnerConfiguration wp4Configuration,
-        SolverBackedRidePoolingPolicy? solverBackedPolicy = null,
-        bool useManifestSolverSeed = false)
+        SolverBackedRidePoolingPolicy? solverBackedPolicy = null)
     {
         ArgumentNullException.ThrowIfNull(requirements);
         ArgumentNullException.ThrowIfNull(commitmentPolicies);
@@ -113,7 +110,6 @@ public sealed partial class RunnerSession
             ? new RideBound.Algorithms.Shareability.ShadowAllocator(shadowInputs)
             : null;
         _lightAudit = wp4Configuration.UsesLightAuditHash;
-        _useManifestSolverSeed = useManifestSolverSeed;
         var commitmentValidator = new CommitmentDecisionValidator();
         _dispatchStep = new DispatchStep(
             solverBackedPolicy

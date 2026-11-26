@@ -9,15 +9,6 @@ using RideBound.Domain.Vehicles;
 
 namespace RideBound.Algorithms.Candidates;
 
-public sealed record ForwardSlackStop(
-    StopId StopId,
-    SimTime ArrivalTime,
-    SimTime ServiceStartTime,
-    SimTime DepartureTime,
-    long WaitingBeforeServiceMilliseconds,
-    long? LocalDeadlineSlackMilliseconds,
-    long? CertifiedDelayBeforeArrivalMilliseconds);
-
 /// <summary>
 /// A conservative delay certificate for a fixed route and fixed projected pickup
 /// schedule. Null delay means unbounded by the remaining hard time constraints.
@@ -26,7 +17,6 @@ public sealed record ForwardSlackStop(
 /// </summary>
 public sealed record ForwardSlackProfile(
     CandidateSchedule Schedule,
-    IReadOnlyList<ForwardSlackStop> Stops,
     long? CertifiedDelayAtRouteStartMilliseconds);
 
 public sealed record ForwardSlackProfileBuildResult
@@ -215,24 +205,12 @@ public sealed class ForwardSlackProfileBuilder : IForwardSlackProfileBuilder
             certified[index] = Minimum(localSlack[index], propagated);
         }
 
-        var entries = routeStops.Select(
-                (stop, index) => new ForwardSlackStop(
-                    stop.StopId,
-                    scheduledStops[index].ArrivalTime,
-                    scheduledStops[index].ServiceStartTime,
-                    scheduledStops[index].DepartureTime,
-                    waiting[index],
-                    localSlack[index],
-                    certified[index]))
-            .ToArray();
-
         return ForwardSlackProfileBuildResult.Success(
             new ForwardSlackProfile(
                 evaluated.Schedule,
-                Array.AsReadOnly(entries),
-                entries.Length == 0
+                routeStops.Length == 0
                     ? null
-                    : entries[0].CertifiedDelayBeforeArrivalMilliseconds));
+                    : certified[0]));
     }
 
     private static long? AddSaturating(long left, long? right)
@@ -494,21 +472,6 @@ public sealed class ForwardSlackProfileCache
         _maximumEntries = maximumEntries;
     }
 
-    public long HitCount { get; private set; }
-
-    public long MissCount { get; private set; }
-
-    public int EntryCount
-    {
-        get
-        {
-            lock (_gate)
-            {
-                return _entries.Count;
-            }
-        }
-    }
-
     public ForwardSlackCacheLookup GetOrBuild(
         OnlineState state,
         VehicleState vehicle,
@@ -529,14 +492,11 @@ public sealed class ForwardSlackProfileCache
         {
             if (_entries.TryGetValue(key, out var cached))
             {
-                HitCount++;
                 return new ForwardSlackCacheLookup(
                     ForwardSlackProfileBuildResult.Success(cached),
                     true,
                     key);
             }
-
-            MissCount++;
         }
 
         var built = _builder.Build(

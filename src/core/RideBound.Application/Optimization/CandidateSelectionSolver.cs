@@ -20,8 +20,6 @@ public sealed class DeterministicSolverBudget
 
     public long RandomSeed { get; }
 
-    public int WorkerCount => 1;
-
     public static DomainResult<DeterministicSolverBudget> Create(
         long maximumWorkUnits,
         long maximumDeterministicTimeMicros,

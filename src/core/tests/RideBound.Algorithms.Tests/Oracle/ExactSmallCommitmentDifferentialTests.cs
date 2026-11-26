@@ -180,7 +180,9 @@ public sealed class ExactSmallCommitmentDifferentialTests
                 .ThenBy(value => value.CandidateId, StringComparer.Ordinal)
                 .First();
             Assert.Equal(best.CandidateId, decision.VehiclePlans.Single().Candidate.CandidateId);
-            Assert.Equal(best.Schedule.OperationalCost, decision.OperationalCost);
+            Assert.Equal(
+                best.Schedule.OperationalCost,
+                decision.VehiclePlans.Sum(value => value.Candidate.Schedule.OperationalCost));
 
             // The chosen plan passes the validation the Runner applies.
             var validated = new CommitmentDecisionValidator().Validate(
@@ -324,7 +326,6 @@ public sealed class ExactSmallCommitmentDifferentialTests
                 context.Policies,
                 context.PublicationScope,
                 context.SourceEventSequence,
-                RevisionReasonCode: "C1_HARD_VECTOR",
                 ScopedVehicleId: candidate.VehicleId));
         Assert.True(validation.IsValid, validation.Witnesses.FirstOrDefault()?.Message);
         return validation.Publications.Sum(value => value.Entry.Deltas.DecisionInduced.DropEtaTotalMs);

@@ -25,11 +25,11 @@ public sealed class ForwardSlackProfileTests
 
         Assert.True(result.IsSuccess, result.Message);
         var profile = result.Profile!;
-        Assert.Equal(2, profile.Stops.Count);
-        Assert.Equal(900, profile.Stops[0].WaitingBeforeServiceMilliseconds);
-        Assert.Equal(1900, profile.Stops[0].LocalDeadlineSlackMilliseconds);
-        Assert.Equal(900, profile.Stops[1].LocalDeadlineSlackMilliseconds);
-        Assert.Equal(900, profile.Stops[1].CertifiedDelayBeforeArrivalMilliseconds);
+        Assert.Equal(2, profile.Schedule.Stops.Count);
+        Assert.Equal(
+            900,
+            profile.Schedule.Stops[0].ServiceStartTime.Milliseconds
+                - profile.Schedule.Stops[0].ArrivalTime.Milliseconds);
         Assert.Equal(1800, profile.CertifiedDelayAtRouteStartMilliseconds);
         Assert.Equal(1100, profile.Schedule.OperationalCost);
     }
@@ -172,8 +172,6 @@ public sealed class ForwardSlackProfileTests
         Assert.False(vehicleMiss.WasCacheHit);
         Assert.False(runMiss.WasCacheHit);
         Assert.Equal(7, builder.BuildCount);
-        Assert.Equal(1, cache.HitCount);
-        Assert.Equal(7, cache.MissCount);
     }
 
     [Fact]
@@ -201,8 +199,8 @@ public sealed class ForwardSlackProfileTests
 
         Assert.False(original.WasCacheHit);
         Assert.False(mutated.WasCacheHit);
-        Assert.Equal(1100, original.Result.Profile!.Stops[0].ArrivalTime.Milliseconds);
-        Assert.Equal(1200, mutated.Result.Profile!.Stops[0].ArrivalTime.Milliseconds);
+        Assert.Equal(1100, original.Result.Profile!.Schedule.Stops[0].ArrivalTime.Milliseconds);
+        Assert.Equal(1200, mutated.Result.Profile!.Schedule.Stops[0].ArrivalTime.Milliseconds);
         Assert.NotEqual(
             original.Result.Profile.CertifiedDelayAtRouteStartMilliseconds,
             mutated.Result.Profile.CertifiedDelayAtRouteStartMilliseconds);
@@ -237,7 +235,7 @@ public sealed class ForwardSlackProfileTests
         Assert.Equal(
             uncached.Profile!.Schedule.OperationalCost,
             cached.Result.Profile!.Schedule.OperationalCost);
-        Assert.Equal(uncached.Profile.Stops, cached.Result.Profile.Stops);
+        Assert.Equal(uncached.Profile.Schedule.Stops, cached.Result.Profile.Schedule.Stops);
         Assert.Equal(
             uncached.Profile.CertifiedDelayAtRouteStartMilliseconds,
             cached.Result.Profile.CertifiedDelayAtRouteStartMilliseconds);
@@ -284,7 +282,6 @@ public sealed class ForwardSlackProfileTests
 
         var first = generator.Generate(state, options);
         var buildsAfterFirst = builder.BuildCount;
-        var hitsBefore = cache.HitCount;
         var second = generator.Generate(state, options);
 
         Assert.True(first.IsSuccess, first.Witness?.Message);
@@ -293,7 +290,6 @@ public sealed class ForwardSlackProfileTests
         Assert.True(second.Diagnostics!.IsComplete);
         Assert.True(buildsAfterFirst > 0);
         Assert.Equal(buildsAfterFirst, builder.BuildCount);
-        Assert.True(cache.HitCount > hitsBefore);
         Assert.Equal(
             first.VehicleCandidates!.Single().Candidates.Select(c => c.CandidateId),
             second.VehicleCandidates!.Single().Candidates.Select(c => c.CandidateId));
@@ -381,7 +377,7 @@ public sealed class ForwardSlackProfileTests
         return arcs.Values.ToArray();
     }
 
-    private sealed class CountingProfileBuilder : IForwardSlackProfileBuilder
+    internal sealed class CountingProfileBuilder : IForwardSlackProfileBuilder
     {
         private readonly ForwardSlackProfileBuilder _inner = new();
 

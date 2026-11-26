@@ -107,8 +107,7 @@ internal static partial class FinalRuns
             RunnerDefaults.CapabilityRequirements,
             commitmentPolicies: commitment,
             commitmentPolicyConfigurationHash: binding,
-            wp4Configuration: wp4,
-            useManifestSolverSeed: true);
+            wp4Configuration: wp4);
     }
 
     /// <summary>The Runner host on in-memory streams, configured like <see cref="NewSession"/> and with the run's
@@ -123,8 +122,7 @@ internal static partial class FinalRuns
             maximumLineBytes: int.Parse(run.Arguments[^1], CultureInfo.InvariantCulture),
             commitmentPolicies: commitment,
             commitmentPolicyConfigurationHash: binding,
-            wp4Configuration: wp4,
-            useManifestSolverSeed: true);
+            wp4Configuration: wp4);
     }
 
     /// <summary>

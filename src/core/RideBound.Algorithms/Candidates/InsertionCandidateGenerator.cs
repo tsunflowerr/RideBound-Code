@@ -538,7 +538,6 @@ public sealed partial class InsertionCandidateGenerator
     {
         var remaining = requests.Count - node.RequestIndex;
         var potentialAccepted = node.InsertedRequestIds.Count + remaining;
-        var mandatoryService = node.MandatoryServiceMilliseconds;
 
         // The ordinary root is the current route, so it is ranked on that route
         // directly; a G2 donor root carries a different mutable suffix, so it
@@ -569,7 +568,6 @@ public sealed partial class InsertionCandidateGenerator
 
         return new SearchPriority(
             -potentialAccepted,
-            mandatoryService,
             slack is null ? 0 : 1,
             -(slack ?? 0),
             node);
@@ -764,7 +762,6 @@ public sealed partial class InsertionCandidateGenerator
     {
         private string? _stableId;
         private DomainResult<RoutePlan>? _projection;
-        private long? _mandatoryServiceMilliseconds;
 
         public int RequestIndex { get; } = requestIndex;
 
@@ -774,13 +771,6 @@ public sealed partial class InsertionCandidateGenerator
             insertedRequestIds;
 
         public ForwardSlackCacheLookup? SlackLookup { get; private set; }
-
-        public long MandatoryServiceMilliseconds =>
-            _mandatoryServiceMilliseconds ??= Suffix.Aggregate(
-                0L,
-                (total, stop) => SaturatingAdd(
-                    total,
-                    stop.ServiceDuration.Milliseconds));
 
         /// <remarks>
         /// The digest still ends with the token "no-repair", which marked a node outside the removed
@@ -822,7 +812,6 @@ public sealed partial class InsertionCandidateGenerator
     /// </summary>
     private readonly record struct SearchPriority(
         int NegativePotentialAcceptedCount,
-        long MandatoryServiceLowerBound,
         int SlackBoundClass,
         long NegativeCertifiedSlack,
         ExplorationNode Node);
@@ -835,10 +824,6 @@ public sealed partial class InsertionCandidateGenerator
         {
             var comparison = left.NegativePotentialAcceptedCount.CompareTo(
                 right.NegativePotentialAcceptedCount);
-            comparison = comparison != 0
-                ? comparison
-                : left.MandatoryServiceLowerBound.CompareTo(
-                    right.MandatoryServiceLowerBound);
             comparison = comparison != 0
                 ? comparison
                 : left.SlackBoundClass.CompareTo(right.SlackBoundClass);

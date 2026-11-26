@@ -30,7 +30,6 @@ public static class RunnerHost
         ICommitmentPolicyProvider commitmentPolicies,
         Sha256Hex commitmentPolicyConfigurationHash,
         Wp4RunnerConfiguration wp4Configuration,
-        bool useManifestSolverSeed,
         int maximumLineBytes = NdjsonReader.DefaultMaximumLineBytes,
         CancellationToken cancellationToken = default)
     {
@@ -49,8 +48,7 @@ public static class RunnerHost
                 commitmentPolicies: commitmentPolicies,
                 commitmentPolicyConfigurationHash:
                     commitmentPolicyConfigurationHash,
-                wp4Configuration: wp4Configuration,
-                useManifestSolverSeed: useManifestSolverSeed);
+                wp4Configuration: wp4Configuration);
         }
         catch (ArgumentException error)
         {

@@ -50,7 +50,6 @@ public sealed record CommitmentValidationContext(
     ICommitmentPolicyProvider Policies,
     string PublicationScope,
     long SourceEventSequence,
-    string RevisionReasonCode = "ONLINE_REPLAN",
     VehicleId? ScopedVehicleId = null);
 
 public enum CommitmentValidationStage
@@ -479,7 +478,7 @@ public sealed class CommitmentDecisionValidator
                 deltas,
                 context.CandidateState.Run.AppliedEpoch,
                 context.CandidateState.Run.SimulationTime,
-                context.RevisionReasonCode,
+                "ONLINE_REPLAN",
                 context.SourceEventSequence);
 
             if (!revised.IsSuccess)

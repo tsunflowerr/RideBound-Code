@@ -138,13 +138,6 @@ public sealed class SolverBackedFleetSelector
             CandidateSelectionProblem problem,
             CandidateSelectionSolution solution)
         {
-            if (!ReferenceEquals(problem, mapping.Problem))
-            {
-                return CandidateSelectionValidationResult.Invalid(
-                    SolverBackedSelectionFailureCodes.ModelMappingFailed,
-                    "The semantic validator received a solution for a different model instance.");
-            }
-
             var selected = mapping.Map(solution);
             return selected.Selection is null
                 ? CandidateSelectionValidationResult.Invalid(

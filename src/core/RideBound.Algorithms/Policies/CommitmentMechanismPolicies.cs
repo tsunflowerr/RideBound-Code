@@ -1,38 +1,29 @@
 using RideBound.Algorithms.Candidates;
 using RideBound.Algorithms.Commitments;
-using RideBound.Domain.Validation;
 
 namespace RideBound.Algorithms.Policies;
 
 /// <summary>
-/// The two decision steps that the policy classes share: validate and apply a fleet selection, and turn a
-/// candidate generation failure into a decision failure. The class keeps the name of the rolling-penalty policy
-/// (B2), which owned these steps and was removed.
+/// The two decision steps that the policy classes share: apply a fleet selection the caller has already
+/// validated, and turn a candidate generation failure into a decision failure. The class keeps the name of the
+/// rolling-penalty policy (B2), which owned these steps and was removed.
 /// </summary>
 public static class RevisionPenaltyPolicy
 {
     internal static DispatchDecisionResult Finish(
         CommitmentMechanismContext context,
         IReadOnlyList<VehicleCandidateSet> candidates,
-        FleetSelectionResult selected,
-        PhysicalPlanValidator physicalValidator)
+        FleetSelectionResult selected)
     {
         if (!selected.IsSuccess)
         {
             return DispatchDecisionResult.Failure(selected.Witness!);
         }
 
-        var invalid = SelectionApplier.ValidateSelection(
+        return SelectionApplier.ApplySelection(
             context.ReducedState,
             selected.Selection!,
-            physicalValidator);
-
-        return invalid is null
-            ? SelectionApplier.ApplySelection(
-                context.ReducedState,
-                selected.Selection!,
-                candidates)
-            : DispatchDecisionResult.Failure(invalid);
+            candidates);
     }
 
     internal static DispatchDecisionResult GenerationFailure(

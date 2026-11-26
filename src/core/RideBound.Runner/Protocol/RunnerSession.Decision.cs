@@ -85,10 +85,8 @@ public sealed partial class RunnerSession
         var dispatched = _dispatchStep.Run(
             context,
             _wp4Configuration.CandidateGeneration,
-            _useManifestSolverSeed
-                ? _wp4Configuration.CreateSolverPolicyOptionsForRun(
-                    _identity!.Manifest.MasterSeed)
-                : _wp4Configuration.SolverPolicyOptions);
+            _wp4Configuration.CreateSolverPolicyOptionsForRun(
+                _identity!.Manifest.MasterSeed));
 
         if (!dispatched.IsSuccess)
         {

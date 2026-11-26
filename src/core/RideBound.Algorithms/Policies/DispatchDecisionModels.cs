@@ -55,9 +55,6 @@ public sealed record DispatchDecision(
     OnlineState ProposedState,
     IReadOnlyList<SelectedVehiclePlan> VehiclePlans,
     IReadOnlyList<RequestDecisionAction> RequestActions,
-    IReadOnlyList<CandidatePruneWitness> PrunedCandidates,
-    int AcceptedRequestCount,
-    long OperationalCost,
     CandidateSelectionExecutionResult? SelectionExecution = null,
     CandidateGenerationDiagnostics? GenerationDiagnostics = null);
 

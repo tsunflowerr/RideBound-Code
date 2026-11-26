@@ -110,7 +110,6 @@ public sealed class HardVectorCandidateAssessor
                         context.Policies,
                         context.PublicationScope,
                         context.SourceEventSequence,
-                        RevisionReasonCode: "C1_HARD_VECTOR",
                         ScopedVehicleId: set.VehicleId));
 
                 if (!validation.IsValid)
@@ -384,7 +383,6 @@ public sealed class HardVectorCandidateAssessor
                 context.Policies,
                 context.PublicationScope,
                 context.SourceEventSequence,
-                RevisionReasonCode: "C1_HARD_VECTOR",
                 ScopedVehicleId: candidate.VehicleId));
 
         if (!validation.IsValid)
