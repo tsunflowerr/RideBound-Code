@@ -25,9 +25,7 @@
         "passengerBoarded",
         "passengerAlighted",
         "travelTimesUpdated",
-        "timerTick",
-        "incidentOpened",
-        "incidentResolved"
+        "timerTick"
       ]
     },
     "payload": {
@@ -172,44 +170,6 @@
         "properties": {
           "payload": {
             "$ref": "timer-tick-event-payload.schema.json"
-          }
-        }
-      }
-    },
-    {
-      "if": {
-        "properties": {
-          "eventType": {
-            "const": "incidentOpened"
-          }
-        },
-        "required": [
-          "eventType"
-        ]
-      },
-      "then": {
-        "properties": {
-          "payload": {
-            "$ref": "incident-opened-event-payload.schema.json"
-          }
-        }
-      }
-    },
-    {
-      "if": {
-        "properties": {
-          "eventType": {
-            "const": "incidentResolved"
-          }
-        },
-        "required": [
-          "eventType"
-        ]
-      },
-      "then": {
-        "properties": {
-          "payload": {
-            "$ref": "incident-resolved-event-payload.schema.json"
           }
         }
       }

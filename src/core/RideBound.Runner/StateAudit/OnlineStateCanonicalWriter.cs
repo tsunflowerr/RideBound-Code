@@ -29,8 +29,6 @@ public sealed class OnlineStateCanonicalCache
 
     internal ConditionalWeakTable<CommitmentLedgerEntry, byte[]> LedgerEntries { get; } = new();
 
-    internal ConditionalWeakTable<OperationalIncident, byte[]> Incidents { get; } = new();
-
     internal ConditionalWeakTable<CommitmentBreachRecord, byte[]> Breaches { get; } = new();
 }
 
@@ -419,24 +417,6 @@ public static class OnlineStateCanonicalWriter
         }
 
         glue.Byte((byte)']');
-        item.Member("incidents"u8).Byte((byte)'[');
-        first = true;
-
-        foreach (var incident in ledger.Incidents.Values.OrderBy(
-                     value => value.Id.Value,
-                     StringComparer.Ordinal))
-        {
-            if (!first)
-            {
-                glue.Byte((byte)',');
-            }
-
-            first = false;
-            builder.Fragment(Cached(cache?.Incidents, incident, WriteIncident));
-        }
-
-        glue.Byte((byte)']');
-
         if (ledger.LatePickups.Count != 0)
         {
             item.Member("latePickups"u8).Byte((byte)'[');
@@ -466,29 +446,6 @@ public static class OnlineStateCanonicalWriter
         item.End();
     }
 
-    internal static void WriteIncident(CanonicalBuffer buffer, OperationalIncident incident)
-    {
-        var item = new CanonicalObject(buffer);
-        WriteIdentifiers(
-            item.Member("affectedRequestIds"u8),
-            incident.AffectedRequestIds.Select(value => value.Value));
-        WriteIdentifiers(
-            item.Member("affectedVehicleIds"u8),
-            incident.AffectedVehicleIds.Select(value => value.Value));
-        item.Member("incidentId"u8).String(incident.Id.Value);
-        item.Member("openedAtMs"u8).Integer(incident.OpenedAt.Milliseconds);
-        item.Member("openedEventSeq"u8).Integer(incident.OpenedEventSequence);
-        item.Member("reasonCode"u8).String(incident.ReasonCode);
-
-        if (incident.ResolvedEventSequence is long resolvedSequence)
-        {
-            item.Member("resolvedAtMs"u8).Integer(incident.ResolvedAt!.Value.Milliseconds);
-            item.Member("resolvedEventSeq"u8).Integer(resolvedSequence);
-        }
-
-        item.End();
-    }
-
     internal static void WriteBreach(CanonicalBuffer buffer, CommitmentBreachRecord breach)
     {
         var item = new CanonicalObject(buffer);
@@ -498,17 +455,7 @@ public static class OnlineStateCanonicalWriter
         WriteDeltas(item.Member("deltas"u8), breach.Deltas);
         WritePromiseProjection(item.Member("exogenousProjection"u8), breach.ExogenousProjection);
 
-        switch (breach.Kind)
-        {
-            case CommitmentBreachKind.OperationalIncident:
-                item.Member("incidentId"u8).String(breach.IncidentId!.Value.Value);
-                break;
-            case CommitmentBreachKind.ExogenousServiceQuality:
-                item.Member("kind"u8).String("exogenousServiceQuality");
-                break;
-            default:
-                throw new InvalidOperationException("Unknown commitment breach kind.");
-        }
+        item.Member("kind"u8).String("exogenousServiceQuality");
 
         item.Member("normalOperation"u8).Boolean(breach.NormalOperation);
         WritePublishedPromise(item.Member("previousPromise"u8), breach.PreviousPromise);
@@ -517,31 +464,28 @@ public static class OnlineStateCanonicalWriter
         item.Member("requestId"u8).String(breach.RequestId.Value);
         WritePromiseProjection(item.Member("safetyProjection"u8), breach.SafetyProjection);
 
-        if (breach.Kind == CommitmentBreachKind.ExogenousServiceQuality)
+        var witnesses = item.Member("serviceQualityWitnesses"u8);
+        witnesses.Byte((byte)'[');
+        var first = true;
+
+        foreach (var witness in breach.ServiceQualityWitnesses)
         {
-            var witnesses = item.Member("serviceQualityWitnesses"u8);
-            witnesses.Byte((byte)'[');
-            var first = true;
-
-            foreach (var witness in breach.ServiceQualityWitnesses)
+            if (!first)
             {
-                if (!first)
-                {
-                    witnesses.Byte((byte)',');
-                }
-
-                first = false;
-                var witnessItem = new CanonicalObject(witnesses);
-                witnessItem.Member("code"u8).String(witness.Code);
-                witnessItem.Member("contractualMilliseconds"u8).Integer(witness.ContractualMilliseconds);
-                witnessItem.Member("dimension"u8).String(witness.Dimension);
-                witnessItem.Member("exogenousMilliseconds"u8).Integer(witness.ExogenousMilliseconds);
-                witnessItem.Member("requestId"u8).String(witness.RequestId.Value);
-                witnessItem.End();
+                witnesses.Byte((byte)',');
             }
 
-            witnesses.Byte((byte)']');
+            first = false;
+            var witnessItem = new CanonicalObject(witnesses);
+            witnessItem.Member("code"u8).String(witness.Code);
+            witnessItem.Member("contractualMilliseconds"u8).Integer(witness.ContractualMilliseconds);
+            witnessItem.Member("dimension"u8).String(witness.Dimension);
+            witnessItem.Member("exogenousMilliseconds"u8).Integer(witness.ExogenousMilliseconds);
+            witnessItem.Member("requestId"u8).String(witness.RequestId.Value);
+            witnessItem.End();
         }
+
+        witnesses.Byte((byte)']');
 
         item.Member("sourceEventSeq"u8).Integer(breach.SourceEventSequence);
         WriteIdentifiers(item.Member("witnessCodes"u8), breach.WitnessCodes);

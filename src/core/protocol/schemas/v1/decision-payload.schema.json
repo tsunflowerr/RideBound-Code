@@ -34,7 +34,6 @@
         "FROZEN_PREFIX",
         "COMMITMENT_BUDGET",
         "SOLVER_TIMEOUT_SAFE_FALLBACK",
-        "INCIDENT_OVERRIDE",
         "WP1_STRUCTURAL_ONLY"
       ],
       "x-ridebound-decision-hash": "include"

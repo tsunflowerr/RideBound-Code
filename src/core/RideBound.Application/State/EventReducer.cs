@@ -231,8 +231,6 @@ public sealed class EventReducer
                     alighted.PlanVersion),
             TimerTick => DomainResult<RideBoundRun>.Success(run),
             TravelTimesUpdated => null,
-            IncidentOpened => null,
-            IncidentResolved => null,
             _ => DomainResult<RideBoundRun>.Fail(
                 "UNSUPPORTED_INTERNAL_EVENT",
                 $"Internal event '{onlineEvent.GetType().Name}' is unsupported."),
@@ -294,57 +292,10 @@ public sealed class EventReducer
             travelTimes = travel.Snapshot;
         }
 
-        IncidentLedgerResult? incidentResult = onlineEvent switch
-        {
-            IncidentOpened opened => OpenIncident(run, incidents, opened),
-            IncidentResolved resolved => incidents.Resolve(
-                resolved.IncidentId,
-                resolved.EventSequence,
-                resolved.SimulationTime),
-            _ => null,
-        };
-
-        if (incidentResult is not null && !incidentResult.IsSuccess)
-        {
-            return EventApplyResult.Fail(incidentResult.Failure!);
-        }
-
         return EventApplyResult.Success(
             runResult?.Value ?? run,
             travelTimes,
-            incidentResult?.Ledger ?? incidents);
-    }
-
-    private static IncidentLedgerResult OpenIncident(
-        RideBoundRun run,
-        OperationalIncidentLedger incidents,
-        IncidentOpened opened)
-    {
-        var unknown = opened.VehicleIds.FirstOrDefault(
-            vehicleId => !run.Vehicles.ContainsKey(vehicleId));
-
-        if (unknown != default)
-        {
-            return IncidentLedgerResult.Fail(
-                IncidentFailureCodes.UnknownIncidentVehicle,
-                "An incident cannot reference an unknown vehicle.",
-                unknown.Value,
-                "vehicleId");
-        }
-
-        var affectedRiders = opened.VehicleIds
-            .SelectMany(vehicleId => run.Vehicles[vehicleId].AcceptedRequestIds)
-            .Distinct()
-            .OrderBy(value => value.Value, StringComparer.Ordinal)
-            .ToArray();
-
-        return incidents.Open(
-            opened.IncidentId,
-            opened.ReasonCode,
-            opened.VehicleIds,
-            affectedRiders,
-            opened.EventSequence,
-            opened.SimulationTime);
+            incidents);
     }
 
     private static DomainResult<RideBoundRun> BootstrapVehicle(

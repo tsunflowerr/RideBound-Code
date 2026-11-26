@@ -29,22 +29,6 @@ public sealed class OnlineEventMapperTests
     }
 
     [Fact]
-    public void Incident_fixture_maps_to_typed_internal_event()
-    {
-        var envelope = Decode(
-            "golden/required/08-incident-override/input.json");
-
-        var result = new OnlineEventMapper().Map(envelope);
-
-        Assert.True(result.IsSuccess, result.Witness?.Message);
-        var opened = Assert.IsType<IncidentOpened>(
-            Assert.Single(result.Batch!.Events));
-        Assert.Equal("incident-08", opened.IncidentId.Value);
-        Assert.Equal("ROAD_CLOSED", opened.ReasonCode);
-        Assert.Equal(["v-08"], opened.VehicleIds.Select(value => value.Value));
-    }
-
-    [Fact]
     public void Invalid_typed_payload_is_reported_before_domain_mapping()
     {
         var envelope = Decode(

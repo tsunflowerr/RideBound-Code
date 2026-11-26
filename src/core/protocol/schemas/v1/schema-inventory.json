@@ -129,13 +129,6 @@
       "implementationStatus": "implemented"
     },
     {
-      "contractType": "RideBound.Contracts.Protocol.CommitmentBreachDeclaredActionPayload",
-      "messageType": "commitmentBreachDeclared",
-      "schema": "commitment-breach-declared-action-payload.schema.json",
-      "fixtureDirectory": "../fixtures/runner",
-      "implementationStatus": "implemented"
-    },
-    {
       "contractType": "RideBound.Contracts.Protocol.CommitmentCertificateBody",
       "messageType": "decision-certificate",
       "schema": "commitment-certificate-body.schema.json",

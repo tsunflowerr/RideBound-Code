@@ -1,7 +1,0 @@
-{
-  "fixtureId": "incident-override",
-  "supportLevel": "future-behavior",
-  "expectedValidator": "wp3-commitment-validator",
-  "minimumWorkPackage": "WP3",
-  "expectedOutcome": "pass"
-}

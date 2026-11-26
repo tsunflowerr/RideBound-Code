@@ -144,9 +144,6 @@ public sealed class ExogenousServiceQualityBreachBridgeTests
         Assert.True(result.IsSuccess, result.Error);
         var breach = Assert.Single(result.State!.Incidents.Breaches);
         Assert.Equal(requestId, breach.RequestId);
-        Assert.Equal(
-            CommitmentBreachKind.ExogenousServiceQuality,
-            breach.Kind);
         Assert.Equal(CommitmentVector.Zero, breach.Deltas.DecisionInduced);
         Assert.Equal(breach.BudgetBefore, breach.AttemptedBudgetAfter);
         Assert.Equal(3, breach.ExogenousProjection.PickupEta.Milliseconds);
