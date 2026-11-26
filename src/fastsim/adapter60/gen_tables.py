@@ -46,25 +46,6 @@ for arm in ['SHHZ71', 'SHRC71']:
     rr = [r for r in rows if r['config'] == 'G2' and r['arm'] == arm]
     G = (sum(r['G_n'] for r in rr), sum(r['G_rev60'] for r in rr)); A = (sum(r['A_n'] for r in rr), sum(r['A_rev60'] for r in rr))
     print(f'% nhóm Shadow {arm}: ngân sách 0 {G} -> {1000 * G[1] / G[0]:.2f}/1000; có ngân sách {A} -> {1000 * A[1] / A[0]:.2f}/1000')
-B = g.get('B', {})
-if B:
-    print('% Bảng 5.7')
-    rows7 = [('Không dự báo', 'N'), ('Hiệu chỉnh đều', 'PAD'), ('Dự báo theo giờ, chuẩn hóa cả tháng', 'CL'), ('Dự báo theo giờ, tham chiếu tháng trước', 'CLc')]
-    for nm, k in rows7:
-        if k in B:
-            v = B[k]
-            print(f"{nm} & {f(v['late'])} & {f(v['late_w08'])} & {f(v['late_w17'])} & {f(v['early_w08'])} & {f(v['early_w17'])} & {f(v['served'])}\\\\")
-    for k in ['N', 'PAD', 'CL', 'CLc']:
-        if k in B:
-            print(f"% thời lượng báo đầu {k}: sáng {B[k]['lead_w08']:.1f} s, chiều {B[k]['lead_w17']:.1f} s")
-    for k in ['CL-N', 'CLc-N', 'CLc-CL', 'CL-PAD', 'PAD-N']:
-        if k in B:
-            print('%', k, {kk: ci(v) for kk, v in B[k].items()})
-    if 'PAD' in B and 'N' in B and 'CL' in B:
-        share = (B['N']['late'] - B['PAD']['late']) / (B['N']['late'] - B['CL']['late'])
-        share8 = (B['N']['late_w08'] - B['PAD']['late_w08']) / (B['N']['late_w08'] - B['CL']['late_w08'])
-        print(f'% phần giảm muộn của hiệu chỉnh đều so với dự báo: cả ngày {100 * share:.1f}%, sáng {100 * share8:.1f}%;',
-              'hội tụ' if B['PAD']['converged'] else 'CHƯA hội tụ', B['PAD']['flat'], B['PAD']['gap_s'])
 print('% Ngân sách (10 ngày):')
 for a, v in sorted(g['C1'].items(), key=lambda kv: int(kv[0])):
     print(f"%  {a}%: giảm đổi qua lại {v['rev_red_pct']:.1f}%, mất phục vụ {v['served_loss_pct']:.2f}%")

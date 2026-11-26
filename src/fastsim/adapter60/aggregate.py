@@ -90,48 +90,6 @@ if A:
             res[f'A_shadow_groups_{arm}'] = tot
             print(arm, 'nhóm Shadow:', tot)
 
-# ---------------- B: dự báo 30 ngày
-B = load('fc30')
-if B:
-    res['B_rows'] = len(B)
-    fc = {}
-    for mode in ['N', 'CL', 'CLc']:
-        d = per_day(B, 'G2', 'SHRC71', mode)
-        assert len(d) == 30, (mode, len(d))
-        e = {'served': avg(d, 'served'), 'late': avg(d, 'late')}
-        for w in ['w08', 'w17']:
-            dw = per_day(B, 'G2', 'SHRC71', mode, win=w)
-            e['late_' + w] = avg(dw, 'late'); e['early_' + w] = avg(dw, 'early'); e['lead_' + w] = avg(dw, 'lead')
-        fc[mode] = e
-        print('dự báo', mode, {k: round(v, 2) for k, v in e.items()})
-    for a, b in [('CL', 'N'), ('CLc', 'N'), ('CLc', 'CL')]:
-        da, db = per_day(B, 'G2', 'SHRC71', a), per_day(B, 'G2', 'SHRC71', b)
-        fc[f'{a}-{b}'] = {k: paired(da, db, k) for k in ['served', 'late']}
-        for w in ['w08', 'w17']:
-            fc[f'{a}-{b}'][f'late_{w}'] = paired(per_day(B, 'G2', 'SHRC71', a, win=w), per_day(B, 'G2', 'SHRC71', b, win=w), 'late')
-        print(f'{a}-{b}', {k: (round(v['mean'], 2), round(v['lo'], 2), round(v['hi'], 2)) for k, v in fc[f'{a}-{b}'].items()})
-    res['B'] = fc
-    cal = Path(__file__).resolve().parent / 'calib-result.json'
-    if cal.exists():
-        cr = json.loads(cal.read_text(encoding='utf-8'))
-        P = load(cr['final'])
-        d = per_day(P, 'G2', 'SHRC71', 'PAD')
-        assert len(d) == 30
-        e = {'served': avg(d, 'served'), 'late': avg(d, 'late'), 'converged': cr['converged'], 'run': cr['final'],
-             'flat': cr['iterations'][-1]['flat'], 'gap_s': cr['iterations'][-1]['gap']}
-        for w in ['w08', 'w17']:
-            dw = per_day(P, 'G2', 'SHRC71', 'PAD', win=w)
-            e['late_' + w] = avg(dw, 'late'); e['early_' + w] = avg(dw, 'early'); e['lead_' + w] = avg(dw, 'lead')
-        fc['PAD'] = e
-        both = B + P
-        for a, b in [('CL', 'PAD'), ('PAD', 'N')]:
-            da, db = per_day(both, 'G2', 'SHRC71', a), per_day(both, 'G2', 'SHRC71', b)
-            fc[f'{a}-{b}'] = {k: paired(da, db, k) for k in ['served', 'late']}
-            for w in ['w08', 'w17']:
-                fc[f'{a}-{b}'][f'late_{w}'] = paired(per_day(both, 'G2', 'SHRC71', a, win=w), per_day(both, 'G2', 'SHRC71', b, win=w), 'late')
-            print(f'{a}-{b}', {k: (round(v['mean'], 2), round(v['lo'], 2), round(v['hi'], 2)) for k, v in fc[f'{a}-{b}'].items()})
-        print('dự báo PAD', {k: (round(v, 2) if isinstance(v, float) else v) for k, v in e.items()})
-
 # ---------------- D: phạt đổi xe 300 s, 60 ngày, r0
 PEN = load('pen300')
 if PEN and A:
