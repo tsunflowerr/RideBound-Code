@@ -44,7 +44,6 @@ public sealed class EventReductionCoordinatorDecisionTests
 
         Assert.True(staged.IsSuccess, staged.Witness?.Message);
         Assert.Same(initial, coordinator.CommittedState);
-        Assert.Same(proposedDecision, coordinator.PendingState);
         var acknowledged = coordinator.ApplyDecisionAcknowledgement(1);
         Assert.True(acknowledged.IsSuccess, acknowledged.Witness?.Message);
         Assert.Same(proposedDecision, coordinator.CommittedState);
@@ -83,6 +82,5 @@ public sealed class EventReductionCoordinatorDecisionTests
         Assert.Equal(
             EventReductionFailureCodes.DecisionStateMismatch,
             staged.Witness?.Code);
-        Assert.Same(reduced, coordinator.PendingState);
     }
 }

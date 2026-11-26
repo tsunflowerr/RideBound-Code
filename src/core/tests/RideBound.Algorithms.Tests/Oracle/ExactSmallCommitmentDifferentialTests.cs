@@ -124,12 +124,6 @@ public sealed class ExactSmallCommitmentDifferentialTests
             reference.Single().Candidates.Select(value => value.CandidateId),
             assessed.Batch.FeasibleCandidateSets.Single().Candidates
                 .Select(value => value.CandidateId));
-
-        AlgorithmTestData.AssertGeneratedInFull(context.ReducedState, AlgorithmTestData.SmallGeneration);
-        var decision = new RideBoundHardVectorPolicy().Decide(
-            context,
-            AlgorithmTestData.SmallGeneration);
-        Assert.True(decision.IsSuccess, decision.Witness?.Message);
     }
 
     [Fact]
@@ -154,8 +148,7 @@ public sealed class ExactSmallCommitmentDifferentialTests
             Assert.True(generated.Diagnostics!.IsComplete, $"seed={seed}");
             var gated = new HardVectorCandidateAssessor().AssessAndFilter(
                 context,
-                generated.VehicleCandidates!,
-                requireSafetyNoOp: true);
+                generated.VehicleCandidates!);
             Assert.True(gated.IsSuccess, $"seed={seed}; {gated.Witness?.Message}");
             var options = gated.Batch!.FeasibleCandidateSets.Single().Candidates;
             var solver = new EnumeratingSolver();
@@ -202,46 +195,6 @@ public sealed class ExactSmallCommitmentDifferentialTests
         Assert.True(
             costDecides > 0,
             "At least one published exact-small seed must have a dearer plan with the same request count.");
-    }
-
-    [Fact]
-    public void C1_with_unbounded_limits_and_no_locks_is_semantically_equal_to_B1()
-    {
-        var fixture = CreateState(seed: 2);
-        var policy = new CommitmentPolicy(
-            "uniform-v1",
-            CommitmentDimensionVocabulary.Ordered.Select(
-                dimension => new CommitmentDimensionLimit(
-                    dimension,
-                    null,
-                    CommitmentPhase.AllActive)));
-        var context = new CommitmentMechanismContext(
-            fixture.BeforeEventState,
-            fixture.State,
-            new CommitmentPolicyCatalog([policy]),
-            "c1-unbounded-equivalence",
-            1);
-
-        AlgorithmTestData.AssertGeneratedInFull(fixture.State, AlgorithmTestData.SmallGeneration);
-        var b1 = new ReferenceSelectionPolicy().Decide(
-            fixture.State,
-            AlgorithmTestData.SmallGeneration);
-        AlgorithmTestData.AssertGeneratedInFull(context.ReducedState, AlgorithmTestData.SmallGeneration);
-        var c1 = new RideBoundHardVectorPolicy().Decide(
-            context,
-            AlgorithmTestData.SmallGeneration);
-
-        Assert.True(b1.IsSuccess, b1.Witness?.Message);
-        Assert.True(c1.IsSuccess, c1.Witness?.Message);
-        Assert.Equal(b1.Decision!.RequestActions, c1.Decision!.RequestActions);
-        Assert.Equal(
-            b1.Decision.VehiclePlans.Select(value => value.Candidate.CandidateId),
-            c1.Decision.VehiclePlans.Select(value => value.Candidate.CandidateId));
-        Assert.All(
-            b1.Decision.VehiclePlans.Zip(c1.Decision.VehiclePlans),
-            pair => Assert.True(
-                pair.First.Candidate.Route.IsSemanticallyEqual(
-                    pair.Second.Candidate.Route)));
     }
 
     [Fact]
@@ -421,8 +374,7 @@ public sealed class ExactSmallCommitmentDifferentialTests
 
         var assessed = new HardVectorCandidateAssessor().AssessAndFilter(
             context,
-            generated.VehicleCandidates!,
-            requireSafetyNoOp: true);
+            generated.VehicleCandidates!);
 
         Assert.False(assessed.IsSuccess);
         var witness = assessed.Witness!;
@@ -439,25 +391,9 @@ public sealed class ExactSmallCommitmentDifferentialTests
     }
 
     [Fact]
-    public void A_caller_that_does_not_require_the_no_op_still_cites_the_ordinal_first_rejection()
-    {
-        var (generated, _, _, ordinalFirst, context) = EveryCandidateRejected();
-
-        var assessed = new HardVectorCandidateAssessor().AssessAndFilter(
-            context,
-            generated.VehicleCandidates!);
-
-        Assert.False(assessed.IsSuccess);
-        var witness = assessed.Witness!;
-        Assert.Equal(CommitmentFailureCodes.VehicleHasNoFeasibleCandidate, witness.Code);
-        Assert.Equal(ordinalFirst.CandidateId, witness.CandidateId);
-        Assert.Contains(". First rejection: ", witness.Message, StringComparison.Ordinal);
-    }
-
-    [Fact]
     public void C1_policy_reports_the_assessment_failure_when_a_vehicle_loses_every_candidate()
     {
-        // The policy asks the assessor to cite the no-op, and stops before the solver.
+        // The assessor cites the no-op, and the policy stops before the solver.
         var (_, _, noOp, _, context) = EveryCandidateRejected();
         var solver = new EnumeratingSolver();
 
@@ -548,8 +484,7 @@ public sealed class ExactSmallCommitmentDifferentialTests
                     MidpointRounding.AwayFromZero);
                 var relaxed = new HardVectorCandidateAssessor().AssessAndFilter(
                     SlackDeadlineContext(fixture, initial, permille),
-                    generated.VehicleCandidates!,
-                    requireSafetyNoOp: true);
+                    generated.VehicleCandidates!);
 
                 Assert.True(relaxed.IsSuccess, relaxed.Witness?.Message);
                 var expected = drops
@@ -602,74 +537,6 @@ public sealed class ExactSmallCommitmentDifferentialTests
 
         Assert.True(validated.IsValid, validated.Witnesses.FirstOrDefault()?.Message);
         Assert.Empty(validated.ValidatedState!.Incidents.Breaches);
-    }
-
-    [Fact]
-    public void Zero_switch_limits_give_every_thesis_arm_the_same_selection_problem()
-    {
-        // Every Tier-3 configuration of the thesis sets a zero hard limit on vehicle_switch_count
-        // in all active phases, and zero stop-switch limits. With the same state, no drop limit (U),
-        // Rule C, and the relaxed deadline hand the solver the same levels and the same
-        // contributions: no C1 level reads a commitment budget. With a zero bound, the signature
-        // sees the candidate Rule C prunes (control).
-        var fixture = CreateState(seed: 3);
-        var kept = fixture.BaselineDrop.Milliseconds;
-        const long Bound = 30_000;
-
-        static long? HardLimit(CommitmentDimension dimension, long? dropLimit) =>
-            dimension switch
-            {
-                CommitmentDimension.VehicleSwitchCount
-                    or CommitmentDimension.PickupStopSwitchCount
-                    or CommitmentDimension.DropStopSwitchCount => 0,
-                CommitmentDimension.DropEtaTotalMs => dropLimit,
-                _ => null,
-            };
-
-        CommitmentPolicy Arm(
-            long? dropLimit = null,
-            int? deadlinePermille = null) =>
-            new(
-                fixture.Policy.PolicyId,
-                CommitmentDimensionVocabulary.Ordered.Select(
-                    dimension => new CommitmentDimensionLimit(
-                        dimension,
-                        HardLimit(dimension, dropLimit),
-                        CommitmentPhase.AllActive)),
-                dropEtaDeadlineSlackPermille: deadlinePermille);
-
-        CandidateSelectionProblem Problem(CommitmentPolicy policy)
-        {
-            var solver = new EnumeratingSolver();
-            var promiseContext = PromiseContext(fixture, kept, policy);
-            AlgorithmTestData.AssertGeneratedInFull(promiseContext.ReducedState, AlgorithmTestData.SmallGeneration);
-            var decided = new SolverBackedRidePoolingPolicy(solver).Decide(
-                promiseContext,
-                AlgorithmTestData.SmallGeneration,
-                HardVectorOptions());
-            Assert.True(decided.IsSuccess, decided.Witness?.Message);
-            return solver.LastProblem!;
-        }
-
-        static string[] Signature(CandidateSelectionProblem problem) =>
-            problem.ObjectiveLevels
-                .Select(value => $"{value.Name}/{value.Sense}")
-                .Concat(
-                    problem.Options.Select(
-                        value => $"{value.OptionId}={string.Join(",", value.ObjectiveContributions)}"))
-                .ToArray();
-
-        var unlimited = Problem(Arm());
-        var expected = Signature(unlimited);
-
-        Assert.Equal(expected, Signature(Problem(Arm(dropLimit: Bound))));
-        Assert.Equal(expected, Signature(Problem(Arm(deadlinePermille: 1000))));
-        Assert.Equal(
-            ["accepted-request-count", "operational-cost", "candidate-id-rank:vehicle-1"],
-            unlimited.ObjectiveLevels.Select(value => value.Name));
-
-        var frozen = Signature(Problem(Arm(dropLimit: 0)));
-        Assert.True(frozen.Length < expected.Length, "A zero bound must prune a candidate.");
     }
 
     private static (

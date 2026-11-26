@@ -9,23 +9,16 @@ namespace RideBound.Contracts.Tests.Protocol;
 public sealed class GoldenFixtureTests
 {
     [Fact]
-    public void Required_inventory_contains_exactly_nine_named_fixtures()
+    public void Required_inventory_contains_exactly_two_named_fixtures()
     {
         var root = FixtureLoader.GetFixturePath("golden/required");
         var directories = Directory.GetDirectories(root)
             .Order(StringComparer.Ordinal)
             .ToArray();
 
-        Assert.Equal(9, directories.Length);
+        Assert.Equal(2, directories.Length);
         Assert.Equal(
             [
-                "01-one-vehicle-one-request-accept",
-                "02-capacity-reject",
-                "03-time-window-reject",
-                "04-eta-revision-within-budget",
-                "05-budget-reject",
-                "06-vehicle-switch-quota",
-                "07-traffic-only-eta-shift",
                 "09-duplicate-event-idempotent",
                 "10-checkpoint-restore-equivalence",
             ],
@@ -44,7 +37,7 @@ public sealed class GoldenFixtureTests
             .ToArray();
         var supportLevels = new List<string>();
 
-        Assert.Equal(9, metadataFiles.Length);
+        Assert.Equal(2, metadataFiles.Length);
 
         foreach (var metadataFile in metadataFiles)
         {
@@ -73,7 +66,7 @@ public sealed class GoldenFixtureTests
                 rootElement.GetProperty("fixtureId").GetString());
         }
 
-        Assert.Equal(8, supportLevels.Count(value => value == "future-behavior"));
+        Assert.Equal(1, supportLevels.Count(value => value == "future-behavior"));
         Assert.Single(
             supportLevels,
             value => value == "runner-executable");
@@ -89,7 +82,7 @@ public sealed class GoldenFixtureTests
             "input.json",
             SearchOption.AllDirectories);
 
-        Assert.Equal(9, inputs.Length);
+        Assert.Equal(2, inputs.Length);
 
         foreach (var input in inputs)
         {

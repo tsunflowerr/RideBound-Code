@@ -22,9 +22,6 @@ public sealed class EventReducerTests
         Assert.Empty(coordinator.CommittedState.Run.Requests);
         Assert.Empty(coordinator.CommittedState.Run.Vehicles);
         Assert.Equal(0, coordinator.CommittedState.Run.AppliedEpoch);
-        Assert.Single(coordinator.PendingState!.Run.Requests);
-        Assert.Single(coordinator.PendingState.Run.Vehicles);
-        Assert.NotNull(coordinator.PendingState.TravelTimes);
 
         var wrongAck = coordinator.ApplyDecisionAcknowledgement(2);
 
@@ -39,7 +36,6 @@ public sealed class EventReducerTests
         Assert.True(applied.IsSuccess);
         Assert.Equal(1, coordinator.CommittedState.Run.AppliedEpoch);
         Assert.Equal(4, coordinator.CommittedState.NextEventSequence);
-        Assert.Null(coordinator.PendingState);
     }
 
     [Fact]

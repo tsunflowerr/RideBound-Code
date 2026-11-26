@@ -669,17 +669,4 @@ public static class DecisionAppliedPayloadCodec
         return ProtocolPayloadDecodeResult<DecisionAppliedPayload>.Success(
             new DecisionAppliedPayload(hash!));
     }
-
-    public static byte[] Encode(DecisionAppliedPayload payload)
-    {
-        ArgumentNullException.ThrowIfNull(payload);
-
-        return ProtocolPayloadReader.Write(
-            writer =>
-            {
-                writer.WriteStartObject();
-                writer.WriteString("decisionHash", payload.DecisionHash.Value);
-                writer.WriteEndObject();
-            });
-    }
 }

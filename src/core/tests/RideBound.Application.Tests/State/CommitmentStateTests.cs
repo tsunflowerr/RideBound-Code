@@ -47,12 +47,10 @@ public sealed class CommitmentStateTests
 
         Assert.True(staged.IsSuccess, staged.Witness?.Message);
         Assert.Empty(coordinator.CommittedState.Commitments.Histories);
-        Assert.Single(coordinator.PendingState!.Commitments.Histories);
 
         var applied = coordinator.ApplyDecisionAcknowledgement(1);
 
         Assert.True(applied.IsSuccess, applied.Witness?.Message);
         Assert.Single(coordinator.CommittedState.Commitments.Histories);
-        Assert.Null(coordinator.PendingState);
     }
 }

@@ -99,7 +99,7 @@ public sealed class WaitingRiderRelocationPolicyTests
                 ? set with { Candidates = set.Candidates.Where(value => value.RelocationRole is null).ToArray() }
                 : set)
             .ToArray();
-        var result = new HardVectorCandidateAssessor().AssessAndFilter(context, sets, requireSafetyNoOp: true);
+        var result = new HardVectorCandidateAssessor().AssessAndFilter(context, sets);
         Assert.True(result.IsSuccess, result.Witness?.Message);
         return result;
     }

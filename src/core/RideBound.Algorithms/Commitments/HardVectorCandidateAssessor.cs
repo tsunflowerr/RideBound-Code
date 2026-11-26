@@ -49,16 +49,9 @@ public sealed class HardVectorCandidateAssessor
         _validator = validator ?? new CommitmentDecisionValidator();
     }
 
-    /// <param name="requireSafetyNoOp">
-    /// Set by a caller whose selection model needs exactly one no-op per vehicle.
-    /// Then a vehicle that loses its no-op fails here with the no-op's own
-    /// rejection, and an emptied vehicle reports the no-op's rejection. Callers
-    /// that do not need the no-op keep the behaviour they had before.
-    /// </param>
     public HardVectorCandidateAssessmentResult AssessAndFilter(
         CommitmentMechanismContext context,
-        IReadOnlyList<VehicleCandidateSet> rawCandidateSets,
-        bool requireSafetyNoOp = false)
+        IReadOnlyList<VehicleCandidateSet> rawCandidateSets)
     {
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(rawCandidateSets);
@@ -137,9 +130,7 @@ public sealed class HardVectorCandidateAssessor
             // The safety no-op is the one candidate whose rejection says why a vehicle
             // lost its fallback. Identify it only when the set is well formed (exactly
             // one no-op); otherwise the selection model reports the malformed set.
-            var noOps = requireSafetyNoOp
-                ? set.Candidates.Where(value => value.IsNoOp).ToArray()
-                : Array.Empty<InsertionCandidate>();
+            var noOps = set.Candidates.Where(value => value.IsNoOp).ToArray();
             var noOpPrune = noOps.Length == 1
                 ? hardPruned.FirstOrDefault(
                     value => value.CandidateId == noOps[0].CandidateId)

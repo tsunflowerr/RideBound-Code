@@ -15,8 +15,6 @@ public sealed class EventReductionCoordinator
 
     public OnlineState CommittedState { get; private set; }
 
-    public OnlineState? PendingState => _pendingState;
-
     public EventReductionResult Propose(InternalEventBatch batch)
     {
         if (_pendingState is not null)
