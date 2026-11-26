@@ -2,6 +2,82 @@
 
 (Máy công ty ghi vào đây: phân tích, quyết định, và các `## YÊU CẦU <số>` gửi máy nhà.)
 
+## YÊU CẦU 3 — 2026-11-27 06:05: kiểm các gói [10.08]–[10.13]
+
+Commit trên nhánh:
+
+| Commit | Gỡ gì | Mục |
+|---|---|---|
+| `945e581` [10.08] | Nhánh chết nội bộ C#: điểm Shadow không ai đọc, đọc θ ±Infinity, lần kiểm lại trùng trong `Finish`, chốt một loại chính sách, các thành viên không ai đọc (khóa `MandatoryServiceLowerBound` luôn 0, ...), đường seed từ tệp, mã lý do sửa không dùng | C09, C12, C13 (một phần), C18, N01 |
+| `a178a55` [10.09] | Chế độ băm `full-v1` (360 lượt dùng `light-v1`) và golden của nó. Vắng khóa `auditHash` nay là light; `full-v1` bị từ chối | C19 |
+| `18f7afe` [10.10] | Mã chỉ test dùng: bộ mã hóa `decisionApplied`, `PendingState`, golden giao thức 01–07, bản chép chính sách và tham số `requireSafetyNoOp` (sản xuất luôn truyền true) | C25 (một phần), C26, G1-04, G2-01, G2-04, G2-05 |
+| `67658ea` [10.11] | Cấu hình final/commitment và mẫu INS không ai đọc, `run_all/run_eta/run_pp.sh`, `--g2pen`/`--nveh` của driver eta và pp, danh sách ô smoke/via-full, `days_F14.csv`, 8 dòng expected không ai tra | C27, C40, C41 |
+| `2546384` [10.12] | JS chết: `shcore.runTask` và những gì chỉ nó dùng, hàm/export thừa của shlib, nyclib, netfull, wf15emu; đường ghi golden của `export_network.js manhattan` | C36, C42 |
+| `3e07752` [10.13] | Sửa sha trong README fixture `Final/` (cũ từ [10.03]) | — |
+
+Không gói nào đổi giao thức hay quyết định. [10.10] có xóa thành viên trong DLL sản xuất (Contracts, Application,
+Algorithms, Runner), nên phép kiểm là replay từng byte, không phải sha DLL.
+
+Nếu YÊU CẦU 1 chưa chạy thì chạy trước: cần 4 transcript của nó làm mốc byte B1. Mọi bước dưới đây chạy ở **đầu nhánh**
+(commit chứa yêu cầu này), trừ khi ghi khác.
+
+**C# ([10.08]–[10.10])**
+1. `dotnet test src/core/RideBound.slnx -c Release`: kỳ vọng 0 hỏng. Ghi tổng số test để sửa `README.md:132` (còn ghi
+   "884 test"). Nếu hỏng, chạy lại ở [10.08], [10.09], [10.10] để biết gói nào. Các lớp test đáng để ý:
+   `ExactSmallCommitmentDifferentialTests`, `GoldenFixtureTests`, `Wp4RunnerIntegrationTests` (seed solver nay lấy từ
+   manifest, 20260729), `FinalRuns`/`FinalConfigGoldenTests` (6 lượt light-v1 + early-boarding), `RunnerSessionTests`,
+   `CommitmentRunnerSessionTests`, `ProtocolHashTests`.
+2. Build Runner, chạy `replay.py runner` trên 4 transcript B1: mọi khung Runner giống từng byte, kể cả `decisionHash`,
+   `stateAfterHash` và chuỗi lý do từ chối. Có khác: làm lại ở [10.08], [10.09], [10.10]; gửi khung khác đầu tiên (số
+   thứ tự, loại khung, khoảng 300 ký tự quanh chỗ khác).
+3. Nếu còn 8 transcript ô cổng của đợt 360 lượt: `replay.py runner` cũng phải giống từng byte.
+4. Mọi `job-configs-v2/wp4/*/*.json` có `"auditHash": "light-v1"`.
+
+**Dữ liệu và JS ([10.11]–[10.12])**
+
+5. `bash src/fastsim/sample/kiem_nhanh.sh <thư mục mới>`: `36 rows equal, 0 differ, 0 without an expected row`.
+6. `sha256sum -c` cho `src/datagen/expected/network.sha256`, `wf14-60day-cells.sha256`, `wf17-f16-cells.sha256`: OK.
+7. `make_job_configs.py` (README §2.2 bước 4): `commitment/SHRC71.json` có sha `40244dbf…`, `SHHZ71.json` có
+   `f01cf219…`, tức bằng byte `src/core/tests/RideBound.Runner.Tests/Final/Fixtures/commitment/`. Hai sha này khác
+   `ab697fe` (`d536e48d…`/`9ca0f404…`) từ [10.03], không do các gói mới.
+8. Dòng lệnh `manhattan` đã đổi: `node src/datagen/export_network.js manhattan <thư mục mới> $RB_DATA`. Kỳ vọng
+   `D.u16` = `4ae39087…` (bằng `ff_apsp_u16.bin` trong `network.sha256`), `network.json` = `52e30836…` (máy công ty
+   đo bằng lệnh cũ ở `ab697fe` và lệnh mới đều ra số này). Nếu còn cấu hình wp4 của đợt 360 lượt thì so thêm với
+   `distancesSha256`/`graphSha256` trong đó.
+   Hướng dẫn nào còn dạng cũ (`manhattan out.json 1 1 1 <net> <root>`) thì đổi sang dạng mới.
+9. `node src/datagen/export_network.js toy <out.json> 24 10 20261103`: phần từ `"cells"` trở đi giống
+   `src/core/tests/RideBound.Algorithms.Tests/Shareability/shareability-golden-toy.json`.
+10. `emulate_fullsys.js adapter`, `emulate_fullsys_f16.js adapter`, `emulate_forecast_gate.js`: các tệp predictions
+    `.tsv`, `shadow-inputs/*.json`, `forecast-gate.tsv` và `-profiles.json` có sha như `ab697fe`. Bỏ qua `*-counts.tsv`
+    (có cột ms).
+11. Không bắt buộc: chạy lại họ main60 và eta30, so bằng `sync-rerun/compare_sig.js` (3600/3600, 1080/1080).
+
+**Python:** chưa gói nào đụng Python. Chạy unittest như README (5 module, và `discover` có FleetPy) để có mốc trước các
+gói Python sắp tới. Không cần cập nhật hash ghim nào.
+
+**Không bắt buộc:** một lượt đầy đủ C# + FleetPy, ô w08, `FS-G2-SHHZ71-N` (README §2.2), rồi `riders.py` so với mốc
+`ab697fe`: giống từng byte.
+
+**Cần trả về:** số test C# qua, hỏng, bỏ qua (kèm tên test hỏng); replay cho từng transcript; dòng cuối
+`kiem_nhanh.sh`; kết quả từng phép kiểm sha (5–10); thời gian chạy.
+
+**Đánh số commit.** Máy nhà từng có một commit [10.07] trùng số với commit của máy công ty. Từ đây xin máy nhà thêm hậu
+tố `n` vào số commit (ví dụ `[10.20n]`); máy công ty giữ số trơn.
+
+**Đổi kế hoạch so với [10.07]:**
+- **C07 không làm.** Lợi ích nhỏ. Gỡ phần kiểm pha và `HardLimit` cố định sẽ làm khóa `limits` trong tệp cấu hình bị bỏ
+  qua mà không báo, và đụng tới phần bảo vệ hạn 0 mà C02 giữ.
+- **C14 (nhánh waypoint) chuyển sang giao thức đợt 2**, cả C# lẫn Python. `"waypoint"` vẫn là loại điểm dừng hợp lệ
+  trên wire, trong schema và ở `EventReducer`. Khoảng 28 test (có fixture `wp2/valid-bootstrap-event-batch.json`) dùng
+  waypoint làm điểm dừng có thời gian chờ.
+- Phần còn lại của C13 giữ: mặc định G2, `WasCacheHit`, `SolverBackedFleetSelection.Problem`, hai hằng mã lỗi.
+- C25: giữ `RunnerSession.PreviousDecisionHash` và `CommittedOnlineState`, vì test của hành vi còn giữ đọc chúng.
+- **Gói Python sắp tới:** [10.15] C39 (khối phân tích fc30 cũ), [10.16] C29 (bộ kiểm WP7 phía adapter, giữ
+  `capability-matrix.json`), [10.17] C30 + C33 (trường evidence không ai đọc, bia mộ adapter; không đụng
+  `RB_PREFER_EVIDENCE`). Sẽ gửi YÊU CẦU 4 sau.
+- **C31 (bỏ đường đọc transcript của `riders.py`) để cuối cùng**, sau khi máy nhà xác nhận các gói khác bằng
+  `riders.py` hiện tại.
+
 ## YÊU CẦU 2 — 2026-11-27 02:25: đếm trên dữ liệu đã lưu (trước các gói [10.08]+)
 
 Không cần build hay chạy lượt mới. Có thể làm song song với YÊU CẦU 1.
