@@ -118,7 +118,7 @@ class CanonicalUnitTests(unittest.TestCase):
         commitment = repository / "src" / "core" / "configs" / "test" / "wp3-boundary-test-v1.json"
         wp4 = repository / "src" / "core" / "configs" / "test" / "wp7-fleetpy-rolling-cost-v1.json"
         self.assertEqual(
-            "d1be06163dd38de567e4489100acd05b74c41cc454300f7b7286b459355e928f",
+            "4dc1fc22218ead45e71553bde7b84c293ee1e2fe3de7dd79134ed106edf3eb3e",
             canonical_json_file_hash(commitment),
         )
         binding = wp4_policy_binding_hash(commitment, wp4)
