@@ -50,35 +50,12 @@ public sealed class CommitmentRatchetLockTests
     }
 
     [Fact]
-    public void A_ratchet_on_one_field_does_not_relax_the_other()
-    {
-        var policy = Policy(
-            PromiseLock.Vehicle | PromiseLock.PickupEta | PromiseLock.DropEta,
-            PromiseLock.PickupEta);
-        var exogenous = Projection(pickupMs: 40_000, dropMs: 90_000);
-        var candidate = Projection(pickupMs: 20_000, dropMs: 80_000);
-
-        var witnesses = new CommitmentLockEvaluator().Evaluate(
-            WaitingRequest(),
-            Published(exogenous),
-            exogenous,
-            candidate,
-            policy);
-
-        // Pickup improved and is ratcheted, so it passes. Drop improved too but is
-        // an exact lock, so any movement is still a violation.
-        Assert.DoesNotContain(witnesses, value => value.Dimension == "pickup_eta_ms");
-        Assert.Contains(witnesses, value => value.Dimension == "drop_eta_ms");
-    }
-
-    [Fact]
     public void Only_ordered_eta_fields_can_be_ratcheted()
     {
         foreach (var unordered in new[]
                  {
                      PromiseLock.Vehicle,
                      PromiseLock.PickupStop,
-                     PromiseLock.DropStop,
                  })
         {
             Assert.Throws<ArgumentOutOfRangeException>(

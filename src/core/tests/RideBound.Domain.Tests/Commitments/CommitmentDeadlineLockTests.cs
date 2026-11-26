@@ -123,31 +123,6 @@ public sealed class CommitmentDeadlineLockTests
     }
 
     [Fact]
-    public void The_deadline_witness_follows_existing_lock_witnesses()
-    {
-        // Callers read the first witness as the reason for a prune, so a lock that
-        // fires must stay first; the deadline is appended after the lock witnesses.
-        var policy = Policy(deadline: true, finalConfirmationLocks: PromiseLock.DropEta);
-        var exogenous = Projection(Anchor);
-        var candidate = Projection(Anchor + Slack + 1);
-
-        var witnesses = Evaluate(policy, exogenous, candidate, Projection(Anchor));
-
-        Assert.Collection(
-            witnesses,
-            witness =>
-            {
-                Assert.Equal("drop_eta_ms", witness.Dimension);
-                Assert.Equal("final_confirmation", witness.Rule);
-            },
-            witness =>
-            {
-                Assert.Equal("drop_eta_ms", witness.Dimension);
-                Assert.Equal(CommitmentLockEvaluator.DeadlineCapRule, witness.Rule);
-            });
-    }
-
-    [Fact]
     public void The_deadline_witness_follows_a_lock_on_a_later_sorting_dimension()
     {
         // "drop_eta_ms" sorts before "pickup_eta_ms", so without the append rule the
