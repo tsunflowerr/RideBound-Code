@@ -112,8 +112,7 @@ internal static class CommitmentValidatorFixtures
                 dimension => new CommitmentDimensionLimit(
                     dimension,
                     hardLimit,
-                    CommitmentPhase.AllActive)),
-            new MaterialRevisionRule(1, null));
+                    CommitmentPhase.AllActive)));
 
         return new Fixture(
             new CommitmentValidationContext(
@@ -121,24 +120,9 @@ internal static class CommitmentValidatorFixtures
                 reduced,
                 candidate,
                 new CommitmentPolicyCatalog([policy]),
-                EmptyDistances.Instance,
                 "test-scope",
                 4));
     }
 
     internal sealed record Fixture(CommitmentValidationContext Context);
-
-    internal sealed class EmptyDistances : IStopDistanceLookup
-    {
-        public static EmptyDistances Instance { get; } = new();
-
-        public bool TryGetDistanceMillimeters(
-            NodeId fromNodeId,
-            NodeId toNodeId,
-            out long distanceMillimeters)
-        {
-            distanceMillimeters = 0;
-            return false;
-        }
-    }
 }

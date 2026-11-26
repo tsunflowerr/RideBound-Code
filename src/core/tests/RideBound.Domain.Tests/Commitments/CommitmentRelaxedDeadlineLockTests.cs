@@ -34,7 +34,6 @@ public sealed class CommitmentRelaxedDeadlineLockTests
                 dimension,
                 null,
                 CommitmentPhase.AllActive)),
-        new MaterialRevisionRule(1, null),
         dropEtaDeadlineSlackPermille: 1000);
 
     [Theory]

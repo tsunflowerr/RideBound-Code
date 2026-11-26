@@ -79,7 +79,6 @@ public sealed class CommitmentRatchetLockTests
                     dimension,
                     null,
                     CommitmentPhase.AllActive)),
-            new MaterialRevisionRule(1, null),
             finalConfirmationLocks: finalConfirmationLocks,
             ratchetLocks: ratchetLocks);
 

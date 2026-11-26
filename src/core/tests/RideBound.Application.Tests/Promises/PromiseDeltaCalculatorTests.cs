@@ -2,7 +2,6 @@ using RideBound.Application.Promises;
 using RideBound.Domain.Commitments;
 using RideBound.Domain.Common;
 using RideBound.Domain.Routes;
-using RideBound.Domain.Validation;
 
 namespace RideBound.Application.Tests.Promises;
 
@@ -48,138 +47,25 @@ public sealed class PromiseDeltaCalculatorTests
             new SimTime(1_000),
             old);
 
-        var result = new PromiseDeltaCalculator().Calculate(
+        var deltas = new PromiseDeltaCalculator().Calculate(
             previous,
             exogenous,
-            proposed,
-            new MaterialRevisionRule(600, 60_000),
-            new Distances(
-                new Dictionary<(string, string), long>
-                {
-                    [("n-1", "n-3")] = 100,
-                    [("n-2", "n-4")] = 200,
-                }));
+            proposed);
 
-        Assert.True(result.IsSuccess, result.Failure?.Message);
-        Assert.Equal(1000, result.Deltas!.Exogenous.PickupEtaTotalMs);
-        Assert.Equal(500, result.Deltas.DecisionInduced.PickupEtaTotalMs);
-        Assert.Equal(500, result.Deltas.Visible.PickupEtaTotalMs);
-        Assert.Equal(1000, result.Deltas.Exogenous.DropEtaTotalMs);
-        Assert.Equal(500, result.Deltas.DecisionInduced.DropEtaTotalMs);
-        Assert.Equal(500, result.Deltas.Visible.DropEtaTotalMs);
+        Assert.Equal(1000, deltas.Exogenous.PickupEtaTotalMs);
+        Assert.Equal(500, deltas.DecisionInduced.PickupEtaTotalMs);
+        Assert.Equal(500, deltas.Visible.PickupEtaTotalMs);
+        Assert.Equal(1000, deltas.Exogenous.DropEtaTotalMs);
+        Assert.Equal(500, deltas.DecisionInduced.DropEtaTotalMs);
+        Assert.Equal(500, deltas.Visible.DropEtaTotalMs);
         Assert.NotEqual(
-            result.Deltas.Exogenous.PickupEtaTotalMs
-                + result.Deltas.DecisionInduced.PickupEtaTotalMs,
-            result.Deltas.Visible.PickupEtaTotalMs);
-        Assert.Equal(1, result.Deltas.DecisionInduced.VehicleSwitchCount);
-        Assert.Equal(100, result.Deltas.DecisionInduced.PickupStopRelocationMm);
-        Assert.Equal(1, result.Deltas.DecisionInduced.PickupStopSwitchCount);
-        Assert.Equal(200, result.Deltas.DecisionInduced.DropStopRelocationMm);
-        Assert.Equal(1, result.Deltas.DecisionInduced.DropStopSwitchCount);
-        Assert.Equal(
-            1,
-            result.Deltas.DecisionInduced.IncumbentOrderInversionCount);
-        Assert.Equal(
-            1,
-            result.Deltas.DecisionInduced.PrePickupInsertedStopCount);
-        Assert.Equal(
-            1,
-            result.Deltas.Exogenous.MaterialEtaRevisionCount);
-        Assert.Equal(
-            0,
-            result.Deltas.DecisionInduced.MaterialEtaRevisionCount);
-    }
-
-    [Fact]
-    public void Changed_stop_without_distance_returns_exact_dimension_witness()
-    {
-        var old = Projection(
-            "v-1",
-            "pickup",
-            "n-1",
-            "drop",
-            "n-2",
-            10_000,
-            20_000,
-            SubjectOnlyOrder("pickup", "drop"));
-        var changed = Projection(
-            "v-1",
-            "pickup-new",
-            "n-missing",
-            "drop",
-            "n-2",
-            10_000,
-            20_000,
-            SubjectOnlyOrder("pickup-new", "drop"));
-        var previous = new PublishedPromise(
-            new PromiseVersion(1),
-            1,
-            new SimTime(1_000),
-            old);
-
-        var result = new PromiseDeltaCalculator().Calculate(
-            previous,
-            old,
-            changed,
-            new MaterialRevisionRule(1_000, null),
-            new Distances(
-                new Dictionary<(string From, string To), long>()));
-
-        Assert.False(result.IsSuccess);
-        Assert.Equal(
-            CommitmentFailureCodes.StopDistanceRequired,
-            result.Failure?.Code);
-        Assert.Equal("pickup_stop_relocation_mm", result.Failure?.Dimension);
-    }
-
-    [Fact]
-    public void Recreated_incumbent_stop_is_not_treated_as_the_same_order_token()
-    {
-        var before = Projection(
-            "v-1",
-            "pickup",
-            "n-1",
-            "drop",
-            "n-2",
-            10_000,
-            20_000,
-            [
-                Token("a-old", IncumbentA, RouteStopKind.Pickup),
-                Token("b", IncumbentB, RouteStopKind.Pickup),
-                Token("pickup", Subject, RouteStopKind.Pickup),
-                Token("drop", Subject, RouteStopKind.DropOff),
-            ]);
-        var after = Projection(
-            "v-1",
-            "pickup",
-            "n-1",
-            "drop",
-            "n-2",
-            10_000,
-            20_000,
-            [
-                Token("b", IncumbentB, RouteStopKind.Pickup),
-                Token("a-new", IncumbentA, RouteStopKind.Pickup),
-                Token("pickup", Subject, RouteStopKind.Pickup),
-                Token("drop", Subject, RouteStopKind.DropOff),
-            ]);
-        var previous = new PublishedPromise(
-            new PromiseVersion(1),
-            1,
-            new SimTime(1_000),
-            before);
-
-        var result = new PromiseDeltaCalculator().Calculate(
-            previous,
-            before,
-            after,
-            new MaterialRevisionRule(1_000, null),
-            new Distances(new Dictionary<(string, string), long>()));
-
-        Assert.True(result.IsSuccess, result.Failure?.Message);
-        Assert.Equal(
-            0,
-            result.Deltas!.DecisionInduced.IncumbentOrderInversionCount);
+            deltas.Exogenous.PickupEtaTotalMs
+                + deltas.DecisionInduced.PickupEtaTotalMs,
+            deltas.Visible.PickupEtaTotalMs);
+        Assert.Equal(1, deltas.DecisionInduced.VehicleSwitchCount);
+        Assert.Equal(1, deltas.DecisionInduced.PickupStopSwitchCount);
+        Assert.Equal(1, deltas.DecisionInduced.DropStopSwitchCount);
+        Assert.Equal(0, deltas.Exogenous.VehicleSwitchCount);
     }
 
     [Fact]
@@ -194,79 +80,39 @@ public sealed class PromiseDeltaCalculatorTests
             10_000,
             20_000,
             OldOrder());
-        var mutations = new[]
+        var mutations = new (CommitmentDimension Dimension, PromiseProjection Projection)[]
         {
-            Case(
-                CommitmentDimension.PickupEtaTotalMs,
-                Projection("v-1", "pickup", "n-1", "drop", "n-2",
-                    10_001, 20_000, OldOrder()),
-                threshold: 1_000),
-            Case(
-                CommitmentDimension.DropEtaTotalMs,
-                Projection("v-1", "pickup", "n-1", "drop", "n-2",
-                    10_000, 20_001, OldOrder()),
-                threshold: 1_000),
-            Case(
-                CommitmentDimension.MaterialEtaRevisionCount,
-                Projection("v-1", "pickup", "n-1", "drop", "n-2",
-                    10_100, 20_000, OldOrder()),
-                threshold: 100),
-            Case(
-                CommitmentDimension.VehicleSwitchCount,
-                Projection("v-2", "pickup", "n-1", "drop", "n-2",
-                    10_000, 20_000, OldOrder())),
-            Case(
-                CommitmentDimension.PickupStopRelocationMm,
-                Projection("v-1", "pickup", "n-3", "drop", "n-2",
-                    10_000, 20_000, OldOrder())),
-            Case(
-                CommitmentDimension.PickupStopSwitchCount,
-                Projection("v-1", "pickup-new", "n-1", "drop", "n-2",
-                    10_000, 20_000, SubjectPickup("pickup-new"))),
-            Case(
-                CommitmentDimension.DropStopRelocationMm,
-                Projection("v-1", "pickup", "n-1", "drop", "n-4",
-                    10_000, 20_000, OldOrder())),
-            Case(
-                CommitmentDimension.DropStopSwitchCount,
-                Projection("v-1", "pickup", "n-1", "drop-new", "n-2",
-                    10_000, 20_000, SubjectDrop("drop-new"))),
-            Case(
-                CommitmentDimension.IncumbentOrderInversionCount,
-                Projection("v-1", "pickup", "n-1", "drop", "n-2",
-                    10_000, 20_000, InvertedIncumbents())),
-            Case(
-                CommitmentDimension.PrePickupInsertedStopCount,
-                Projection("v-1", "pickup", "n-1", "drop", "n-2",
-                    10_000, 20_000, InsertedBeforePickup())),
+            (CommitmentDimension.PickupEtaTotalMs,
+                Projection("v-1", "pickup", "n-1", "drop", "n-2", 10_001, 20_000, OldOrder())),
+            (CommitmentDimension.DropEtaTotalMs,
+                Projection("v-1", "pickup", "n-1", "drop", "n-2", 10_000, 20_001, OldOrder())),
+            (CommitmentDimension.VehicleSwitchCount,
+                Projection("v-2", "pickup", "n-1", "drop", "n-2", 10_000, 20_000, OldOrder())),
+            (CommitmentDimension.PickupStopSwitchCount,
+                Projection("v-1", "pickup-new", "n-1", "drop", "n-2", 10_000, 20_000, SubjectStops("pickup-new", "drop"))),
+            (CommitmentDimension.DropStopSwitchCount,
+                Projection("v-1", "pickup", "n-1", "drop-new", "n-2", 10_000, 20_000, SubjectStops("pickup", "drop-new"))),
         };
         var previous = new PublishedPromise(
             new PromiseVersion(1),
             1,
             new SimTime(1_000),
             before);
-        var distances = new Distances(
-            new Dictionary<(string, string), long>
-            {
-                [("n-1", "n-3")] = 17,
-                [("n-2", "n-4")] = 19,
-            });
 
-        foreach (var mutation in mutations)
+        Assert.Equal(
+            CommitmentDimensionVocabulary.Ordered,
+            mutations.Select(value => value.Dimension));
+
+        foreach (var (dimension, projection) in mutations)
         {
-            var result = new PromiseDeltaCalculator().Calculate(
+            var deltas = new PromiseDeltaCalculator().Calculate(
                 previous,
                 before,
-                mutation.Projection,
-                new MaterialRevisionRule(mutation.MaterialThreshold, null),
-                distances);
+                projection);
 
             Assert.True(
-                result.IsSuccess,
-                $"dimension={mutation.Dimension}; {result.Failure?.Message}");
-            Assert.True(
-                result.Deltas!.DecisionInduced.Get(mutation.Dimension) > 0,
-                $"Mutation did not exercise {mutation.Dimension}.");
+                deltas.DecisionInduced.Get(dimension) > 0,
+                $"Mutation did not exercise {dimension}.");
         }
     }
 
@@ -307,41 +153,10 @@ public sealed class PromiseDeltaCalculatorTests
         Token("drop-new", Subject, RouteStopKind.DropOff),
     ];
 
-    private static IReadOnlyList<PromiseServiceToken> SubjectPickup(
-        string pickup) =>
+    private static IReadOnlyList<PromiseServiceToken> SubjectStops(string pickup, string drop) =>
     [
         Token("a-pickup", IncumbentA, RouteStopKind.Pickup),
         Token("b-pickup", IncumbentB, RouteStopKind.Pickup),
-        Token(pickup, Subject, RouteStopKind.Pickup),
-        Token("drop", Subject, RouteStopKind.DropOff),
-    ];
-
-    private static IReadOnlyList<PromiseServiceToken> SubjectDrop(string drop) =>
-    [
-        Token("a-pickup", IncumbentA, RouteStopKind.Pickup),
-        Token("b-pickup", IncumbentB, RouteStopKind.Pickup),
-        Token("pickup", Subject, RouteStopKind.Pickup),
-        Token(drop, Subject, RouteStopKind.DropOff),
-    ];
-
-    private static IReadOnlyList<PromiseServiceToken> InvertedIncumbents() =>
-    [
-        Token("b-pickup", IncumbentB, RouteStopKind.Pickup),
-        Token("a-pickup", IncumbentA, RouteStopKind.Pickup),
-        Token("pickup", Subject, RouteStopKind.Pickup),
-        Token("drop", Subject, RouteStopKind.DropOff),
-    ];
-
-    private static IReadOnlyList<PromiseServiceToken> InsertedBeforePickup() =>
-    [
-        Token("inserted", null, RouteStopKind.Waypoint),
-        .. OldOrder(),
-    ];
-
-    private static IReadOnlyList<PromiseServiceToken> SubjectOnlyOrder(
-        string pickup,
-        string drop) =>
-    [
         Token(pickup, Subject, RouteStopKind.Pickup),
         Token(drop, Subject, RouteStopKind.DropOff),
     ];
@@ -351,28 +166,4 @@ public sealed class PromiseDeltaCalculatorTests
         RequestId? request,
         RouteStopKind kind) =>
         new(new StopId(stop), request, kind);
-
-    private static MutationCase Case(
-        CommitmentDimension dimension,
-        PromiseProjection projection,
-        long threshold = 1_000) =>
-        new(dimension, projection, threshold);
-
-    private sealed record MutationCase(
-        CommitmentDimension Dimension,
-        PromiseProjection Projection,
-        long MaterialThreshold);
-
-    private sealed class Distances(
-        IReadOnlyDictionary<(string From, string To), long> distances)
-        : IStopDistanceLookup
-    {
-        public bool TryGetDistanceMillimeters(
-            NodeId fromNodeId,
-            NodeId toNodeId,
-            out long distanceMillimeters) =>
-            distances.TryGetValue(
-                (fromNodeId.Value, toNodeId.Value),
-                out distanceMillimeters);
-    }
 }

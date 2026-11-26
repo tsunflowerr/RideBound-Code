@@ -5,14 +5,9 @@ namespace RideBound.Contracts.Protocol;
 public sealed record CommitmentVectorContract(
     long PickupEtaTotalMs,
     long DropEtaTotalMs,
-    long MaterialEtaRevisionCount,
     long VehicleSwitchCount,
-    long PickupStopRelocationMm,
     long PickupStopSwitchCount,
-    long DropStopRelocationMm,
-    long DropStopSwitchCount,
-    long IncumbentOrderInversionCount,
-    long PrePickupInsertedStopCount);
+    long DropStopSwitchCount);
 
 public sealed record PromiseServiceTokenContract(
     string StopId,
@@ -105,14 +100,9 @@ internal static class CommitmentContractCodec
     private static readonly IReadOnlySet<string> VectorFields = Fields(
         "pickupEtaTotalMs",
         "dropEtaTotalMs",
-        "materialEtaRevisionCount",
         "vehicleSwitchCount",
-        "pickupStopRelocationMm",
         "pickupStopSwitchCount",
-        "dropStopRelocationMm",
-        "dropStopSwitchCount",
-        "incumbentOrderInversionCount",
-        "prePickupInsertedStopCount");
+        "dropStopSwitchCount");
 
     private static readonly IReadOnlySet<string> PromiseFields = Fields(
         "requestId",
@@ -294,14 +284,9 @@ internal static class CommitmentContractCodec
         writer.WriteStartObject();
         writer.WriteNumber("pickupEtaTotalMs", vector.PickupEtaTotalMs);
         writer.WriteNumber("dropEtaTotalMs", vector.DropEtaTotalMs);
-        writer.WriteNumber("materialEtaRevisionCount", vector.MaterialEtaRevisionCount);
         writer.WriteNumber("vehicleSwitchCount", vector.VehicleSwitchCount);
-        writer.WriteNumber("pickupStopRelocationMm", vector.PickupStopRelocationMm);
         writer.WriteNumber("pickupStopSwitchCount", vector.PickupStopSwitchCount);
-        writer.WriteNumber("dropStopRelocationMm", vector.DropStopRelocationMm);
         writer.WriteNumber("dropStopSwitchCount", vector.DropStopSwitchCount);
-        writer.WriteNumber("incumbentOrderInversionCount", vector.IncumbentOrderInversionCount);
-        writer.WriteNumber("prePickupInsertedStopCount", vector.PrePickupInsertedStopCount);
         writer.WriteEndObject();
     }
 
@@ -645,14 +630,9 @@ internal static class CommitmentContractCodec
     [
         value.PickupEtaTotalMs,
         value.DropEtaTotalMs,
-        value.MaterialEtaRevisionCount,
         value.VehicleSwitchCount,
-        value.PickupStopRelocationMm,
         value.PickupStopSwitchCount,
-        value.DropStopRelocationMm,
         value.DropStopSwitchCount,
-        value.IncumbentOrderInversionCount,
-        value.PrePickupInsertedStopCount,
     ];
 
     private static void WriteOptionalString(

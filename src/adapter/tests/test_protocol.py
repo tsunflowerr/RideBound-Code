@@ -28,14 +28,9 @@ def _decision() -> tuple[dict, FleetPyProtocolMapper]:
     zero_vector = {
         "pickupEtaTotalMs": 0,
         "dropEtaTotalMs": 0,
-        "materialEtaRevisionCount": 0,
         "vehicleSwitchCount": 0,
-        "pickupStopRelocationMm": 0,
         "pickupStopSwitchCount": 0,
-        "dropStopRelocationMm": 0,
         "dropStopSwitchCount": 0,
-        "incumbentOrderInversionCount": 0,
-        "prePickupInsertedStopCount": 0,
     }
     route = {
         "planVersion": 1,

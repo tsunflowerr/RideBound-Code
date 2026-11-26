@@ -403,14 +403,9 @@ def _validate_vector(value: Any, path: str) -> None:
         {
             "pickupEtaTotalMs",
             "dropEtaTotalMs",
-            "materialEtaRevisionCount",
             "vehicleSwitchCount",
-            "pickupStopRelocationMm",
             "pickupStopSwitchCount",
-            "dropStopRelocationMm",
             "dropStopSwitchCount",
-            "incumbentOrderInversionCount",
-            "prePickupInsertedStopCount",
         },
         path,
     )

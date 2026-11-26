@@ -132,15 +132,13 @@ public sealed class ExogenousServiceQualityBreachBridgeTests
                 dimension => new CommitmentDimensionLimit(
                     dimension,
                     null,
-                    CommitmentPhase.AllActive)),
-            new MaterialRevisionRule(1, null));
+                    CommitmentPhase.AllActive)));
 
         var result = new ExogenousServiceQualityBreachBridge().Apply(
             state,
             state,
             diagnostics,
             new CommitmentPolicyCatalog([policy]),
-            EmptyDistances.Instance,
             1);
 
         Assert.True(result.IsSuccess, result.Error);
@@ -155,19 +153,5 @@ public sealed class ExogenousServiceQualityBreachBridgeTests
         Assert.Equal(
             breach.ExogenousProjection.PickupEta,
             breach.SafetyProjection.PickupEta);
-    }
-
-    private sealed class EmptyDistances : IStopDistanceLookup
-    {
-        public static EmptyDistances Instance { get; } = new();
-
-        public bool TryGetDistanceMillimeters(
-            NodeId fromNodeId,
-            NodeId toNodeId,
-            out long distanceMillimeters)
-        {
-            distanceMillimeters = 0;
-            return fromNodeId == toNodeId;
-        }
     }
 }

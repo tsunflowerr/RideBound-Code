@@ -80,8 +80,6 @@ public sealed class EffectivePolicyFairnessTests
             new[]
             {
                 policy.PolicyId,
-                policy.MaterialRevisionRule.RawEtaThresholdMs?.ToString() ?? "none",
-                policy.MaterialRevisionRule.DisplayBucketWidthMs?.ToString() ?? "none",
                 ((int)policy.FinalConfirmationLocks).ToString(),
                 policy.DropEtaDeadlineSlackPermille?.ToString() ?? "none",
             }.Concat(
@@ -132,7 +130,6 @@ public sealed class EffectivePolicyFairnessTests
                     before,
                     state,
                     new CommitmentPolicyCatalog([configured]),
-                    NoDistances.Instance,
                     "effective-policy-fairness",
                     1),
                 new CandidateGenerationOptions(
@@ -161,7 +158,6 @@ public sealed class EffectivePolicyFairnessTests
                     dimension == CommitmentDimension.VehicleSwitchCount
                         ? CommitmentPhase.WaitingPickup
                         : CommitmentPhase.AllActive)),
-            new MaterialRevisionRule(1, 30_000),
             dropEtaDeadlineSlackPermille: deadlinePermille);
 
     /// <summary>
@@ -183,19 +179,5 @@ public sealed class EffectivePolicyFairnessTests
                     []).Value!,
                 "TEST_UNKNOWN",
                 "The fairness test solver never produces an incumbent.");
-    }
-
-    private sealed class NoDistances : IStopDistanceLookup
-    {
-        public static NoDistances Instance { get; } = new();
-
-        public bool TryGetDistanceMillimeters(
-            NodeId fromNodeId,
-            NodeId toNodeId,
-            out long distanceMillimeters)
-        {
-            distanceMillimeters = 0;
-            return false;
-        }
     }
 }

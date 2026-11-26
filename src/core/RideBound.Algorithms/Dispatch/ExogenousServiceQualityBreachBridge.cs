@@ -53,14 +53,12 @@ public sealed class ExogenousServiceQualityBreachBridge
         OnlineState validatedState,
         CandidateGenerationDiagnostics diagnostics,
         ICommitmentPolicyProvider policies,
-        IStopDistanceLookup stopDistances,
         long sourceEventSequence)
     {
         ArgumentNullException.ThrowIfNull(reducedState);
         ArgumentNullException.ThrowIfNull(validatedState);
         ArgumentNullException.ThrowIfNull(diagnostics);
         ArgumentNullException.ThrowIfNull(policies);
-        ArgumentNullException.ThrowIfNull(stopDistances);
 
         var ledger = validatedState.Incidents;
         var groups = diagnostics.ExogenousServiceQualityBreaches
@@ -143,17 +141,7 @@ public sealed class ExogenousServiceQualityBreachBridge
             var deltas = _deltaCalculator.Calculate(
                 history.Current.PublishedPromise,
                 exogenous.Value!,
-                exogenous.Value!,
-                policy.MaterialRevisionRule,
-                stopDistances);
-
-            if (!deltas.IsSuccess)
-            {
-                return Failure(
-                    vehicleId,
-                    requestId,
-                    deltas.Failure!.Message);
-            }
+                exogenous.Value!);
 
             var witnesses = group
                 .Select(
@@ -175,7 +163,7 @@ public sealed class ExogenousServiceQualityBreachBridge
                 history.Current.PublishedPromise,
                 exogenous.Value!,
                 exogenous.Value!,
-                deltas.Deltas!,
+                deltas,
                 history.Current.BudgetAfter,
                 history.Current.BudgetAfter,
                 witnesses.Select(value => value.Code),

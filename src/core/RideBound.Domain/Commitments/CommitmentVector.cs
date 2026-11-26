@@ -7,27 +7,17 @@ public sealed record CommitmentVector
     public CommitmentVector(
         long pickupEtaTotalMs,
         long dropEtaTotalMs,
-        long materialEtaRevisionCount,
         long vehicleSwitchCount,
-        long pickupStopRelocationMm,
         long pickupStopSwitchCount,
-        long dropStopRelocationMm,
-        long dropStopSwitchCount,
-        long incumbentOrderInversionCount,
-        long prePickupInsertedStopCount)
+        long dropStopSwitchCount)
     {
         var values = new[]
         {
             pickupEtaTotalMs,
             dropEtaTotalMs,
-            materialEtaRevisionCount,
             vehicleSwitchCount,
-            pickupStopRelocationMm,
             pickupStopSwitchCount,
-            dropStopRelocationMm,
             dropStopSwitchCount,
-            incumbentOrderInversionCount,
-            prePickupInsertedStopCount,
         };
 
         if (values.Any(value => value is < 0 or > DomainLimits.MaxCanonicalInteger))
@@ -39,58 +29,33 @@ public sealed record CommitmentVector
 
         PickupEtaTotalMs = pickupEtaTotalMs;
         DropEtaTotalMs = dropEtaTotalMs;
-        MaterialEtaRevisionCount = materialEtaRevisionCount;
         VehicleSwitchCount = vehicleSwitchCount;
-        PickupStopRelocationMm = pickupStopRelocationMm;
         PickupStopSwitchCount = pickupStopSwitchCount;
-        DropStopRelocationMm = dropStopRelocationMm;
         DropStopSwitchCount = dropStopSwitchCount;
-        IncumbentOrderInversionCount = incumbentOrderInversionCount;
-        PrePickupInsertedStopCount = prePickupInsertedStopCount;
     }
 
     public long PickupEtaTotalMs { get; }
 
     public long DropEtaTotalMs { get; }
 
-    public long MaterialEtaRevisionCount { get; }
-
     public long VehicleSwitchCount { get; }
-
-    public long PickupStopRelocationMm { get; }
 
     public long PickupStopSwitchCount { get; }
 
-    public long DropStopRelocationMm { get; }
-
     public long DropStopSwitchCount { get; }
 
-    public long IncumbentOrderInversionCount { get; }
-
-    public long PrePickupInsertedStopCount { get; }
-
     public static CommitmentVector Zero { get; } =
-        new(0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+        new(0, 0, 0, 0, 0);
 
     public long Get(CommitmentDimension dimension) =>
         dimension switch
         {
             CommitmentDimension.PickupEtaTotalMs => PickupEtaTotalMs,
             CommitmentDimension.DropEtaTotalMs => DropEtaTotalMs,
-            CommitmentDimension.MaterialEtaRevisionCount =>
-                MaterialEtaRevisionCount,
             CommitmentDimension.VehicleSwitchCount => VehicleSwitchCount,
-            CommitmentDimension.PickupStopRelocationMm =>
-                PickupStopRelocationMm,
             CommitmentDimension.PickupStopSwitchCount =>
                 PickupStopSwitchCount,
-            CommitmentDimension.DropStopRelocationMm =>
-                DropStopRelocationMm,
             CommitmentDimension.DropStopSwitchCount => DropStopSwitchCount,
-            CommitmentDimension.IncumbentOrderInversionCount =>
-                IncumbentOrderInversionCount,
-            CommitmentDimension.PrePickupInsertedStopCount =>
-                PrePickupInsertedStopCount,
             _ => throw new ArgumentOutOfRangeException(nameof(dimension)),
         };
 
@@ -123,12 +88,7 @@ public sealed record CommitmentVector
                 values[1],
                 values[2],
                 values[3],
-                values[4],
-                values[5],
-                values[6],
-                values[7],
-                values[8],
-                values[9]));
+                values[4]));
     }
 }
 
@@ -137,7 +97,6 @@ public static class CommitmentFailureCodes
     public const string VectorOverflow = "COMMITMENT_VECTOR_OVERFLOW";
     public const string InvalidPromise = "INVALID_PROMISE";
     public const string PromiseProjectionFailed = "PROMISE_PROJECTION_FAILED";
-    public const string StopDistanceRequired = "STOP_DISTANCE_REQUIRED";
     public const string LedgerConflict = "COMMITMENT_LEDGER_CONFLICT";
     public const string BudgetExceeded = "COMMITMENT_BUDGET_EXCEEDED";
     public const string PhaseLock = "COMMITMENT_PHASE_LOCK";

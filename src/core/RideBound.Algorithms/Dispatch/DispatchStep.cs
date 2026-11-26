@@ -83,7 +83,6 @@ public sealed class DispatchStep
                 context.ReducedState,
                 decision.ProposedState,
                 validationPolicies,
-                context.StopDistances,
                 context.PublicationScope,
                 context.SourceEventSequence));
 
@@ -108,7 +107,6 @@ public sealed class DispatchStep
                 stateToStage,
                 diagnostics,
                 validationPolicies,
-                context.StopDistances,
                 context.SourceEventSequence);
 
             if (!bridged.IsSuccess)

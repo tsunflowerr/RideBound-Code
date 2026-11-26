@@ -22,26 +22,11 @@
           ]
         },
         {
-          "dimension": "material_eta_revision_count",
-          "applicablePhases": [
-            "accepted",
-            "waitingPickup",
-            "onboard"
-          ]
-        },
-        {
           "dimension": "vehicle_switch_count",
           "applicablePhases": [
             "accepted",
             "waitingPickup",
             "onboard"
-          ]
-        },
-        {
-          "dimension": "pickup_stop_relocation_mm",
-          "applicablePhases": [
-            "accepted",
-            "waitingPickup"
           ]
         },
         {
@@ -53,14 +38,6 @@
           ]
         },
         {
-          "dimension": "drop_stop_relocation_mm",
-          "applicablePhases": [
-            "accepted",
-            "waitingPickup",
-            "onboard"
-          ]
-        },
-        {
           "dimension": "drop_stop_switch_count",
           "hardLimit": 0,
           "applicablePhases": [
@@ -68,27 +45,8 @@
             "waitingPickup",
             "onboard"
           ]
-        },
-        {
-          "dimension": "incumbent_order_inversion_count",
-          "applicablePhases": [
-            "accepted",
-            "waitingPickup",
-            "onboard"
-          ]
-        },
-        {
-          "dimension": "pre_pickup_inserted_stop_count",
-          "applicablePhases": [
-            "accepted",
-            "waitingPickup"
-          ]
         }
       ],
-      "materialRevisionRule": {
-        "rawEtaThresholdMs": 1000,
-        "displayBucketWidthMs": 60000
-      },
       "finalConfirmationLocks": [
         "pickupStop",
         "pickupEta"
@@ -100,6 +58,5 @@
       ],
       "waitingRiderRelocation": true
     }
-  ],
-  "stopDistances": []
+  ]
 }

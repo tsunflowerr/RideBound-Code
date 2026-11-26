@@ -587,26 +587,11 @@ internal static class OnlineStateReferenceCanonicalizer
         writer.WriteStartObject();
         writer.WriteNumber("pickupEtaTotalMs", value.PickupEtaTotalMs);
         writer.WriteNumber("dropEtaTotalMs", value.DropEtaTotalMs);
-        writer.WriteNumber(
-            "materialEtaRevisionCount",
-            value.MaterialEtaRevisionCount);
         writer.WriteNumber("vehicleSwitchCount", value.VehicleSwitchCount);
-        writer.WriteNumber(
-            "pickupStopRelocationMm",
-            value.PickupStopRelocationMm);
         writer.WriteNumber(
             "pickupStopSwitchCount",
             value.PickupStopSwitchCount);
-        writer.WriteNumber(
-            "dropStopRelocationMm",
-            value.DropStopRelocationMm);
         writer.WriteNumber("dropStopSwitchCount", value.DropStopSwitchCount);
-        writer.WriteNumber(
-            "incumbentOrderInversionCount",
-            value.IncumbentOrderInversionCount);
-        writer.WriteNumber(
-            "prePickupInsertedStopCount",
-            value.PrePickupInsertedStopCount);
         writer.WriteEndObject();
     }
 

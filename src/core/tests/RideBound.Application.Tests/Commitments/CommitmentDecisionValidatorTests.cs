@@ -265,8 +265,7 @@ public sealed class CommitmentDecisionValidatorTests
                 dimension => new CommitmentDimensionLimit(
                     dimension,
                     DomainLimits.MaxCanonicalInteger,
-                    CommitmentPhase.AllActive)),
-            new MaterialRevisionRule(1, null));
+                    CommitmentPhase.AllActive)));
         var policies = new CommitmentPolicyCatalog([policy]);
         var validator = new CommitmentDecisionValidator();
 
@@ -276,7 +275,6 @@ public sealed class CommitmentDecisionValidatorTests
                 reduced,
                 candidate,
                 policies,
-                CommitmentValidatorFixtures.EmptyDistances.Instance,
                 "booking-offer-scope",
                 1));
 
@@ -302,7 +300,6 @@ public sealed class CommitmentDecisionValidatorTests
                 confirmed,
                 confirmed,
                 policies,
-                CommitmentValidatorFixtures.EmptyDistances.Instance,
                 "booking-confirmation-scope",
                 2));
 
@@ -352,7 +349,6 @@ public sealed class CommitmentDecisionValidatorTests
                 reduced,
                 reduced,
                 fixture.Policies,
-                CommitmentValidatorFixtures.EmptyDistances.Instance,
                 "booking-and-boarding-scope",
                 4));
 
@@ -434,8 +430,7 @@ public sealed class CommitmentDecisionValidatorTests
                 dimension => new CommitmentDimensionLimit(
                     dimension,
                     DomainLimits.MaxCanonicalInteger,
-                    CommitmentPhase.AllActive)),
-            new MaterialRevisionRule(1, null));
+                    CommitmentPhase.AllActive)));
         var policies = new CommitmentPolicyCatalog([policy]);
         var validator = new CommitmentDecisionValidator();
         var context = new CommitmentValidationContext(
@@ -443,7 +438,6 @@ public sealed class CommitmentDecisionValidatorTests
             reduced,
             candidate,
             policies,
-            CommitmentValidatorFixtures.EmptyDistances.Instance,
             "booking-offer-scope",
             1);
 

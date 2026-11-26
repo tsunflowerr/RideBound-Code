@@ -32,7 +32,6 @@ public sealed class CommitmentCandidateFilterTests
         var filter = new CommitmentCandidateFilter(
             state,
             new CommitmentPolicyCatalog([]),
-            NoDistances.Instance,
             "candidate-filter-test",
             1);
 
@@ -48,19 +47,5 @@ public sealed class CommitmentCandidateFilterTests
                 && value.Code == "COMMITMENT_POLICY_NOT_FOUND");
         var commitmentWitness = Assert.Single(prune.CommitmentWitnesses!);
         Assert.Equal("COMMITMENT_POLICY_NOT_FOUND", commitmentWitness.Code);
-    }
-
-    private sealed class NoDistances : IStopDistanceLookup
-    {
-        public static NoDistances Instance { get; } = new();
-
-        public bool TryGetDistanceMillimeters(
-            NodeId fromNodeId,
-            NodeId toNodeId,
-            out long distanceMillimeters)
-        {
-            distanceMillimeters = 0;
-            return false;
-        }
     }
 }

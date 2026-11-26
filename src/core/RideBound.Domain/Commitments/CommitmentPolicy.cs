@@ -57,61 +57,6 @@ public sealed record CommitmentDimensionLimit
     public CommitmentPhase ApplicablePhases { get; }
 }
 
-public sealed record MaterialRevisionRule
-{
-    public MaterialRevisionRule(
-        long? rawEtaThresholdMs,
-        long? displayBucketWidthMs)
-    {
-        if (rawEtaThresholdMs is < 1 or > DomainLimits.MaxCanonicalInteger)
-        {
-            throw new ArgumentOutOfRangeException(nameof(rawEtaThresholdMs));
-        }
-
-        if (displayBucketWidthMs is < 1 or > DomainLimits.MaxCanonicalInteger)
-        {
-            throw new ArgumentOutOfRangeException(nameof(displayBucketWidthMs));
-        }
-
-        if (rawEtaThresholdMs is null && displayBucketWidthMs is null)
-        {
-            throw new ArgumentException(
-                "A material revision rule requires a raw threshold or display bucket.");
-        }
-
-        RawEtaThresholdMs = rawEtaThresholdMs;
-        DisplayBucketWidthMs = displayBucketWidthMs;
-    }
-
-    public long? RawEtaThresholdMs { get; }
-
-    public long? DisplayBucketWidthMs { get; }
-
-    public bool IsMaterial(
-        SimTime oldPickup,
-        SimTime newPickup,
-        SimTime oldDrop,
-        SimTime newDrop)
-    {
-        var pickupDelta = AbsoluteDifference(oldPickup, newPickup);
-        var dropDelta = AbsoluteDifference(oldDrop, newDrop);
-        var thresholdChanged = RawEtaThresholdMs is long threshold
-            && (pickupDelta >= threshold || dropDelta >= threshold);
-        var bucketChanged = DisplayBucketWidthMs is long bucket
-            && (oldPickup.Milliseconds / bucket
-                    != newPickup.Milliseconds / bucket
-                || oldDrop.Milliseconds / bucket
-                    != newDrop.Milliseconds / bucket);
-
-        return thresholdChanged || bucketChanged;
-    }
-
-    private static long AbsoluteDifference(SimTime left, SimTime right) =>
-        left.Milliseconds >= right.Milliseconds
-            ? left.Milliseconds - right.Milliseconds
-            : right.Milliseconds - left.Milliseconds;
-}
-
 public sealed class CommitmentPolicy
 {
     private readonly FrozenDictionary<
@@ -121,7 +66,6 @@ public sealed class CommitmentPolicy
     public CommitmentPolicy(
         string policyId,
         IEnumerable<CommitmentDimensionLimit> limits,
-        MaterialRevisionRule materialRevisionRule,
         PromiseLock finalConfirmationLocks = PromiseLock.None,
         PromiseLock ratchetLocks = PromiseLock.None,
         int? dropEtaBudgetSlackPermille = null,
@@ -130,7 +74,6 @@ public sealed class CommitmentPolicy
         bool dropEtaShadowAllocation = false)
     {
         ArgumentNullException.ThrowIfNull(limits);
-        ArgumentNullException.ThrowIfNull(materialRevisionRule);
         PolicyId = DomainIdentifier.Require(policyId, nameof(policyId));
         var materialized = limits.ToArray();
         const PromiseLock allLocks =
@@ -222,7 +165,6 @@ public sealed class CommitmentPolicy
         }
 
         _limits = materialized.ToFrozenDictionary(value => value.Dimension);
-        MaterialRevisionRule = materialRevisionRule;
         FinalConfirmationLocks = finalConfirmationLocks;
         RatchetLocks = ratchetLocks;
         DropEtaBudgetSlackPermille = dropEtaBudgetSlackPermille;
@@ -363,8 +305,6 @@ public sealed class CommitmentPolicy
     public IReadOnlyDictionary<
         CommitmentDimension,
         CommitmentDimensionLimit> Limits => _limits;
-
-    public MaterialRevisionRule MaterialRevisionRule { get; }
 
     public PromiseLock FinalConfirmationLocks { get; }
 

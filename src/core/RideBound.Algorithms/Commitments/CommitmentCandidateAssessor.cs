@@ -9,7 +9,6 @@ public sealed record CommitmentMechanismContext(
     OnlineState BeforeEventState,
     OnlineState ReducedState,
     ICommitmentPolicyProvider Policies,
-    IStopDistanceLookup StopDistances,
     string PublicationScope,
     long SourceEventSequence);
 

@@ -61,7 +61,6 @@ public sealed class KeptRouteValidationPropertyTests
                     reduced,
                     reduced,
                     new CommitmentPolicyCatalog([policy]),
-                    CommitmentValidatorFixtures.EmptyDistances.Instance,
                     $"kept-{seed}-{step}",
                     state.NextEventSequence));
 
@@ -102,16 +101,13 @@ public sealed class KeptRouteValidationPropertyTests
                 || (insertionOnly && dimension == CommitmentDimension.VehicleSwitchCount)
                 ? 0
                 : null,
-            dimension is CommitmentDimension.PickupStopRelocationMm
-                or CommitmentDimension.PickupStopSwitchCount
-                or CommitmentDimension.PrePickupInsertedStopCount
+            dimension is CommitmentDimension.PickupStopSwitchCount
                 ? BeforePickup
                 : CommitmentPhase.AllActive));
 
         return new CommitmentPolicy(
             PolicyId,
             limits,
-            new MaterialRevisionRule(1_000, 60_000),
             finalConfirmationLocks: PromiseLock.PickupStop | PromiseLock.PickupEta
                 | (insertionOnly ? PromiseLock.Vehicle : PromiseLock.None),
             ratchetLocks: insertionOnly ? PromiseLock.None : PromiseLock.PickupEta,
@@ -185,7 +181,6 @@ public sealed class KeptRouteValidationPropertyTests
             reduced,
             reduced,
             new CommitmentPolicyCatalog([policy]),
-            CommitmentValidatorFixtures.EmptyDistances.Instance,
             "open",
             2));
         Assert.True(opened.IsValid, string.Join("; ", opened.Witnesses.Select(w => w.Message)));

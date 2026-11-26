@@ -185,7 +185,6 @@ public sealed class CommitmentDeadlineLockTests
                     dimension,
                     null,
                     CommitmentPhase.AllActive)),
-            new MaterialRevisionRule(1, null),
             finalConfirmationLocks: finalConfirmationLocks,
             dropEtaDeadlineSlackPermille: deadline ? 1000 : null);
 

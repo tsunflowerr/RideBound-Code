@@ -105,7 +105,7 @@ public sealed class OnlineStateCheckpointCodecTests
             [requestId],
             2,
             new SimTime(1)).Ledger!;
-        var delta = new CommitmentVector(1, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+        var delta = new CommitmentVector(1, 0, 0, 0, 0);
         incidents = incidents.AppendBreach(
             new CommitmentBreachRecord(
                 "breach-1",

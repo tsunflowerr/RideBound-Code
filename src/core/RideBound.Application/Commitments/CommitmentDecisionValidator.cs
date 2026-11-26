@@ -48,7 +48,6 @@ public sealed record CommitmentValidationContext(
     OnlineState ReducedState,
     OnlineState CandidateState,
     ICommitmentPolicyProvider Policies,
-    IStopDistanceLookup StopDistances,
     string PublicationScope,
     long SourceEventSequence,
     string RevisionReasonCode = "ONLINE_REPLAN",
@@ -144,7 +143,6 @@ public sealed class CommitmentDecisionValidator
         ArgumentNullException.ThrowIfNull(context.ReducedState);
         ArgumentNullException.ThrowIfNull(context.CandidateState);
         ArgumentNullException.ThrowIfNull(context.Policies);
-        ArgumentNullException.ThrowIfNull(context.StopDistances);
 
         var structural = ValidateStateBoundary(context, out var relocation);
 
@@ -429,30 +427,17 @@ public sealed class CommitmentDecisionValidator
             return CommitmentDecisionValidationResult.Invalid(lockFailures);
         }
 
-        var calculated = _deltaCalculator.Calculate(
+        var deltas = _deltaCalculator.Calculate(
             priorHistory.Current.PublishedPromise,
             exogenousProjection.Value!,
-            candidateProjection,
-            policy.MaterialRevisionRule,
-            context.StopDistances);
-
-        if (!calculated.IsSuccess)
-        {
-            return Invalid(
-                CommitmentValidationStage.Projection,
-                calculated.Failure!.Code,
-                calculated.Failure.Message,
-                request.AssignedVehicleId,
-                request.Id,
-                calculated.Failure.Dimension);
-        }
+            candidateProjection);
 
         // The budget is charged by the decision-induced delta.
         var budget = _budgetEvaluator.Evaluate(
             request.Id,
             request.Lifecycle,
             priorHistory.Current.BudgetAfter,
-            calculated.Deltas!.DecisionInduced,
+            deltas.DecisionInduced,
             policy,
             dropEtaTotalLimit);
 
@@ -474,9 +459,9 @@ public sealed class CommitmentDecisionValidator
             return CommitmentDecisionValidationResult.Invalid(budgetFailures);
         }
 
-        var unchanged = calculated.Deltas.Exogenous == CommitmentVector.Zero
-            && calculated.Deltas.DecisionInduced == CommitmentVector.Zero
-            && calculated.Deltas.Visible == CommitmentVector.Zero;
+        var unchanged = deltas.Exogenous == CommitmentVector.Zero
+            && deltas.DecisionInduced == CommitmentVector.Zero
+            && deltas.Visible == CommitmentVector.Zero;
 
         if (!unchanged)
         {
@@ -491,7 +476,7 @@ public sealed class CommitmentDecisionValidator
                 priorHistory.Current.PublishedPromise.Version,
                 exogenousProjection.Value!,
                 candidateProjection,
-                calculated.Deltas,
+                deltas,
                 context.CandidateState.Run.AppliedEpoch,
                 context.CandidateState.Run.SimulationTime,
                 context.RevisionReasonCode,

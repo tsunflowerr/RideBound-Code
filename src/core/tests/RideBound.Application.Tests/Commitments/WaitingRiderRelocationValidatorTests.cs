@@ -152,7 +152,6 @@ public sealed class WaitingRiderRelocationValidatorTests
                         _ => null,
                     },
                     CommitmentPhase.AllActive)),
-            new MaterialRevisionRule(1, null),
             finalConfirmationLocks: PromiseLock.PickupStop | PromiseLock.PickupEta,
             ratchetLocks: PromiseLock.PickupEta,
             waitingRiderRelocation: relocation);
@@ -223,7 +222,6 @@ public sealed class WaitingRiderRelocationValidatorTests
             reduced,
             reduced,
             new CommitmentPolicyCatalog([policy]),
-            CommitmentValidatorFixtures.EmptyDistances.Instance,
             "test-scope",
             4);
     }

@@ -43,11 +43,6 @@ public sealed class CommitmentLedgerTests
             4,
             0,
             1,
-            1,
-            0,
-            0,
-            0,
-            0,
             0,
             0);
         var first = opened.AppendRevision(
@@ -71,11 +66,6 @@ public sealed class CommitmentLedgerTests
             4,
             0,
             1,
-            1,
-            0,
-            0,
-            0,
-            0,
             0,
             0);
         var second = first.Ledger!.AppendRevision(
@@ -282,14 +272,9 @@ public sealed class CommitmentLedgerTests
                 var delta = new CommitmentVector(
                     random.Next(0, 8),
                     random.Next(0, 8),
-                    random.Next(0, 3),
                     random.Next(0, 2),
-                    random.Next(0, 8),
                     random.Next(0, 2),
-                    random.Next(0, 8),
-                    random.Next(0, 2),
-                    random.Next(0, 4),
-                    random.Next(0, 4));
+                    random.Next(0, 2));
                 var appended = ledger.AppendRevision(
                     $"seed-{seed}-publication-{revision}",
                     TestData.RequestOne,

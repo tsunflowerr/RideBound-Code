@@ -11,18 +11,15 @@ using static RideBound.Runner.Configuration.JsonConfig;
 namespace RideBound.Runner.Configuration;
 
 public sealed class CommitmentPolicyConfiguration :
-    ICommitmentPolicyProvider,
-    IStopDistanceLookup
+    ICommitmentPolicyProvider
 {
     private static readonly IReadOnlySet<string> RootFields = Fields(
         "configurationVersion",
-        "policies",
-        "stopDistances");
+        "policies");
     private static readonly IReadOnlySet<string> PolicyFields = Fields(
         "policyId",
         "budgetBasis",
         "limits",
-        "materialRevisionRule",
         // Optional keys.
         "finalConfirmationLocks",
         "ratchetLocks",
@@ -35,21 +32,12 @@ public sealed class CommitmentPolicyConfiguration :
         "dimension",
         "hardLimit",
         "applicablePhases");
-    private static readonly IReadOnlySet<string> RevisionFields = Fields(
-        "rawEtaThresholdMs",
-        "displayBucketWidthMs");
-    private static readonly IReadOnlySet<string> DistanceFields = Fields(
-        "fromNodeId",
-        "toNodeId",
-        "distanceMm");
     private readonly CommitmentPolicyCatalog _policies;
     private readonly IReadOnlyList<string> _policyIds;
-    private readonly IReadOnlyDictionary<StopArc, long> _stopDistances;
 
     private CommitmentPolicyConfiguration(
         Sha256Hex contentHash,
-        IEnumerable<CommitmentPolicy> policies,
-        IReadOnlyDictionary<StopArc, long> stopDistances)
+        IEnumerable<CommitmentPolicy> policies)
     {
         ContentHash = contentHash;
         var materializedPolicies = policies.ToArray();
@@ -59,7 +47,6 @@ public sealed class CommitmentPolicyConfiguration :
                 .Select(value => value.PolicyId)
                 .Order(StringComparer.Ordinal)
                 .ToArray());
-        _stopDistances = stopDistances;
     }
 
     public Sha256Hex ContentHash { get; }
@@ -95,79 +82,25 @@ public sealed class CommitmentPolicyConfiguration :
                 "Commitment configuration requires at least one policy.");
         }
 
-        var distances = new Dictionary<StopArc, long>();
-
-        foreach (var element in root.GetProperty("stopDistances").EnumerateArray())
-        {
-            RequireObject(element, DistanceFields, DistanceFields, "$.stopDistances[]");
-            var arc = new StopArc(
-                new NodeId(Text(element, "fromNodeId")),
-                new NodeId(Text(element, "toNodeId")));
-            var distance = NonNegativeInteger(
-                element.GetProperty("distanceMm"),
-                "distanceMm");
-
-            if (arc.From == arc.To)
-            {
-                throw new InvalidDataException(
-                    "Same-node stop distance is canonically zero and must be omitted.");
-            }
-
-            if (!distances.TryAdd(arc, distance))
-            {
-                throw new InvalidDataException(
-                    $"Duplicate directed stop-distance arc '{arc.From}' -> '{arc.To}'.");
-            }
-        }
-
         return new CommitmentPolicyConfiguration(
             contentHash!,
-            policies,
-            distances);
+            policies);
     }
 
     public bool TryGetPolicy(string policyId, out CommitmentPolicy policy) =>
         _policies.TryGetPolicy(policyId, out policy);
-
-    public bool TryGetDistanceMillimeters(
-        NodeId fromNodeId,
-        NodeId toNodeId,
-        out long distanceMillimeters)
-    {
-        if (fromNodeId == toNodeId)
-        {
-            distanceMillimeters = 0;
-            return true;
-        }
-
-        return _stopDistances.TryGetValue(
-            new StopArc(fromNodeId, toNodeId),
-            out distanceMillimeters);
-    }
 
     private static CommitmentPolicy ReadPolicy(JsonElement element)
     {
         RequireObject(
             element,
             PolicyFields,
-            Fields("policyId", "budgetBasis", "limits", "materialRevisionRule"),
+            Fields("policyId", "budgetBasis", "limits"),
             "$.policies[]");
         var limits = element.GetProperty("limits")
             .EnumerateArray()
             .Select(ReadLimit)
             .ToArray();
-        var revision = element.GetProperty("materialRevisionRule");
-        RequireObject(
-            revision,
-            RevisionFields,
-            Fields(),
-            "$.policies[].materialRevisionRule");
-        var rawThreshold = OptionalPositiveInteger(
-            revision,
-            "rawEtaThresholdMs");
-        var displayBucket = OptionalPositiveInteger(
-            revision,
-            "displayBucketWidthMs");
         var deadlineRelaxed = OptionalBoolean(element, "dropEtaDeadlineRelaxed");
         var budgetPermille = OptionalPermille(element, "dropEtaBudgetSlackPermille");
         var deadlinePermille = OptionalPermille(element, "dropEtaDeadlineSlackPermille");
@@ -225,7 +158,6 @@ public sealed class CommitmentPolicyConfiguration :
         return new CommitmentPolicy(
             policyId,
             limits,
-            new MaterialRevisionRule(rawThreshold, displayBucket),
             ReadLocks(element, "finalConfirmationLocks"),
             ReadLocks(element, "ratchetLocks"),
             budgetPermille,
@@ -355,5 +287,4 @@ public sealed class CommitmentPolicyConfiguration :
             ? PositiveInteger(value, propertyName)
             : null;
 
-    private readonly record struct StopArc(NodeId From, NodeId To);
 }

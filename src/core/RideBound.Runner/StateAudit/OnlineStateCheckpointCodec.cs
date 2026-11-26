@@ -696,14 +696,9 @@ public static class OnlineStateCheckpointCodec
         new(
             Integer(element, "pickupEtaTotalMs"),
             Integer(element, "dropEtaTotalMs"),
-            Integer(element, "materialEtaRevisionCount"),
             Integer(element, "vehicleSwitchCount"),
-            Integer(element, "pickupStopRelocationMm"),
             Integer(element, "pickupStopSwitchCount"),
-            Integer(element, "dropStopRelocationMm"),
-            Integer(element, "dropStopSwitchCount"),
-            Integer(element, "incumbentOrderInversionCount"),
-            Integer(element, "prePickupInsertedStopCount"));
+            Integer(element, "dropStopSwitchCount"));
 
     private static IEnumerable<RequestId> ReadRequestIds(JsonElement array) =>
         array.EnumerateArray().Select(value => new RequestId(value.GetString()!));

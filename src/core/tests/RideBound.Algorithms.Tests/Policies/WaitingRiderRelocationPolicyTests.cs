@@ -59,7 +59,6 @@ public sealed class WaitingRiderRelocationPolicyTests
                 fixture.Context.ReducedState,
                 decision.ProposedState,
                 fixture.Context.Policies,
-                fixture.Context.StopDistances,
                 fixture.Context.PublicationScope,
                 fixture.Context.SourceEventSequence));
 
@@ -202,7 +201,6 @@ public sealed class WaitingRiderRelocationPolicyTests
             "uniform-v1",
             CommitmentDimensionVocabulary.Ordered.Select(
                 dimension => new CommitmentDimensionLimit(dimension, null, CommitmentPhase.AllActive)),
-            new MaterialRevisionRule(1_000, null),
             finalConfirmationLocks: relocation
                 ? PromiseLock.PickupStop | PromiseLock.PickupEta
                 : PromiseLock.Vehicle | PromiseLock.PickupStop | PromiseLock.PickupEta,
@@ -214,7 +212,6 @@ public sealed class WaitingRiderRelocationPolicyTests
                 before,
                 reduced,
                 new CommitmentPolicyCatalog([policy]),
-                NoDistances.Instance,
                 "g2-policy",
                 1),
             policy);
@@ -277,17 +274,6 @@ public sealed class WaitingRiderRelocationPolicyTests
                     Enumerate(vehicleIndex + 1, selected.Append(option.OptionId).ToArray());
                 }
             }
-        }
-    }
-
-    private sealed class NoDistances : IStopDistanceLookup
-    {
-        public static NoDistances Instance { get; } = new();
-
-        public bool TryGetDistanceMillimeters(NodeId fromNodeId, NodeId toNodeId, out long distanceMillimeters)
-        {
-            distanceMillimeters = 0;
-            return false;
         }
     }
 }
