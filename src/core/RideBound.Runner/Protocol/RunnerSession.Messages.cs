@@ -119,8 +119,7 @@ public sealed partial class RunnerSession
                 "Manifest policyId/policyVersion does not match the loaded WP4 policy configuration.",
                 envelope);
         }
-        if (_useManifestSolverSeed
-            && payloadResult.Value!.Manifest.MasterSeed > int.MaxValue)
+        if (payloadResult.Value!.Manifest.MasterSeed > int.MaxValue)
         {
             return Error(
                 "SCHEMA_VALIDATION_FAILED",

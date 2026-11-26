@@ -75,5 +75,4 @@ return await RunnerHost.RunAsync(
     commitmentPolicyConfigurationHash: wp4Configuration.BindToCommitmentConfiguration(
         commitmentConfiguration.ContentHash),
     wp4Configuration: wp4Configuration,
-    useManifestSolverSeed: true,
     maximumLineBytes: maximumLineBytes);

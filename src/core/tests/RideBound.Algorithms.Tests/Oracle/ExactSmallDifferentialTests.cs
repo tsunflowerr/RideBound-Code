@@ -67,10 +67,10 @@ public sealed class ExactSmallDifferentialTests
             $"seed={seed}; selector={productionDecision.Witness}");
         Assert.Equal(
             oracleSelection.AcceptedRequestCount,
-            productionDecision.Decision!.AcceptedRequestCount);
+            productionDecision.Decision!.VehiclePlans.Sum(value => value.Candidate.NewRequestIds.Count));
         Assert.Equal(
             oracleSelection.OperationalCost,
-            productionDecision.Decision.OperationalCost);
+            productionDecision.Decision.VehiclePlans.Sum(value => value.Candidate.Schedule.OperationalCost));
         Assert.Equal(
             oracleSelection.Candidates.Select(value => value.SemanticKey),
             productionDecision.Decision.VehiclePlans

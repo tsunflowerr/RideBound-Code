@@ -303,10 +303,7 @@ public static class SelectionApplier
             new DispatchDecision(
                 state with { Run = run },
                 selection.VehiclePlans,
-                actions.AsReadOnly(),
-                pruned,
-                selection.AcceptedRequestCount,
-                selection.OperationalCost));
+                actions.AsReadOnly()));
     }
 
     private static string FindRejectionReason(

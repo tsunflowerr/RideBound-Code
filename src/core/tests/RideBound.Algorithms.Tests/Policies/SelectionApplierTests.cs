@@ -149,9 +149,12 @@ public sealed class SelectionApplierTests
         var action = Assert.Single(result.Decision!.RequestActions);
         Assert.Equal(RequestDecisionOutcome.Rejected, action.Outcome);
         Assert.Equal(RollingCostReasonCodes.NoFeasibleInsertion, action.ReasonCode);
-        Assert.Contains(result.Decision.PrunedCandidates, value => value.Code == "CAPACITY");
+        var pruned = new InsertionCandidateGenerator().Generate(state, Options).VehicleCandidates!
+            .SelectMany(set => set.PrunedCandidates)
+            .ToArray();
+        Assert.Contains(pruned, value => value.Code == "CAPACITY");
         Assert.Contains(
-            result.Decision.PrunedCandidates,
+            pruned,
             value => value.Code == "PICKUP_WINDOW");
     }
 

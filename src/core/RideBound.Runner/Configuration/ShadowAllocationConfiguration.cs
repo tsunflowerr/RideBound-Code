@@ -148,7 +148,7 @@ public static class ShadowAllocationConfiguration
                 : throw new InvalidDataException($"shadowAllocation.{name} holds non-negative integers."))
             .ToArray();
 
-    // A decimal string parses to the exact double JavaScript wrote; "+Infinity"/"-Infinity" for theta 0 / 100 %.
+    // A decimal string parses to the exact double JavaScript wrote.
     private static double Decimal(JsonElement value, string name)
     {
         var text = value.ValueKind == JsonValueKind.String
@@ -157,8 +157,6 @@ public static class ShadowAllocationConfiguration
 
         return text switch
         {
-            "+Infinity" => double.PositiveInfinity,
-            "-Infinity" => double.NegativeInfinity,
             _ when double.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out var result)
                 && double.IsFinite(result) => result,
             _ => throw new InvalidDataException($"shadowAllocation.{name} holds decimal strings."),

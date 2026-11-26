@@ -59,10 +59,6 @@ public sealed class ShadowAllocator
         _identity = Enumerable.Range(0, inputs.Network.NodeCount).ToArray();
     }
 
-    /// <summary>Last scores, for audit and tests (request id -> score).</summary>
-    public IReadOnlyDictionary<RequestId, ShareabilityScore> LastScores { get; private set; } =
-        new Dictionary<RequestId, ShareabilityScore>();
-
     public OnlineState Allocate(
         OnlineState state,
         IReadOnlyCollection<RequestId> opened,
@@ -91,7 +87,6 @@ public sealed class ShadowAllocator
                 Oracle: false));
         var ledger = state.Commitments;
         var openedSet = opened.ToHashSet();
-        var scores = new Dictionary<RequestId, ShareabilityScore>();
 
         foreach (var requestId in opened.OrderBy(value => value.Value, StringComparer.Ordinal))
         {
@@ -173,11 +168,9 @@ public sealed class ShadowAllocator
                 pickupIndex,
                 dropIndex,
                 Dwell: 0));
-            scores[requestId] = score;
             ledger = ledger.WithShadowAllocation(requestId, ShadowAllocation.From(score.Score, _inputs.Threshold));
         }
 
-        LastScores = scores;
         return state with { Commitments = ledger };
     }
 

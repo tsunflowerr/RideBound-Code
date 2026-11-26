@@ -137,12 +137,15 @@ public sealed class WaitingRiderRelocationPolicyTests
         Assert.True(result.IsSuccess, result.Witness?.Message);
         var decision = result.Decision!.Decision;
         Assert.Equal(AlgorithmTestData.VehicleOne, decision.ProposedState.Run.Requests[Waiting].AssignedVehicleId);
+        var pruned = Assessed(fixture.Context, dropVehicle: null).Batch!.FeasibleCandidateSets
+            .SelectMany(set => set.PrunedCandidates)
+            .ToArray();
         var receiverPrune = Assert.Single(
-            decision.PrunedCandidates,
+            pruned,
             value => value.VehicleId == AlgorithmTestData.VehicleTwo && value.Code == CommitmentFailureCodes.PhaseLock);
         Assert.Contains(receiverPrune.CommitmentWitnesses!, value => value.Dimension == "pickup_eta_ms");
         Assert.Contains(
-            decision.PrunedCandidates,
+            pruned,
             value => value.VehicleId == AlgorithmTestData.VehicleOne
                 && value.Code == HardVectorCandidateAssessor.RelocationNoReceiver);
     }

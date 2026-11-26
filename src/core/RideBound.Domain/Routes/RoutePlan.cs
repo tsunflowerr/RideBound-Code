@@ -66,8 +66,6 @@ public sealed class RoutePlan
 
     public IReadOnlyList<RouteStop> MutableSuffix { get; }
 
-    public IEnumerable<RouteStop> AllStops => FrozenPrefix.Concat(MutableSuffix);
-
     public IEnumerable<RouteStop> RemainingStops =>
         FrozenPrefix.Skip(ExecutedStopCount).Concat(MutableSuffix);
 

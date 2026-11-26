@@ -29,13 +29,6 @@ public static class RidePoolingPolicyRegistry
         };
         return policyId is RideBoundHardVector;
     }
-
-    public static string ToPolicyId(RidePoolingPolicyKind policyKind) =>
-        policyKind switch
-        {
-            RidePoolingPolicyKind.RideBoundHardVector => RideBoundHardVector,
-            _ => throw new ArgumentOutOfRangeException(nameof(policyKind)),
-        };
 }
 
 public sealed record SolverBackedRidePoolingPolicyOptions
@@ -125,16 +118,6 @@ public sealed class SolverBackedRidePoolingPolicy
         SolverBackedRidePoolingPolicyOptions policyOptions)
     {
         ArgumentNullException.ThrowIfNull(context);
-
-        // G2 candidates are assessed in pairs only by the C1 hard-vector assessor; any other
-        // policy would see half moves, so the combination is a programming error.
-        if (generationOptions?.WaitingRiderRelocation is not null
-            && policyOptions?.PolicyKind != RidePoolingPolicyKind.RideBoundHardVector)
-        {
-            throw new ArgumentException(
-                "Waiting-rider relocation runs only under the solver-backed C1 policy.",
-                nameof(generationOptions));
-        }
         ArgumentNullException.ThrowIfNull(generationOptions);
         ArgumentNullException.ThrowIfNull(policyOptions);
 
@@ -197,8 +180,7 @@ public sealed class SolverBackedRidePoolingPolicy
         var finished = RevisionPenaltyPolicy.Finish(
             context,
             candidates,
-            FleetSelectionResult.Success(selected.Selection!.Selection),
-            _physicalValidator);
+            FleetSelectionResult.Success(selected.Selection!.Selection));
 
         if (!finished.IsSuccess)
         {
@@ -341,8 +323,7 @@ public sealed class SolverBackedRidePoolingPolicy
                     applied.Decision!.ProposedState,
                     context.Policies,
                     context.PublicationScope,
-                    context.SourceEventSequence,
-                    RevisionReasonCode: "WP4_SOLVER_SELECTION"));
+                    context.SourceEventSequence));
             return validated.IsValid
                 ? CandidateSelectionValidationResult.Valid()
                 : CandidateSelectionValidationResult.Invalid(

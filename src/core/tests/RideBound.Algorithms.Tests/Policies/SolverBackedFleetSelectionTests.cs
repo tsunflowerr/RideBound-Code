@@ -16,21 +16,11 @@ public sealed class SolverBackedFleetSelectionTests
     [Fact]
     public void Policy_registry_round_trips_every_unique_published_name()
     {
-        var ids = Enum.GetValues<RidePoolingPolicyKind>()
-            .Select(RidePoolingPolicyRegistry.ToPolicyId)
-            .ToArray();
-
-        Assert.Equal(ids.Length, ids.Distinct(StringComparer.Ordinal).Count());
-        Assert.All(
-            Enum.GetValues<RidePoolingPolicyKind>(),
-            kind =>
-            {
-                Assert.True(
-                    RidePoolingPolicyRegistry.TryParse(
-                        RidePoolingPolicyRegistry.ToPolicyId(kind),
-                        out var parsed));
-                Assert.Equal(kind, parsed);
-            });
+        Assert.True(
+            RidePoolingPolicyRegistry.TryParse(
+                RidePoolingPolicyRegistry.RideBoundHardVector,
+                out var parsed));
+        Assert.Equal(RidePoolingPolicyKind.RideBoundHardVector, parsed);
         Assert.False(RidePoolingPolicyRegistry.TryParse("unknown", out _));
     }
 

@@ -37,7 +37,6 @@ public sealed class ShadowAllocatorAllocateTests
         var result = allocator.Allocate(state, [], new SimTime(Now));
 
         Assert.Same(state, result);
-        Assert.Empty(allocator.LastScores);
     }
 
     [Theory]
@@ -57,9 +56,6 @@ public sealed class ShadowAllocatorAllocateTests
 
         var expected = new ShareabilityScorer(inputs.Network, Cell(inputs, state))
             .Score(Context(state, firstPromise, coRiderClass, onEdge));
-        var score = Assert.Single(allocator.LastScores);
-        Assert.Equal(Opened, score.Key);
-        Assert.Equal(expected, score.Value);
         Assert.Equal(ShadowAllocation.From(expected.Score, 0.01), result.Commitments.ShadowAllocationOf(Opened));
         Assert.Equal(coRiderClass, result.Commitments.ShadowAllocationOf(First)!.Class);
         Assert.Equal(2, result.Commitments.ShadowAllocations.Count);

@@ -762,8 +762,7 @@ public sealed class Wp4RunnerIntegrationTests
         var solver = new CapturingUnknownSolver();
         var setup = CreateSession(
             FinalWp4Configuration(),
-            solver,
-            useManifestSolverSeed: true);
+            solver);
 
         var response = setup.Session.Process(
             ReadFixture("wp2/valid-bootstrap-event-batch.json")).Response!;
@@ -802,15 +801,13 @@ public sealed class Wp4RunnerIntegrationTests
     private static SessionSetup CreateSession(
         Wp4RunnerConfiguration wp4,
         ICandidateSelectionSolver? solver = null,
-        CommitmentPolicyConfiguration? commitmentConfiguration = null,
-        bool useManifestSolverSeed = false)
+        CommitmentPolicyConfiguration? commitmentConfiguration = null)
     {
         var commitment = commitmentConfiguration ?? CommitmentConfiguration();
         var session = NewSession(
             commitment,
             wp4,
-            solver,
-            useManifestSolverSeed);
+            solver);
         Assert.Equal(
             "helloAck",
             session.Process(ReadFixture("hello/valid-hello.json"))
@@ -827,8 +824,7 @@ public sealed class Wp4RunnerIntegrationTests
     private static RunnerSession NewSession(
         CommitmentPolicyConfiguration commitment,
         Wp4RunnerConfiguration wp4,
-        ICandidateSelectionSolver? solver = null,
-        bool useManifestSolverSeed = false) =>
+        ICandidateSelectionSolver? solver = null) =>
         new(
             RunnerDefaults.CapabilityRequirements,
             commitmentPolicies: commitment,
@@ -837,8 +833,7 @@ public sealed class Wp4RunnerIntegrationTests
             wp4Configuration: wp4,
             solverBackedPolicy: solver is null
                 ? null
-                : new SolverBackedRidePoolingPolicy(solver),
-            useManifestSolverSeed: useManifestSolverSeed);
+                : new SolverBackedRidePoolingPolicy(solver));
 
     private static JsonNode InitializePayload(
         Wp4RunnerConfiguration wp4,
