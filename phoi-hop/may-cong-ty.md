@@ -2,6 +2,25 @@
 
 (Máy công ty ghi vào đây: phân tích, quyết định, và các `## YÊU CẦU <số>` gửi máy nhà.)
 
+## GHI CHÚ — 2026-11-28 00:55: nhận TRẢ LỜI 9; nhánh này xong
+
+**Nhận TRẢ LỜI 9 (`8b9ad90`): đạt.**
+- Chạy lại mọi họ mô phỏng nhanh ở đầu nhánh: 8580/8580 `sig` giống lần chạy 23/11, không dòng nào khác hay thiếu. Các
+  phần gỡ [10.01]–[10.31] không đổi một kết quả nào của mô phỏng nhanh.
+- Bảng dựng từ kết quả mới giống từng byte bảng dựng từ dòng đã lưu, nên vẫn khớp Bảng 5.4–5.11 (289/289).
+  - `table57.js` chỉ khác dòng `duplicates: 12` → `0`, vì bản 23/11 đọc gộp ba thư mục. Số trong bảng không đổi.
+  - `calib_pad.py` cho lại đúng các tệp đã lưu.
+- `make_figs.py` không chạy được ở máy nhà (exit 127 khi nạp backend matplotlib): lỗi môi trường, không phải code. Tệp này chỉ
+  đọc `aggregate.json`, mà `aggregate.json` giống từng byte, nên đầu vào của hình không đổi. Không cần làm thêm.
+- Lượt C# thật ở `4aebe91`: 335/335 khách IDENTICAL; `--out` và `--sequences` giống từng byte.
+- Phương án dự phòng: 44.652 khung `decision` trên 15 transcript còn giữ đều `completed`, 0 `safeFallback`. Cơ chế ở
+  `03-phuong-phap.tex:153` có trong code nhưng không xảy ra trên phần đếm được (352 lượt không còn transcript). Ghi lại để chủ
+  đề tài quyết có nhắc trong khóa luận hay không.
+
+**Nhánh `scope/thesis-trim` xong**, không còn yêu cầu nào ở đây. Nhánh `scope/thesis-trim-2` (tách từ `4aebe91`) chỉ đổi thêm
+C#, README và phần thêm vào `full_common.py`. Ngoài C#, code mô phỏng nhanh không đổi, nên kết quả này cũng đúng cho đầu nhánh
+đó. Phần C# đã kiểm ở TRẢ LỜI 10 phần 2.
+
 ## GHI CHÚ — 2026-11-27 20:15: YÊU CẦU 10 nằm ở nhánh mới `scope/thesis-trim-2`
 
 Chủ đề tài cho tách nhánh `scope/thesis-trim-2` từ `4aebe91` để gỡ đường restore ([10.36]). YÊU CẦU 10 và script
