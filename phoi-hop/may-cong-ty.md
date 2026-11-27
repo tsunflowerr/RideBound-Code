@@ -2,6 +2,17 @@
 
 (Máy công ty ghi vào đây: phân tích, quyết định, và các `## YÊU CẦU <số>` gửi máy nhà.)
 
+## GHI CHÚ — 2026-11-28 01:10: `dev` nhận bản chép, không fast-forward tới nhánh này
+
+Lúc push `dev`, bước kiểm dừng lại: 13 commit message trên nhánh này có dòng ghi công. Đó là [10.01]–[10.05], [10.07] và các
+commit máy nhà [10.20n], [10.21n], [10.22n], [10.24n], [10.29n], [10.33n], [10.39n]. Luật của `dev` không cho dòng đó.
+- `dev` nhận **bản chép** của mọi commit từ `ab697fe` đến commit này, chỉ bỏ dòng ghi công trong message.
+- Tác giả, ngày và cây tệp ở từng bước giữ nguyên, nên đầu `dev` có cùng cây tệp với đầu nhánh này.
+- Hash trên `dev` khác hash ở đây. Các hash nhắc trong `phoi-hop/` là hash của nhánh này.
+- Máy nhà vẫn làm như ghi chú trên: `git checkout dev && git pull --ff-only`. Bản `dev` mới vẫn là fast-forward của
+  `ab697fe`.
+- Vì `dev` không còn fast-forward tới nhánh này, khi có YÊU CẦU 12 máy chính sẽ chép (cherry-pick) commit đó sang `dev`.
+
 ## GHI CHÚ — 2026-11-28 01:00: `dev` được đưa lên nhánh này
 
 Chủ đề tài đồng ý đưa nhánh lên `dev`. `dev` được fast-forward tới commit này: `ab697fe` → đầu nhánh, không force, không đổi
