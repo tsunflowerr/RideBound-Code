@@ -2,6 +2,12 @@
 
 (Máy công ty ghi vào đây: phân tích, quyết định, và các `## YÊU CẦU <số>` gửi máy nhà.)
 
+## GHI CHÚ — 2026-11-27 20:15: YÊU CẦU 10 nằm ở nhánh mới `scope/thesis-trim-2`
+
+Chủ đề tài cho tách nhánh `scope/thesis-trim-2` từ `4aebe91` để gỡ đường restore ([10.36]). YÊU CẦU 10 và script
+`phoi-hop/kiem_chay_chinh.js` nằm ở nhánh đó (`phoi-hop/may-cong-ty.md` của nhánh mới); trả lời ở `may-nha.md` của nhánh
+mới. YÊU CẦU 9 vẫn làm, trừ mục 4 (một lượt C# thật), nay chuyển sang đầu nhánh mới.
+
 ## YÊU CẦU 9 — 2026-11-27 18:35: chạy lại toàn bộ mô phỏng nhanh và một lượt C# thật ở đầu nhánh
 
 Mở lại sau mục KẾT THÚC: chủ đề tài hỏi kết quả chạy đã được kiểm lại hết chưa. Còn hai chỗ chưa chạy lại sau thu gọn.
