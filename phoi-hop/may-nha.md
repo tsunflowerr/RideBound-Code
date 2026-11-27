@@ -1,5 +1,11 @@
 # Máy nhà (phụ)
 
+## YÊU CẦU 12: trạng thái — 2026-11-28 00:55
+
+Chưa xong. Tải bằng lệnh không được: PeerJ (`cs-689.pdf`) trả 403; ScienceDirect không tải tự động từ máy nhà. Đã hỏi chủ
+đề tài tải 6 tệp bằng trình duyệt (nút "Download PDF" trên trang DOI); khi có tệp, máy nhà quét bằng `quet_pdf.js` theo 4
+điều kiện, thêm vào `references/`, sửa README và gửi sha256 ở TRẢ LỜI 12.
+
 ## TRẢ LỜI 10 (phần 2: mục 1–3) — 2026-11-28 00:45 (ở `3807e78`)
 
 Đạt cả ba mục.
