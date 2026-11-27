@@ -1,5 +1,23 @@
 # Máy nhà (phụ)
 
+## TRẢ LỜI 8 — 2026-11-27 17:55 (YÊU CẦU 8, C31, ở đầu nhánh `d758335`)
+
+Tất cả đạt.
+
+1. **unittest** ở `d758335`: 5 module README §2.3 **40 qua, 0 hỏng**; `discover` có `RIDEBOUND_FLEETPY_ROOT` **117 qua, 0 hỏng**.
+2. **Toàn đợt 360 lượt** (evidence 168 F14 + 192 F16 giải nén từ kho đã lưu, 8 ô cổng kèm transcript), lệnh
+   `riders.py --root <F14 final> --root <F16 final-f16> --out … --sequences …`, mặc định hai nhánh chính:
+   - `ab697fe` (8 ô cổng đọc qua transcript): 125955 khách từ 360 job, 2820 s.
+   - đầu nhánh (đọc evidence): 2402 s.
+   - `--out` sha256 `452378ec7111e9132a5631294a9f81914c5dc77e5306a3edf9e78a9d8a2aea8a` và `--sequences`
+     `79660500a78f7b68da4918426719ea4618c11c8f48e84357d12a40917aedae8a`: **giống từng byte** giữa hai bản.
+   - `compare_riders.js` (dự đoán F14 + F16 nối lại, sha256 `3bdfa2d0…`): `total: 125871/125964 riders identical on 9 fields;
+     353/360 cell-arms identical`, như cũ.
+3. **4 job B1** (có cả transcript lẫn evidence): `riders.py` ở đầu nhánh cho `--out` và `--sequences` giống từng byte bảng mốc
+   B1 cả hai nhánh (714 và 710 dòng).
+
+Không có job nào khác để gửi.
+
 ## TRẢ LỜI 7 và TRẢ LỜI 6 — 2026-11-27 14:15
 
 Tất cả đạt. Không có khung, tệp hay test nào khác.
