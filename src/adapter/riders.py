@@ -1,13 +1,13 @@
-"""Per-rider rows of finished RideBound jobs, read from each job's transcript or evidence file.
+"""Per-rider rows of finished RideBound jobs, read from each job's evidence file.
 
   python -B riders.py --root <runs> [--root <runs> ...] --out <riders.tsv> [--sequences <drop-sequences.tsv>]
       [--arms A,B,...]
 
 A job is a folder <arm>-<cell> under a --root whose summary.json says "pass". The roots are read in the given order,
 the folders of each root in name order; a job of an arm that is not listed is skipped, and a job name seen under an
-earlier root is not read again. A job is read from transcript-00.ndjson.gz when it has one, otherwise from
-evidence.json.gz, which must match EVIDENCE.sha256 (format ridebound-job-evidence-v1). These are the files a job of the
-final runs leaves: the adapter's recorder writes the gzip transcript and the job's finalize step writes the evidence.
+earlier root is not read again. A job is read from evidence.json.gz, which must match EVIDENCE.sha256 (format
+ridebound-job-evidence-v1). Every job of the final runs has it: the job's finalize step writes it, with the audit table
+that run_job.audit rebuilds from the transcript, whether the transcript is kept or not.
 
 --out gets one row per rider with a drop promise, sorted by requestId:
   lifecycle   the rider's state in the final checkpoint
@@ -21,23 +21,14 @@ final runs leaves: the adapter's recorder writes the gzip transcript and the job
 --sequences gets each rider's published drop ETAs as a JSON list, in ledger order, without consecutive repeats and
 without the revision that the Runner publishes at the drop itself (the last one, published at its own drop ETA).
 
-A job is refused when its records disagree. From a transcript: a frame whose SHA-256 differs, a ledger entry that is
-not a promisePublished action of an acknowledged decision with the same ETAs, an acknowledged publication that is not
-in the ledger or is published twice, deltas that are not |e - v|, |p - e| and |p - v|, or ETAs that are not canonical
-integers or do not form one chain per rider and coordinate (the initial promise first, then v = the previous p).
-Always: the riders' sum of |c| must equal the ledger total, and each rider's ledger entries must add up to its sum.
-
-Also refused, because the final runs never produced them: a job folder with an uncompressed transcript-00.ndjson, a
-transcript record whose frameLengthBytes is not the length of its frame, and a request whose lifecycle is not a
-string. RB_PREFER_EVIDENCE=1, the old reader's switch to read the evidence next to a kept transcript, is refused too.
+A job is refused when its evidence disagrees with itself: the riders' sum of |c| must equal the ledger total, each
+rider's ledger entries must add up to its sum, and every request's lifecycle must be a string.
 """
 import argparse
-import base64
 import collections
 import gzip
 import hashlib
 import json
-import os
 import pathlib
 import re
 
@@ -45,16 +36,7 @@ HEADER = "role\tcell\trequestId\tlifecycle\tt0\tp0\tD0\tA\tserved\tsumAbsC\tnonz
 SEQUENCES_HEADER = "role\tcell\trequestId\tdropSequence\n"
 MAIN_ARMS = ("FS-G2-SHRC71-CL", "FS-G2-SHHZ71-N")
 CELL = re.compile(r"(d\d{8}-vf-r\d-w\d\d)")
-TRANSCRIPT = "transcript-00.ndjson.gz"
 EVIDENCE = "evidence.json.gz"
-REMOVED = "removed; see commit ebca912 (branch research/final-real-runs-2026-11-06)"
-# (coordinate, its ETA in a promise, its field in the ledger deltas)
-COORDINATES = (("pickup", "pickupEtaMs", "pickupEtaTotalMs"), ("drop", "dropEtaMs", "dropEtaTotalMs"))
-MAX_CANONICAL = 2**53 - 1
-# In a frame over 16 MiB every travel snapshot's arcs list is emptied before parsing: nothing here reads arcs, and a
-# full-node job sends about 16 snapshots of about 140 MB each.
-BIG_FRAME = 16 * 2**20
-ARCS = re.compile(rb'"arcs":\[.*?\],"snapshotHash"', re.DOTALL)
 
 
 def finished_jobs(roots, arms):
@@ -74,18 +56,10 @@ def finished_jobs(roots, arms):
 
 
 def read_job(folder):
-    """(audit table, ledger total of |c| over the drop ETAs, final online state, first alighting time per rider)."""
-    if (folder / "transcript-00.ndjson").exists():
-        raise SystemExit(f"{folder}: reading an uncompressed transcript-00.ndjson: {REMOVED}")
-    if (folder / TRANSCRIPT).exists():
-        return read_transcript(folder / TRANSCRIPT)
-    if (folder / EVIDENCE).exists():
-        return read_evidence(folder)
-    raise SystemExit(f"{folder}: no {TRANSCRIPT} and no {EVIDENCE}")
-
-
-def read_evidence(folder):
-    """The values that the job's evidence file stores."""
+    """(audit table, ledger total of |c| over the drop ETAs, final online state, first alighting time per rider), as
+    the job's evidence file stores them."""
+    if not (folder / EVIDENCE).exists():
+        raise SystemExit(f"{folder}: no {EVIDENCE}")
     data = (folder / EVIDENCE).read_bytes()
     sealed = (folder / "EVIDENCE.sha256").read_text(encoding="utf-8").split()[0]
     if hashlib.sha256(data).hexdigest() != sealed:
@@ -95,108 +69,6 @@ def read_evidence(folder):
         raise SystemExit(f"{folder}: not this job's evidence")
     audit = evidence["audit"]
     return audit["table"], audit["summary"]["sumDropC"], evidence["finalOnlineState"], evidence["events"]["alighted"]
-
-
-def read_transcript(path):
-    """One pass over the transcript, then the audit table rebuilt from its last checkpoint."""
-    decisions, acknowledged, state, alighted = {}, set(), None, {}
-    with gzip.open(path, "rt", encoding="utf-8", newline="") as handle:
-        for number, line in enumerate(handle):
-            record = json.loads(line)
-            frame = base64.b64decode(record["frameBase64"])
-            if hashlib.sha256(frame).hexdigest() != record["frameSha256"]:
-                raise SystemExit(f"{path} line {number}: frame hash mismatch")
-            stated = record.get("frameLengthBytes")
-            if stated != len(frame):
-                raise SystemExit(f"{path} line {number}: frameLengthBytes {stated!r} is not the frame's length "
-                                 f"{len(frame)}")
-            if len(frame) > BIG_FRAME:
-                frame = ARCS.sub(b'"arcs":[],"snapshotHash"', frame)
-            envelope = json.loads(frame)
-            route = (record["direction"], envelope.get("messageType"))
-            if route == ("runnerToAdapter", "decision"):
-                decisions[envelope["payload"]["decisionHash"]] = envelope["payload"]
-            elif route == ("adapterToRunner", "decisionApplied"):
-                acknowledged.add(envelope["payload"]["decisionHash"])
-            elif route == ("runnerToAdapter", "checkpoint"):
-                state = envelope["payload"]["content"]["onlineState"]
-            elif route == ("adapterToRunner", "eventBatch"):
-                for event in envelope["payload"].get("events", []):
-                    if event.get("eventType") == "passengerAlighted":
-                        alighted.setdefault(event["payload"]["requestId"], envelope["simTimeMs"])
-    if state is None:
-        raise SystemExit(f"{path.parent}: no final checkpoint")
-    actions = {}  # publicationId -> promisePublished payload of an acknowledged decision
-    for decision_hash, payload in decisions.items():
-        if decision_hash not in acknowledged:
-            continue
-        for action in payload.get("actions", []):
-            if action.get("decisionType") == "promisePublished":
-                value = action["payload"]
-                if value["publicationId"] in actions:
-                    raise SystemExit(f"{path}: publication {value['publicationId']} published twice")
-                actions[value["publicationId"]] = value
-    table = audit_table(state, actions)
-    check_chains(table)
-    return table, sum(abs(row[9]) for row in table if row[1] == "drop"), state, alighted
-
-
-def audit_table(state, actions):
-    """One row per ledger entry and coordinate, the table that run_job.audit stores in evidence.json.gz:
-    (requestId, coordinate, sequence, kind, publishedAtMs, v, e, p, x = e - v, c = p - e, z = p - v, closed),
-    with v the promise in force before the entry, e the kept-route ETA and p the published ETA. A pickup revision
-    published at or after the boarding is closed."""
-    requests = {request["requestId"]: request for request in state["requests"]}
-    table, in_ledger = [], set()
-    for history in state["commitmentLedger"]:
-        rider = history["requestId"]
-        boarded = requests.get(rider, {}).get("actualPickupTimeMs")
-        for sequence, entry in enumerate(history["entries"]):
-            published = entry["publishedPromise"]
-            in_ledger.add(entry["publicationId"])
-            action = actions.get(entry["publicationId"])
-            if action is None:
-                raise SystemExit(f"{rider}: ledger publication {entry['publicationId']} has no acknowledged action")
-            initial = entry["kind"] == "initialPromise"
-            for coordinate, eta, dimension in COORDINATES:
-                p = published["projection"][eta]
-                if action["promise"][eta] != p:
-                    raise SystemExit(f"{rider}/{coordinate}: action p differs from ledger p")
-                if initial:
-                    v = e = p
-                else:
-                    v, e = entry["previousPromise"]["projection"][eta], entry["exogenousProjection"][eta]
-                    for name, value in (("exogenous", abs(e - v)), ("decisionInduced", abs(p - e)),
-                                        ("visible", abs(p - v))):
-                        if entry["deltas"][name][dimension] != value:
-                            raise SystemExit(f"{rider}/{coordinate}#{sequence}: |{name}| ledger="
-                                             f"{entry['deltas'][name][dimension]} recomputed={value}")
-                closed = (coordinate == "pickup" and boarded is not None
-                          and published["publishedAtMs"] >= boarded and not initial)
-                table.append((rider, coordinate, sequence, entry["kind"], published["publishedAtMs"],
-                              v, e, p, e - v, p - e, p - v, int(closed)))
-    missing = set(actions) - in_ledger
-    if missing:
-        raise SystemExit(f"{len(missing)} acknowledged publications are not in the final ledger")
-    return table
-
-
-def check_chains(table):
-    """Every ETA is a canonical integer, and each rider's rows per coordinate form one chain: the initial promise
-    first, then every revision starts from the promise in force (v = the previous p)."""
-    previous = {}  # (requestId, coordinate) -> (sequence, p) of the row before
-    for rider, coordinate, sequence, kind, _, v, e, p, *_ in sorted(table, key=lambda row: row[:3]):
-        for value in (v, e, p):
-            if not isinstance(value, int) or isinstance(value, bool) or not 0 <= value <= MAX_CANONICAL:
-                raise SystemExit(f"{rider}/{coordinate}#{sequence}: ETA {value!r} is not a canonical integer")
-        key = (rider, coordinate)
-        if key not in previous:
-            if kind != "initialPromise":
-                raise SystemExit(f"{rider}/{coordinate}#{sequence}: the first entry is not the initial promise")
-        elif kind == "initialPromise" or sequence <= previous[key][0] or v != previous[key][1]:
-            raise SystemExit(f"{rider}/{coordinate}#{sequence} breaks the chain: {kind}, v={v}, previous p="
-                             f"{previous[key][1]}")
-        previous[key] = (sequence, p)
 
 
 def rider_rows(role, cell, folder, table, total_c, state, alighted):
@@ -280,8 +152,6 @@ def main(argv=None):
     parser.add_argument("--sequences", type=pathlib.Path, help="also write the drop-ETA sequences (must not exist)")
     parser.add_argument("--arms", default=",".join(MAIN_ARMS), help="comma-separated arms to read")
     args = parser.parse_args(argv)
-    if os.environ.get("RB_PREFER_EVIDENCE") == "1":
-        parser.error(f"RB_PREFER_EVIDENCE=1 (read the evidence next to a kept transcript): {REMOVED}")
     for path in (args.out, args.sequences):
         if path is not None and path.exists():
             parser.error(f"{path} exists")
