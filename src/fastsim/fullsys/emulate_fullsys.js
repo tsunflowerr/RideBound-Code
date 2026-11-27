@@ -7,13 +7,9 @@
 // w08 ? 32 : 68, 'prev4', accuracy-index-2019.json, 15) with clipPickup. Nothing of the engines is changed.
 //
 // Modes
-//   plain    84 F14 plain cells (wf14/scenarios/weekdays-P512) x 2 arms with BOTH engines (wf20 engine17 and the
-//            emulator-wf15 engine used for every adapter prediction). Gate: rider fingerprint sig (shcore.js:211) equals
-//            the company row (expected/wf20__fullsys__results__rows.tsv) for every cell-arm, for both engines.
-//   adapter  the same cell-arms on the full-node fixtures (convert_via_full.py) -> rider predictions (same columns as
+//   adapter  the panel cells x 2 arms (ARMS) on the full-node fixtures (convert_via_full.py) -> rider predictions (same columns as
 //            emulate_via_full.js plus sS, aSH, bSH) and per-cell Shadow inputs for the Runner; sealed before any job.
-// Usage: node emulate_fullsys.js plain <out.json>
-//        node emulate_fullsys.js adapter <data root with fixtures/ worlds/> <out.tsv>
+// Usage: node emulate_fullsys.js adapter <data root with fixtures/ worlds/> <out.tsv>
 'use strict';
 const fs = require('fs');
 const path = require('path');
@@ -21,8 +17,6 @@ const crypto = require('crypto');
 
 const SP = require('../paths.js').DATA;
 const K = path.join(__dirname, '..', 'wf20');
-const SC = require(path.join(K, 'runner/scenario.js'));
-const E17 = require(path.join(K, 'runner/engine17.js'));
 const SS = require(path.join(K, 'runner/sscore.js'));
 const NF = require(path.join(K, 'runner/netfull.js'));
 const SH = require(path.join(K, 'scripts/shcore.js'));
@@ -35,7 +29,6 @@ const CELLS_DIR = path.join(SP, 'wf14/scenarios/weekdays-P512');
 const PANELS = JSON.parse(fs.readFileSync(path.join(SP, 'wf17/r1-identity-fence-pad/work/panels.json'), 'utf8'));
 const FROZEN = JSON.parse(fs.readFileSync(path.join(SP, 'wf15/frozen/shadow-params.json'), 'utf8'));
 const INDEX = JSON.parse(fs.readFileSync(path.join(SP, 'wf7/c-forecast/results/accuracy-index-2019.json'), 'utf8'));
-const EXPECTED = process.env.RB_EXPECTED_ROWS;   // plain mode only: wf20__fullsys__results__rows.tsv (src/emulator/expected at commit 68cd8ff)
 const CONFIG = 'G2';
 const ARMS = [
   { role: 'FS-G2-SHRC71-CL', key: 'SHRC71', fc: 'CL' },
@@ -87,7 +80,7 @@ function optionsFor(c, rc, P, globalOf, arm) {
       return a;
     },
   };
-  const o = { ...JSON.parse(JSON.stringify(LIB.CONFIGS[CONFIG])), arm: E17.parseArm(arm.key), wallBudgetMs: 900000, sscore };
+  const o = { ...JSON.parse(JSON.stringify(LIB.CONFIGS[CONFIG])), arm: ECL.parseArm(arm.key), wallBudgetMs: 900000, sscore };
   let prof = null;
   if (arm.fc === 'CL') {
     prof = FC.profile(c.day, c.win === 'w08' ? 32 : 68, 'prev4', INDEX, 15);
@@ -95,41 +88,6 @@ function optionsFor(c, rc, P, globalOf, arm) {
     o.forecast = { prof, clipPickup: true };
   }
   return { o, rec, theta, prof, cellCtx };
-}
-
-function plain(out) {
-  if (fs.existsSync(out)) throw new Error('refused: ' + out + ' exists');
-  const want = new Map();
-  const lines = fs.readFileSync(EXPECTED, 'utf8').trim().split(/\r?\n/);
-  const h = lines[0].split('\t');
-  const ix = k => h.indexOf(k);
-  for (const l of lines.slice(1)) {
-    const v = l.split('\t');
-    want.set([v[ix('cell')], v[ix('config')], v[ix('mode')], v[ix('arm')]].join('|'), { sig: v[ix('sig')], served: Number(v[ix('served')]) });
-  }
-  const results = [];
-  for (const c of f14Cells()) {
-    const rc = SH.readCell(path.join(CELLS_DIR, c.cell + '.json'));
-    for (const arm of ARMS) {
-      const exp = want.get([c.cell, CONFIG, arm.fc, arm.key].join('|'));
-      if (!exp) throw new Error('no expected row ' + c.cell + ' ' + arm.key);
-      const row = { cell: c.cell, role: arm.role, expected: exp.sig };
-      for (const [name, E] of [['engine17', E17], ['wf15', E15]]) {
-        const P = SC.prepareScenario(rc.s, LIB.RUN_OVERRIDES, rc.dir);
-        const { o } = optionsFor(c, rc, P, null, arm);
-        const res = E.simulate(P, o);
-        row[name] = sigOf(res);
-        row[name + 'Served'] = res.riders.filter(r => r.served).length;
-      }
-      row.ok = row.engine17 === exp.sig && row.wf15 === exp.sig;
-      results.push(row);
-      console.log(`${c.cell} ${arm.role}: engine17 ${row.engine17 === exp.sig ? 'OK' : 'DIFF'} wf15 ${row.wf15 === exp.sig ? 'OK' : 'DIFF'} served ${row.engine17Served}/${exp.served}`);
-    }
-  }
-  const ok = results.filter(r => r.ok).length;
-  fs.writeFileSync(out, JSON.stringify({ expectedFile: EXPECTED, expectedSha256: sha(fs.readFileSync(EXPECTED)), cellArms: results.length, identical: ok, results }, null, 1), { flag: 'wx' });
-  console.log(`plain gate: ${ok}/${results.length} cell-arms identical to the company rows with both engines`);
-  return ok === results.length ? 0 : 1;
 }
 
 // ------------------------------------------------------------------------------------------------ adapter mode
@@ -242,8 +200,7 @@ module.exports = { f14Cells, optionsFor, ARMS, CONFIG, sigOf, prepareViaCell };
 
 if (require.main === module) {
   const [mode, ...rest] = process.argv.slice(2);
-  if (mode === 'plain') process.exit(plain(rest[0]));
   if (mode === 'adapter') process.exit(adapter(rest[0], rest[1]));
-  console.error('usage: node emulate_fullsys.js plain <out.json> | adapter <root> <out.tsv>');
+  console.error('usage: node emulate_fullsys.js adapter <root> <out.tsv>');
   process.exit(2);
 }

@@ -8,7 +8,6 @@ const CONFIGS = {
   INS: {},
   G2: { reopt: { g2: 99, g2Targets: 8 }, lock: 'ratchet' },
 };
-const RUN_OVERRIDES = { maxRidePermille: 2000, dwellMs: 0, nVeh: 62 };
 
 // prior_prevhour.csv -> Map 'day|win' -> { O: number[nZones], D: number[nZones] } in zone-index order (zoneIds ascending)
 function loadPrior(file, zoneIds) {
@@ -29,4 +28,4 @@ function loadPrior(file, zoneIds) {
   return M;
 }
 
-module.exports = { WF, CONFIGS, RUN_OVERRIDES, loadPrior };
+module.exports = { WF, CONFIGS, loadPrior };
