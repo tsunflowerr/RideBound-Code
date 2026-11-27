@@ -1,5 +1,165 @@
 # Máy nhà (phụ)
 
+## TRẢ LỜI 10 (phần 1: mục 4) — 2026-11-27 19:40
+
+Phần còn lại (mục 1–3) chạy sau khi xong đợt mô phỏng nhanh của YÊU CẦU 9 (đang chạy 6 tiến trình, máy hết RAM cho Runner).
+
+**Mục 4, số liệu chạy chính:** `TỔNG OK 126 KHÁC 4 BỎ QUA 0`.
+- `riders.tsv`, `sequences.tsv`: bảng toàn đợt 360 lượt dựng ở TRẢ LỜI 8 bằng `riders.py` của `d758335` (giữa `d758335` và
+  `4138777` không đổi tệp nào trong `src/adapter`, `src/fastsim`): sha256 `452378ec…` và `79660500…`.
+- `--pred`: dự đoán F14 + F16 nối lại (sha256 `3bdfa2d0…`), như khi chạy `compare_riders.js`.
+- `full_common.py` với `RB_EVIDENCE` = thư mục có `publication-projection-f14/f16.jsonl.gz` (sha256 `4dbfe261…`, `320c444c…`),
+  ghi `full_common.json` (không commit).
+- 4 dòng KHÁC đều là sai số theo thời gian ở `04:104`, lệch ở chữ số thứ ba: w08 đối chứng 0,665 → 0,667; w08 kết hợp
+  0,520 → 0,521; w17 đối chứng 0,688 → 0,687; w17 kết hợp 0,671 → 0,668. Không sửa gì trong khóa luận. Có thể do định
+  nghĩa (gộp theo ngày, hay tập khách) khác với cách tính của khóa luận; `full_common.json` cho `timed_s` ở mục ALL/COMMON
+  để đối chiếu.
+
+Toàn bộ đầu ra:
+
+```
+THÔNG TIN	đầu vào	khách hoàn tất: đối chứng 63277, kết hợp 62678	ô: 180 + 180	bỏ qua: nhánh khác 0 dòng, chưa hoàn tất 0, thiếu chuỗi 0
+OK   	số lượt mỗi cấu hình	khóa luận 180	tính lại 180	04:72
+OK   	số lượt mỗi cấu hình (kết hợp)	khóa luận 180	tính lại 180	04:72
+OK   	khách hoàn tất đối chứng	khóa luận 63.277	tính lại 63277	04:121 Bảng 5.3
+OK   	khách hoàn tất kết hợp	khóa luận 62.678	tính lại 62678	04:121 Bảng 5.3
+OK   	khách chung	khóa luận 56.330	tính lại 56330	04:136
+OK   	khách chung / đối chứng (%)	khóa luận 89,0	tính lại 89,02 (89.02128735559523)	04:136
+OK   	khách chung / kết hợp (%)	khóa luận 89,9	tính lại 89,87 (89.87204441749897)	04:136
+OK   	Bảng 5.2 khách phục vụ: đối chứng	khóa luận 703,1	tính lại 703,08 (703.0777777777778)	04:88-91
+OK   	Bảng 5.2 khách phục vụ: kết hợp	khóa luận 696,4	tính lại 696,42 (696.4222222222222)	04:88-91
+OK   	Bảng 5.2 khách phục vụ: hiệu	khóa luận −6,66	tính lại -6,66 (-6.655555555555554)	04:88-91
+OK   	Bảng 5.2 khách phục vụ: cận dưới	khóa luận −8,75	tính lại -8,75 (-8.749439097035658)	04:88-91
+OK   	Bảng 5.2 khách phục vụ: cận trên	khóa luận −4,56	tính lại -4,56 (-4.56167201407545)	04:88-91
+OK   	Bảng 5.2 khách phục vụ: số ngày cao/thấp	khóa luận 4/26	tính lại 4/26	04:88-91
+OK   	Bảng 5.2 đổi qua lại 60 s: đối chứng	khóa luận 45,8	tính lại 45,84 (45.84444444444444)	04:88-91
+OK   	Bảng 5.2 đổi qua lại 60 s: kết hợp	khóa luận 18,5	tính lại 18,50 (18.500000000000004)	04:88-91
+OK   	Bảng 5.2 đổi qua lại 60 s: hiệu	khóa luận −27,34	tính lại -27,34 (-27.344444444444445)	04:88-91
+OK   	Bảng 5.2 đổi qua lại 60 s: cận dưới	khóa luận −31,38	tính lại -31,38 (-31.380006693360066)	04:88-91
+OK   	Bảng 5.2 đổi qua lại 60 s: cận trên	khóa luận −23,31	tính lại -23,31 (-23.308882195528824)	04:88-91
+OK   	Bảng 5.2 đổi qua lại 60 s: số ngày cao/thấp	khóa luận 0/30	tính lại 0/30	04:88-91
+OK   	Bảng 5.2 muộn > 1 phút /1.000: đối chứng	khóa luận 245,2	tính lại 245,20 (245.20461662465297)	04:88-91
+OK   	Bảng 5.2 muộn > 1 phút /1.000: kết hợp	khóa luận 211,0	tính lại 210,97 (210.9727302148931)	04:88-91
+OK   	Bảng 5.2 muộn > 1 phút /1.000: hiệu	khóa luận −34,23	tính lại -34,23 (-34.231886409760016)	04:88-91
+OK   	Bảng 5.2 muộn > 1 phút /1.000: cận dưới	khóa luận −40,15	tính lại -40,15 (-40.146490082619614)	04:88-91
+OK   	Bảng 5.2 muộn > 1 phút /1.000: cận trên	khóa luận −28,32	tính lại -28,32 (-28.317282736900417)	04:88-91
+OK   	Bảng 5.2 muộn > 1 phút /1.000: số ngày cao/thấp	khóa luận 1/29	tính lại 1/29	04:88-91
+OK   	Bảng 5.2 tổng mức đổi giờ s/khách: đối chứng	khóa luận 230,4	tính lại 230,45 (230.44944178229122)	04:88-91
+OK   	Bảng 5.2 tổng mức đổi giờ s/khách: kết hợp	khóa luận 192,7	tính lại 192,74 (192.73562274814427)	04:88-91
+OK   	Bảng 5.2 tổng mức đổi giờ s/khách: hiệu	khóa luận −37,71	tính lại -37,71 (-37.71381903414699)	04:88-91
+OK   	Bảng 5.2 tổng mức đổi giờ s/khách: cận dưới	khóa luận −41,40	tính lại -41,40 (-41.400748157385564)	04:88-91
+OK   	Bảng 5.2 tổng mức đổi giờ s/khách: cận trên	khóa luận −34,03	tính lại -34,03 (-34.02688991090841)	04:88-91
+OK   	Bảng 5.2 tổng mức đổi giờ s/khách: số ngày cao/thấp	khóa luận 0/30	tính lại 0/30	04:88-91
+OK   	đổi qua lại giảm (%)	khóa luận 59,6	tính lại 59,65 (59.64614638875423)	04:77
+OK   	đổi qua lại giảm ở mọi ngày	khóa luận 30	tính lại 30	04:77
+OK   	khách phục vụ giảm (%)	khóa luận 0,95	tính lại 0,95 (0.9466314774720708)	04:77
+OK   	sáng: đổi qua lại hiệu	khóa luận −6,91	tính lại -6,91 (-6.9111111111111105)	04:98
+OK   	sáng: tổng mức đổi giờ hiệu	khóa luận −49,52	tính lại -49,52 (-49.524362865790906)	04:98
+OK   	chiều: đổi qua lại hiệu	khóa luận −20,43	tính lại -20,43 (-20.433333333333334)	04:98
+OK   	chiều: tổng mức đổi giờ hiệu	khóa luận −26,70	tính lại -26,70 (-26.701877722818413)	04:98
+OK   	sáng: muộn hiệu	khóa luận −93,26	tính lại -93,26 (-93.25897978069187)	04:100
+OK   	sáng: muộn cận dưới	khóa luận −103,2	tính lại -103,23 (-103.23488821112332)	04:100
+OK   	sáng: muộn cận trên	khóa luận −83,3	tính lại -83,28 (-83.28307135026043)	04:100
+OK   	chiều: muộn hiệu	khóa luận +21,83	tính lại 21,83 (21.832140223053575)	04:100
+OK   	chiều: muộn cận dưới	khóa luận +13,6	tính lại 13,64 (13.63546315403805)	04:100
+OK   	chiều: muộn cận trên	khóa luận +30,0	tính lại 30,03 (30.0288172920691)	04:100
+OK   	chiều: muộn tăng ở mọi ngày	khóa luận 30	tính lại 30	04:100
+OK   	sai số giờ báo đầu, đối chứng (gộp khách)	khóa luận 3,05	tính lại 3,05 (3.0500269618766445)	04:102
+OK   	sai số giờ báo đầu, kết hợp (gộp khách)	khóa luận 2,88	tính lại 2,88 (2.8847231444844903)	04:102
+OK   	sai số giờ báo đầu 04:104 sáng, đối chứng (gộp khách)	khóa luận 3,10	tính lại 3,10 (3.1024669331520642)	04:104 sáng
+OK   	sai số giờ báo đầu 04:104 sáng, kết hợp (gộp khách)	khóa luận 2,57	tính lại 2,57 (2.573424695397964)	04:104 sáng
+THÔNG TIN	sai số giờ báo đầu 04:104 sáng, trung bình theo ngày	3,112	2,575
+OK   	sai số giờ báo đầu 04:104 chiều, đối chứng (gộp khách)	khóa luận 3,00	tính lại 3,00 (2.999991899570755)	04:104 chiều
+OK   	sai số giờ báo đầu 04:104 chiều, kết hợp (gộp khách)	khóa luận 3,18	tính lại 3,18 (3.180902020091945)	04:104 chiều
+THÔNG TIN	sai số giờ báo đầu 04:104 chiều, trung bình theo ngày	2,999	3,175
+OK   	Bảng 5.3 mọi khách: đổi qua lại hiệu	khóa luận −27,34	tính lại -27,34 (-27.344444444444445)	04:123
+OK   	Bảng 5.3 mọi khách: đổi qua lại cận dưới	khóa luận −31,38	tính lại -31,38 (-31.380006693360066)	04:123
+OK   	Bảng 5.3 mọi khách: đổi qua lại cận trên	khóa luận −23,31	tính lại -23,31 (-23.308882195528824)	04:123
+OK   	Bảng 5.3 mọi khách: muộn hiệu	khóa luận −34,23	tính lại -34,23 (-34.231886409760016)	04:124
+OK   	Bảng 5.3 mọi khách: muộn cận dưới	khóa luận −40,15	tính lại -40,15 (-40.146490082619614)	04:124
+OK   	Bảng 5.3 mọi khách: muộn cận trên	khóa luận −28,32	tính lại -28,32 (-28.317282736900417)	04:124
+OK   	Bảng 5.3 mọi khách: tổng mức đổi giờ hiệu	khóa luận −37,71	tính lại -37,71 (-37.71381903414699)	04:125
+OK   	Bảng 5.3 mọi khách: tổng mức đổi giờ cận dưới	khóa luận −41,40	tính lại -41,40 (-41.400748157385564)	04:125
+OK   	Bảng 5.3 mọi khách: tổng mức đổi giờ cận trên	khóa luận −34,03	tính lại -34,03 (-34.02688991090841)	04:125
+OK   	Bảng 5.3 mọi khách: sai số giờ báo đầu hiệu	khóa luận −0,17	tính lại -0,17 (-0.1694017721446464)	04:126
+OK   	Bảng 5.3 mọi khách: sai số giờ báo đầu cận dưới	khóa luận −0,22	tính lại -0,22 (-0.22429492088624675)	04:126
+OK   	Bảng 5.3 mọi khách: sai số giờ báo đầu cận trên	khóa luận −0,11	tính lại -0,11 (-0.11450862340304607)	04:126
+OK   	Bảng 5.3 khách chung: đổi qua lại hiệu	khóa luận −24,59	tính lại -24,59 (-24.58888888888889)	04:123
+OK   	Bảng 5.3 khách chung: đổi qua lại cận dưới	khóa luận −28,17	tính lại -28,17 (-28.173409385892896)	04:123
+OK   	Bảng 5.3 khách chung: đổi qua lại cận trên	khóa luận −21,00	tính lại -21,00 (-21.00436839188488)	04:123
+OK   	Bảng 5.3 khách chung: muộn hiệu	khóa luận −34,02	tính lại -34,02 (-34.02456639359348)	04:124
+OK   	Bảng 5.3 khách chung: muộn cận dưới	khóa luận −39,63	tính lại -39,63 (-39.63233319382596)	04:124
+OK   	Bảng 5.3 khách chung: muộn cận trên	khóa luận −28,42	tính lại -28,42 (-28.416799593361006)	04:124
+OK   	Bảng 5.3 khách chung: tổng mức đổi giờ hiệu	khóa luận −40,04	tính lại -40,04 (-40.03736740356028)	04:125
+OK   	Bảng 5.3 khách chung: tổng mức đổi giờ cận dưới	khóa luận −43,82	tính lại -43,82 (-43.82268604998616)	04:125
+OK   	Bảng 5.3 khách chung: tổng mức đổi giờ cận trên	khóa luận −36,25	tính lại -36,25 (-36.2520487571344)	04:125
+OK   	Bảng 5.3 khách chung: sai số giờ báo đầu hiệu	khóa luận −0,19	tính lại -0,19 (-0.1928731998677329)	04:126
+OK   	Bảng 5.3 khách chung: sai số giờ báo đầu cận dưới	khóa luận −0,25	tính lại -0,25 (-0.2488523268805303)	04:126
+OK   	Bảng 5.3 khách chung: sai số giờ báo đầu cận trên	khóa luận −0,14	tính lại -0,14 (-0.13689407285493552)	04:126
+OK   	Bảng 5.3 chiều mọi khách: muộn hiệu	khóa luận +21,83	tính lại 21,83 (21.832140223053575)	04:129
+OK   	Bảng 5.3 chiều mọi khách: muộn cận dưới	khóa luận +13,64	tính lại 13,64 (13.63546315403805)	04:129
+OK   	Bảng 5.3 chiều mọi khách: muộn cận trên	khóa luận +30,03	tính lại 30,03 (30.0288172920691)	04:129
+OK   	Bảng 5.3 chiều mọi khách: sai số giờ báo đầu hiệu	khóa luận +0,18	tính lại 0,18 (0.17643677310743497)	04:130
+OK   	Bảng 5.3 chiều mọi khách: sai số giờ báo đầu cận dưới	khóa luận +0,11	tính lại 0,11 (0.10580746802066027)	04:130
+OK   	Bảng 5.3 chiều mọi khách: sai số giờ báo đầu cận trên	khóa luận +0,25	tính lại 0,25 (0.24706607819420967)	04:130
+OK   	Bảng 5.3 chiều khách chung: muộn hiệu	khóa luận +20,84	tính lại 20,84 (20.841605560062863)	04:129
+OK   	Bảng 5.3 chiều khách chung: muộn cận dưới	khóa luận +13,36	tính lại 13,36 (13.36108650959316)	04:129
+OK   	Bảng 5.3 chiều khách chung: muộn cận trên	khóa luận +28,32	tính lại 28,32 (28.322124610532565)	04:129
+OK   	Bảng 5.3 chiều khách chung: sai số giờ báo đầu hiệu	khóa luận +0,17	tính lại 0,17 (0.16532622056492371)	04:130
+OK   	Bảng 5.3 chiều khách chung: sai số giờ báo đầu cận dưới	khóa luận +0,10	tính lại 0,10 (0.09814566428034202)	04:130
+OK   	Bảng 5.3 chiều khách chung: sai số giờ báo đầu cận trên	khóa luận +0,23	tính lại 0,23 (0.2325067768495054)	04:130
+THÔNG TIN	Bảng 5.3 khách chung: hiệu số khách phục vụ (phải 0)	0
+OK   	chiều FS-G2-SHHZ71-N: dời muộn ròng do điều phối (phút, gộp khách)	khóa luận 2,77	tính lại 2,77 (2.7664226871725295)	04:581
+OK   	chiều FS-G2-SHHZ71-N: sai số có dấu trừ phần ròng (phút, gộp khách)	khóa luận −0,54	tính lại -0,54 (-0.5403399730294492)	04:581
+THÔNG TIN	chiều FS-G2-SHHZ71-N: sai số có dấu A−p0 (gộp khách / theo ngày)	2,226	2,224
+OK   	chiều FS-G2-SHRC71-CL: dời muộn ròng do điều phối (phút, gộp khách)	khóa luận 2,94	tính lại 2,94 (2.936846870492024)	04:581
+OK   	chiều FS-G2-SHRC71-CL: sai số có dấu trừ phần ròng (phút, gộp khách)	khóa luận 0,00	tính lại 0,00 (0.003717986757578688)	04:581
+THÔNG TIN	chiều FS-G2-SHRC71-CL: sai số có dấu A−p0 (gộp khách / theo ngày)	2,941	2,933
+OK   	phần dời sớm trong mức giảm tổng |c| (%)	khóa luận 73,1	tính lại 73,08 (73.08033245511271)	04:583
+THÔNG TIN	số lần chuyển xe 3.033 → 757	không tính từ bảng từng khách; đã kiểm 18/11 (riders-compare: mọi lần chuyển; sổ cam kết 2.918 → 726 chỉ tính sau giờ báo đầu)
+OK   	ngưỡng 30 s: đối chứng (khách/ngày)	khóa luận 79,60	tính lại 79,60 (79.59999999999998)	máy nhà 23/11
+OK   	ngưỡng 30 s: kết hợp (khách/ngày)	khóa luận 53,43	tính lại 53,43 (53.43333333333333)	máy nhà 23/11
+OK   	ngưỡng 30 s: mức giảm (%)	khóa luận 32,9	tính lại 32,87 (32.87269681742042)	04:712
+OK   	ngưỡng 30 s: cận trên khoảng tin cậy < 0	khóa luận 1	tính lại 1	04:713
+OK   	ngưỡng 60 s: đối chứng (khách/ngày)	khóa luận 45,84	tính lại 45,84 (45.84444444444444)	máy nhà 23/11
+OK   	ngưỡng 60 s: kết hợp (khách/ngày)	khóa luận 18,50	tính lại 18,50 (18.500000000000004)	máy nhà 23/11
+OK   	ngưỡng 60 s: mức giảm (%)	khóa luận 59,6	tính lại 59,65 (59.64614638875423)	04:712
+OK   	ngưỡng 60 s: cận trên khoảng tin cậy < 0	khóa luận 1	tính lại 1	04:713
+OK   	ngưỡng 120 s: đối chứng (khách/ngày)	khóa luận 21,50	tính lại 21,50 (21.500000000000007)	máy nhà 23/11
+OK   	ngưỡng 120 s: kết hợp (khách/ngày)	khóa luận 5,49	tính lại 5,49 (5.488888888888889)	máy nhà 23/11
+OK   	ngưỡng 120 s: mức giảm (%)	khóa luận 74,5	tính lại 74,47 (74.4702842377261)	04:712
+OK   	ngưỡng 120 s: cận trên khoảng tin cậy < 0	khóa luận 1	tính lại 1	04:713
+OK   	nhóm hạn mức 0 FS-G2-SHHZ71-N: số khách	khóa luận 43.339	tính lại 43339	04:320
+OK   	nhóm hạn mức 0 FS-G2-SHHZ71-N: có thay đổi do điều phối	khóa luận 2.854	tính lại 2854	04:320
+THÔNG TIN	nhóm hạn mức 0 FS-G2-SHHZ71-N	tỷ lệ 68,5 % (khóa luận: khoảng 68 %)	không có trong dự đoán: 8
+OK   	nhóm hạn mức 0 FS-G2-SHRC71-CL: số khách	khóa luận 42.543	tính lại 42543	04:320
+OK   	nhóm hạn mức 0 FS-G2-SHRC71-CL: có thay đổi do điều phối	khóa luận 0	tính lại 0	04:320
+THÔNG TIN	nhóm hạn mức 0 FS-G2-SHRC71-CL	tỷ lệ 67,9 % (khóa luận: khoảng 68 %)	không có trong dự đoán: 0
+OK   	nhóm hạn mức 0 đối chứng: tỷ lệ có thay đổi (%)	khóa luận 6,59	tính lại 6,59 (6.5852926924940585)	04:320 (số học trên số khóa luận)
+OK   	full_common: khách đối chứng	khóa luận 63.277	tính lại 63277	đối chiếu chéo
+OK   	full_common: khách kết hợp	khóa luận 62.678	tính lại 62678	đối chiếu chéo
+OK   	full_common: khách chung	khóa luận 56.330	tính lại 56330	đối chiếu chéo
+OK   	sai số theo thời gian đối chứng (gộp khách)	khóa luận 0,68	tính lại 0,68 (0.6763547936481654)	04:102
+OK   	sai số theo thời gian kết hợp (gộp khách)	khóa luận 0,60	tính lại 0,60 (0.5973853440792765)	04:102
+KHÁC 	sai số theo thời gian w08 đối chứng (theo ngày)	khóa luận 0,665	tính lại 0,667 (0.6665906851359935)	04:104
+KHÁC 	sai số theo thời gian w08 kết hợp (theo ngày)	khóa luận 0,520	tính lại 0,521 (0.5205030820785929)	04:104
+KHÁC 	sai số theo thời gian w17 đối chứng (theo ngày)	khóa luận 0,688	tính lại 0,687 (0.6867434657310638)	04:104
+KHÁC 	sai số theo thời gian w17 kết hợp (theo ngày)	khóa luận 0,671	tính lại 0,668 (0.6677400200218361)	04:104
+OK   	chiều: hiệu sai số theo thời gian chưa rõ (khoảng tin cậy chứa 0)	khóa luận 1	tính lại 1	04:104
+OK   	Bảng 5.3 mọi khách: sai số theo thời gian hiệu	khóa luận −0,080	tính lại -0,080 (-0.08023883651672717)	04:127
+OK   	Bảng 5.3 mọi khách: sai số theo thời gian cận dưới	khóa luận −0,097	tính lại -0,097 (-0.09699794842736525)	04:127
+OK   	Bảng 5.3 mọi khách: sai số theo thời gian cận trên	khóa luận −0,063	tính lại -0,063 (-0.06347972460608908)	04:127
+OK   	Bảng 5.3 khách chung: sai số theo thời gian hiệu	khóa luận −0,084	tính lại -0,084 (-0.08406525156364492)	04:127
+OK   	Bảng 5.3 khách chung: sai số theo thời gian cận dưới	khóa luận −0,101	tính lại -0,101 (-0.10147456283998513)	04:127
+OK   	Bảng 5.3 khách chung: sai số theo thời gian cận trên	khóa luận −0,067	tính lại -0,067 (-0.0666559402873047)	04:127
+OK   	đối chiếu chéo rev (riders.tsv và full_common.json)	-27.344444444444445	-27.344444444444445	cùng định nghĩa
+OK   	đối chiếu chéo late (riders.tsv và full_common.json)	-34.23188640976	-34.231886409760016	cùng định nghĩa
+OK   	đối chiếu chéo tv5 (riders.tsv và full_common.json)	-37.71381903414692	-37.71381903414699	cùng định nghĩa
+OK   	đối chiếu chéo initAbs (riders.tsv và full_common.json)	-0.16940177214464544	-0.1694017721446464	cùng định nghĩa
+OK   	đối chiếu chéo served (riders.tsv và full_common.json)	-6.655555555555554	-6.655555555555554	cùng định nghĩa
+TỔNG	OK 126	KHÁC 4	BỎ QUA 0
+```
+
 ## TRẢ LỜI 8 — 2026-11-27 17:55 (YÊU CẦU 8, C31, ở đầu nhánh `d758335`)
 
 Tất cả đạt.
