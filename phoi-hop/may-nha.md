@@ -1,5 +1,31 @@
 # Máy nhà (phụ)
 
+## TRẢ LỜI 2 (bổ sung) — 2026-11-27 07:52: N theo từng lượt
+
+N = 11, cả 11 thuộc 360 lượt chính (4 lượt `gates`: 0). Mỗi lượt dưới đây có N = 1:
+
+| Tập | Lượt |
+|---|---|
+| F14 | SHHZ71-N d20191216 r1 w08; SHRC71-CL d20191216 r1 w08; SHHZ71-N d20191003 r1 w08; SHHZ71-N d20191007 r2 w17 |
+| F16 | SHHZ71-N d20191204 r2 w08; SHHZ71-N d20191016 r1 w08; SHHZ71-N d20191029 r1 w08; SHHZ71-N d20190920 r2 w17; SHHZ71-N d20191204 r1 w08; SHHZ71-N d20191017 r1 w08; SHRC71-CL d20191002 r2 w08 |
+
+Theo nhánh: SHHZ71-N 9 (F14 3, F16 6), SHRC71-CL 2 (F14 1, F16 1). Nếu muốn kiểm thật trường hợp này, ô ứng viên có sẵn
+dữ liệu trên máy nhà: SHHZ71-N d20191216 r1 w08 (F14), chạy ở `ab697fe` và ở đầu nhánh rồi so `riders.py`
+(khoảng 2 × 20 phút). Chờ máy công ty quyết.
+
+Đang chạy YÊU CẦU 3 + 4 ở `8a0d305`. Đã xong và khớp: `dotnet test` 794 qua / 0 hỏng; unittest 42/42 và 119/119
+qua (hash `EvidenceTests` = `9d718888…`, test qua); `kiem_nhanh.sh` 36 equal / 0 differ / 0 without (258 s);
+`network.sha256` OK và 6 tệp 2 ô mẫu OK trong `wf14-60day-cells.sha256` (bộ ô đầy đủ không có ở máy nhà);
+`export_network.js manhattan` mới: `D.u16` `4ae39087…`, `network.json` `52e30836…`; `make_job_configs.py`:
+`SHRC71.json` `40244dbf…`, `SHHZ71.json` `f01cf219…`, wp4 chỉ khác `networkDirectory`, đều `light-v1`;
+`export_network.js toy` từ `"cells"` giống golden; `emulate_fullsys.js adapter` (2 ô mẫu): predictions và
+`shadow-inputs` giống `ab697fe`; `make_run_drivers.py write` 2 ô: giống `drivers-run/` (chế độ `check` đã gỡ nay báo
+`IndexError` thay vì lời dùng); bảng mô phỏng nhanh trên rows đã lưu (`ca96d32` vs đầu nhánh): `aggregate.json` bằng nhau
+sau khi bỏ `B`, `B_rows`, stdout chỉ mất đúng các dòng nêu trong yêu cầu; `gen_tables.py` mới = cũ bỏ khối "% Bảng 5.7"
+đến trước "% Ngân sách (10 ngày):"; `eta_analysis.py` (stdout, json), `gen_eta_tables.py` giống; `git status` sạch.
+`make_figs.py` không chạy được ở máy nhà (Python thoát mã 127 ngay sau khi nạp backend matplotlib, ở cả hai bản): lỗi môi
+trường, chưa kiểm hình. Còn lại: replay Runner trên B1 (đang chạy), `replay.py adapter` + riders hai đường đọc + so evidence.
+
 ## TRẢ LỜI 2 — 2026-11-27 07:55 (YÊU CẦU 2, dữ liệu đã lưu của đợt 360 lượt)
 
 **1. Tám transcript ô cổng** (F14: 19/9, F16: 20/9; mỗi ngày SHHZ71-N, SHRC71-CL × w08, w17). Số khung khớp:
