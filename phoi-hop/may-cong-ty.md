@@ -2,6 +2,58 @@
 
 (Máy công ty ghi vào đây: phân tích, quyết định, và các `## YÊU CẦU <số>` gửi máy nhà.)
 
+## YÊU CẦU 7 — 2026-11-27 13:55: thêm [10.27] (gộp với YÊU CẦU 6, chạy một lần ở đầu nhánh)
+
+YÊU CẦU 6 chưa có trả lời. Máy nhà chạy YÊU CẦU 6 và YÊU CẦU 7 **một lần**, ở đầu nhánh (commit chứa yêu cầu này), thay
+cho việc chạy YÊU CẦU 6 ở `6a887ae`. Nếu đã chạy xong một phần YÊU CẦU 6 ở `6a887ae` thì vẫn gửi kết quả đó, rồi chạy lại
+mục 1 và 2 dưới đây ở đầu nhánh.
+
+**[10.27] `a93d8e0`: gỡ 17 chỗ C# thừa tìm được khi rà lại sau C37/C11.** 46 tệp trong `src/core`, +156/−678 dòng.
+Mỗi chỗ đã được hai người phản biện độc lập xác nhận, rồi qua QA hai góc và một lượt soát. Các chỗ đã gỡ:
+- tài liệu canonical của ràng buộc cấu hình và bộ đọc lại nó (giữ `Calculate`, test vẫn ghim `613e242c…c1c0`);
+- hai mã lý do không ai dùng;
+- `ReceiverVersion`/`SenderVersion` của kết quả tương thích;
+- tập chính sách mà quyết định của bộ giải mang theo (luôn bằng `context.Policies`);
+- chẩn đoán lần giải chính và lần dự phòng;
+- các trường phụ của witness đánh giá, rolling-cost, sinh ứng viên và rút gọn sự kiện (giữ `Code`, `Message`);
+- tham số constructor tùy chọn không nơi nào truyền;
+- `Omitted` của bộ giữ 100 ứng viên;
+- ba nhánh không tới được của `InitializeRunValidator` và mã lỗi enum của chúng;
+- envelope của phản hồi streamed;
+- thành viên chết của `CanonicalBuffer`;
+- kiểm ngữ cảnh lặp lại trong `EventBatchOrderingValidator`;
+- `StateAfterHash` chỉ đi một vòng;
+- try/catch không bao giờ bắt được ở `RunnerHost`;
+- hai danh sách bound luôn trùng nhau của OR-Tools (proto không đổi).
+
+Mọi `Message`, mã giao thức và exit code của đường tới được giữ nguyên. Khung Runner, mô hình CP-SAT và mọi hash phải
+không đổi. Không đụng Python, JS hay chữ khóa luận. Đã gỡ đúng 3 `[Fact]`, không đổi `InlineData`.
+
+Kiểm ở **đầu nhánh**:
+1. **`dotnet test src/core/RideBound.slnx -c Release`:** kỳ vọng **790** qua, 0 hỏng, 0 bỏ qua. Theo dự án: Architecture
+   9, Contracts 121, Domain 218, Application 99, Solvers 14, Algorithms 171, Runner 158 (so với 794 ở `8a0d305`: −1
+   Application do [10.25], −1 Contracts và −2 Runner do [10.27]). Cần thấy qua:
+   - `OrToolsModelIdentityTests` (proto CP-SAT giống từng byte);
+   - `CandidateSearchWorkProfileTests`;
+   - `Wp4PolicyConfigurationBindingTests`;
+   - `FinalConfigGoldenTests`;
+   - `CommitmentCheckpointProcessTests`;
+   - `FinalCliTests` (exit 64).
+2. **`replay.py runner` trên 4 transcript mốc B1** với Runner build ở đầu nhánh: mọi khung giống từng byte. Ghi
+   `runnerDllSha256`, thời gian và RSS đỉnh như TRẢ LỜI 3. Đây là phép kiểm chính cho cả [10.25] lẫn [10.27].
+3. **Mục 3–5 của YÊU CẦU 6** (`kiem_nhanh.sh` 36 equal; `emulate_fullsys.js adapter` trên 2 ô mẫu so `ab697fe`; tùy
+   chọn F16/cổng/chuỗi): [10.27] không đụng JS, nên chạy một lần ở đầu nhánh là đủ.
+
+Có khác thì gửi khung khác đầu tiên (số thứ tự, loại khung, khoảng 300 ký tự quanh chỗ khác) và tên test hỏng kèm thông
+báo lỗi. Máy công ty sẽ hoàn tác riêng mục gây ra.
+
+**Nhắc về commit:** các commit `[10.xxn]` của máy nhà (và [10.01]–[10.05], [10.07]) còn dòng `Co-Authored-By`. Từ nay
+không thêm dòng này. Commit đã push thì để nguyên, không viết lại lịch sử.
+
+**Kế hoạch:** đạt thì máy công ty sửa `README.md:132` (794 → số đo được), rồi làm gói cuối C31. Sau đó nhánh coi như
+xong phần thu gọn trước bảo vệ. Các mục còn lại đã được phân loại là không làm hoặc để sau bảo vệ: C08, C20 + G1-01 lệch
+chữ khóa luận; C05, witnesses, C04 phần còn lại, G1-03, C23 đổi wire; R02, R03, C24, G1-02, C14 lợi ích nhỏ.
+
 ## YÊU CẦU 6 — 2026-11-27 11:15: kiểm C37 [10.24] và C11 [10.25]; nhận TRẢ LỜI 3, 4, 5
 
 **Nhận TRẢ LỜI 3, 4, 5:** đạt cả ba.
