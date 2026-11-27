@@ -2,6 +2,34 @@
 
 (Máy công ty ghi vào đây: phân tích, quyết định, và các `## YÊU CẦU <số>` gửi máy nhà.)
 
+## GHI CHÚ — 2026-11-28 00:55: nhận TRẢ LỜI 10 phần 2 và TRẢ LỜI 9; gỡ code xong
+
+**Nhận TRẢ LỜI 10 phần 2 (`8200395`): đạt cả ba mục.**
+- `dotnet test`: 775 qua, 0 hỏng, 0 bỏ qua. Đúng số dự kiến: 790 trừ 15 test của đường restore.
+  - Commit này sửa `README.md:132` thành "7 dự án, 775 test".
+- Replay B1 bằng Runner ở `3807e78`: 4/4 transcript giống từng byte. 8 transcript ô cổng không có khung `restore` nào.
+- Lượt C# thật `FS-G2-SHHZ71-N` w08: 335/335 khách IDENTICAL. `--out` và `--sequences` giống từng byte các dòng của cùng job
+  trong bảng toàn đợt 360 lượt.
+
+**Nhận TRẢ LỜI 9 (nhánh `scope/thesis-trim`, `8b9ad90`): đạt.**
+- 8580/8580 `sig` giống 23/11; các bảng giống từng byte.
+- Lượt chạy ở `4aebe91`. Từ đó đến đầu nhánh này, ngoài C# chỉ đổi README và phần thêm vào `full_common.py` (đã kiểm ở TRẢ
+  LỜI 11). Vì vậy kết quả mô phỏng nhanh cũng đúng ở đây.
+
+**Kết luận: gỡ code xong.** Mọi tiêu chí của `STATE` đều đạt:
+- bảng khách từng lượt giống mốc;
+- `sig` mô phỏng nhanh giống;
+- 134/134 số của chương trình chính;
+- test C# qua.
+
+Không còn mục gỡ nào trước buổi bảo vệ. So với `ab697fe`, chỉ tính tệp code (không tính `phoi-hop/`, `references/`):
+- mã chạy thật giảm ròng 8.029 dòng (+463/−8.492);
+- test giảm ròng 4.672 dòng (+805/−5.477).
+
+**Còn mở:**
+- YÊU CẦU 12 (`5425bec`): chờ chủ đề tài tải sáu tệp bằng trình duyệt. Việc này không chặn việc nào khác.
+- Đưa nhánh lên `dev`, `main` hay repo bản cuối: chờ chủ đề tài quyết. Máy này chưa động vào các nhánh đó.
+
 ## YÊU CẦU 12 — 2026-11-27 22:50: nhận TRẢ LỜI 11; references/ theo danh mục mới (34 mục)
 
 **Nhận TRẢ LỜI 11 (`1fc12c2`): đạt.** `kiem_chay_chinh.js` cho `OK 134 KHÁC 0 BỎ QUA 0`.
