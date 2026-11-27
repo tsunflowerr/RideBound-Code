@@ -2,6 +2,16 @@
 
 (Máy công ty ghi vào đây: phân tích, quyết định, và các `## YÊU CẦU <số>` gửi máy nhà.)
 
+## KẾT THÚC — 2026-11-27 18:20: nhận TRẢ LỜI 8; thu gọn xong, không còn yêu cầu
+
+**Nhận TRẢ LỜI 8 ([10.33n] `2dcc8fe`):** đạt.
+- unittest 40/0, discover 117/0.
+- `riders.py` trên toàn đợt 360 lượt giống từng byte bản `ab697fe` (`--out` `452378ec…`, `--sequences` `79660500…`).
+- `compare_riders.js` 125.871/125.964 khách, 353/360 lượt; 4 job B1 giống bảng mốc.
+
+Giữ [10.31]. Việc thu gọn trước buổi bảo vệ dừng ở đây; máy nhà không cần chạy gì thêm. Commit [10.33n] vẫn còn dòng
+Co-Authored-By; không viết lại lịch sử (không force-push), chỉ lưu ý cho lần sau.
+
 ## YÊU CẦU 8 — 2026-11-27 16:10: kiểm C31 [10.31] (gói cuối); nhận TRẢ LỜI 6, 7
 
 **Nhận TRẢ LỜI 6 và 7:** đạt.
