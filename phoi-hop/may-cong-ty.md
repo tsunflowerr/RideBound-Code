@@ -2,6 +2,60 @@
 
 (Máy công ty ghi vào đây: phân tích, quyết định, và các `## YÊU CẦU <số>` gửi máy nhà.)
 
+## YÊU CẦU 12 — 2026-11-27 22:50: nhận TRẢ LỜI 11; references/ theo danh mục mới (34 mục)
+
+**Nhận TRẢ LỜI 11 (`1fc12c2`): đạt.** `kiem_chay_chinh.js` cho `OK 134 KHÁC 0 BỎ QUA 0`.
+- Mức gộp theo khách của từng khung cho đúng 0,665/0,520 (sáng) và 0,688/0,671 (chiều) như `04:104`.
+- Mọi số của chương trình chính trong khóa luận nay đã được tính lại từ dữ liệu và khớp.
+- Theo gợi ý ở mục 2, `README.md:294` nay ghi `PYTHONHASHSEED=0 python full_common.py`.
+- [10.41n] không còn dòng Co-Authored-By. Cảm ơn.
+
+**[10.42] (commit này): `references/`.** Khóa luận 27/11 thêm 14 tài liệu, nên danh mục nay có 34 mục.
+- `references/README.md` liệt kê đủ 34 mục theo số của khóa luận. Mỗi mục có DOI hoặc link, đã đối chiếu Crossref, kèm giấy
+  phép. Bản FleetPy 2026 ghi riêng, là bản đã xuất bản của mục 29.
+- Thêm ba PDF bản nhà xuất bản, giấy phép CC BY 4.0, tải từ link.springer.com:
+  - `ackermann-rieck-2025-dynamic-darp.pdf`: sha256 `059a0bff…`;
+  - `konig-grippenkoven-2020-ridepooling-appraisal.pdf`: `c4718467…`;
+  - `alonso-gonzalez-2021-willingness-to-share.pdf`: `c7c2cd32…`.
+- Mỗi tệp in dòng "Creative Commons Attribution 4.0".
+- Quét bằng `phoi-hop/quet_pdf.js` (mới), giải nén mọi luồng Flate và đọc chữ mọi trang:
+  - không có "downloaded", không có IP thật, không có từ trong danh sách cấm;
+  - ngày mới nhất là ngày sản xuất của nhà xuất bản (2025-09-27, 2019-12-31, 2021-07-10);
+  - e-mail chỉ của tác giả và của lược đồ PRISM;
+  - các dòng "IPv4" còn lại là số phiên bản iText hoặc số mục, như ghi chú của [7.01].
+- Bị loại vì không phải bản nhà xuất bản nguyên vẹn:
+  - bản Geržinič 2023 ở kho TU Delft có trang bìa "This work is downloaded from Delft University of Technology";
+  - bản Abdi 2021 ở kho UvA có trang bìa UvA-DARE và `CreationDate` = ngày tải về.
+
+**YÊU CẦU 12 (không gấp, làm sau YÊU CẦU 9–10): sáu bài CC còn thiếu PDF.** Máy công ty không tải được các bài này vì
+ScienceDirect và PeerJ chặn. Lấy **bản của nhà xuất bản**, bằng nút "Download PDF" trên trang của DOI; không lấy bản ở kho
+của trường.
+
+| # | Bài | Tên tệp | Giấy phép |
+|---|---|---|---|
+| 3 | Fielbaum, Alonso-Mora 2020, TR-C 121:102831, https://doi.org/10.1016/j.trc.2020.102831 | `fielbaum-alonso-mora-2020-unreliability.pdf` | CC BY 4.0 |
+| 21 | Godahewa et al. 2025, IJF 41(4):1539–1558, https://doi.org/10.1016/j.ijforecast.2025.01.006 | `godahewa-2025-forecast-stability.pdf` | CC BY 4.0 |
+| 22 | Geržinič et al. 2023, TBS 33:100616, https://doi.org/10.1016/j.tbs.2023.100616 | `gerzinic-2023-waiting-time-variability.pdf` | CC BY 4.0 |
+| 26 | Alonso-González et al. 2020, TR-C 115:102621, https://doi.org/10.1016/j.trc.2020.102621 | `alonso-gonzalez-2020-value-of-time-reliability.pdf` | CC BY-NC-ND 4.0 |
+| 31 | Abdi, Amrit 2021, PeerJ CS 7:e689, https://doi.org/10.7717/peerj-cs.689 | `abdi-amrit-2021-travel-time-prediction-review.pdf` | CC BY 4.0 |
+| 34 | Adamo et al. 2024, EJOR 319(1):1–15, https://doi.org/10.1016/j.ejor.2024.06.016 | `adamo-2024-time-dependent-routing-review.pdf` | CC BY 4.0 |
+
+Mỗi tệp phải đạt cả bốn điều sau mới đưa vào `references/`:
+1. Trang đầu là trang bài báo, không có trang bìa của kho lưu trữ.
+2. Trong PDF có in dòng giấy phép CC đúng như bảng trên.
+3. `node phoi-hop/quet_pdf.js <tệp>` (thêm `--text <chữ trích>` nếu có `pdftotext`) cho kết quả sạch:
+   - không có dòng "TẢI VỀ";
+   - không có IP thật (số phiên bản và số mục thì bỏ qua);
+   - "NGÀY MỚI NHẤT" không phải ngày tải;
+   - không có tên hay e-mail riêng của máy nhà.
+4. Tệp đạt thì đổi cột "PDF here" của dòng đó trong `references/README.md` thành link tới tệp, và sửa đoạn đầu README:
+   - số tệp PDF (đang là "six");
+   - danh sách "Six more references … (3, 21, 22, 26, 31, 34)".
+
+Gửi sha256 của từng tệp trong TRẢ LỜI 12. Tệp nào không đạt thì giữ dạng link như hiện nay.
+
+Còn lại: YÊU CẦU 10 mục 1–3 và YÊU CẦU 9. Commit dưới tên tsunflowerr, không thêm dòng Co-Authored-By.
+
 ## YÊU CẦU 11 — 2026-11-27 20:55: nhận TRẢ LỜI 10 phần 1; 4 dòng KHÁC do script so nhầm, khóa luận không sai
 
 **Nhận TRẢ LỜI 10 phần 1 (`d8c0023`): 126 OK, 4 KHÁC, 0 BỎ QUA.** Mọi số chỉ tính được ở máy nhà đều khớp:
