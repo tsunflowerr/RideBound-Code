@@ -311,11 +311,11 @@ public sealed class Wp4RunnerIntegrationTests
     }
 
     [Fact]
-    public void A_late_boarding_is_recorded_and_survives_checkpoint_restore()
+    public void A_late_boarding_is_recorded_and_checkpointed()
     {
         // Late boarding: r-1 may be picked up in [1000, 2000] ms and boards at 2500 ms. The rider is
-        // onboard, the window is unchanged, the 500 ms gap is one record, and the record
-        // survives checkpoint/restore.
+        // onboard, the window is unchanged, the 500 ms gap is one record, and the checkpoint carries
+        // the record.
         var commitment = CommitmentConfiguration();
         var configuration = HardVectorConfiguration(commitment);
         var setup = CreateSession(configuration, commitmentConfiguration: commitment);
@@ -335,14 +335,12 @@ public sealed class Wp4RunnerIntegrationTests
         Assert.Equal(2_000, rider.LatestPickup.Milliseconds);
 
         var checkpoint = StreamedEnvelope(setup.Session.Process(CheckpointRequest()));
-        var restored = CreateSession(configuration, commitmentConfiguration: commitment);
-        Assert.Equal(
-            "restore",
-            restored.Session.Process(RestoreRequest(checkpoint.Payload))
-                .Response?.MessageType.Value);
-        Assert.Equal(
-            late,
-            Assert.Single(restored.Session.CommittedOnlineState!.Incidents.LatePickups));
+        var recorded = Assert.Single(
+            checkpoint.Payload.GetProperty("content").GetProperty("onlineState")
+                .GetProperty("incidentLedger").GetProperty("latePickups").EnumerateArray());
+        Assert.Equal("r-1", recorded.GetProperty("requestId").GetString());
+        Assert.Equal(2_500, recorded.GetProperty("actualPickupMs").GetInt64());
+        Assert.Equal(2_000, recorded.GetProperty("latestPickupMs").GetInt64());
     }
 
     [Fact]
@@ -380,11 +378,11 @@ public sealed class Wp4RunnerIntegrationTests
     }
 
     /// <summary>
-    /// Under `auditHash: light-v1` the state hash is the state identity hash, and a light
-    /// checkpoint restores into a light session.
+    /// Under `auditHash: light-v1` the state hash is the state identity hash, and a light session
+    /// answers a checkpoint request.
     /// </summary>
     [Fact]
-    public void Light_audit_changes_only_hash_fields_and_restores()
+    public void Light_audit_changes_only_hash_fields()
     {
         var commitment = CommitmentConfiguration();
         var lightWp4 = LightAuditConfiguration(commitment);
@@ -425,15 +423,6 @@ public sealed class Wp4RunnerIntegrationTests
 
         var checkpoint = StreamedEnvelope(light.Session.Process(CheckpointRequest()));
         Assert.Equal("checkpoint", checkpoint.MessageType.Value);
-        var restoredSession = CreateSession(lightWp4, commitmentConfiguration: commitment);
-        var restore = restoredSession.Session.Process(
-            Encoding.UTF8.GetBytes(
-                "{\"schemaVersion\":\"1.0.0\",\"messageType\":\"restore\"," +
-                "\"runId\":\"wp2-run-001\",\"scenarioId\":\"wp2-two-epoch-small\"," +
-                $"\"payload\":{checkpoint.Payload.GetRawText()}}}"));
-
-        Assert.Equal("restore", restore.Response?.MessageType.Value);
-        Assert.Equal(2, restoredSession.Session.AppliedEpoch);
     }
 
     [Theory]
@@ -865,18 +854,6 @@ public sealed class Wp4RunnerIntegrationTests
               "runId":"wp2-run-001",
               "scenarioId":"wp2-two-epoch-small",
               "payload":{}
-            }
-            """);
-
-    private static byte[] RestoreRequest(JsonElement payload) =>
-        Encoding.UTF8.GetBytes(
-            $$"""
-            {
-              "schemaVersion":"1.0.0",
-              "messageType":"restore",
-              "runId":"wp2-run-001",
-              "scenarioId":"wp2-two-epoch-small",
-              "payload":{{payload.GetRawText()}}
             }
             """);
 

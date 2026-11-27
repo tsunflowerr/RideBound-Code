@@ -558,14 +558,6 @@ public static class OnlineStateCanonicalWriter
             _ => throw new ArgumentOutOfRangeException(nameof(value)),
         };
 
-    internal static ShadowAllocationClass ShadowClassFrom(string? value) =>
-        value switch
-        {
-            "guaranteed" => ShadowAllocationClass.Guaranteed,
-            "allowed" => ShadowAllocationClass.Allowed,
-            _ => throw new ArgumentException("Unknown shadow allocation class.", nameof(value)),
-        };
-
     /// <summary>The shadowAllocations array, sorted by request identifier.</summary>
     internal static void WriteShadowAllocations(CanonicalBuffer buffer, CommitmentLedger ledger)
     {

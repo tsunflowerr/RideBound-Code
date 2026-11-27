@@ -90,8 +90,9 @@ In the G2 arms, rider `r-1` is moved from `v-2` to `v-1` at decision 2. The INS 
 3. With the relative path, the output is the same once the 64-hex hash values are masked. Only the
    configuration hash changes, and with it every hash that depends on it.
 
-Restoring from any of the 17 checkpoints of a run reproduces the rest of that run byte for byte
-(`Restore_from_every_checkpoint_reproduces_the_rest_of_the_session`).
+Each of the 17 checkpoints of a run is pinned by its SHA-256. Until the Runner's `restore` message was removed
+(27/11/2026), a test restored from every one of them and got the rest of the run byte for byte; the checkpoint bytes
+have not changed since, so they still hold the whole state that this test needed.
 
 ## The run that ends in an error
 

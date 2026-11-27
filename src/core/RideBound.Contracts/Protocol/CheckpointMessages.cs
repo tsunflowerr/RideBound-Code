@@ -21,28 +21,12 @@ public sealed record CheckpointPayload(
     Sha256Hex CheckpointHash,
     CheckpointContent Content);
 
-public sealed record RestoreAcknowledgedPayload(
-    string Status,
-    Sha256Hex CheckpointHash);
-
 public static class CheckpointPayloadCodec
 {
     public const string CurrentVersion = "1.0.0";
 
     private static readonly byte[] HashDomain =
         "RideBound.CheckpointHash.v1\0"u8.ToArray();
-
-    private static readonly IReadOnlySet<string> Fields =
-        Set("checkpointVersion", "checkpointHash", "content");
-
-    private static readonly IReadOnlySet<string> ContentFields = Set(
-        "manifestHash",
-        "stateHash",
-        "previousDecisionHash",
-        "appliedEpoch",
-        "nextEventSeq",
-        "simTimeMs",
-        "onlineState");
 
     public static byte[] Encode(CheckpointPayload payload)
     {
@@ -70,71 +54,6 @@ public static class CheckpointPayloadCodec
                 WriteContent(writer, payload.Content);
                 writer.WriteEndObject();
             });
-    }
-
-    public static ProtocolPayloadDecodeResult<CheckpointPayload> Decode(
-        JsonElement payload)
-    {
-        var objectError = ProtocolPayloadReader.ValidateObject(
-            payload,
-            "$.payload",
-            Fields);
-        var version = ProtocolPayloadReader.ReadRequiredString(
-            payload,
-            "$.payload",
-            "checkpointVersion",
-            requireOpaqueValue: false);
-        var hashText = ProtocolPayloadReader.ReadRequiredString(
-            payload,
-            "$.payload",
-            "checkpointHash",
-            requireOpaqueValue: false);
-        var contentProperty = ProtocolPayloadReader.ReadRequiredProperty(
-            payload,
-            "$.payload",
-            "content");
-        var error = HelloPayloadCodec.FirstError(
-            objectError,
-            version.Error,
-            hashText.Error,
-            contentProperty.Error);
-
-        if (error is not null)
-        {
-            return ProtocolPayloadDecodeResult<CheckpointPayload>.Failure(error);
-        }
-
-        if (!string.Equals(version.Value, CurrentVersion, StringComparison.Ordinal))
-        {
-            return Invalid(
-                "$.payload.checkpointVersion",
-                "Unknown checkpoint version.");
-        }
-
-        if (!Sha256Hex.TryCreate(hashText.Value, out var hash))
-        {
-            return Invalid(
-                "$.payload.checkpointHash",
-                "checkpointHash must be lowercase SHA-256.");
-        }
-
-        var content = ReadContent(contentProperty.Value);
-
-        if (!content.IsSuccess)
-        {
-            return ProtocolPayloadDecodeResult<CheckpointPayload>.Failure(
-                content.Error!);
-        }
-
-        if (CalculateHash(content.Value!) != hash)
-        {
-            return Invalid(
-                "$.payload.checkpointHash",
-                "Checkpoint content hash mismatch.");
-        }
-
-        return ProtocolPayloadDecodeResult<CheckpointPayload>.Success(
-            new CheckpointPayload(version.Value!, hash!, content.Value!));
     }
 
     public static Sha256Hex CalculateHash(CheckpointContent content)
@@ -259,74 +178,6 @@ public static class CheckpointPayloadCodec
         }
     }
 
-    private static ProtocolPayloadDecodeResult<CheckpointContent> ReadContent(
-        JsonElement element)
-    {
-        const string path = "$.payload.content";
-        var objectError = ProtocolPayloadReader.ValidateObject(
-            element,
-            path,
-            ContentFields);
-        var manifest = ProtocolPayloadReader.ReadRequiredString(
-            element, path, "manifestHash", requireOpaqueValue: false);
-        var state = ProtocolPayloadReader.ReadRequiredString(
-            element, path, "stateHash", requireOpaqueValue: false);
-        var previous = ProtocolPayloadReader.ReadRequiredString(
-            element, path, "previousDecisionHash", requireOpaqueValue: false);
-        var epoch = ProtocolPayloadReader.ReadRequiredInteger(
-            element, path, "appliedEpoch", minimum: 0);
-        var sequence = ProtocolPayloadReader.ReadRequiredInteger(
-            element, path, "nextEventSeq", minimum: 1);
-        var simTime = ProtocolPayloadReader.ReadRequiredInteger(
-            element, path, "simTimeMs", minimum: 0);
-        var onlineState = ProtocolPayloadReader.ReadRequiredProperty(
-            element, path, "onlineState");
-        var error = HelloPayloadCodec.FirstError(
-            objectError,
-            manifest.Error,
-            state.Error,
-            previous.Error,
-            epoch.Error,
-            sequence.Error,
-            simTime.Error,
-            onlineState.Error);
-
-        if (error is not null)
-        {
-            return ProtocolPayloadDecodeResult<CheckpointContent>.Failure(error);
-        }
-
-        if (!Sha256Hex.TryCreate(manifest.Value, out var manifestHash)
-            || !Sha256Hex.TryCreate(state.Value, out var stateHash)
-            || !Sha256Hex.TryCreate(previous.Value, out var previousHash))
-        {
-            return ProtocolPayloadDecodeResult<CheckpointContent>.Failure(
-                new ProtocolPayloadError(
-                    ProtocolPayloadErrorCode.InvalidValue,
-                    path,
-                    "Checkpoint hash fields must be lowercase SHA-256."));
-        }
-
-        if (onlineState.Value.ValueKind != JsonValueKind.Object)
-        {
-            return ProtocolPayloadDecodeResult<CheckpointContent>.Failure(
-                new ProtocolPayloadError(
-                    ProtocolPayloadErrorCode.InvalidFieldType,
-                    $"{path}.onlineState",
-                    "onlineState must be an object."));
-        }
-
-        return ProtocolPayloadDecodeResult<CheckpointContent>.Success(
-            new CheckpointContent(
-                manifestHash!,
-                stateHash!,
-                previousHash!,
-                epoch.Value,
-                sequence.Value,
-                simTime.Value,
-                onlineState.Value.Clone()));
-    }
-
     private static void WriteContent(
         Utf8JsonWriter writer,
         CheckpointContent content)
@@ -356,39 +207,5 @@ public static class CheckpointPayloadCodec
         {
             throw new ArgumentException("Checkpoint content is not canonical.", nameof(content));
         }
-    }
-
-    private static ProtocolPayloadDecodeResult<CheckpointPayload> Invalid(
-        string field,
-        string message) =>
-        ProtocolPayloadDecodeResult<CheckpointPayload>.Failure(
-            new ProtocolPayloadError(
-                ProtocolPayloadErrorCode.InvalidValue,
-                field,
-                message));
-
-    private static IReadOnlySet<string> Set(params string[] values) =>
-        new HashSet<string>(values, StringComparer.Ordinal);
-}
-
-public static class RestoreAcknowledgedPayloadCodec
-{
-    public static byte[] Encode(RestoreAcknowledgedPayload payload)
-    {
-        ArgumentNullException.ThrowIfNull(payload);
-
-        if (!string.Equals(payload.Status, "restored", StringComparison.Ordinal))
-        {
-            throw new ArgumentException("Restore status must be 'restored'.", nameof(payload));
-        }
-
-        return ProtocolPayloadReader.Write(
-            writer =>
-            {
-                writer.WriteStartObject();
-                writer.WriteString("status", payload.Status);
-                writer.WriteString("checkpointHash", payload.CheckpointHash.Value);
-                writer.WriteEndObject();
-            });
     }
 }

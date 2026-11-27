@@ -79,7 +79,7 @@ public sealed class SchemaAssetTests
                     == "implemented")
             .ToArray();
 
-        Assert.Equal(22, implementedEntries.Length);
+        Assert.Equal(21, implementedEntries.Length);
 
         foreach (var entry in implementedEntries)
         {
@@ -137,7 +137,6 @@ public sealed class SchemaAssetTests
                      "empty-action-payload.schema.json",
                      "checkpoint-content.schema.json",
                      "checkpoint-payload.schema.json",
-                     "restore-acknowledged-payload.schema.json",
                  })
         {
             using var document = JsonDocument.Parse(

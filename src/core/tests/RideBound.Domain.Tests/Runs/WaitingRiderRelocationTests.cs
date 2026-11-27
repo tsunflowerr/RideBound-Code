@@ -13,7 +13,7 @@ namespace RideBound.Domain.Tests.Runs;
 public sealed class WaitingRiderRelocationTests
 {
     [Fact]
-    public void A_waiting_rider_moves_with_both_accepted_sets_and_the_result_rehydrates()
+    public void A_waiting_rider_moves_with_both_accepted_sets()
     {
         var moved = Moved(Waiting());
 
@@ -29,15 +29,6 @@ public sealed class WaitingRiderRelocationTests
         Assert.Equal(moved.Vehicles[TestData.VehicleOne].Route, run.Vehicles[TestData.VehicleOne].Route);
         Assert.Equal(moved.Vehicles[TestData.VehicleTwo].Route, run.Vehicles[TestData.VehicleTwo].Route);
         Assert.Equal(TestData.VehicleOne, moved.Requests[TestData.RequestOne].AssignedVehicleId);
-
-        var rehydrated = RideBoundRun.Rehydrate(
-            run.Id,
-            run.ScenarioId,
-            run.AppliedEpoch,
-            run.SimulationTime,
-            run.Requests.Values,
-            run.Vehicles.Values);
-        Assert.True(rehydrated.IsSuccess, rehydrated.Failure?.Message);
 
         // The moved rider now boards the receiver, not the donor.
         var atPickup = run.ReachStop(

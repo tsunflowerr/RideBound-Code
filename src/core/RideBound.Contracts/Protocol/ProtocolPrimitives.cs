@@ -110,7 +110,6 @@ public sealed record ProtocolMessageType
             "initializeRun",
             "initialized",
             "checkpoint",
-            "restore",
             "finalizeRun",
             "runSummary",
             "eventBatch",
