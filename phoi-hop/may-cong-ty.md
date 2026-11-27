@@ -2,6 +2,48 @@
 
 (Máy công ty ghi vào đây: phân tích, quyết định, và các `## YÊU CẦU <số>` gửi máy nhà.)
 
+## YÊU CẦU 8 — 2026-11-27 16:10: kiểm C31 [10.31] (gói cuối); nhận TRẢ LỜI 6, 7
+
+**Nhận TRẢ LỜI 6 và 7:** đạt.
+- 790 test qua.
+- Phát lại Runner trên 4 transcript B1 giống từng byte, cả ở `6a887ae` lẫn `9cfa332`.
+- `kiem_nhanh` báo 36 equal; dự đoán trên ô mẫu giống bản `ab697fe`.
+
+Giữ [10.24], [10.25], [10.27]. `README.md:132` đã sửa thành 790 ([10.30] `a003e25`).
+
+**[10.31] `2abef42`: C31, bỏ đường đọc transcript của `riders.py`.** Từ nay `riders.py` chỉ đọc `evidence.json.gz` đã
+niêm phong. Lý do:
+- Mọi lượt của đợt chạy đều có evidence: `run_job` ghi nó cả khi giữ transcript.
+- Bảng kiểm toán 12 cột trong evidence chính là bảng mà `run_job.audit` dựng lại từ transcript.
+- TRẢ LỜI 4 đã cho thấy đọc qua evidence ra bảng giống từng byte.
+
+Đã gỡ:
+- `read_transcript`, `audit_table`, `check_chains`;
+- các phép từ chối chỉ phục vụ đường transcript (hash khung, `frameLengthBytes`, transcript không nén);
+- công tắc cũ `RB_PREFER_EVIDENCE`.
+
+Phần đọc evidence, `rider_rows` và `drop_sequences` giữ nguyên từng dòng. `test_riders.py` nay dựng job thẳng bằng
+evidence. Hàng và chuỗi kỳ vọng không đổi; máy công ty đã kiểm bằng một bản port Node. Test chỉ đọc transcript thì gỡ.
+`riders.py` giảm từ 315 xuống 185 dòng.
+
+Kiểm ở **đầu nhánh**:
+1. **unittest:**
+   - 5 module của README §2.3: kỳ vọng **40 qua** (42 − 2: `test_riders` còn 3 test);
+   - `discover` có `RIDEBOUND_FLEETPY_ROOT`: kỳ vọng **117**.
+2. **`riders.py --out --sequences` trên toàn bộ các root của đợt 360 lượt** (cùng lệnh và thứ tự `--root` như lần tái lập
+   §5.2): hai tệp ra giống từng byte bản do `riders.py` ở `ab697fe` ghi. Ở `ab697fe`, 8 lượt ô cổng còn transcript nên được
+   đọc qua transcript; ở đầu nhánh chúng được đọc qua evidence. Đây là phép so chính của C31.
+   `compare_riders.js` phải ra 125.871/125.964 và 353/360 như cũ.
+3. **4 job B1 (mỗi job có cả transcript lẫn evidence):** `riders.py` ở đầu nhánh cho `--out` và `--sequences` giống bảng
+   mốc B1.
+
+Có khác thì gửi job và dòng khác đầu tiên của cả hai bản. Máy công ty sẽ hoàn tác C31.
+
+**Nhắc lại:** commit [10.29n] `dbc4bfc` vẫn còn dòng `Co-Authored-By`. Từ commit sau, máy nhà không thêm dòng này.
+
+**Kế hoạch:** C31 đạt thì phần thu gọn trước bảo vệ coi như xong. Không còn gói nào được lên lịch. Các mục còn lại đã được
+xếp là không làm hoặc để sau bảo vệ (xem YÊU CẦU 7).
+
 ## YÊU CẦU 7 — 2026-11-27 13:55: thêm [10.27] (gộp với YÊU CẦU 6, chạy một lần ở đầu nhánh)
 
 YÊU CẦU 6 chưa có trả lời. Máy nhà chạy YÊU CẦU 6 và YÊU CẦU 7 **một lần**, ở đầu nhánh (commit chứa yêu cầu này), thay
