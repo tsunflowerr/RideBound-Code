@@ -570,7 +570,7 @@ class PlanMoves:
 
     def result(self):
         return {"job": self.job, "moves": len(self.moves), "maxMovesPerDecision": self.most,
-                "decisions": self.decisions, "firstMoves": self.moves[:3]}
+                "decisions": self.decisions}
 
 
 def shadow_allocations(frame):
@@ -586,14 +586,11 @@ def shadow_allocations(frame):
 def read_transcript(path, job):
     """One pass over the gzip transcript; every frame is checked against its record. Returns the decisions and the
     acknowledged decision hashes, the last checkpoint's online state, the first boarding and alighting time of every
-    rider, the G2 moves, the last Shadow allocations and the transcript receipt."""
-    received, decisions, acknowledged, state, shadow = [], {}, set(), None, None  # received: one row per frame
+    rider, the G2 moves and the last Shadow allocations."""
+    received, decisions, acknowledged, state, shadow = [], {}, set(), None, None  # received: one ordinal per frame
     boarded, alighted, moves = {}, {}, PlanMoves(job)
-    raw, raw_bytes = hashlib.sha256(), 0
     with gzip.open(path, "rb") as handle:
         for number, line in enumerate(handle):
-            raw.update(line)
-            raw_bytes += len(line)
             record = json.loads(line)
             frame = base64.b64decode(record["frameBase64"])
             digest = hashlib.sha256(frame).hexdigest()
@@ -602,7 +599,7 @@ def read_transcript(path, job):
             if len(frame) != record["frameLengthBytes"]:
                 raise RuntimeError(f"{path}: frame {record['ordinal']} does not match its record")
             direction = record["direction"]
-            received.append([record["ordinal"], direction, record["frameLengthBytes"], digest])
+            received.append(record["ordinal"])
             envelope = json.loads(ARCS.sub(b'"arcs":[],"snapshotHash"', frame) if len(frame) > BIG_FRAME else frame)
             kind = envelope.get("messageType")
             if direction == "adapterToRunner" and kind == "decisionApplied":
@@ -621,12 +618,9 @@ def read_transcript(path, job):
             # The Shadow allocations are read from the frame bytes of the record line, as the Shadow reader does.
             if line.startswith(b'{"direction":"runnerToAdapter"') and b'"messageType":"checkpoint"' in frame[:400]:
                 shadow = shadow_allocations(frame)
-    if [row[0] for row in received] != list(range(1, len(received) + 1)):
+    if received != list(range(1, len(received) + 1)):
         raise RuntimeError(f"{path}: ordinals are not 1..n")
-    receipt = {"file": path.name, "fileSha256": sha256_file(path), "fileBytes": path.stat().st_size,
-               "uncompressedSha256": raw.hexdigest(), "uncompressedBytes": raw_bytes, "frameCount": len(received),
-               "frames": received}
-    return decisions, acknowledged, state, {"boarded": boarded, "alighted": alighted}, moves.result(), shadow, receipt
+    return decisions, acknowledged, state, {"boarded": boarded, "alighted": alighted}, moves.result(), shadow
 
 
 def published_actions(decisions, acknowledged):
@@ -648,20 +642,14 @@ def published_actions(decisions, acknowledged):
 @dataclasses.dataclass
 class Totals:
     """One rider's ETA (pickup or drop) over its committed publications."""
-    p0: int  # the initial promise
-    last_p: int  # the last published value while the ETA was open
     chain_p: int  # the last published value: the next publication's v
     C: int = 0  # sum |p - e|, the decision-induced changes
-    X: int = 0  # sum |e - v|, the exogenous changes
-    V: int = 0  # sum |p - v|, the visible changes
-    M: int = 0  # max |p - p0|
-    Mplus: int = 0  # max(0, p - p0) at its largest
 
 
 def accumulate(rows):
     """Totals per (request, ETA) from the audit rows in sequence order. A pickup ETA closes at the boarding: later
     publications move the chain but add nothing. Refuses rows that are not whole canonical milliseconds, that skip the
-    initial promise or break the chain v = previous p, and totals that break V <= C + X or |last p - p0| <= M <= V."""
+    initial promise or break the chain v = previous p."""
     out, last_sequence = {}, {}
     for request_id, coordinate, sequence, v, e, p, initial, closed in sorted(rows, key=lambda row: row[:3]):
         for name, value in (("v", v), ("e", e), ("p", p)):
@@ -677,7 +665,7 @@ def accumulate(rows):
         if totals is None:
             if not initial or not (v == e == p):
                 raise RuntimeError(f"first committed row of {key} must be the initial promise (v = e = p)")
-            out[key] = Totals(p, p, p)
+            out[key] = Totals(p)
             continue
         if initial:
             raise RuntimeError(f"second initial promise for {key}#{sequence}")
@@ -687,15 +675,6 @@ def accumulate(rows):
         if closed:
             continue
         totals.C += abs(p - e)
-        totals.X += abs(e - v)
-        totals.V += abs(p - v)
-        totals.last_p = p
-        totals.Mplus = max(totals.Mplus, max(0, p - totals.p0))
-        totals.M = max(totals.M, abs(p - totals.p0))
-    for totals in out.values():
-        if not (totals.V <= totals.C + totals.X and abs(totals.last_p - totals.p0) <= totals.M <= totals.V
-                and totals.Mplus <= totals.M):
-            raise RuntimeError(f"invariant broken: {totals}")
     return out
 
 
@@ -742,33 +721,17 @@ def audit(decisions, acknowledged, state, transcript):
 
 
 def summarize(transcript, state, totals, decisions, acknowledged):
-    lifecycle = collections.Counter(request["lifecycle"] for request in state["requests"])
     incidents = state["incidentLedger"]
     breach_kinds = collections.Counter(b.get("kind", "operationalIncident") for b in incidents["breaches"])
     late = incidents.get("latePickups", [])
-    non_normal = sum(1 for payload in decisions.values() if payload["decisionHash"] in acknowledged
-                     and (payload.get("certificate", {}).get("body") or {}).get("normalOperation") is False)
-    drop_v = sorted(t.V for (_request, coordinate), t in totals.items() if coordinate == "drop")
-    tail = drop_v[(95 * len(drop_v)) // 100:] if drop_v else []  # the worst 5 %, by an exact integer index
     requests = len(state["requests"])
-    served = lifecycle.get("completed", 0)
     return {
         "transcript": str(transcript),
         "finalCheckpoint": True,
         "requests": requests,
-        "lifecycle": dict(sorted(lifecycle.items())),
-        "E1ServedShare": served / requests if requests else None,
-        "promisedRiders": len(drop_v),
-        "E2ShareDropVAbove60s": sum(1 for value in drop_v if value > 60_000) / len(drop_v) if drop_v else None,
-        "dropVCvar95Ms": sum(tail) / len(tail) if tail else None,
+        "promisedRiders": sum(1 for _request, coordinate in totals if coordinate == "drop"),
         "sumDropC": sum(t.C for (_r, c), t in totals.items() if c == "drop"),
-        "sumDropX": sum(t.X for (_r, c), t in totals.items() if c == "drop"),
-        "sumDropV": sum(drop_v),
-        "sumPickupC": sum(t.C for (_r, c), t in totals.items() if c == "pickup"),
-        "sumPickupX": sum(t.X for (_r, c), t in totals.items() if c == "pickup"),
-        "sumPickupV": sum(t.V for (_r, c), t in totals.items() if c == "pickup"),
         "decisionsAcknowledged": len(acknowledged & set(decisions)),
-        "nonNormalCertificates": non_normal,
         "breaches": dict(sorted(breach_kinds.items())),
         "ridersWithForcedBreach": len({b["requestId"] for b in incidents["breaches"]
                                        if b.get("kind") == "forcedReference"}),
@@ -826,13 +789,13 @@ def write_evidence(folder, role):
     back: the rider rows, moves, audit table and Shadow allocations must come out the same as from the transcript.
     Returns a one-line report."""
     transcript = folder / "transcript-00.ndjson.gz"
-    decisions, acknowledged, state, events, moves, shadow, receipt = read_transcript(transcript, folder.name)
+    decisions, acknowledged, state, events, moves, shadow = read_transcript(transcript, folder.name)
     if state is None:
         raise RuntimeError(f"{folder}: no final checkpoint")
     table, summary = audit(decisions, acknowledged, state, folder / "transcript-00.ndjson")
     evidence = {"format": EVIDENCE_FORMAT, "job": folder.name, "role": role,
                 "audit": {"table": [list(row) for row in table], "summary": summary}, "finalOnlineState": state,
-                "events": events, "moves": moves, "shadowAllocations": shadow, "transcript": receipt}
+                "events": events, "moves": moves, "shadowAllocations": shadow}
     rows = rider_rows(folder, evidence)
     buffer = io.BytesIO()
     with gzip.GzipFile(filename="", mode="wb", fileobj=buffer, compresslevel=9, mtime=0) as handle:

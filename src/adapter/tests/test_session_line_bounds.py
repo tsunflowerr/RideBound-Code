@@ -36,15 +36,14 @@ def runner_bound(protocol: session.RideBoundProtocolSession) -> int:
 
 
 class SessionLineBoundsTests(unittest.TestCase):
-    """ADR-089 S3: one operator setting raises both frame bounds for a full-node Via run."""
+    """ADR-089 S3: one required operator setting gives both frame bounds for a full-node Via run."""
 
-    def test_the_setting_is_optional_and_can_only_raise_the_shipped_bound(self) -> None:
-        self.assertIsNone(session._maximum_line_bytes({}))
+    def test_the_setting_is_required_and_within_the_runner_range(self) -> None:
         self.assertEqual(64 * MIB, session._maximum_line_bytes({"ridebound_maximum_line_bytes": 64 * MIB}))
         self.assertEqual(1024 * MIB, session._maximum_line_bytes({"ridebound_maximum_line_bytes": 1024 * MIB}))
         with self.assertRaises(AdapterFailure) as raised:
-            session._maximum_line_bytes({"op_ridebound_maximum_line_bytes": 1024 * MIB})
-        self.assertEqual("RBWP7_SETTING_PREFIX_REMOVED", raised.exception.code)
+            session._maximum_line_bytes({})
+        self.assertEqual("RBWP7_SETTING_INTEGER_INVALID", raised.exception.code)
         for value in (True, "67108864", MIB, 64 * MIB - 1, 1024 * MIB + 1):
             with self.assertRaises(AdapterFailure) as raised:
                 session._maximum_line_bytes({"ridebound_maximum_line_bytes": value})
@@ -55,26 +54,6 @@ class SessionLineBoundsTests(unittest.TestCase):
         self.assertEqual(1024 * MIB, runner_bound(protocol))
         self.assertEqual(1024 * MIB, protocol._client.options["maximum_input_line_bytes"])
         self.assertEqual(1024 * MIB, protocol._client.options["maximum_output_line_bytes"])
-
-    def test_without_the_setting_the_shipped_bounds_apply(self) -> None:
-        protocol = session.RideBoundProtocolSession(settings(None), FakeClient)
-        self.assertEqual(64 * MIB, runner_bound(protocol))
-        self.assertEqual(64 * MIB, protocol._client.options["maximum_input_line_bytes"])
-        self.assertEqual(64 * MIB, protocol._client.options["maximum_output_line_bytes"])
-
-    def test_launcher_patches_still_apply_and_a_setting_never_lowers_them(self) -> None:
-        # A launcher may raise the output bound by patching the module constant; a
-        # client made later reads the constant at that time.
-        original = session.RUNNER_MAXIMUM_OUTPUT_LINE_BYTES
-        try:
-            plain = session.RideBoundProtocolSession(settings(None), FakeClient)
-            raised = session.RideBoundProtocolSession(settings(128 * MIB), FakeClient)
-            session.RUNNER_MAXIMUM_OUTPUT_LINE_BYTES = 512 * MIB
-            self.assertEqual(512 * MIB, plain._new_client().options["maximum_output_line_bytes"])
-            self.assertEqual(512 * MIB, raised._new_client().options["maximum_output_line_bytes"])
-            self.assertEqual(128 * MIB, raised._new_client().options["maximum_input_line_bytes"])
-        finally:
-            session.RUNNER_MAXIMUM_OUTPUT_LINE_BYTES = original
 
 
 class TravelSnapshotBoundTests(unittest.TestCase):
