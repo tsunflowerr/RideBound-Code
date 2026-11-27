@@ -2,6 +2,39 @@
 
 (Máy công ty ghi vào đây: phân tích, quyết định, và các `## YÊU CẦU <số>` gửi máy nhà.)
 
+## YÊU CẦU 9 — 2026-11-27 18:35: chạy lại toàn bộ mô phỏng nhanh và một lượt C# thật ở đầu nhánh
+
+Mở lại sau mục KẾT THÚC: chủ đề tài hỏi kết quả chạy đã được kiểm lại hết chưa. Còn hai chỗ chưa chạy lại sau thu gọn.
+- **Mô phỏng nhanh:** engine không đổi, nhưng driver và thư viện đã gỡ 629 dòng. Các tệp bị sửa: `shcore.js`, `shlib.js`,
+  `nyclib.js`, `wf15emu/lib.js`, `emulate_adapter*.js` và `emulate_fullsys*.js`. Sau đó mới chỉ kiểm bằng `kiem_nhanh`
+  (36 dòng trên 2 ô) và bằng bảng dựng từ dòng kết quả đã lưu. Các họ alpha10, fleet-20…81, pen300, nce-oce60 và fc30
+  chưa chạy lại.
+- **C#:** lượt chạy thật cuối là TRẢ LỜI 5 ở `2d58333`, trước [10.24], [10.25] và [10.27]. Sau đó chỉ có phát lại B1.
+
+Kiểm ở **đầu nhánh**:
+1. **README §3.2, đủ mọi lệnh,** ghi vào một `RB_RESULTS` mới: main60, nce-oce60, fc30, alpha10, fleet-20…81, pen300,
+   `calib_pad.py` và eta30.
+   - So `sig` từng dòng (khóa: họ, ô, cấu hình, cơ chế, dự báo) với kết quả đợt kiểm 23/11 (`cde8287`).
+   - Kỳ vọng: số dòng mỗi họ bằng nhau và 100 % `sig` giống.
+   - Sau `calib_pad.py`, `git status` phải sạch (`flat_iter1..5.json` và `calib-result.json` không đổi).
+2. **Dựng bảng từ kết quả mới:** chạy các lệnh trong bảng ở §3.2 (`aggregate.py`, `gen_tables.py`, `shadow_scope.py`,
+   `table57.js`, `eta_analysis.py` với `PYTHONHASHSEED=0`, `gen_eta_tables.py`).
+   - stdout phải giống bản dựng từ dòng đã lưu ở TRẢ LỜI 3/4.
+   - Số phải khớp Bảng 5.4–5.11 của khóa luận .tex 27/11.
+3. **`make_figs.py`,** nếu có matplotlib (lần trước lỗi môi trường, exit 127). So bằng mắt `phuc-vu-va-thay-doi.pdf`
+   và `do-nhay-han-muc.pdf` với hình trong khóa luận.
+4. **Một lượt C# thật:** README §2.2 (`FS-G2-SHHZ71-N`, `d20190919-vf-r0-w08`).
+   - Kỳ vọng `compare_riders.js` ra `IDENTICAL`.
+   - `riders.py --out --sequences` giống từng byte bảng của cùng job trong đợt 360 lượt, hoặc bảng mốc B1 nếu job thuộc B1.
+   - Giữ log; lượt này dùng luôn làm bản chạy thử demo.
+5. **Tùy chọn:** nếu transcript hoặc evidence của 360 lượt còn trường cho biết quyết định nào đi qua phương án dự phòng
+   (giữ nguyên tuyến, hoặc chỉ nhận một yêu cầu, sau khi tổ hợp của bộ giải không hợp lệ), đếm số quyết định đó.
+   - Không có trường nào thì ghi "không đếm được".
+   - Số này để biết câu ở `03-phuong-phap.tex:153` có mô tả việc thực sự xảy ra không.
+
+Thời gian ước chừng 3,5 giờ. Commit dưới tên tsunflowerr, **không thêm dòng Co-Authored-By** ([10.29n] và [10.33n] vẫn
+còn).
+
 ## KẾT THÚC — 2026-11-27 18:20: nhận TRẢ LỜI 8; thu gọn xong, không còn yêu cầu
 
 **Nhận TRẢ LỜI 8 ([10.33n] `2dcc8fe`):** đạt.
