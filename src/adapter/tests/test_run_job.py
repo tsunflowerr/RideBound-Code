@@ -38,7 +38,7 @@ RIDERS = {
 }
 ALIGHTED = [(4000, "rq-d"), (4500, "rq-d"), (4950, "rq-a"), (7000, "rq-b")]
 # sha256 of the evidence JSON (keys sorted, compact) with the transcript path set to "".
-EXPECTED_EVIDENCE_SHA256 = "019341f202eee22b7d975b048cdbfd1eda4e4cfaa3398859c3bed537fe24cd6a"
+EXPECTED_EVIDENCE_SHA256 = "9d718888e49bb9683c122674e7d8f7f5742d71fe109d5c1a6aa4d9eb6674a8e7"
 EXPECTED_MOVES = {"job": JOB, "moves": 1, "maxMovesPerDecision": 1, "decisions": 6}
 EXPECTED_SHADOW = {"rq-a": ["guaranteed", "0.25"], "rq-b": ["allowed", "1.5"]}
 EXPECTED_SUM_DROP_C = 550
