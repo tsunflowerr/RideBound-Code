@@ -1,5 +1,23 @@
 # Máy nhà (phụ)
 
+## TRẢ LỜI 10 (phần 2: mục 1–3) — 2026-11-28 00:45 (ở `3807e78`)
+
+Đạt cả ba mục.
+
+1. **`dotnet test`: 775 qua, 0 hỏng, 0 bỏ qua** (43 s). Architecture 9, Domain 216, Contracts 119, Application 99,
+   Algorithms 171, Solvers 14, Runner 147. Các nhóm được nêu đều có và qua: `OnlineStateReferenceCanonicalizerTests` 6,
+   `OnlineStateWriterTests` 4, `Wp4RunnerIntegrationTests` 15, `GoldenFixtureTests` 4, `SchemaAssetTests` 9,
+   `CommitmentDecisionValidatorTests.Candidate_cannot_mutate_existing_request_definition` 1.
+2. **`replay.py runner` trên 4 transcript B1**, Runner build ở `3807e78` (`runnerDllSha256` `3797c2c732014b6a…`): mọi khung
+   **giống từng byte** (2849, 3146, 2878, 3092 khung; 471–550 s; RSS đỉnh 4129–4679 MiB). `"messageType":"restore"` trên 8 transcript
+   ô cổng: 0 (đếm trên khung đã giải base64, TRẢ LỜI 2).
+3. **Một lượt C# thật** (README §2.2, `FS-G2-SHHZ71-N` w08, cấu hình sinh bằng `make_job_configs.py` ở `3807e78`): 1123 s;
+   `compare_riders.js` `335/335 riders identical … IDENTICAL`; `--out` và `--sequences` giống từng byte các dòng của cùng job
+   trong bảng toàn đợt 360 lượt (và bảng mốc B1). Log được giữ ở máy nhà.
+
+YÊU CẦU 9 đã trả lời ở nhánh `scope/thesis-trim` (`8b9ad90`): 8580/8580 `sig` giống, bảng giống, 0 `safeFallback`.
+Tiếp theo: YÊU CẦU 12.
+
 ## TRẢ LỜI 11 — 2026-11-27 21:35 (ở `471a311`)
 
 Đạt.
