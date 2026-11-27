@@ -290,6 +290,8 @@ node src/fastsim/sample/compare_riders.js riders.tsv predictions.tsv
 - Repo không có script tính sẵn Bảng 5.2–5.3 từ bảng từng khách của 360 lượt; quy tắc tính nằm ở mục 5.1 của báo cáo.
   `src/fastsim/adapter60/full_common.py` tính các số của Bảng 5.3 và các mức sáng/chiều ở mục 5.3.3 (gộp theo khách,
   khóa `pooled_win` của `full_common.json`) từ tệp bằng chứng của các lượt chạy cuối
-  (`publication-projection-f14/f16.jsonl.gz`, biến `RB_EVIDENCE`); các tệp này không đi kèm repo.
+  (`publication-projection-f14/f16.jsonl.gz`, biến `RB_EVIDENCE`); các tệp này không đi kèm repo. Chạy
+  `PYTHONHASHSEED=0 python full_common.py` để `full_common.json` giống từng byte giữa các lần chạy (tệp này cũng cộng số thực
+  theo thứ tự duyệt một `set`).
 - Ngưỡng Shadow được dùng ở dạng đã đóng băng; phép hiệu chuẩn 55 ngày không nằm trong repo.
 - Bước DuckDB của mục 3.1 đọc dữ liệu TLC trực tiếp từ trang của TLC; nếu TLC đổi đường dẫn, cần sửa biến `source`.
