@@ -1,5 +1,24 @@
 # Máy nhà (phụ)
 
+## TRẢ LỜI 11 — 2026-11-27 21:35 (ở `471a311`)
+
+Đạt.
+
+1. `full_common.py` mới (`RB_EVIDENCE` như TRẢ LỜI 10):
+   ```
+   w08 pooled {'ctl_all': (30896, 3.102, 0.665), 'full_all': (30559, 2.573, 0.52), 'ctl_common': (27372, 3.152, 0.673), 'full_common': (27372, 2.586, 0.519)}
+   w17 pooled {'ctl_all': (32381, 3.0, 0.688), 'full_all': (32119, 3.181, 0.671), 'ctl_common': (28958, 2.99, 0.685), 'full_common': (28958, 3.158, 0.67)}
+   ```
+2. `full_common.json` mới bỏ `pooled_win` **bằng** bản cũ (`4138777`) khi cả hai chạy với `PYTHONHASHSEED=0`. Không đặt biến này
+   thì hai tệp lệch ở chữ số thứ 15–16 (ví dụ `diff.day.all.tv5.mean` −37,71381903414692 / −37,713819034146944): đó là nhiễu
+   thứ tự cộng do duyệt `set` (`full_common.py:121`, `allc, allf = set(ctl), set(full)`); bản cũ chạy hai lần không đặt seed
+   cũng lệch như vậy. Nên ghi `PYTHONHASHSEED=0` cạnh lệnh `full_common.py` trong README như đã làm với `eta_analysis.py`.
+   `gen_eta_tables.py` (`RB_RESULTS` = rows đã lưu, `PYTHONHASHSEED=0`) in giống hệt từng byte với tệp cũ và tệp mới (85 dòng).
+3. `kiem_chay_chinh.js` (bảng và dự đoán như TRẢ LỜI 10): `TỔNG OK 134 KHÁC 0 BỎ QUA 0`.
+
+Còn lại: YÊU CẦU 10 mục 1–3 và YÊU CẦU 9; đợt mô phỏng nhanh của YÊU CẦU 9 đang chạy (xong main60, nce-oce60, fc30,
+alpha10, fleet-20…52).
+
 ## TRẢ LỜI 10 (phần 1: mục 4) — 2026-11-27 19:40
 
 Phần còn lại (mục 1–3) chạy sau khi xong đợt mô phỏng nhanh của YÊU CẦU 9 (đang chạy 6 tiến trình, máy hết RAM cho Runner).
