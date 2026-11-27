@@ -1,5 +1,69 @@
 # Máy nhà (phụ)
 
+## TRẢ LỜI 4 — 2026-11-27 08:55 (YÊU CẦU 4, các gói Python, ở `8a0d305`)
+
+1. 5 module README §2.3: **42 qua, 0 hỏng, 0 bỏ qua**. `EvidenceTests.test_evidence_of_a_small_job` qua, tức hash ghim
+   `9d718888…` đúng với Python.
+2. `discover` có `RIDEBOUND_FLEETPY_ROOT`: **119 qua, 0 hỏng** (134 ở `ab697fe`).
+3. `replay.py adapter` trên 4 transcript B1 (cùng đối số như lượt B1, thư mục ra mới): cả 4 `identical: true`,
+   `jobOk: true`, `initializeRunRebound: true`; khung kiểm 8545 / 9436 / 8632 / 9274; 617–672 s mỗi lượt.
+4. Với 4 job vừa sinh:
+   - `riders.py` đọc transcript: `--out` và `--sequences` **giống từng byte** bảng mốc `ab697fe` (và B1) của cả hai nhánh.
+   - Chép job sang root khác **không kèm** transcript, `riders.py` đọc `evidence.json.gz` mới: cũng **giống từng byte**.
+   - So evidence mới với evidence của YÊU CẦU 1: `audit.table`, `finalOnlineState`, `events`, `moves` (bỏ `firstMoves`),
+     `shadowAllocations`, `format`, `role`, `job` bằng nhau; `summary` còn lại (`requests`, `promisedRiders`, `sumDropC`,
+     `decisionsAcknowledged`, `breaches`, `ridersWithForcedBreach`, `latePickups`, `latePickupMaxMs`) bằng nhau. Chỉ thiếu
+     đúng các trường đã gỡ: `E1ServedShare`, `E2ShareDropVAbove60s`, `dropVCvar95Ms`, `lifecycle`, `nonNormalCertificates`,
+     `sumDropV`, `sumDropX`, `sumPickupC`, `sumPickupV`, `sumPickupX` và khóa gốc `transcript`. Không có khóa mới.
+5. `make_run_drivers.py write <sealed> <out> complete-graph-direct-v1` cho w08 và w17: sha256 bằng tệp đang dùng
+   (`b2dc50ad…`, `0f673f19…`). Ghi chú nhỏ: lệnh với chế độ cũ `check` nay dừng bằng `IndexError` (traceback) thay vì in
+   cách dùng; nếu muốn gọn, thêm kiểm số đối số.
+6. Bảng mô phỏng nhanh trên rows đã lưu (`ca96d32` và đầu nhánh, `PYTHONHASHSEED=0`):
+   - `aggregate.py`: `aggregate.json` mới = cũ bỏ `B`, `B_rows`; stdout mới = cũ bỏ đúng 9 dòng "dự báo N/CL/CLc/PAD",
+     "CL-N", "CLc-N", "CLc-CL", "CL-PAD", "PAD-N" (khác thêm dòng đường dẫn "đã ghi …", do thư mục worktree).
+   - `gen_tables.py`: stdout mới = cũ bỏ khối từ "% Bảng 5.7" tới ngay trước "% Ngân sách (10 ngày):" (đúng từng byte).
+     Chưa so lại từng ô với .tex 22/11 lần này; phần còn lại giống từng byte bản cũ, bản cũ đã khớp .tex ở lần kiểm 23/11.
+   - `eta_analysis.py` (stdout và `eta_analysis.json`), `gen_eta_tables.py`: giống từng byte. `git status` sạch ở cả hai.
+   - `make_figs.py`: **không chạy được ở máy nhà**, ở cả hai bản: Python thoát mã 127, không thông báo, ngay sau khi nạp
+     `matplotlib.backends.backend_agg` (matplotlib 3.10.9). Lỗi môi trường, chưa kiểm PNG.
+   - `calib_pad.py` chưa chạy lần này.
+7. Không làm riêng: phần này đã có ở YÊU CẦU 3 bước 2 và bước 3–4 ở trên (replay Runner và adapter ở đầu nhánh, riders giống mốc).
+8. Không biết script nào sinh `publication-projection-*.jsonl.gz`; trên máy nhà chỉ có tệp đã lưu và `recompute_from_evidence.py`
+   (ngoài repo). Chưa kiểm.
+
+## TRẢ LỜI 3 — 2026-11-27 08:55 (YÊU CẦU 3, các gói [10.08]–[10.13], ở `8a0d305`)
+
+1. `dotnet test src/core/RideBound.slnx -c Release`: **794 qua, 0 hỏng, 0 bỏ qua** (81 s). Theo dự án: Architecture 9,
+   Contracts 122, Domain 218, Application 100, Solvers 14, Algorithms 171, Runner 160. Số cho `README.md:132`: 7 dự án,
+   794 test.
+2. `replay.py runner` trên 4 transcript B1 với Runner build ở đầu nhánh (`runnerDllSha256` `cd33111f…`): mọi khung Runner
+   **giống từng byte**:
+
+   | B1 | khung so | giống | thời gian | RSS đỉnh Runner |
+   |---|---|---|---|---|
+   | SHHZ71-N w08 | 2849 | 2849 | 674 s | 3922 MiB |
+   | SHHZ71-N w17 | 3146 | 3146 | 551 s | 4291 MiB |
+   | SHRC71-CL w08 | 2878 | 2878 | 474 s | 4396 MiB |
+   | SHRC71-CL w17 | 3092 | 3092 | 510 s | 4291 MiB |
+
+3. Không chạy trên 8 transcript ô cổng của đợt 360 lượt: chúng do code thời khóa luận ghi, vectơ cam kết còn 10 trường và
+   trạng thái còn `incidents`, nên sau [10.03]/[10.04] không thể giống từng byte (đổi định dạng có chủ ý). Nếu cần, có thể
+   chạy để xác nhận khung khác đầu tiên là khung đầu tiên có `promisePublished` hoặc checkpoint.
+4. Mọi `wp4/*/*.json` của B1 và của mốc đều có `"auditHash": "light-v1"`.
+5. `kiem_nhanh.sh`: `sample check: 36 rows equal, 0 differ, 0 without an expected row` (258 s).
+6. `network.sha256`: OK (toàn bộ). `wf14-60day-cells.sha256`: 6 tệp của 2 ô mẫu OK; bộ ô đầy đủ 60 ngày và F16 không có
+   trên máy nhà ở chỗ có thể kiểm, nên chưa kiểm `wf14-60day-cells` đầy đủ và `wf17-f16-cells`.
+7. `make_job_configs.py`: `commitment/SHRC71.json` `40244dbf…`, `SHHZ71.json` `f01cf219…` (bằng fixture `Final/`); wp4 chỉ
+   khác `networkDirectory` so với cấu hình B1.
+8. `node src/datagen/export_network.js manhattan <thư mục mới> $RB_DATA`: `D.u16` `4ae39087…` (= `ff_apsp_u16.bin`),
+   `network.json` `52e30836…`; cả hai bằng mạng mà các lượt B1 dùng (sinh ở `ab697fe` bằng lệnh cũ).
+9. `export_network.js toy … 24 10 20261103`: phần từ `"cells"` giống `shareability-golden-toy.json`.
+10. `emulate_fullsys.js adapter` trên 2 ô mẫu (`FS_ONLY`): `fullsys-f14-predictions.tsv` và 2 tệp `shadow-inputs` giống bản
+    sinh ở `ab697fe`. Chưa chạy `emulate_fullsys_f16.js` và `emulate_forecast_gate.js` (cần panel đầy đủ).
+11. Không chạy (không bắt buộc).
+
+Python ở đầu nhánh: xem TRẢ LỜI 4.
+
 ## TRẢ LỜI 2 (bổ sung) — 2026-11-27 07:52: N theo từng lượt
 
 N = 11, cả 11 thuộc 360 lượt chính (4 lượt `gates`: 0). Mỗi lượt dưới đây có N = 1:
