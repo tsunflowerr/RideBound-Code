@@ -2,6 +2,44 @@
 
 (Máy công ty ghi vào đây: phân tích, quyết định, và các `## YÊU CẦU <số>` gửi máy nhà.)
 
+## YÊU CẦU 5 — 2026-11-27 08:40: chạy thật một ô có N = 1; nhận TRẢ LỜI 1, 2
+
+**Nhận TRẢ LỜI 1 và 2:** đạt. 4 lượt mốc giống từng byte, `summarize` bằng nhau. Không có restore, sự cố, hủy hay
+waypoint trên 8 transcript ô cổng; `incidents` rỗng và `nonNormalCertificates` = 0 ở cả 364 evidence. Phần đã xong của
+YÊU CẦU 3 + 4 cũng đạt; `README.md:132` đã sửa thành 794 test ([10.22] `3ec116c`).
+
+**N = 11: quyết chạy kiểm thật.** Đây là chỗ duy nhất [10.03] có thể đổi hành vi trên 360 lượt: một lần sửa chỉ khác ở
+các chiều đã gỡ thì nay không được phát. Theo cấu trúc thì không bảng nào đổi:
+- Ở lần sửa đó c = p − e = 0, nên `sumAbsC`, `nonzeroC`, `netC`, `maxAbsC` của `riders.py` không đổi.
+- `--sequences` bỏ giá trị lặp liền nhau. Trường hợp biên duy nhất: hai lần sửa của cùng khách phát cùng lúc tại đúng
+  giờ trả.
+- Quyết định không đọc các chiều đã gỡ (nhận xét [10.06]).
+
+Nhưng 4 lượt mốc đều có K = 0, nên lập luận này chưa được chạy thử.
+
+Chạy ô F14 `FS-G2-SHHZ71-N` `d20191216` r1 w08 ở `ab697fe` và ở đầu nhánh, giữ transcript như B1. So:
+1. **Bảng từng khách:** `riders.py --out --sequences` của lượt `ab697fe`, lượt đầu nhánh và evidence đã lưu của đợt 360
+   lượt cho ô này. Ba bảng (phần của ô) giống từng byte.
+2. **Số lần phát:** `P` trên lượt `ab697fe`, `K` trên transcript `ab697fe` (định nghĩa ở YÊU CẦU 1), `P` trên lượt đầu nhánh.
+   Kỳ vọng `P_đầu nhánh = P_ab697fe − K` với K ∈ {0, 1}. Nếu K = 1, ghi requestId, `simTimeMs` và chiều nào trong 5 chiều
+   đã gỡ khác 0 ở lần sửa đó.
+3. **Quyết định:** số khung `decision` bằng nhau. Theo thứ tự, các hành động `vehiclePlanUpdated` của từng khung giống
+   nhau sau khi bỏ mọi khóa đuôi `Hash`/`Sha256`.
+4. **`summary`:** `requests`, `promisedRiders`, `sumDropC`, `decisionsAcknowledged`, `breaches`, `latePickups`,
+   `latePickupMaxMs` bằng nhau.
+
+Có khác thì gửi requestId và khung khác đầu tiên (số thứ tự, loại, khoảng 300 ký tự quanh chỗ khác). Máy công ty sẽ quyết
+giữ hay khôi phục phần đó của [10.03].
+
+**Phần còn lại của YÊU CẦU 3 + 4:** làm tiếp như đang làm (replay Runner B1, `replay.py adapter`, `riders.py` hai đường
+đọc, so evidence). `make_figs.py`: thử với `MPLBACKEND=Agg` (mã 127 thường do backend có giao diện). Vẫn lỗi thì ghi lại
+và bỏ qua: [10.15] chỉ gỡ một khối hình và hàm `vn`.
+
+**`make_run_drivers.py` báo `IndexError` khi thiếu đối số:** bản cũ cũng vậy, không do [10.17]. Không sửa, để giữ phạm vi.
+
+**Kế hoạch:** YÊU CẦU 3, 4, 5 đạt thì làm gói cuối C31 (bỏ đường đọc transcript của `riders.py`). Vẫn chờ chủ đề tài
+quyết: C08 + C28, C37, giao thức đợt 2 (C14, C21, G1-02), C20 + G1-01, C11.
+
 ## YÊU CẦU 4 — 2026-11-27 07:32: kiểm các gói Python [10.15]–[10.18]
 
 Commit trên nhánh (sau `ca96d32`):
