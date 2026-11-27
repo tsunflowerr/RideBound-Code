@@ -14,16 +14,20 @@ Python và shell). Không dòng logic nào bị sửa. Ngoại lệ: đã gỡ c
 `--nveh` của `emulate_adapter_pp.js`, `--nveh` và `--g2pen` của `emulate_adapter_eta.js`; kết quả không đổi. Cũng đã gỡ
 các hàm và export không ai gọi: `runTask` của `wf20/scripts/shcore.js` cùng những gì chỉ nó dùng, phần thừa của
 `wf20/scripts/shlib.js`, `share` và `toy` của `wf20/runner/netfull.js`, mọi hàm trừ `readCsv` của `wf5/nyclib.js`, phần
-thừa của `wf15emu/lib.js` và `wf15emu/normalizer_emul.js`; kết quả không đổi. Chú thích trong `adapter60/emulate_adapter*.js`
-và `fullsys/emulate_fullsys*.js` còn trích `shcore.runTask` và `shcore.js:<dòng>`: các trích dẫn đó ứng với bản `ab697fe`,
-trước khi gỡ.
+thừa của `wf15emu/lib.js` và `wf15emu/normalizer_emul.js`; kết quả không đổi. Đã gỡ chế độ `plain` của
+`fullsys/emulate_fullsys*.js` (so chữ ký của hai engine trên ô gốc với dòng kết quả cũ của `wf20/fullsys`, tệp không đi
+kèm repo; không sinh dự đoán hay bảng nào), cùng `engine17.js`, `scenario.js`, `lib.js`, `identity.js`,
+`normalizer_emul.js` của `wf20/runner/` và `RUN_OVERRIDES` của `wf20/scripts/shlib.js` mà chỉ chế độ đó dùng; các bộ
+chạy lấy `parseArm` từ engine trong `engines/`, có mã giống hệt; kết quả không đổi. Chú thích trong
+`adapter60/emulate_adapter*.js` và `fullsys/emulate_fullsys*.js` còn trích `shcore.runTask`, `shcore.js:<dòng>` và
+`scenario.js`: các trích dẫn đó ứng với bản `ab697fe`, trước khi gỡ.
 
 | Thư mục | Nội dung |
 |---|---|
 | `engines/` | `engine_wf15_clint.js`: engine; khi có dự báo, mỗi chặng được làm tròn về mili giây nguyên như RideBound. `engine_wf15_clint_pp.js`: thêm hai tùy chọn tắt mặc định, phạt đổi xe (`g2PenaltyMs`) và hệ số đều (`flatRatio`) |
 | `adapter60/` | Bộ chạy (`emulate_adapter.js`; `_pp` cho phạt đổi xe và hệ số đều; `_eta` thêm sai số giờ báo từng khách), script chạy từng họ (`run_shards*.sh`), danh sách ô (`cells-*.txt`), hiệu chỉnh đều (`calib_pad.py`, `flat_iter*.json`, `calib-result.json`), dựng bảng (`aggregate.py`, `gen_tables.py`, `shadow_scope.py`, `eta_analysis.py`, `make_figs.py`), chuyển ô 81 xe (`convert_via_full_v2_nveh81.py`) |
 | `fullsys/` | Cho chương trình chính: `emulate_fullsys.js` (F14) và `emulate_fullsys_f16.js` ghi dự đoán từng khách và `predictions/shadow-inputs/<ô>.json`; `emulate_forecast_gate.js` ghi hồ sơ cổng dự báo; `emulate_sequences*.js` ghi chuỗi giờ trả dự đoán |
-| `wf20/`, `wf5/`, `wf15emu/` | Các module mà engine và bộ chạy gọi tới: kịch bản, chấm điểm Shadow (`sscore.js`), cường độ nhu cầu (`lambda.js`), dự báo (`forecast.js`), chỉ số (`metrics_sh.js`), mạng đường, đọc fixture |
+| `wf20/`, `wf5/`, `wf15emu/` | Các module mà engine và bộ chạy gọi tới: chấm điểm Shadow (`sscore.js`), cường độ nhu cầu (`lambda.js`), dự báo (`forecast.js`), chỉ số (`metrics_sh.js`), mạng đường, đọc fixture |
 | `sync-rerun/` | Bảng 5.7 (`table57.js`), so chữ ký hai lần chạy (`compare_sig.js`), chạy lại mỗi họ một ô (`repro_spotcheck.sh`) |
 | `data/` | Tham số đã đóng băng, chép vào data root: ngưỡng Shadow `wf15/frozen/shadow-params.json` (sha256 `62ae26a6…`), prior giờ trước, chỉ số dự báo (toàn tháng và tháng trước), quy tắc hiệu chỉnh θ, danh sách tập ngày |
 | `sample/` | Hai ô mẫu (`wf14/`: file yêu cầu, ma trận thời gian đi, provenance), `kiem_nhanh.sh`, chữ ký mong đợi (`expected.tsv`), `check_sample.js`, `compare_riders.js` (so từng khách giữa RideBound và mô phỏng nhanh) |
@@ -38,7 +42,7 @@ trước khi gỡ.
 | `RB_RESULTS` | Thư mục kết quả: script chạy ghi vào đây (không ghi đè), script dựng bảng đọc từ đây |
 | `RB_FIGURES` | Nơi `make_figs.py` ghi hình (mặc định `src/fastsim/results/figures`) |
 | `RB_STORE` | Thư mục kết quả để `repro_spotcheck.sh` so |
-| `RB_EVIDENCE`, `RB_RESEARCH`, `RB_EXPECTED_ROWS` | Chỉ cho `full_common.py`, `check_gates.py` và chế độ `plain` của `emulate_fullsys*.js`: các tệp của lượt chạy cuối, không đi kèm repo |
+| `RB_EVIDENCE`, `RB_RESEARCH` | Chỉ cho `full_common.py` và `check_gates.py`: các tệp của lượt chạy cuối, không đi kèm repo |
 
 ## Cấu hình (tên nhánh)
 

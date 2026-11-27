@@ -14,7 +14,7 @@
 //   travel    matrix kappa x D in ms, kappa = F(day, window start s); profile f(b) = F(day, s+b) / F(day, s) for
 //             b = 0..15 (4 h), rounded to 6 decimals and held after the last bin
 //   service   pickup window 600 s, decision timer 600 s, max ride 1500 permille (runs override it), dwell 0, capacity 4
-// Writes <out>/weekdays-P<n>/<cell>.json (a format-v1 scenario, read by src/fastsim/wf20/runner/scenario.js), <out>/matrices/<cell>-n<n>.bin
+// Writes <out>/weekdays-P<n>/<cell>.json (a format-v1 scenario, read by src/adapter/convert_via_full_v2.py), <out>/matrices/<cell>-n<n>.bin
 // (int32 little-endian ms, row-major over the cell's nodes in ascending node order),
 // <out>/provenance/<cell>-n<n>.prov.json and <out>/summary-weekdays.json (the cells of this run only: the next run
 // overwrites it). Prints one line per cell.

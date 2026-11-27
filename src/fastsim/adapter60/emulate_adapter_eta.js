@@ -20,7 +20,6 @@ const crypto = require('crypto');
 
 const SP = require('../paths.js').DATA;
 const K = path.join(__dirname, '..', 'wf20');
-const E17 = require(path.join(K, 'runner/engine17.js'));
 const SS = require(path.join(K, 'runner/sscore.js'));
 const NF = require(path.join(K, 'runner/netfull.js'));
 const SH = require(path.join(K, 'scripts/shcore.js'));
@@ -42,7 +41,7 @@ let CIDX_CACHE = null;
 const CIDX = () => (CIDX_CACHE = CIDX_CACHE || JSON.parse(fs.readFileSync(CIDX_FILE, 'utf8')));
 const PICK = 0, DROP = 1;
 const sha = s => crypto.createHash('sha256').update(s).digest('hex');
-const armOf = ECL.armOf || E17.armOf;
+const armOf = ECL.armOf;
 
 let NET = null, PRIOR = null;
 function shared() {
@@ -106,7 +105,7 @@ function prepareViaCell(cellName, root) {
 
 // emulate_fullsys.js optionsFor, with the configuration as a parameter (shcore.runTask: o = CONFIGS[config] + arm + wallBudgetMs)
 function optionsFor(c, rc, globalOf, spec) {
-  const arm = E17.parseArm(spec.key);
+  const arm = ECL.parseArm(spec.key);
   const A = armOf(arm);
   const o = { ...JSON.parse(JSON.stringify(LIB.CONFIGS[spec.config])), arm, wallBudgetMs: 900000 };
   let rec = null, theta = null, prof = null;
@@ -228,7 +227,7 @@ function main() {
   for (const c of mine) {
     const root = roots.find(r => fs.existsSync(path.join(r, 'fixtures', c.vf)));
     if (!root) throw new Error('no fixture for ' + c.vf);
-    const needShadow = specs.some(s => MET.isShadow(armOf(E17.parseArm(s.key))));
+    const needShadow = specs.some(s => MET.isShadow(armOf(ECL.parseArm(s.key))));
     let rc = null, globalOf = null;
     const P0 = prepareViaCell(c.vf, root);
     if (P0.meta.permille !== 2000) throw new Error(c.vf + ': permille');

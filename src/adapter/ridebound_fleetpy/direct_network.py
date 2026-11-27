@@ -4,7 +4,7 @@ The full-node Via cells (824-858 nodes, about 680,000 directed arcs) are complet
 Floyd-Warshall closure, so the direct edge o->d is a shortest path. NetworkBasic finds it with a Python Dijkstra over
 every edge, which is far too slow at that size, and where a two-arc path ties with the direct arc (the closure makes
 many such ties) floating-point rounding decides which one it returns. The emulator moves a vehicle directly from node
-to node (engine17.js advance()).
+to node (advance() in src/fastsim/engines/engine_wf15_clint.js).
 
 CompleteGraphDirectNetwork keeps NetworkBasic whole (nodes, edges, travel-time updates, vehicle movement) and reuses
 its routing methods unchanged except for the single node-to-node search: each of them is rebound to the same code with
