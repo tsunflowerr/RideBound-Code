@@ -280,26 +280,6 @@ public sealed class CandidateSelectionModelTests
     }
 
     [Fact]
-    public void Objective_bound_preserves_exact_gap_and_validates_direction()
-    {
-        var minimize = Levels()[2];
-        var maximize = Levels()[0];
-
-        var minBound = ObjectiveSolveBound.Create(2, minimize, 50, 40);
-        var maxBound = ObjectiveSolveBound.Create(0, maximize, 1, 2);
-        var invalid = ObjectiveSolveBound.Create(2, minimize, 40, 50);
-
-        Assert.True(minBound.IsSuccess, minBound.Failure?.Message);
-        Assert.Equal(10, minBound.Value!.GapNumerator);
-        Assert.Equal(50, minBound.Value.GapDenominator);
-        Assert.False(minBound.Value.IsProvenOptimal);
-        Assert.Equal(1, maxBound.Value!.GapNumerator);
-        Assert.Equal(
-            CandidateSelectionFailureCodes.InvalidDiagnostics,
-            invalid.Failure?.Code);
-    }
-
-    [Fact]
     public void Diagnostics_cannot_exceed_deterministic_budget_or_reorder_bounds()
     {
         var problem = CreateProblemResult().Value!;
@@ -307,12 +287,10 @@ public sealed class CandidateSelectionModelTests
         var accepted = ObjectiveSolveBound.Create(
             0,
             problem.ObjectiveLevels[0],
-            1,
             1).Value!;
         var wrongFirst = ObjectiveSolveBound.Create(
             1,
             problem.ObjectiveLevels[1],
-            30,
             30).Value!;
 
         var overBudget = CandidateSelectionSolverDiagnostics.Create(
@@ -320,14 +298,12 @@ public sealed class CandidateSelectionModelTests
             budget,
             consumedWorkUnits: 101,
             consumedDeterministicTimeMicros: 500,
-            wallTimeMilliseconds: 1,
             []);
         var reordered = CandidateSelectionSolverDiagnostics.Create(
             problem,
             budget,
             consumedWorkUnits: 1,
             consumedDeterministicTimeMicros: 1,
-            wallTimeMilliseconds: 1,
             [wrongFirst, accepted]);
 
         Assert.Equal(
@@ -350,7 +326,6 @@ public sealed class CandidateSelectionModelTests
                 (level, index) => ObjectiveSolveBound.Create(
                     index,
                     level,
-                    solution.ObjectiveValues[index],
                     solution.ObjectiveValues[index]).Value!)
             .ToArray();
         var diagnostics = Diagnostics(problem, exactBounds);
@@ -366,7 +341,6 @@ public sealed class CandidateSelectionModelTests
         mismatchedBounds[2] = ObjectiveSolveBound.Create(
             2,
             problem.ObjectiveLevels[2],
-            49,
             49).Value!;
         var mismatchedDiagnostics = Diagnostics(problem, mismatchedBounds);
 
@@ -485,6 +459,5 @@ public sealed class CandidateSelectionModelTests
             Budget(),
             consumedWorkUnits: 10,
             consumedDeterministicTimeMicros: 100,
-            wallTimeMilliseconds: 1,
             bounds).Value!;
 }

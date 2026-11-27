@@ -19,16 +19,13 @@ namespace RideBound.Algorithms.Tests.Candidates;
 public sealed class CandidateSearchWorkProfileTests
 {
     [Theory]
-    [InlineData(2, 468L, 450L, 451L, 0L, 452L)]
-    [InlineData(4, 3_108L, 3_060L, 3_061L, 0L, 3_062L)]
-    [InlineData(6, 10_000L, 9_908L, 9_909L, 1_194L, 11_013L)]
-    [InlineData(8, 10_000L, 9_848L, 9_849L, 19_528L, 28_845L)]
+    [InlineData(2, 468L, 452L)]
+    [InlineData(4, 3_108L, 3_062L)]
+    [InlineData(6, 10_000L, 11_013L)]
+    [InlineData(8, 10_000L, 28_845L)]
     public void Bounded_generation_performs_an_exact_amount_of_work(
         int incumbentCount,
         long expectedWorkUnits,
-        long expectedEvaluatedPaths,
-        long expectedFeasibleBeforeCap,
-        long expectedOmittedPaths,
         long expectedDistinctSlackProfiles)
     {
         var state = CreateLoadedState(incumbentCount);
@@ -43,15 +40,7 @@ public sealed class CandidateSearchWorkProfileTests
         Assert.True(result.IsSuccess, result.Witness?.Message);
         var loss = result.Diagnostics!.VehicleLosses.Single();
         Assert.Equal(expectedWorkUnits, loss.ExplorationWorkUnits);
-        Assert.Equal(expectedEvaluatedPaths, loss.EvaluatedCandidatePathCount);
-        Assert.Equal(
-            expectedFeasibleBeforeCap,
-            loss.UniqueFeasibleCandidateCountBeforeCap);
-        Assert.Equal(
-            expectedOmittedPaths,
-            loss.OmittedUnexpandedCandidatePathCount);
-        Assert.Equal(0L, loss.PhysicallyOrSchedulePrunedCount);
-        Assert.Equal(100L, loss.RetainedCandidateCount);
+        Assert.Equal(100, result.VehicleCandidates!.Single().Candidates.Count);
 
         // One slack profile per distinct projected route. A regression that
         // reintroduced a duplicate projection or weakened the memo key would
@@ -81,9 +70,6 @@ public sealed class CandidateSearchWorkProfileTests
                 .Select(candidate => candidate.CandidateId),
             second.VehicleCandidates!.Single().Candidates
                 .Select(candidate => candidate.CandidateId));
-        Assert.Equal(
-            first.Diagnostics!.Omissions.Select(value => value.StableDigest),
-            second.Diagnostics!.Omissions.Select(value => value.StableDigest));
     }
 
     private static CandidateGenerationOptions LoadedOptions { get; } =

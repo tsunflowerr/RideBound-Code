@@ -886,7 +886,6 @@ public sealed class Wp4RunnerIntegrationTests
                 budget,
                 0,
                 0,
-                0,
                 []).Value!;
             return CandidateSelectionSolveResult.Unknown(
                 diagnostics,
@@ -907,7 +906,6 @@ public sealed class Wp4RunnerIntegrationTests
             var diagnostics = CandidateSelectionSolverDiagnostics.Create(
                 problem,
                 budget,
-                0,
                 0,
                 0,
                 []).Value!;

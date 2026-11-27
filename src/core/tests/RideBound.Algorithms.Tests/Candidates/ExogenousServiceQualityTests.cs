@@ -36,7 +36,6 @@ public sealed class ExogenousServiceQualityTests
             new CandidateGenerationOptions(100, 1));
 
         Assert.True(result.IsSuccess, result.Witness?.Message);
-        Assert.True(result.Diagnostics!.IsComplete);
         var candidates = Assert.Single(result.VehicleCandidates!).Candidates;
         Assert.Single(candidates, value => value.IsNoOp);
     }
@@ -51,7 +50,6 @@ public sealed class ExogenousServiceQualityTests
             new CandidateGenerationOptions(100, 1));
 
         Assert.True(result.IsSuccess, result.Witness?.Message);
-        Assert.True(result.Diagnostics!.IsComplete);
         var breach = Assert.Single(
             result.Diagnostics!.ExogenousServiceQualityBreaches);
         Assert.Equal(AlgorithmTestData.VehicleOne, breach.VehicleId);
@@ -71,7 +69,6 @@ public sealed class ExogenousServiceQualityTests
             new CandidateGenerationOptions(100, 1));
 
         Assert.True(result.IsSuccess, result.Witness?.Message);
-        Assert.True(result.Diagnostics!.IsComplete);
         Assert.Empty(result.Diagnostics!.ExogenousServiceQualityBreaches);
     }
 
@@ -85,7 +82,6 @@ public sealed class ExogenousServiceQualityTests
             new CandidateGenerationOptions(100, 1));
 
         Assert.True(result.IsSuccess, result.Witness?.Message);
-        Assert.True(result.Diagnostics!.IsComplete);
         var vehicle = Assert.Single(result.VehicleCandidates!);
 
         // Relief reaches the safety no-op and nothing else. A changed
@@ -118,7 +114,6 @@ public sealed class ExogenousServiceQualityTests
             new CandidateGenerationOptions(100, 1));
 
         Assert.True(result.IsSuccess, result.Witness?.Message);
-        Assert.True(result.Diagnostics!.IsComplete);
         var vehicle = Assert.Single(result.VehicleCandidates!);
 
         // Once the active route is in breach, no changed plan can honour the

@@ -59,19 +59,11 @@ public sealed class ObjectiveSolveBound
     private ObjectiveSolveBound(
         int levelIndex,
         string objectiveName,
-        long incumbentValue,
-        long bestBound,
-        long gapNumerator,
-        long gapDenominator,
-        bool isProvenOptimal)
+        long incumbentValue)
     {
         LevelIndex = levelIndex;
         ObjectiveName = objectiveName;
         IncumbentValue = incumbentValue;
-        BestBound = bestBound;
-        GapNumerator = gapNumerator;
-        GapDenominator = gapDenominator;
-        IsProvenOptimal = isProvenOptimal;
     }
 
     public int LevelIndex { get; }
@@ -80,59 +72,24 @@ public sealed class ObjectiveSolveBound
 
     public long IncumbentValue { get; }
 
-    public long BestBound { get; }
-
-    /// <summary>
-    /// Exact normalized gap numerator. The corresponding denominator is
-    /// max(1, incumbent), avoiding lossy floating-point percentages.
-    /// </summary>
-    public long GapNumerator { get; }
-
-    public long GapDenominator { get; }
-
-    public bool IsProvenOptimal { get; }
-
     public static DomainResult<ObjectiveSolveBound> Create(
         int levelIndex,
         CandidateSelectionObjectiveLevel objective,
-        long incumbentValue,
-        long bestBound)
+        long incumbentValue)
     {
         ArgumentNullException.ThrowIfNull(objective);
 
         if (levelIndex < 0
-            || incumbentValue is < 0 or > DomainLimits.MaxCanonicalInteger
-            || bestBound is < 0 or > DomainLimits.MaxCanonicalInteger)
+            || incumbentValue is < 0 or > DomainLimits.MaxCanonicalInteger)
         {
             return Fail("Bound values must be canonical integers.");
         }
-
-        var hasValidDirection = objective.Sense switch
-        {
-            CandidateSelectionObjectiveSense.Minimize => bestBound <= incumbentValue,
-            CandidateSelectionObjectiveSense.Maximize => bestBound >= incumbentValue,
-            _ => false,
-        };
-
-        if (!hasValidDirection)
-        {
-            return Fail(
-                "Best bound is on the wrong side of the incumbent for the objective sense.");
-        }
-
-        var gap = objective.Sense == CandidateSelectionObjectiveSense.Minimize
-            ? incumbentValue - bestBound
-            : bestBound - incumbentValue;
 
         return DomainResult<ObjectiveSolveBound>.Success(
             new ObjectiveSolveBound(
                 levelIndex,
                 objective.Name,
-                incumbentValue,
-                bestBound,
-                gap,
-                Math.Max(1, incumbentValue),
-                gap == 0));
+                incumbentValue));
     }
 
     private static DomainResult<ObjectiveSolveBound> Fail(string message) =>
@@ -147,41 +104,25 @@ public sealed class CandidateSelectionSolverDiagnostics
     private CandidateSelectionSolverDiagnostics(
         long consumedWorkUnits,
         long consumedDeterministicTimeMicros,
-        long wallTimeMilliseconds,
-        IReadOnlyList<ObjectiveSolveBound> objectiveBounds,
-        string? detailCode,
-        string? detail)
+        IReadOnlyList<ObjectiveSolveBound> objectiveBounds)
     {
         ConsumedWorkUnits = consumedWorkUnits;
         ConsumedDeterministicTimeMicros = consumedDeterministicTimeMicros;
-        WallTimeMilliseconds = wallTimeMilliseconds;
         ObjectiveBounds = objectiveBounds;
-        DetailCode = detailCode;
-        Detail = detail;
     }
 
     public long ConsumedWorkUnits { get; }
 
     public long ConsumedDeterministicTimeMicros { get; }
 
-    /// <summary>Observed metric only; never used as a deterministic decision key.</summary>
-    public long WallTimeMilliseconds { get; }
-
     public IReadOnlyList<ObjectiveSolveBound> ObjectiveBounds { get; }
-
-    public string? DetailCode { get; }
-
-    public string? Detail { get; }
 
     public static DomainResult<CandidateSelectionSolverDiagnostics> Create(
         CandidateSelectionProblem problem,
         DeterministicSolverBudget budget,
         long consumedWorkUnits,
         long consumedDeterministicTimeMicros,
-        long wallTimeMilliseconds,
-        IEnumerable<ObjectiveSolveBound> objectiveBounds,
-        string? detailCode = null,
-        string? detail = null)
+        IEnumerable<ObjectiveSolveBound> objectiveBounds)
     {
         ArgumentNullException.ThrowIfNull(problem);
         ArgumentNullException.ThrowIfNull(budget);
@@ -196,7 +137,6 @@ public sealed class CandidateSelectionSolverDiagnostics
                 or > DomainLimits.MaxCanonicalInteger
             || consumedDeterministicTimeMicros
                 > budget.MaximumDeterministicTimeMicros
-            || wallTimeMilliseconds is < 0 or > DomainLimits.MaxCanonicalInteger
             || bounds.Length > problem.ObjectiveLevels.Count)
         {
             return Fail("Diagnostics counters or bound count are outside the model contract.");
@@ -218,10 +158,7 @@ public sealed class CandidateSelectionSolverDiagnostics
             new CandidateSelectionSolverDiagnostics(
                 consumedWorkUnits,
                 consumedDeterministicTimeMicros,
-                wallTimeMilliseconds,
-                Array.AsReadOnly(bounds),
-                detailCode,
-                detail));
+                Array.AsReadOnly(bounds)));
     }
 
     private static DomainResult<CandidateSelectionSolverDiagnostics> Fail(
@@ -266,7 +203,6 @@ public sealed class CandidateSelectionSolveResult
         ArgumentNullException.ThrowIfNull(diagnostics);
 
         if (diagnostics.ObjectiveBounds.Count != solution.ObjectiveValues.Count
-            || diagnostics.ObjectiveBounds.Any(bound => !bound.IsProvenOptimal)
             || !BoundsMatchSolution(solution, diagnostics))
         {
             throw new ArgumentException(

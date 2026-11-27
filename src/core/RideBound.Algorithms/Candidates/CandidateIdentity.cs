@@ -17,9 +17,6 @@ internal static class CandidateIdentity
     private static readonly byte[] StopDomain =
         "RideBound.GeneratedStop.v1\0"u8.ToArray();
 
-    private static readonly byte[] OmissionDomain =
-        "RideBound.CandidateOmission.v1\0"u8.ToArray();
-
     private static readonly byte[] SearchNodeDomain =
         "RideBound.CandidateSearchNode.v1\0"u8.ToArray();
 
@@ -91,20 +88,6 @@ internal static class CandidateIdentity
         return new StopId(
             $"{prefix}{Convert.ToHexStringLower(
                 SHA256.HashData(buffer.WrittenSpan))}");
-    }
-
-    public static string CreateOmissionDigest(IEnumerable<string> stableIds)
-    {
-        ArgumentNullException.ThrowIfNull(stableIds);
-        var buffer = new ArrayBufferWriter<byte>();
-        buffer.Write(OmissionDomain);
-
-        foreach (var stableId in stableIds.Order(StringComparer.Ordinal))
-        {
-            WriteFrame(buffer, "omittedId", stableId);
-        }
-
-        return Convert.ToHexStringLower(SHA256.HashData(buffer.WrittenSpan));
     }
 
     public static string CreateSearchNodeDigest(

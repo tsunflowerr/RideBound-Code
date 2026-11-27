@@ -171,12 +171,8 @@ public sealed class SolverBackedFleetSelectionTests
                     executionBudget));
 
         Assert.True(result.IsSuccess, result.Witness?.Message);
-        Assert.Equal(1, result.Decision!.Decision.GenerationDiagnostics!.OmittedRequestCount);
         Assert.True(
-            result.Decision.Decision.SelectionExecution!.Diagnostics
-                .CandidateLossOccurred);
-        Assert.True(
-            result.Decision.Decision.SelectionExecution.Diagnostics
+            result.Decision!.Decision.SelectionExecution!.Diagnostics
                 .SolverLossOccurred);
         Assert.Equal(
             CandidateSelectionSolveStatus.SafeFallback,
@@ -256,7 +252,6 @@ public sealed class SolverBackedFleetSelectionTests
         var accounting = CandidateSelectionPreSolveAccounting.Create(
             budget,
             1,
-            0,
             0).Value!;
         return new SolverBackedFleetSelector(new ExactTestSolver()).Select(
             sets,
@@ -270,7 +265,7 @@ public sealed class SolverBackedFleetSelectionTests
     private static VehicleCandidateSet Set(
         VehicleId vehicleId,
         params InsertionCandidate[] candidates) =>
-        new(vehicleId, candidates, [], false);
+        new(vehicleId, candidates, []);
 
     private static InsertionCandidate Candidate(
         string id,
@@ -320,7 +315,6 @@ public sealed class SolverBackedFleetSelectionTests
                     (level, index) => ObjectiveSolveBound.Create(
                         index,
                         level,
-                        best.ObjectiveValues[index],
                         best.ObjectiveValues[index]).Value!)
                 .ToArray();
             return CandidateSelectionSolveResult.Optimal(
@@ -366,7 +360,6 @@ public sealed class SolverBackedFleetSelectionTests
                 budget,
                 Math.Min(work, budget.MaximumWorkUnits),
                 1,
-                0,
                 bounds).Value!;
     }
 
@@ -379,7 +372,6 @@ public sealed class SolverBackedFleetSelectionTests
             var diagnostics = CandidateSelectionSolverDiagnostics.Create(
                 problem,
                 budget,
-                0,
                 0,
                 0,
                 []).Value!;

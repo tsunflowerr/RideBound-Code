@@ -99,7 +99,6 @@ public sealed class CommitmentCandidateFilter
                     pruned
                         .OrderBy(value => value.CandidateId, StringComparer.Ordinal)
                         .ToArray(),
-                    set.WasTruncated,
                     set.Loss));
         }
 

@@ -114,7 +114,7 @@ public sealed class OrToolsModelIdentityTests
 
             var objective = problem.ObjectiveLevels[level];
             var value = random.NextInt64(0, 50);
-            fixedBounds.Add(ObjectiveSolveBound.Create(level, objective, value, value).Value!);
+            fixedBounds.Add(ObjectiveSolveBound.Create(level, objective, value).Value!);
         }
 
         return problem.ObjectiveLevels.Count;

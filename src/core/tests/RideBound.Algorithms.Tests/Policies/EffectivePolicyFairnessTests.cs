@@ -175,7 +175,6 @@ public sealed class EffectivePolicyFairnessTests
                     budget,
                     0,
                     0,
-                    0,
                     []).Value!,
                 "TEST_UNKNOWN",
                 "The fairness test solver never produces an incumbent.");
