@@ -113,8 +113,7 @@ public sealed class EventReductionCoordinator
             return EventReductionResult.Failure(
                 new EventReductionWitness(
                     EventReductionFailureCodes.AcknowledgementMismatch,
-                    "decisionApplied epoch does not match the proposed state.",
-                    Dimension: "epoch"));
+                    "decisionApplied epoch does not match the proposed state."));
         }
 
         CommittedState = _pendingState;

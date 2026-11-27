@@ -22,25 +22,16 @@ public static class EventBatchOrderingValidator
         ArgumentNullException.ThrowIfNull(payload);
         ArgumentNullException.ThrowIfNull(state);
 
-        if (envelope.MessageType.Value != "eventBatch"
-            || envelope.EpochId is null
-            || envelope.SimTime is null)
-        {
-            return new EventBatchOrderingError(
-                "SCHEMA_VALIDATION_FAILED",
-                "eventBatch requires complete epoch context.");
-        }
-
         var expectedEpoch = state.PreviousAppliedEpoch + 1;
 
-        if (envelope.EpochId.Value.Value != expectedEpoch)
+        if (envelope.EpochId!.Value.Value != expectedEpoch)
         {
             return new EventBatchOrderingError(
                 "EPOCH_GAP",
                 $"Expected epoch {expectedEpoch}.");
         }
 
-        if (envelope.SimTime.Value.Value < state.LastSimulationTimeMilliseconds)
+        if (envelope.SimTime!.Value.Value < state.LastSimulationTimeMilliseconds)
         {
             return new EventBatchOrderingError(
                 "EPOCH_GAP",

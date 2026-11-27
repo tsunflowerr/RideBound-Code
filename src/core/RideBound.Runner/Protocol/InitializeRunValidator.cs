@@ -9,22 +9,10 @@ public sealed record InitializedSessionIdentity(
 
 public sealed record InitializeRunValidationContext(
     HelloPayload Hello,
-    HelloAckPayload HelloAcknowledgement,
-    RunId? ExpectedRunId = null,
-    ScenarioId? ExpectedScenarioId = null,
-    InitializedSessionIdentity? ActiveSession = null);
-
-public enum InitializeRunValidationErrorCode
-{
-    InvalidSessionState,
-    IdentityMismatch,
-    SchemaValidationFailed,
-}
+    HelloAckPayload HelloAcknowledgement);
 
 public sealed record InitializeRunValidationError(
-    InitializeRunValidationErrorCode Code,
     string ProtocolCode,
-    string Field,
     string Message);
 
 public sealed record InitializeRunValidationResult
@@ -63,15 +51,6 @@ public static class InitializeRunValidator
         ArgumentNullException.ThrowIfNull(payload);
         ArgumentNullException.ThrowIfNull(context);
 
-        if (context.ActiveSession is not null)
-        {
-            return Failure(
-                InitializeRunValidationErrorCode.InvalidSessionState,
-                "INVALID_SESSION_STATE",
-                "$.messageType",
-                "An active session cannot be initialized again.");
-        }
-
         if (envelope.MessageType.Value != "initializeRun"
             || envelope.RunId is null
             || envelope.ScenarioId is null
@@ -79,24 +58,8 @@ public static class InitializeRunValidator
             || envelope.SimTime is not null)
         {
             return Failure(
-                InitializeRunValidationErrorCode.SchemaValidationFailed,
                 "SCHEMA_VALIDATION_FAILED",
-                "$",
                 "initializeRun requires run/scenario identity and no epoch context.");
-        }
-
-        if (context.ExpectedRunId is not null
-            && context.ExpectedRunId != envelope.RunId)
-        {
-            return IdentityMismatch("$.runId", "runId does not match expected run identity.");
-        }
-
-        if (context.ExpectedScenarioId is not null
-            && context.ExpectedScenarioId != envelope.ScenarioId)
-        {
-            return IdentityMismatch(
-                "$.scenarioId",
-                "scenarioId does not match expected scenario identity.");
         }
 
         var manifest = payload.Manifest;
@@ -105,7 +68,6 @@ public static class InitializeRunValidator
             || envelope.SchemaVersion != manifest.ProtocolVersion)
         {
             return IdentityMismatch(
-                "$.payload.manifest.protocolVersion",
                 "Envelope, hello acknowledgement and manifest schema versions differ.");
         }
 
@@ -115,7 +77,6 @@ public static class InitializeRunValidator
                     context.HelloAcknowledgement.SelectedSchemaVersion)))
         {
             return IdentityMismatch(
-                "$.payload.manifest.protocolVersion",
                 "Selected schema version was not offered by the client.");
         }
 
@@ -129,7 +90,6 @@ public static class InitializeRunValidator
                 StringComparison.Ordinal))
         {
             return IdentityMismatch(
-                "$.payload.manifest.adapter",
                 "Manifest adapter identity differs from the hello identity.");
         }
 
@@ -143,7 +103,6 @@ public static class InitializeRunValidator
                 context.Hello.Capabilities).Any())
         {
             return IdentityMismatch(
-                "$.payload.manifest.capabilitySelection",
                 "helloAck selects capability values that the client did not offer.");
         }
 
@@ -152,7 +111,6 @@ public static class InitializeRunValidator
                 acknowledgedSelection))
         {
             return IdentityMismatch(
-                "$.payload.manifest.capabilitySelection",
                 "Manifest capability selection differs from helloAck.");
         }
 
@@ -190,23 +148,16 @@ public static class InitializeRunValidator
         && offered.Minor == selected.Minor;
 
     private static InitializeRunValidationResult IdentityMismatch(
-        string field,
         string message) =>
         Failure(
-            InitializeRunValidationErrorCode.IdentityMismatch,
             "IDENTITY_MISMATCH",
-            field,
             message);
 
     private static InitializeRunValidationResult Failure(
-        InitializeRunValidationErrorCode code,
         string protocolCode,
-        string field,
         string message) =>
         InitializeRunValidationResult.Failure(
             new InitializeRunValidationError(
-                code,
                 protocolCode,
-                field,
                 message));
 }

@@ -70,7 +70,7 @@ public sealed class CommitmentRunnerSessionTests
         var genesis = CreateInitializedSession();
         Acknowledge(genesis, epoch: 1);
         Acknowledge(genesis, epoch: 2);
-        var checkpointResponse = genesis.Process(CheckpointRequest()).Response!;
+        var checkpointResponse = StreamedEnvelope(genesis.Process(CheckpointRequest()));
         var checkpoint = CheckpointPayloadCodec.Decode(
             checkpointResponse.Payload);
         Assert.True(checkpoint.IsSuccess, checkpoint.Error?.Message);
@@ -165,6 +165,16 @@ public sealed class CommitmentRunnerSessionTests
     }
 
     private static byte[] CheckpointRequest() => Utf8(Scenario("checkpoint")[0]);
+
+    private static ProtocolEnvelope StreamedEnvelope(RunnerSessionResult result)
+    {
+        using var stream = new MemoryStream();
+        result.Streamed!.WriteToAsync(stream, CancellationToken.None)
+            .AsTask()
+            .GetAwaiter()
+            .GetResult();
+        return ProtocolEnvelopeCodec.Decode(stream.ToArray()).Envelope!;
+    }
 
     /// <summary>A restore request carrying <paramref name="payload"/> byte for byte.</summary>
     private static byte[] RestoreRequest(JsonElement payload)

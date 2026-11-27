@@ -39,25 +39,12 @@ public static class RunnerHost
 
         var reader = new NdjsonReader(input, maximumLineBytes);
         var writer = new NdjsonWriter(output);
-        RunnerSession session;
-
-        try
-        {
-            session = new RunnerSession(
-                RunnerDefaults.CapabilityRequirements,
-                commitmentPolicies: commitmentPolicies,
-                commitmentPolicyConfigurationHash:
-                    commitmentPolicyConfigurationHash,
-                wp4Configuration: wp4Configuration);
-        }
-        catch (ArgumentException error)
-        {
-            // Program passes decoded, non-null settings; a library caller that passes null gets this. Exit 64, like
-            // Program's configuration errors.
-            await diagnostics.WriteLineAsync(
-                $"Invalid runner configuration: {error.Message}").ConfigureAwait(false);
-            return 64;
-        }
+        var session = new RunnerSession(
+            RunnerDefaults.CapabilityRequirements,
+            commitmentPolicies: commitmentPolicies,
+            commitmentPolicyConfigurationHash:
+                commitmentPolicyConfigurationHash,
+            wp4Configuration: wp4Configuration);
 
         while (true)
         {
@@ -114,7 +101,6 @@ public static class RunnerHost
 
             if (result.Streamed is not null)
             {
-                // Never read result.Response here: for a streamed result it decodes a copy.
                 await writer.WriteAsync(result.Streamed, cancellationToken)
                     .ConfigureAwait(false);
             }

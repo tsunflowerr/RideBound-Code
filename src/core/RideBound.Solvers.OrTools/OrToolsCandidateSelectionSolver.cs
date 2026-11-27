@@ -17,7 +17,6 @@ public sealed class OrToolsCandidateSelectionSolver : ICandidateSelectionSolver
         ArgumentNullException.ThrowIfNull(budget);
         CandidateSelectionSolution? incumbent = null;
         var bounds = new List<ObjectiveSolveBound>();
-        var fixedBounds = new List<ObjectiveSolveBound>();
         long consumedWork = 0;
         long consumedDeterministicMicros = 0;
         ModelContext? context = null;
@@ -50,8 +49,8 @@ public sealed class OrToolsCandidateSelectionSolver : ICandidateSelectionSolver
             // The first pass builds the model; each later pass only appends the equalities of the
             // levels proven since, which yields the model a fresh build would.
             var built = context is null
-                ? BuildModel(problem, new ModelIndex(problem), fixedBounds)
-                : ExtendModel(context, fixedBounds, boundsInModel);
+                ? BuildModel(problem, new ModelIndex(problem), bounds)
+                : ExtendModel(context, bounds, boundsInModel);
 
             if (built.Error is not null)
             {
@@ -62,7 +61,7 @@ public sealed class OrToolsCandidateSelectionSolver : ICandidateSelectionSolver
             }
 
             context = built.Context!;
-            boundsInModel = fixedBounds.Count;
+            boundsInModel = bounds.Count;
             var level = problem.ObjectiveLevels[levelIndex];
             var expression = context.Objective(levelIndex);
 
@@ -178,7 +177,6 @@ public sealed class OrToolsCandidateSelectionSolver : ICandidateSelectionSolver
             }
 
             bounds.Add(bound.Value!);
-            fixedBounds.Add(bound.Value!);
 
             // CP-SAT found an incumbent but did not prove the current lexicographic level optimal.
             if (status == CpSolverStatus.Feasible)

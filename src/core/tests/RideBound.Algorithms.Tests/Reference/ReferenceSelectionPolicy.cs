@@ -43,10 +43,7 @@ public sealed class ReferenceSelectionPolicy
             return DispatchDecisionResult.Failure(
                 new RollingCostWitness(
                     DecisionFailureCodes.CandidateGenerationFailed,
-                    generated.Witness!.Message,
-                    generated.Witness.VehicleId,
-                    generated.Witness.RequestId,
-                    Dimension: generated.Witness.Dimension));
+                    generated.Witness!.Message));
         }
 
         var candidates = commitmentFilter is null

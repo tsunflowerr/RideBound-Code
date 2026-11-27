@@ -43,10 +43,9 @@ public sealed class HardVectorCandidateAssessor
 {
     private readonly CommitmentDecisionValidator _validator;
 
-    public HardVectorCandidateAssessor(
-        CommitmentDecisionValidator? validator = null)
+    public HardVectorCandidateAssessor()
     {
-        _validator = validator ?? new CommitmentDecisionValidator();
+        _validator = new CommitmentDecisionValidator();
     }
 
     public HardVectorCandidateAssessmentResult AssessAndFilter(
@@ -66,9 +65,6 @@ public sealed class HardVectorCandidateAssessor
             var retained = new List<InsertionCandidate>();
             var pruned = set.PrunedCandidates.ToList();
             var hardPruned = new List<CandidatePruneWitness>();
-            var hardValidationWitnesses =
-                new Dictionary<string, CommitmentValidationWitness>(
-                    StringComparer.Ordinal);
 
             // G2 candidates are half of a move; they are assessed as pairs after this loop.
             // Without G2 this is every candidate.
@@ -117,9 +113,6 @@ public sealed class HardVectorCandidateAssessor
                         CommitmentWitnesses: validation.Witnesses);
                     pruned.Add(prune);
                     hardPruned.Add(prune);
-                    hardValidationWitnesses.Add(
-                        candidate.CandidateId,
-                        witness);
                     continue;
                 }
 
@@ -147,12 +140,6 @@ public sealed class HardVectorCandidateAssessor
                 var citation = noOpPrune is not null
                     ? "No-op rejection"
                     : "First rejection";
-                var firstValidation = first is not null
-                    && hardValidationWitnesses.TryGetValue(
-                        first.CandidateId,
-                        out var value)
-                        ? value
-                        : null;
                 return HardVectorCandidateAssessmentResult.Failure(
                     new CommitmentAssessmentWitness(
                         CommitmentFailureCodes.VehicleHasNoFeasibleCandidate,
@@ -160,16 +147,7 @@ public sealed class HardVectorCandidateAssessor
                             ? "C1 reached a vehicle without any generated " +
                               "candidate; even the safety no-op was absent."
                             : "C1 rejected every generated candidate for this " +
-                              $"vehicle. {citation}: {first.Message}",
-                        first?.CandidateId,
-                        set.VehicleId,
-                        firstValidation?.RequestId,
-                        firstValidation?.Dimension,
-                        first?.Code,
-                        firstValidation?.Before,
-                        firstValidation?.After,
-                        set.Candidates.Count,
-                        hardPruned.Count));
+                              $"vehicle. {citation}: {first.Message}"));
             }
 
             if (noOpPrune is not null)
@@ -182,25 +160,11 @@ public sealed class HardVectorCandidateAssessor
                 // No kept rule is known to reach this: the locks and the deadline compare the
                 // candidate with the exogenous projection, which the no-op equals, and the no-op
                 // spends no budget. So no test reaches this branch; it stays as a guard.
-                var noOpValidation = hardValidationWitnesses.TryGetValue(
-                    noOpPrune.CandidateId,
-                    out var noOpWitness)
-                    ? noOpWitness
-                    : null;
                 return HardVectorCandidateAssessmentResult.Failure(
                     new CommitmentAssessmentWitness(
                         CommitmentFailureCodes.SafetyNoOpRejected,
                         "C1 rejected the safety no-op while other candidates survived. " +
-                        $"No-op rejection: {noOpPrune.Message}",
-                        noOpPrune.CandidateId,
-                        set.VehicleId,
-                        noOpValidation?.RequestId,
-                        noOpValidation?.Dimension,
-                        noOpPrune.Code,
-                        noOpValidation?.Before,
-                        noOpValidation?.After,
-                        set.Candidates.Count,
-                        hardPruned.Count));
+                        $"No-op rejection: {noOpPrune.Message}"));
             }
 
             outputSets.Add(

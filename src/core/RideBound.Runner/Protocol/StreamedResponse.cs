@@ -1,5 +1,3 @@
-using RideBound.Contracts.Protocol;
-
 namespace RideBound.Runner.Protocol;
 
 /// <summary>
@@ -11,17 +9,12 @@ namespace RideBound.Runner.Protocol;
 public sealed class StreamedResponse
 {
     private readonly IReadOnlyList<ReadOnlyMemory<byte>> _parts;
-    private ProtocolEnvelope? _envelope;
 
-    public StreamedResponse(string messageType, IReadOnlyList<ReadOnlyMemory<byte>> parts)
+    public StreamedResponse(IReadOnlyList<ReadOnlyMemory<byte>> parts)
     {
-        ArgumentException.ThrowIfNullOrEmpty(messageType);
         ArgumentNullException.ThrowIfNull(parts);
-        MessageType = messageType;
         _parts = parts;
     }
-
-    public string MessageType { get; }
 
     public async ValueTask WriteToAsync(Stream stream, CancellationToken cancellationToken)
     {
@@ -29,31 +22,5 @@ public sealed class StreamedResponse
         {
             await stream.WriteAsync(part, cancellationToken).ConfigureAwait(false);
         }
-    }
-
-    /// <summary>
-    /// The response as an envelope, decoded from the streamed bytes. It copies the whole message,
-    /// so the host never calls it; it serves callers that inspect the response in memory.
-    /// </summary>
-    public ProtocolEnvelope ToEnvelope()
-    {
-        if (_envelope is not null)
-        {
-            return _envelope;
-        }
-
-        var bytes = new byte[_parts.Sum(part => (long)part.Length)];
-        var offset = 0;
-
-        foreach (var part in _parts)
-        {
-            part.Span.CopyTo(bytes.AsSpan(offset));
-            offset += part.Length;
-        }
-
-        var decoded = ProtocolEnvelopeCodec.Decode(bytes);
-        _envelope = decoded.Envelope
-            ?? throw new InvalidOperationException("A streamed response is not a protocol envelope.");
-        return _envelope;
     }
 }

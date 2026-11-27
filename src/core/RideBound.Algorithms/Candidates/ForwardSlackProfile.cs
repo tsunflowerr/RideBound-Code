@@ -71,10 +71,9 @@ public sealed class ForwardSlackProfileBuilder : IForwardSlackProfileBuilder
 {
     private readonly CandidateScheduleEvaluator _scheduleEvaluator;
 
-    public ForwardSlackProfileBuilder(
-        CandidateScheduleEvaluator? scheduleEvaluator = null)
+    public ForwardSlackProfileBuilder()
     {
-        _scheduleEvaluator = scheduleEvaluator ?? new CandidateScheduleEvaluator();
+        _scheduleEvaluator = new CandidateScheduleEvaluator();
     }
 
     public ForwardSlackProfileBuildResult Build(

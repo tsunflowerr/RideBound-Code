@@ -52,8 +52,7 @@ public sealed record SolverBackedRidePoolingPolicyOptions
 }
 
 public sealed record SolverBackedPolicyDecision(
-    DispatchDecision Decision,
-    ICommitmentPolicyProvider EffectivePolicies);
+    DispatchDecision Decision);
 
 public sealed record SolverBackedPolicyDecisionResult
 {
@@ -94,18 +93,15 @@ public sealed class SolverBackedRidePoolingPolicy
 
     public SolverBackedRidePoolingPolicy(
         ICandidateSelectionSolver solver,
-        InsertionCandidateGenerator? generator = null,
-        HardVectorCandidateAssessor? hardAssessor = null,
-        CommitmentDecisionValidator? commitmentValidator = null,
-        PhysicalPlanValidator? physicalValidator = null)
+        CommitmentDecisionValidator? commitmentValidator = null)
     {
         ArgumentNullException.ThrowIfNull(solver);
-        _generator = generator ?? new InsertionCandidateGenerator();
-        _hardAssessor = hardAssessor ?? new HardVectorCandidateAssessor();
+        _generator = new InsertionCandidateGenerator();
+        _hardAssessor = new HardVectorCandidateAssessor();
         _selector = new SolverBackedFleetSelector(solver);
         _commitmentValidator = commitmentValidator
             ?? new CommitmentDecisionValidator();
-        _physicalValidator = physicalValidator ?? new PhysicalPlanValidator();
+        _physicalValidator = new PhysicalPlanValidator();
     }
 
     public SolverBackedPolicyDecisionResult Decide(
@@ -150,8 +146,7 @@ public sealed class SolverBackedRidePoolingPolicy
             return SolverBackedPolicyDecisionResult.Failure(
                 new RollingCostWitness(
                     accounting.Failure!.Code,
-                    accounting.Failure.Message,
-                    Dimension: accounting.Failure.Dimension));
+                    accounting.Failure.Message));
         }
 
         var validator = new FullFleetValidator(
@@ -188,7 +183,7 @@ public sealed class SolverBackedRidePoolingPolicy
             GenerationDiagnostics = generated.Diagnostics,
         };
         return SolverBackedPolicyDecisionResult.Success(
-            new SolverBackedPolicyDecision(decision, context.Policies));
+            new SolverBackedPolicyDecision(decision));
     }
 
     private static DomainResult<CandidateSelectionPreSolveAccounting>
@@ -234,11 +229,7 @@ public sealed class SolverBackedRidePoolingPolicy
         SolverBackedPolicyDecisionResult.Failure(
             new RollingCostWitness(
                 DecisionFailureCodes.CommitmentAssessmentFailed,
-                witness.Message,
-                witness.VehicleId,
-                witness.RequestId,
-                witness.CandidateId,
-                witness.Dimension));
+                witness.Message));
 
     private sealed class FullFleetValidator(
         CommitmentMechanismContext context,

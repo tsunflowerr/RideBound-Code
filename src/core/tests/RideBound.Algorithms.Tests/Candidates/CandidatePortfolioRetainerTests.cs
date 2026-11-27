@@ -54,9 +54,6 @@ public sealed class CandidatePortfolioRetainerTests
             }
 
             Assert.Equal(cap, portfolio.Retained.Count);
-            Assert.Equal(
-                candidates.Length,
-                portfolio.Retained.Count + portfolio.Omitted.Count);
         }
     }
 
@@ -185,13 +182,9 @@ public sealed class CandidatePortfolioRetainerTests
             Assert.Equal(
                 expected.Retained.Select(candidate => candidate.CandidateId),
                 actual.Retained.Select(candidate => candidate.CandidateId));
-            Assert.Equal(
-                expected.Omitted.Select(candidate => candidate.CandidateId),
-                actual.Omitted.Select(candidate => candidate.CandidateId));
         }
 
         Assert.Equal(3, expected.Retained.Count);
-        Assert.Equal(2, expected.Omitted.Count);
     }
 
     [Fact]

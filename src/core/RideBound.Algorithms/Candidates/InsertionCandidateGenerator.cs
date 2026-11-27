@@ -15,19 +15,13 @@ public sealed partial class InsertionCandidateGenerator
     private readonly WaitingRiderRelocationBuilder _relocationBuilder;
 
     public InsertionCandidateGenerator(
-        PhysicalPlanValidator? validator = null,
-        CandidateScheduleEvaluator? scheduleEvaluator = null,
-        ForwardSlackProfileCache? slackCache = null,
-        CandidatePortfolioRetainer? portfolioRetainer = null,
-        WaitingRiderRelocationBuilder? relocationBuilder = null)
+        ForwardSlackProfileCache? slackCache = null)
     {
-        _validator = validator ?? new PhysicalPlanValidator();
+        _validator = new PhysicalPlanValidator();
         _slackCache = slackCache ?? new ForwardSlackProfileCache(
-            new ForwardSlackProfileBuilder(scheduleEvaluator));
-        _portfolioRetainer = portfolioRetainer
-            ?? new CandidatePortfolioRetainer();
-        _relocationBuilder = relocationBuilder
-            ?? new WaitingRiderRelocationBuilder();
+            new ForwardSlackProfileBuilder());
+        _portfolioRetainer = new CandidatePortfolioRetainer();
+        _relocationBuilder = new WaitingRiderRelocationBuilder();
     }
 
     public CandidateGenerationResult Generate(
@@ -42,8 +36,7 @@ public sealed partial class InsertionCandidateGenerator
             return CandidateGenerationResult.Failure(
                 new CandidateGenerationWitness(
                     CandidateGenerationFailureCodes.TravelSnapshotRequired,
-                    "Candidate generation requires a travel snapshot.",
-                    Dimension: "travelTimes"));
+                    "Candidate generation requires a travel snapshot."));
         }
 
         var pendingRequests = state.Run.Requests.Values
@@ -131,10 +124,7 @@ public sealed partial class InsertionCandidateGenerator
                     CandidateGenerationFailureCodes.ActiveRouteInfeasible,
                     "The active route violates a structural physical constraint: " +
                     $"{probe.Witness!.Code}: {probe.Witness.Message}" +
-                    FormatPhysicalDetails(probe.Witness),
-                    vehicle.Id,
-                    probe.Witness.RequestId,
-                    probe.Witness.Dimension ?? probe.Witness.Code));
+                    FormatPhysicalDetails(probe.Witness)));
         }
 
         var serviceQuality = probe.Allowance;
@@ -245,10 +235,7 @@ public sealed partial class InsertionCandidateGenerator
                       "no-op candidate."
                     : "The active route could not be retained as the safety " +
                       $"no-op candidate: {prune.Code}: {prune.Message}" +
-                      FormatPhysicalDetails(prune.PhysicalWitness),
-                vehicle.Id,
-                prune?.PhysicalWitness?.RequestId,
-                prune?.PhysicalWitness?.Dimension ?? prune?.Code);
+                      FormatPhysicalDetails(prune.PhysicalWitness));
         }
 
         return null;

@@ -8,9 +8,7 @@ public enum ProtocolVersionCompatibilityStatus
 }
 
 public sealed record ProtocolVersionCompatibilityResult(
-    ProtocolVersionCompatibilityStatus Status,
-    ProtocolVersion ReceiverVersion,
-    ProtocolVersion SenderVersion)
+    ProtocolVersionCompatibilityStatus Status)
 {
     public bool IsCompatible => Status == ProtocolVersionCompatibilityStatus.Compatible;
 }
@@ -23,31 +21,24 @@ public static class ProtocolVersionCompatibility
     /// (schemas/v1/compatibility-matrix.json), so it is unsupported.
     /// </summary>
     public static ProtocolVersionCompatibilityResult Evaluate(
-        ProtocolVersion senderVersion,
-        ProtocolVersion? receiverVersion = null)
+        ProtocolVersion senderVersion)
     {
         ArgumentNullException.ThrowIfNull(senderVersion);
-        receiverVersion ??= ProtocolVersion.Current;
+        var receiverVersion = ProtocolVersion.Current;
 
         if (senderVersion.Major != receiverVersion.Major)
         {
             return new ProtocolVersionCompatibilityResult(
-                ProtocolVersionCompatibilityStatus.UnsupportedMajor,
-                receiverVersion,
-                senderVersion);
+                ProtocolVersionCompatibilityStatus.UnsupportedMajor);
         }
 
         if (senderVersion.Minor > receiverVersion.Minor)
         {
             return new ProtocolVersionCompatibilityResult(
-                ProtocolVersionCompatibilityStatus.UnsupportedMinor,
-                receiverVersion,
-                senderVersion);
+                ProtocolVersionCompatibilityStatus.UnsupportedMinor);
         }
 
         return new ProtocolVersionCompatibilityResult(
-            ProtocolVersionCompatibilityStatus.Compatible,
-            receiverVersion,
-            senderVersion);
+            ProtocolVersionCompatibilityStatus.Compatible);
     }
 }

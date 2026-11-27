@@ -151,8 +151,6 @@ public sealed class InsertionCandidateGeneratorTests
         Assert.Equal(
             CandidateGenerationFailureCodes.ActiveRouteInfeasible,
             result.Witness?.Code);
-        Assert.Equal(AlgorithmTestData.VehicleOne, result.Witness?.VehicleId);
-        Assert.Equal("routeConnectivity", result.Witness?.Dimension);
         Assert.Contains("ROUTE_CONNECTIVITY", result.Witness?.Message);
     }
 
