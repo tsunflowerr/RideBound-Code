@@ -2,6 +2,69 @@
 
 (Máy công ty ghi vào đây: phân tích, quyết định, và các `## YÊU CẦU <số>` gửi máy nhà.)
 
+## YÊU CẦU 10 — 2026-11-27 20:10: nhánh mới `scope/thesis-trim-2` (gỡ restore) và kiểm toàn bộ số liệu chạy chính
+
+Chủ đề tài cho tách nhánh mới từ `4aebe91`, gỡ đường restore, rồi kiểm lại thật kỹ mọi số liệu trong khóa luận, nhất là
+phần chạy chính. Nhánh `scope/thesis-trim` giữ nguyên.
+
+**[10.36] `d6b5966` (C20, G1-01): gỡ thông điệp `restore` của Runner.** Chủ đề tài bỏ câu "tiếp tục một phiên" ở
+`03-phuong-phap.tex:159`. Đã gỡ:
+- `ProcessRestore`, `OnlineStateCheckpointCodec` (631 dòng) và `OnlineStateCanonicalizer`;
+- phía `Decode` của checkpoint và `RestoreAcknowledged`;
+- `RideBoundRun.Rehydrate` và `RideRequest.Rehydrate`;
+- schema `restore` và `restore-acknowledged-payload`, golden 10.
+
+Production gỡ 1.159 dòng, test gỡ 15 trường hợp. Test T3 (khôi phục từ từng checkpoint) được thay bằng
+`OnlineStateReferenceCanonicalizerTests`: ở mỗi checkpoint, bộ ghi phải giống trạng thái tham chiếu từng byte. Khung
+hello, decision, decisionApplied và checkpoint không đổi; danh sách capability không đổi. Máy công ty đã build production
+và biên dịch 7 project test (`-t:Compile`): 0 lỗi, không có .exe. C21 (sự cố) đã gỡ từ [10.04].
+
+**Gộp `convert_via_full_v2_nveh81.py` vào converter: KHÔNG làm.** Converter ghi sha256 của chính nó vào mọi fixture
+(`convert_via_full_v2.py:203`), nên hai bản chép phải giữ nguyên từng byte.
+
+**Số liệu đã kiểm trên máy công ty.** Đầu vào là các tệp thời khóa luận trong git (`abb992d^:src/analysis/data` và
+`src/fastsim/results`).
+- `f14-real-riders.tsv` nối `f16` có sha256 `452378ec…`, tức đúng đầu ra `riders.py --out` ở đầu nhánh trên 360 lượt
+  (TRẢ LỜI 8).
+- `phoi-hop/kiem_chay_chinh.js` (không có chuỗi giờ báo) cho 67 số khớp, 0 lệch. Trong đó có Bảng 5.2 (phục vụ, muộn),
+  Bảng 5.3 (muộn, sai số giờ báo đầu; mọi khách và khách chung), số theo khung giờ, 56.330, 89,0/89,9 %,
+  2,77/2,94/−0,54/0,00, 73,1 % và 2.854/43.339; 0/42.543.
+- Đổi qua lại theo lượt: 45,84 → 18,50; −27,34 [−31,38; −23,31]; 0/30; sáng −6,91; chiều −20,43. Chuỗi khớp hoàn
+  toàn ở 301/360 lượt.
+- Mô phỏng nhanh: 289/289 ô Bảng 5.4–5.11 khớp .tex 27/11. Bảng 5.7 đọc gộp `nce-oce60`, `60b` và `60c`.
+- Lời văn Ch.5: các số đều có nguồn khớp (`eta_analysis.json`, `calib-result.json`, `nhom-ngay.json`).
+- Còn cần máy nhà, vì phải có chuỗi giờ báo từng khách hoặc thời điểm công bố:
+  - tổng mức đổi giờ chính xác (−37,71 và −49,52; tệp tổng ra −37,70 và −49,48 vì thiếu 8 khách chỉ có ở C#);
+  - Bảng 5.3 đổi qua lại và tổng mức đổi giờ của khách chung (−24,59, −40,04);
+  - ngưỡng 30 và 120 s (32,9 %, 74,5 %);
+  - sai số theo thời gian (0,68/0,60, 0,665/0,520, 0,688/0,671, −0,080, −0,084).
+
+Kiểm ở **đầu nhánh `scope/thesis-trim-2`**:
+1. **Test C#:** `dotnet test` cả 7 project.
+   - Kỳ vọng **775 qua / 0 hỏng**: Contracts 119, Domain 216, Runner 147, Application 99, Algorithms 171, Solvers 14,
+     Architecture 9.
+   - Nhóm cần xem kỹ: `OnlineStateReferenceCanonicalizerTests` (6), `OnlineStateWriterTests`,
+     `Wp4RunnerIntegrationTests`, `GoldenFixtureTests`, `SchemaAssetTests`,
+     `CommitmentDecisionValidatorTests.Candidate_cannot_mutate_existing_request_definition`.
+2. **Phát lại:** `replay.py runner` trên 4 transcript B1, mọi khung phải giống từng byte. `zgrep '"messageType":"restore"'`
+   trên 8 transcript, kỳ vọng 0.
+3. **Một lượt C# thật** (README §2.2). Mục này thay mục 4 của YÊU CẦU 9.
+   - `compare_riders.js` ra `IDENTICAL`.
+   - `riders.tsv` và `sequences.tsv` giống từng byte bảng của cùng job trong đợt 360 lượt.
+4. **Số liệu chạy chính:**
+   - `riders.py --root <F14 final> --root <F16 final-f16> --out riders.tsv --sequences sequences.tsv`. sha256 phải là
+     `452378ec…` và `79660500…`.
+   - `RB_EVIDENCE=<thư mục publication-projection> python src/fastsim/adapter60/full_common.py`, ra `full_common.json`
+     (không commit).
+   - `node phoi-hop/kiem_chay_chinh.js riders.tsv sequences.tsv --pred <dự đoán F14+F16 như khi chạy compare_riders>
+     --full-common src/fastsim/adapter60/full_common.json`.
+   - Kỳ vọng dòng cuối `TỔNG OK … KHÁC 0 BỎ QUA 0`. Gửi toàn bộ đầu ra. Nếu có dòng KHÁC thì gửi kèm số tính lại; không sửa
+     gì trong khóa luận.
+5. **YÊU CẦU 9:** mục 1–3 và 5 (chạy lại toàn bộ mô phỏng nhanh) vẫn làm. Làm ở nhánh nào cũng được, vì [10.36] không đụng
+   JS hay Python.
+
+`README.md:132` sẽ sửa thành số test máy nhà đo được. Commit dưới tên tsunflowerr, **không thêm dòng Co-Authored-By**.
+
 ## YÊU CẦU 9 — 2026-11-27 18:35: chạy lại toàn bộ mô phỏng nhanh và một lượt C# thật ở đầu nhánh
 
 Mở lại sau mục KẾT THÚC: chủ đề tài hỏi kết quả chạy đã được kiểm lại hết chưa. Còn hai chỗ chưa chạy lại sau thu gọn.
