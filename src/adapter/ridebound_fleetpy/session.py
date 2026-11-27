@@ -17,19 +17,11 @@ FLEETPY_VERSION = "1.0.2"
 FLEETPY_COMMIT = "053aa9d4fcfde91c5d303435d5748f9206c071b0"
 ADAPTER_ID = "fleetpy-ridebound"
 ADAPTER_VERSION = "1.0.0"
-# The frame bound of both directions when no setting raises it: 64 MiB. The client checks
-# frames in both directions against it; the Runner gets the input bound as --maximum-line-bytes
-# (its own default is 1 MiB). This is a resource guard, not a correctness invariant: a denser
-# scenario legitimately produces a larger full-state checkpoint, and exceeding the bound is a
-# typed fail-closed error rather than silent truncation. A contended peak-window grid with long
-# per-vehicle routes overran 16 MiB, so the adapter requests 64 MiB, and the observed frame
-# sizes are recorded so the headroom stays visible.
-RUNNER_MAXIMUM_INPUT_LINE_BYTES = 64 * 1024 * 1024
-RUNNER_MAXIMUM_OUTPUT_LINE_BYTES = 64 * 1024 * 1024
 # The Runner accepts --maximum-line-bytes up to 1 GiB. A full-node Via cell
-# needs it (travel snapshots of ~130 MB, final checkpoints up to ~0.8 GB), so the operator
-# setting `ridebound_maximum_line_bytes` raises both bounds for one run. It can only raise
-# them: each bound is the larger of the setting and its constant above.
+# needs it (travel snapshots of ~130 MB, final checkpoints up to ~0.8 GB), so the required
+# operator setting `ridebound_maximum_line_bytes` gives the frame bound of both directions
+# for one run (run_job.py sets 1 GiB): the client checks frames in both directions against
+# it, and the Runner gets it as --maximum-line-bytes.
 RUNNER_LINE_BYTES_RANGE = (64 * 1024 * 1024, 1024 * 1024 * 1024)
 
 
@@ -45,13 +37,6 @@ def _required_text(values: Mapping[str, Any], key: str) -> str:
 
 
 def _setting(values: Mapping[str, Any], key: str, default: Any = None) -> Any:
-    # Settings use their direct names; an "op_"-prefixed copy is refused.
-    if f"op_{key}" in values:
-        raise _fail(
-            "RBWP7_SETTING_PREFIX_REMOVED",
-            f"$.operator.op_{key}",
-            "op_ prefix: removed; see commit ebca912 (branch research/final-real-runs-2026-11-06)",
-        )
     return values.get(key, default)
 
 
@@ -98,13 +83,11 @@ def _snapshot_node_count(values: Mapping[str, Any]) -> int:
     return value
 
 
-def _maximum_line_bytes(values: Mapping[str, Any]) -> int | None:
+def _maximum_line_bytes(values: Mapping[str, Any]) -> int:
     key = "ridebound_maximum_line_bytes"
     value = _setting(values, key)
     low, high = RUNNER_LINE_BYTES_RANGE
-    if value is not None and (
-        isinstance(value, bool) or not isinstance(value, int) or not low <= value <= high
-    ):
+    if isinstance(value, bool) or not isinstance(value, int) or not low <= value <= high:
         raise _fail("RBWP7_SETTING_INTEGER_INVALID", f"$.operator.{key}", repr(value))
     return value
 
@@ -189,18 +172,10 @@ def require_recorded_late_boarding(wp4_value: Mapping[str, Any], path: pathlib.P
     """ADR-076: the WP4 `lateBoarding` key must be `record-v1`, as the Runner requires.
 
     The Runner records late boardings, and the adapter drops FleetPy's latest arrival, the
-    only bound anchored on the original pickup window. `reject`, also the meaning of an
-    absent key, kept that FleetPy check and is removed. Any other value fails before the
-    Runner starts.
+    only bound anchored on the original pickup window. Any other value, or an absent key,
+    fails before the Runner starts.
     """
-    late_boarding = wp4_value.get("lateBoarding", "reject")
-    if late_boarding == "reject":
-        raise _fail(
-            "RBWP7_WP4_LATE_BOARDING_REJECT_REMOVED",
-            str(path),
-            "late-boarding rejection ('reject' or an absent key): "
-            "removed; see commit ebca912 (branch research/final-real-runs-2026-11-06)",
-        )
+    late_boarding = wp4_value.get("lateBoarding")
     if late_boarding != "record-v1":
         raise _fail("RBWP7_WP4_LATE_BOARDING_INVALID", str(path), repr(late_boarding))
 
@@ -270,7 +245,8 @@ class RideBoundSessionSettings:
     # True when the WP4 configuration declares `planningForecast`. The Runner
     # then owns the pickup window and the maximum trip; FleetPy keeps capacity and structure.
     planning_forecast: bool = False
-    # Raises the frame bound of both directions; None keeps the 64 MiB constants.
+    # The frame bound of both directions and the Runner's --maximum-line-bytes; from_attributes
+    # requires it.
     maximum_line_bytes: int | None = None
 
     @classmethod
@@ -374,7 +350,7 @@ class RideBoundProtocolSession:
             "--solver-seed-source",
             "manifest-master-seed",
             "--maximum-line-bytes",
-            str(self._line_bound(RUNNER_MAXIMUM_INPUT_LINE_BYTES)),
+            str(settings.maximum_line_bytes),
         ]
         self._command = tuple(command)
         self._client_factory = client_factory
@@ -388,16 +364,12 @@ class RideBoundProtocolSession:
         self._closed = False
         self._manifest_hash: str | None = None
 
-    def _line_bound(self, constant: int) -> int:
-        # The constant is read at call time, so a caller that patches it gets the patched value.
-        return max(self.settings.maximum_line_bytes or 0, constant)
-
     def _new_client(self):
         return self._client_factory(
             self._command,
             timeout_seconds=self.settings.timeout_seconds,
-            maximum_input_line_bytes=self._line_bound(RUNNER_MAXIMUM_INPUT_LINE_BYTES),
-            maximum_output_line_bytes=self._line_bound(RUNNER_MAXIMUM_OUTPUT_LINE_BYTES),
+            maximum_input_line_bytes=self.settings.maximum_line_bytes,
+            maximum_output_line_bytes=self.settings.maximum_line_bytes,
             transcript_writer=(
                 self._transcript.record
                 if self._transcript is not None

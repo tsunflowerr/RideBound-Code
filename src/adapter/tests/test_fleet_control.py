@@ -105,14 +105,10 @@ class RunnerServiceBoundsSettingTests(unittest.TestCase):
         path = pathlib.Path("wp4.json")
 
         self.assertIsNone(require_recorded_late_boarding({"lateBoarding": "record-v1"}, path))
-        for late in ({}, {"lateBoarding": "reject"}):
-            with self.assertRaises(AdapterFailure) as removed:
+        for late in ({}, {"lateBoarding": "reject"}, {"lateBoarding": "record-v2"}):
+            with self.assertRaises(AdapterFailure) as failure:
                 require_recorded_late_boarding(late, path)
-            self.assertEqual("RBWP7_WP4_LATE_BOARDING_REJECT_REMOVED", removed.exception.code)
-            self.assertIn("removed; see commit ebca912", removed.exception.detail)
-        with self.assertRaises(AdapterFailure) as failure:
-            require_recorded_late_boarding({"lateBoarding": "record-v2"}, path)
-        self.assertEqual("RBWP7_WP4_LATE_BOARDING_INVALID", failure.exception.code)
+            self.assertEqual("RBWP7_WP4_LATE_BOARDING_INVALID", failure.exception.code)
 
     @unittest.skipUnless(FLEETPY_ROOT, "RIDEBOUND_FLEETPY_ROOT is required")
     def test_session_settings_carry_the_key_from_the_wp4_file(self) -> None:
@@ -160,16 +156,14 @@ class RunnerServiceBoundsSettingTests(unittest.TestCase):
                         "ridebound_master_seed": 7,
                         "ridebound_service_class": "standard",
                         "ridebound_complete_travel_snapshot_maximum_nodes": 2,
+                        "ridebound_maximum_line_bytes": 64 * 1024 * 1024,
                     }
                 )
 
-        for late in ({}, {"lateBoarding": "reject"}):
-            with self.assertRaises(AdapterFailure) as removed:
+        for late in ({}, {"lateBoarding": "reject"}, {"lateBoarding": "record-v2"}):
+            with self.assertRaises(AdapterFailure) as failure:
                 settings(late)
-            self.assertEqual("RBWP7_WP4_LATE_BOARDING_REJECT_REMOVED", removed.exception.code)
-        with self.assertRaises(AdapterFailure) as failure:
-            settings({"lateBoarding": "record-v2"})
-        self.assertEqual("RBWP7_WP4_LATE_BOARDING_INVALID", failure.exception.code)
+            self.assertEqual("RBWP7_WP4_LATE_BOARDING_INVALID", failure.exception.code)
         # planning forecast
         self.assertFalse(settings({"lateBoarding": "record-v1"}).planning_forecast)
         self.assertTrue(

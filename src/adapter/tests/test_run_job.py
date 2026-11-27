@@ -2,7 +2,8 @@
 each bin, the settings the Runner session gets, the input checks, the evidence of a small hand-made job, the job's
 refusals and the order of the job's output files.
 
-The expected evidence is what the old evidence writer (finalize_job.py at commit ebca912) wrote for the same job.
+The expected evidence is what the old evidence writer (finalize_job.py at commit ebca912) wrote for the same job,
+without the summary fields, firstMoves and transcript receipt that nothing reads.
 """
 import argparse
 import contextlib
@@ -36,11 +37,9 @@ RIDERS = {
     "rq-d": ("v2", "completed", 2000, [(300, (1900, 1900), (3900, 3900))]),
 }
 ALIGHTED = [(4000, "rq-d"), (4500, "rq-d"), (4950, "rq-a"), (7000, "rq-b")]
-# sha256 of the evidence JSON (keys sorted, compact) with the transcript path, file hash and file size set to "",
-# and the evidence fields that the old writer gave.
+# sha256 of the evidence JSON (keys sorted, compact) with the transcript path set to "".
 EXPECTED_EVIDENCE_SHA256 = "019341f202eee22b7d975b048cdbfd1eda4e4cfaa3398859c3bed537fe24cd6a"
-EXPECTED_MOVES = {"job": JOB, "moves": 1, "maxMovesPerDecision": 1, "decisions": 6,
-                  "firstMoves": [["rq-c", "v2", "v1", 600]]}
+EXPECTED_MOVES = {"job": JOB, "moves": 1, "maxMovesPerDecision": 1, "decisions": 6}
 EXPECTED_SHADOW = {"rq-a": ["guaranteed", "0.25"], "rq-b": ["allowed", "1.5"]}
 EXPECTED_SUM_DROP_C = 550
 # requestId, lifecycle, t0, p0, D0, A, served, sumAbsC, nonzeroC, netC, maxAbsC, shared (old rows_for, same job)
@@ -103,8 +102,7 @@ def job_frames(big=False):
         for vehicle, stops in plans.get(at, {}).items():
             actions.append({"decisionType": "vehiclePlanUpdated", "payload": {
                 "vehicleId": vehicle, "route": {"frozenPrefix": stops[:1], "mutableSuffix": stops[1:]}}})
-        payload = {"decisionHash": f"decision-{at}", "actions": actions,
-                   "certificate": {"body": {"normalOperation": at != 2000}}}
+        payload = {"decisionHash": f"decision-{at}", "actions": actions}
         timed.append((at, 1, "runnerToAdapter", {"messageType": "decision", "payload": payload}))
         timed.append((at, 2, "adapterToRunner", {"messageType": "decisionApplied",
                                                  "payload": {"decisionHash": f"decision-{at}"}}))
@@ -137,10 +135,9 @@ def write_transcript(folder, frames):
 
 
 def normalized_sha256(evidence):
-    """The evidence hash without the machine-dependent fields: the transcript path and the gzip file's hash and size."""
+    """The evidence hash without the machine-dependent field: the transcript path."""
     evidence = json.loads(json.dumps(evidence))
     evidence["audit"]["summary"]["transcript"] = ""
-    evidence["transcript"]["fileSha256"] = evidence["transcript"]["fileBytes"] = ""
     return hashlib.sha256(json.dumps(evidence, sort_keys=True, separators=(",", ":")).encode("utf-8")).hexdigest()
 
 
@@ -374,9 +371,6 @@ class EvidenceTests(Folder):
         evidence = read_evidence(folder)
         self.assertEqual(normalized_sha256(evidence), EXPECTED_EVIDENCE_SHA256)
         self.assertEqual(evidence["audit"]["summary"]["transcript"], str(folder / "transcript-00.ndjson"))
-        transcript = folder / "transcript-00.ndjson.gz"
-        self.assertEqual((evidence["transcript"]["fileSha256"], evidence["transcript"]["fileBytes"]),
-                         (hashlib.sha256(transcript.read_bytes()).hexdigest(), transcript.stat().st_size))
         self.assertEqual((evidence["moves"], evidence["shadowAllocations"], evidence["audit"]["summary"]["sumDropC"]),
                          (EXPECTED_MOVES, EXPECTED_SHADOW, EXPECTED_SUM_DROP_C))
         self.assertEqual(run_job.rider_rows(folder, evidence), EXPECTED_ROWS)
