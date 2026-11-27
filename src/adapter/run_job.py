@@ -682,7 +682,7 @@ def audit(decisions, acknowledged, state, transcript):
     """The signed audit rows (one per ledger entry and ETA: v = the promise before, e = the kept route, p = the
     published value) rebuilt from the final ledger, and the job summary. Every ledger publication must be an
     acknowledged promisePublished action with the same p, and |e - v|, |p - e|, |p - v| must equal the ledger deltas.
-    riders.audit_table builds the same table from a transcript; change the two together."""
+    riders.py reads this table from evidence.json.gz by column position; keep its 12 columns."""
     requests = {request["requestId"]: request for request in state["requests"]}
     actions = published_actions(decisions, acknowledged)
     rows, table, seen = [], [], set()
