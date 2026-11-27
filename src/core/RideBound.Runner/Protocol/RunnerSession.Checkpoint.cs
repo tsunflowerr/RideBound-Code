@@ -6,7 +6,7 @@ using RideBound.Runner.StateAudit;
 
 namespace RideBound.Runner.Protocol;
 
-// The checkpoint and restore messages.
+// The checkpoint message.
 public sealed partial class RunnerSession
 {
     private RunnerSessionResult ProcessCheckpoint(ProtocolEnvelope envelope)
@@ -76,100 +76,5 @@ public sealed partial class RunnerSession
         return new RunnerSessionResult(
             new StreamedResponse(
                 [before, .. stateParts, after]));
-    }
-
-    private RunnerSessionResult ProcessRestore(ProtocolEnvelope envelope)
-    {
-        if (Status != RunnerSessionStatus.Initialized
-            || _onlineCoordinator is null
-            || _pending is not null
-            || _appliedEpoch != 0
-            || !IdentityMatches(envelope))
-        {
-            return Error(
-                "INVALID_SESSION_STATE",
-                ProtocolFailureDisposition.RejectMessage,
-                "restore requires a newly initialized online session with no pending decision.",
-                envelope);
-        }
-
-        var decoded = CheckpointPayloadCodec.Decode(envelope.Payload);
-
-        if (!decoded.IsSuccess)
-        {
-            return PayloadError(decoded.Error!, envelope);
-        }
-
-        var checkpoint = decoded.Value!;
-
-        if (checkpoint.Content.ManifestHash != _manifestHash)
-        {
-            return Error(
-                "MANIFEST_MUTATION",
-                ProtocolFailureDisposition.FailSession,
-                "Checkpoint manifest hash differs from the initialized run.",
-                envelope);
-        }
-
-        var restored = OnlineStateCheckpointCodec.Decode(
-            checkpoint.Content.OnlineState,
-            shadowAllocation: _shadowAllocator is not null);
-
-        if (!restored.IsSuccess)
-        {
-            return Error(
-                "SCHEMA_VALIDATION_FAILED",
-                ProtocolFailureDisposition.RejectMessage,
-                restored.Error!,
-                envelope);
-        }
-
-        var state = restored.State!;
-
-        if (_wp4Configuration.PlanningForecast is { } forecast && state.TravelTimes is not null)
-        {
-            state = state with { TravelTimes = state.TravelTimes.WithForecast(forecast) };
-        }
-
-        var restoredCanonical = CanonicalOf(state);
-        var calculatedStateHash = LightStateIdentityHash(state);
-
-        if (state.Run.Id.Value != _identity!.RunId.Value
-            || state.Run.ScenarioId.Value != _identity.ScenarioId.Value
-            || state.Run.AppliedEpoch != checkpoint.Content.AppliedEpoch
-            || state.NextEventSequence != checkpoint.Content.NextEventSequence
-            || state.Run.SimulationTime.Milliseconds
-                != checkpoint.Content.SimulationTimeMs
-            || calculatedStateHash != checkpoint.Content.StateHash
-            || !string.Equals(
-                state.ExpectedInitialTravelTimeSnapshotHash,
-                _identity.Manifest.TravelTimeSnapshotHash.Value,
-                StringComparison.Ordinal))
-        {
-            return Error(
-                "HASH_MISMATCH",
-                ProtocolFailureDisposition.FailSession,
-                "Checkpoint state identity does not match its content or initialized run.",
-                envelope);
-        }
-
-        _onlineCoordinator = new EventReductionCoordinator(state);
-        _committedCanonical = new CanonicalStateBytes(state, restoredCanonical);
-        _appliedEpoch = checkpoint.Content.AppliedEpoch;
-        _nextEventSequence = checkpoint.Content.NextEventSequence;
-        _simulationTimeMilliseconds = checkpoint.Content.SimulationTimeMs;
-        _stateHash = checkpoint.Content.StateHash;
-        _previousDecisionHash = checkpoint.Content.PreviousDecisionHash;
-        _lastBatch = null;
-
-        return new RunnerSessionResult(
-            CreateEnvelope(
-                "restore",
-                RestoreAcknowledgedPayloadCodec.Encode(
-                    new RestoreAcknowledgedPayload(
-                        "restored",
-                        checkpoint.CheckpointHash)),
-                envelope.RunId,
-                envelope.ScenarioId));
     }
 }

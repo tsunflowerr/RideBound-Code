@@ -1,5 +1,4 @@
 using System.Text;
-using System.Text.Json;
 using System.Text.Json.Nodes;
 using RideBound.Contracts.Protocol;
 using RideBound.Contracts.Serialization;
@@ -10,8 +9,7 @@ namespace RideBound.Runner.Tests.Online;
 
 /// <summary>
 /// The commitment rules of a Runner session: a promise is published with a produced certificate and enters the
-/// commitment ledger only when its decision is acknowledged; a restored checkpoint continues exactly like the
-/// uninterrupted session; no checkpoint is taken while a decision is pending. Checked on the final experiment's
+/// commitment ledger only when its decision is acknowledged; no checkpoint is taken while a decision is pending. Checked on the final experiment's
 /// configuration, the T1 session FS-G2-SHRC71-CL.light-v1 of <see cref="FinalRuns"/>, run inside the test process.
 /// Its policy opens a promise when the booking is confirmed,
 /// so the decision for epoch 1 accepts the first rider without a promise and the decision for epoch 2 publishes the
@@ -62,48 +60,6 @@ public sealed class CommitmentRunnerSessionTests
             session.CommittedOnlineState.Commitments.Histories).Value;
         Assert.Single(history.Entries);
         Assert.Equal(1, history.Current.PublishedPromise.Version.Value);
-    }
-
-    [Fact]
-    public void Restore_suffix_matches_genesis_replay_and_tamper_is_rejected()
-    {
-        var genesis = CreateInitializedSession();
-        Acknowledge(genesis, epoch: 1);
-        Acknowledge(genesis, epoch: 2);
-        var checkpointResponse = StreamedEnvelope(genesis.Process(CheckpointRequest()));
-        var checkpoint = CheckpointPayloadCodec.Decode(
-            checkpointResponse.Payload);
-        Assert.True(checkpoint.IsSuccess, checkpoint.Error?.Message);
-
-        var uninterrupted = DecisionPayloadCodec.Decode(
-            genesis.Process(Batch(3)).Response!.Payload).Value!;
-        var restored = CreateInitializedSession();
-        var restoreResponse = restored.Process(
-            RestoreRequest(checkpointResponse.Payload));
-
-        Assert.Equal("restore", restoreResponse.Response?.MessageType.Value);
-        Assert.Equal(2, restored.AppliedEpoch);
-        Assert.Single(restored.CommittedOnlineState!.Commitments.Histories);
-        var replayResponse = restored.Process(Batch(3)).Response!;
-        Assert.True(
-            replayResponse.MessageType.Value == "decision",
-            replayResponse.Payload.GetRawText());
-        var replayDecode = DecisionPayloadCodec.Decode(replayResponse.Payload);
-        Assert.True(replayDecode.IsSuccess, replayDecode.Error?.Message);
-        var replayed = replayDecode.Value!;
-        Assert.Equal(uninterrupted.DecisionHash, replayed.DecisionHash);
-        Assert.Equal(uninterrupted.StateAfterHash, replayed.StateAfterHash);
-
-        var tamperedSession = CreateInitializedSession();
-        var tampered = JsonNode.Parse(checkpointResponse.Payload.GetRawText())!;
-        tampered["content"]!["nextEventSeq"] = 999;
-        var rejected = tamperedSession.Process(
-            RestoreRequest(JsonDocument.Parse(tampered.ToJsonString()).RootElement));
-        Assert.Equal("error", rejected.Response?.MessageType.Value);
-        Assert.Equal(
-            "SCHEMA_VALIDATION_FAILED",
-            rejected.Response?.Payload.GetProperty("code").GetString());
-        Assert.Equal(0, tamperedSession.AppliedEpoch);
     }
 
     [Fact]
@@ -165,27 +121,6 @@ public sealed class CommitmentRunnerSessionTests
     }
 
     private static byte[] CheckpointRequest() => Utf8(Scenario("checkpoint")[0]);
-
-    private static ProtocolEnvelope StreamedEnvelope(RunnerSessionResult result)
-    {
-        using var stream = new MemoryStream();
-        result.Streamed!.WriteToAsync(stream, CancellationToken.None)
-            .AsTask()
-            .GetAwaiter()
-            .GetResult();
-        return ProtocolEnvelopeCodec.Decode(stream.ToArray()).Envelope!;
-    }
-
-    /// <summary>A restore request carrying <paramref name="payload"/> byte for byte.</summary>
-    private static byte[] RestoreRequest(JsonElement payload)
-    {
-        var checkpoint = JsonNode.Parse(Scenario("checkpoint")[0])!;
-        return Utf8(
-            "{\"schemaVersion\":\"1.0.0\",\"messageType\":\"restore\","
-            + $"\"runId\":{JsonSerializer.Serialize(checkpoint["runId"]!.GetValue<string>())},"
-            + $"\"scenarioId\":{JsonSerializer.Serialize(checkpoint["scenarioId"]!.GetValue<string>())},"
-            + $"\"payload\":{payload.GetRawText()}}}");
-    }
 
     private static string[] Scenario(string messageType) =>
         FinalRuns.ScenarioLines(Run)

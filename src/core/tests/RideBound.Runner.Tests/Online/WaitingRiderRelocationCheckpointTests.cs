@@ -1,5 +1,3 @@
-using System.Text.Json;
-using System.Text.Json.Nodes;
 using RideBound.Application.Commitments;
 using RideBound.Application.Promises;
 using RideBound.Application.Scheduling;
@@ -17,9 +15,9 @@ using RideBound.Runner.StateAudit;
 namespace RideBound.Runner.Tests.Online;
 
 /// <summary>
-/// A state in which one waiting rider was moved (G2) must checkpoint and restore exactly, with the
-/// rider on the receiver, both accepted sets and the switch-count revision in its ledger; a checkpoint that puts the
-/// rider back on the donor without its route must not restore.
+/// A state in which one waiting rider was moved (G2) checkpoints exactly: the Runner's canonical writer and the
+/// reference path give the same bytes, with the rider on the receiver, both accepted sets and the switch-count revision
+/// in its ledger.
 /// </summary>
 public sealed class WaitingRiderRelocationCheckpointTests
 {
@@ -30,64 +28,22 @@ public sealed class WaitingRiderRelocationCheckpointTests
     private static readonly NodeId DropNode = new("drop-node");
 
     [Fact]
-    public void A_state_after_a_move_round_trips_exactly()
+    public void A_state_after_a_move_is_written_alike_by_both_state_paths()
     {
         var moved = MovedState();
-        var canonical = OnlineStateCanonicalizer.Canonicalize(moved);
-        using var document = JsonDocument.Parse(canonical);
 
-        var decoded = OnlineStateCheckpointCodec.Decode(document.RootElement);
-
-        Assert.True(decoded.IsSuccess, decoded.Error);
-        Assert.Equal(canonical, OnlineStateCanonicalizer.Canonicalize(decoded.State!));
-        var run = decoded.State!.Run;
+        Assert.Equal(
+            OnlineStateReferenceCanonicalizer.CanonicalizeReference(moved),
+            OnlineStateCanonicalWriter.Write(moved, null).ToArray());
+        var run = moved.Run;
         Assert.Equal(Receiver, run.Requests[Rider].AssignedVehicleId);
         Assert.Equal(RequestLifecycle.WaitingPickup, run.Requests[Rider].Lifecycle);
         Assert.Empty(run.Vehicles[Donor].AcceptedRequestIds);
         Assert.Equal([Rider], run.Vehicles[Receiver].AcceptedRequestIds);
-        var current = decoded.State.Commitments.Histories[Rider].Current;
+        var current = moved.Commitments.Histories[Rider].Current;
         Assert.Equal(Receiver, current.PublishedPromise.Projection.VehicleId);
         Assert.Equal(Donor, current.ExogenousProjection.VehicleId);
         Assert.Equal(1, current.BudgetAfter.VehicleSwitchCount);
-    }
-
-    [Fact]
-    public void A_checkpoint_that_moves_the_rider_back_without_its_route_does_not_restore()
-    {
-        var canonical = OnlineStateCanonicalizer.Canonicalize(MovedState());
-        var forged = JsonNode.Parse(canonical)!;
-        var replaced = ReplaceAssignedVehicle(forged, Rider.Value, Donor.Value);
-        Assert.Equal(1, replaced);
-        using var forgedDocument = JsonDocument.Parse(forged.ToJsonString());
-
-        Assert.False(OnlineStateCheckpointCodec.Decode(forgedDocument.RootElement).IsSuccess);
-    }
-
-    [Fact]
-    public void A_checkpoint_with_a_removed_budget_basis_or_a_plan_pool_does_not_restore()
-    {
-        // Both were read before the customer-visible basis and the multiple-plan policy were removed.
-        var canonical = OnlineStateCanonicalizer.Canonicalize(MovedState());
-        string? Error(Action<JsonObject> edit)
-        {
-            var copy = JsonNode.Parse(canonical)!.AsObject();
-            edit(copy);
-            using var document = JsonDocument.Parse(copy.ToJsonString());
-            return OnlineStateCheckpointCodec.Decode(document.RootElement).Error;
-        }
-
-        Assert.Equal(
-            "Unknown budget basis.",
-            Error(root =>
-            {
-                var revision = root["commitmentLedger"]!.AsArray()
-                    .SelectMany(history => history!["entries"]!.AsArray())
-                    .Single(entry => (string?)entry!["kind"] == "revision")!;
-                revision["budgetBasis"] = "customerVisible";
-            }));
-        Assert.Equal(
-            "Checkpoint online state is not an exact canonical domain state.",
-            Error(root => root["planPool"] = new JsonObject { ["version"] = 1 }));
     }
 
     /// <summary>
@@ -142,34 +98,5 @@ public sealed class WaitingRiderRelocationCheckpointTests
 
         Assert.True(validated.IsValid, string.Join("; ", validated.Witnesses.Select(value => value.Message)));
         return validated.ValidatedState!;
-    }
-
-    /// <summary>Sets assignedVehicleId of the request object with the given requestId; returns how many changed.</summary>
-    private static int ReplaceAssignedVehicle(JsonNode? node, string requestId, string vehicleId)
-    {
-        var changed = 0;
-
-        if (node is JsonObject obj)
-        {
-            if ((string?)obj["requestId"] == requestId && obj.ContainsKey("assignedVehicleId"))
-            {
-                obj["assignedVehicleId"] = vehicleId;
-                changed++;
-            }
-
-            foreach (var (_, child) in obj.ToArray())
-            {
-                changed += ReplaceAssignedVehicle(child, requestId, vehicleId);
-            }
-        }
-        else if (node is JsonArray array)
-        {
-            foreach (var child in array)
-            {
-                changed += ReplaceAssignedVehicle(child, requestId, vehicleId);
-            }
-        }
-
-        return changed;
     }
 }

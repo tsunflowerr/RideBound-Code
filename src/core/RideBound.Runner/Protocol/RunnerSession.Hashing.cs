@@ -38,17 +38,6 @@ public sealed partial class RunnerSession
     }
 
     /// <summary>
-    /// Under the light audit a state is identified by its epoch, next event sequence
-    /// and simulation time; the checkpoint hash is what binds a restored state's content.
-    /// </summary>
-    private static Sha256Hex? LightStateIdentityHash(OnlineState state) =>
-        EpochId.TryCreate(state.Run.AppliedEpoch, out var epoch)
-        && EventSequence.TryCreate(state.NextEventSequence, out var sequence)
-        && SimulationTimeMilliseconds.TryCreate(state.Run.SimulationTime.Milliseconds, out var time)
-            ? ProtocolHash.CalculateStateIdentityHash(epoch!, sequence!, time!)
-            : null;
-
-    /// <summary>
     /// Canonical bytes of a state: reused when the state is the committed object
     /// already written, otherwise built with the per-entity fragment cache.
     /// </summary>

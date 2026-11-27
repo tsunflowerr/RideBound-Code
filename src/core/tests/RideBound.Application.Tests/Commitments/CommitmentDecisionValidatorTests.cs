@@ -97,7 +97,7 @@ public sealed class CommitmentDecisionValidatorTests
         var fixture = CommitmentValidatorFixtures.WithHardLimit(10);
         var candidateRun = fixture.Context.CandidateState.Run;
         var current = candidateRun.Requests[ApplicationTestData.RequestId];
-        var mutated = RideRequest.Rehydrate(
+        var mutated = RideRequest.CreatePending(
             current.Id,
             current.ArrivalTime,
             current.OriginNodeId,
@@ -107,18 +107,31 @@ public sealed class CommitmentDecisionValidatorTests
             current.MaxRideTime,
             current.PartySize,
             "silently-changed-service-class",
-            current.CommitmentPolicyId,
-            current.Lifecycle,
-            current.AssignedVehicleId,
-            current.ActualPickupTime).Value!;
-        var mutatedRun = RideBoundRun.Rehydrate(
-            candidateRun.Id,
-            candidateRun.ScenarioId,
-            candidateRun.AppliedEpoch,
-            candidateRun.SimulationTime,
-            candidateRun.Requests.Values.Select(
-                value => value.Id == mutated.Id ? mutated : value),
-            candidateRun.Vehicles.Values).Value!;
+            current.CommitmentPolicyId).Value!;
+        // The fixture's candidate run, built the same way with the mutated request: the vehicle starts on the reduced
+        // state's route, takes the request, and gets the candidate route after the two epochs.
+        var reducedVehicle = fixture.Context.ReducedState.Run.Vehicles[ApplicationTestData.VehicleId];
+        var vehicle = VehicleState.Create(
+            ApplicationTestData.VehicleId,
+            4,
+            0,
+            new NodePosition(ApplicationTestData.NodeZero),
+            [],
+            [],
+            reducedVehicle.Route,
+            1).Value!;
+        var mutatedRun = RideBoundRun.Create(
+                candidateRun.Id,
+                candidateRun.ScenarioId,
+                new SimTime(1_000))
+            .AddRequest(mutated).Value!
+            .BootstrapVehicle(vehicle).Value!
+            .AcceptRequest(mutated.Id, vehicle.Id).Value!
+            .AdvanceEpoch(1, new SimTime(1_000)).Value!
+            .AdvanceEpoch(2, new SimTime(1_000)).Value!
+            .UpdateVehicleRoute(vehicle.Id, candidateRun.Vehicles[vehicle.Id].Route).Value!;
+        Assert.Equal(candidateRun.AppliedEpoch, mutatedRun.AppliedEpoch);
+        Assert.Equal(current.Lifecycle, mutatedRun.Requests[mutated.Id].Lifecycle);
 
         var result = new CommitmentDecisionValidator().Validate(
             fixture.Context with

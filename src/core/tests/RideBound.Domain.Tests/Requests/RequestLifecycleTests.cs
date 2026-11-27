@@ -122,37 +122,6 @@ public sealed class RequestLifecycleTests
         Assert.Equal(RequestFailureCodes.PickupTimeOutsideWindow, early.Failure?.Code);
     }
 
-    [Theory]
-    [InlineData(RequestLifecycle.Onboard)]
-    [InlineData(RequestLifecycle.Completed)]
-    public void Rehydrating_a_late_pickup_requires_the_explicit_allowance(
-        RequestLifecycle lifecycle)
-    {
-        var template = TestData.PendingRequest();
-
-        DomainResult<RideRequest> Rehydrate(bool allow) =>
-            RideRequest.Rehydrate(
-                template.Id,
-                template.ArrivalTime,
-                template.OriginNodeId,
-                template.DestinationNodeId,
-                template.EarliestPickup,
-                template.LatestPickup,
-                template.MaxRideTime,
-                template.PartySize,
-                template.ServiceClass,
-                template.CommitmentPolicyId,
-                lifecycle,
-                TestData.VehicleOne,
-                new SimTime(template.LatestPickup.Milliseconds + 1),
-                allow);
-
-        Assert.False(Rehydrate(allow: false).IsSuccess);
-        var allowed = Rehydrate(allow: true);
-        Assert.True(allowed.IsSuccess, allowed.Failure?.Message);
-        Assert.Equal(lifecycle, allowed.Value!.Lifecycle);
-    }
-
     [Fact]
     public void Accepted_request_can_never_transition_to_rejected()
     {

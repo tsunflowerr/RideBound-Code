@@ -31,7 +31,6 @@ public static class ProtocolEnvelopeCodec
             "initializeRun",
             "initialized",
             "checkpoint",
-            "restore",
             "finalizeRun",
             "runSummary",
         };

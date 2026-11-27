@@ -1,5 +1,4 @@
 using System.Text.Json;
-using System.Text.Json.Nodes;
 using RideBound.Application.State;
 using RideBound.Application.Travel;
 using RideBound.Domain.Commitments;
@@ -14,10 +13,14 @@ using RideBound.Runner.StateAudit;
 
 namespace RideBound.Runner.Tests.Online;
 
-public sealed class OnlineStateCheckpointCodecTests
+/// <summary>
+/// The checkpoint's online-state bytes on hand-built states: the Runner's canonical writer agrees with the independent
+/// reference path on breaches, late pickups and Shadow allocations, and leaves out the members a state does not use.
+/// </summary>
+public sealed class OnlineStateWriterTests
 {
     [Fact]
-    public void An_exogenous_breach_round_trips_exactly()
+    public void An_exogenous_breach_is_written_alike_by_both_state_paths()
     {
         var requestId = new RequestId("request-1");
         var vehicleId = new VehicleId("vehicle-1");
@@ -137,98 +140,24 @@ public sealed class OnlineStateCheckpointCodecTests
             travel.SnapshotHash,
             promises,
             incidents);
-        using var document = JsonDocument.Parse(
-            OnlineStateCanonicalizer.Canonicalize(state));
+        var canonical = OnlineStateCanonicalWriter.Write(state, null).ToArray();
 
-        var decoded = OnlineStateCheckpointCodec.Decode(document.RootElement);
-
-        Assert.True(decoded.IsSuccess, decoded.Error);
-        var breach = Assert.Single(decoded.State!.Incidents.Breaches);
-        Assert.Equal("exogenous-breach-1", breach.BreachId);
-        Assert.Single(breach.ServiceQualityWitnesses);
-        Assert.Equal(breach.BudgetBefore, breach.AttemptedBudgetAfter);
+        Assert.Equal(canonical, OnlineStateReferenceCanonicalizer.CanonicalizeReference(state));
+        using var document = JsonDocument.Parse(canonical);
+        var breach = Assert.Single(
+            document.RootElement.GetProperty("incidentLedger").GetProperty("breaches").EnumerateArray());
+        Assert.Equal("exogenous-breach-1", breach.GetProperty("breachId").GetString());
+        Assert.Equal("exogenousServiceQuality", breach.GetProperty("kind").GetString());
+        Assert.Single(breach.GetProperty("serviceQualityWitnesses").EnumerateArray());
         Assert.Equal(
-            OnlineStateCanonicalizer.Canonicalize(state),
-            OnlineStateCanonicalizer.Canonicalize(decoded.State));
-
-        var tampered = JsonNode.Parse(document.RootElement.GetRawText())!;
-        tampered["incidentLedger"]!["breaches"]![0]!["previousPromise"]![
-            "projection"]!["pickupEtaMs"] = 1;
-        using var tamperedDocument = JsonDocument.Parse(tampered.ToJsonString());
-        var rejected = OnlineStateCheckpointCodec.Decode(
-            tamperedDocument.RootElement);
-
-        Assert.False(rejected.IsSuccess);
-        Assert.Contains("promise/run boundary", rejected.Error);
-
-        var forgedExogenous = JsonNode.Parse(document.RootElement.GetRawText())!;
-        forgedExogenous["incidentLedger"]!["breaches"]![0]![
-            "attemptedBudgetAfter"]!["pickupEtaTotalMs"] = 1;
-        using var forgedDocument = JsonDocument.Parse(
-            forgedExogenous.ToJsonString());
-        var forgedResult = OnlineStateCheckpointCodec.Decode(
-            forgedDocument.RootElement);
-
-        Assert.False(forgedResult.IsSuccess);
-        Assert.Contains("unchanged budget", forgedResult.Error);
+            breach.GetProperty("budgetBefore").GetRawText(),
+            breach.GetProperty("attemptedBudgetAfter").GetRawText());
     }
 
     [Fact]
-    public void A_removed_forced_breach_kind_is_refused_on_restore()
+    public void A_late_pickup_is_written_alike_by_both_state_paths()
     {
-        // Forced-reference recovery is removed, so a checkpoint that holds one of its breach kinds
-        // ("forcedReference", "forcedNoWorse") no longer restores.
-        var (run, projection, promises, travel) = SingleRiderState();
-        var requestId = projection.RequestId;
-        var incidents = OperationalIncidentLedger.Empty.AppendBreach(
-            CommitmentBreachRecord.CreateExogenousServiceQuality(
-                "exogenous-breach-1",
-                requestId,
-                promises.Histories[requestId].Current.PublishedPromise,
-                projection,
-                projection,
-                new ThreeWayPromiseDelta(
-                    CommitmentVector.Zero,
-                    CommitmentVector.Zero,
-                    CommitmentVector.Zero),
-                CommitmentVector.Zero,
-                CommitmentVector.Zero,
-                [PhysicalViolationCodes.MaxRideTime],
-                [
-                    new ServiceQualityBreach(
-                        requestId,
-                        PhysicalViolationCodes.MaxRideTime,
-                        "maxRideTimeMs",
-                        100,
-                        101),
-                ],
-                3,
-                1,
-                new SimTime(2))).Ledger!;
-        var state = new OnlineState(run, travel, 5, travel.SnapshotHash, promises, incidents);
-        using var document = JsonDocument.Parse(OnlineStateCanonicalizer.Canonicalize(state));
-        Assert.True(
-            OnlineStateCheckpointCodec.Decode(document.RootElement).IsSuccess,
-            OnlineStateCheckpointCodec.Decode(document.RootElement).Error);
-
-        foreach (var kind in new[] { "forcedReference", "forcedNoWorse" })
-        {
-            var relabelled = JsonNode.Parse(document.RootElement.GetRawText())!;
-            relabelled["incidentLedger"]!["breaches"]![0]!["kind"] = kind;
-            using var relabelledDocument = JsonDocument.Parse(relabelled.ToJsonString());
-
-            var decoded = OnlineStateCheckpointCodec.Decode(relabelledDocument.RootElement);
-
-            Assert.False(decoded.IsSuccess);
-            Assert.Equal("Unknown commitment breach kind.", decoded.Error);
-        }
-    }
-
-    [Fact]
-    public void A_late_pickup_round_trips_only_with_its_matching_record()
-    {
-        // Window [0, 1000] ms; the rider boards at 1500 ms. The record makes the late pickup
-        // restorable; without it, or with a record that does not match, the checkpoint fails.
+        // Window [0, 1000] ms; the rider boards at 1500 ms and the ledger records the late pickup.
         var (run, _, promises, travel) = SingleRiderState();
         var requestId = new RequestId("request-1");
         var vehicleId = new VehicleId("vehicle-1");
@@ -254,58 +183,21 @@ public sealed class OnlineStateCheckpointCodecTests
                 4,
                 2)).Ledger!;
         var state = new OnlineState(run, travel, 5, travel.SnapshotHash, promises, incidents);
-        var canonical = OnlineStateCanonicalizer.Canonicalize(state);
+        var canonical = OnlineStateCanonicalWriter.Write(state, null).ToArray();
+
+        Assert.Equal(canonical, OnlineStateReferenceCanonicalizer.CanonicalizeReference(state));
         using var document = JsonDocument.Parse(canonical);
-
-        var decoded = OnlineStateCheckpointCodec.Decode(document.RootElement);
-
-        Assert.True(decoded.IsSuccess, decoded.Error);
-        Assert.Equal(canonical, OnlineStateCanonicalizer.Canonicalize(decoded.State!));
-        Assert.Equal(500, Assert.Single(decoded.State!.Incidents.LatePickups).LatenessMilliseconds);
-
-        var missing = JsonNode.Parse(document.RootElement.GetRawText())!;
-        missing["incidentLedger"]!.AsObject().Remove("latePickups");
-        using var missingDocument = JsonDocument.Parse(missing.ToJsonString());
-        Assert.False(OnlineStateCheckpointCodec.Decode(missingDocument.RootElement).IsSuccess);
-
-        var mismatched = JsonNode.Parse(document.RootElement.GetRawText())!;
-        mismatched["incidentLedger"]!["latePickups"]![0]!["actualPickupMs"] = 1_400;
-        using var mismatchedDocument = JsonDocument.Parse(mismatched.ToJsonString());
-        Assert.Contains(
-            "late pickup does not match",
-            OnlineStateCheckpointCodec.Decode(mismatchedDocument.RootElement).Error);
-
-        // A record must lie inside the checkpoint's event and epoch boundary.
-        foreach (var (field, value) in new[] { ("sourceEventSeq", 5L), ("recordedEpoch", 3L) })
-        {
-            var outside = JsonNode.Parse(document.RootElement.GetRawText())!;
-            outside["incidentLedger"]!["latePickups"]![0]![field] = value;
-            using var outsideDocument = JsonDocument.Parse(outside.ToJsonString());
-            Assert.Contains(
-                "late pickup does not match",
-                OnlineStateCheckpointCodec.Decode(outsideDocument.RootElement).Error);
-        }
-
-        // One record per rider, and an empty list is not the canonical form.
-        var duplicated = JsonNode.Parse(document.RootElement.GetRawText())!;
-        var records = duplicated["incidentLedger"]!["latePickups"]!.AsArray();
-        records.Add(records[0]!.DeepClone());
-        using var duplicatedDocument = JsonDocument.Parse(duplicated.ToJsonString());
-        Assert.False(OnlineStateCheckpointCodec.Decode(duplicatedDocument.RootElement).IsSuccess);
-
-        var (plainRun, _, plainPromises, plainTravel) = SingleRiderState();
-        var plain = JsonNode.Parse(
-            OnlineStateCanonicalizer.Canonicalize(
-                new OnlineState(plainRun, plainTravel, 5, plainTravel.SnapshotHash, plainPromises)))!;
-        plain["incidentLedger"]!["latePickups"] = new JsonArray();
-        using var emptyDocument = JsonDocument.Parse(plain.ToJsonString());
-        Assert.False(OnlineStateCheckpointCodec.Decode(emptyDocument.RootElement).IsSuccess);
+        var late = Assert.Single(
+            document.RootElement.GetProperty("incidentLedger").GetProperty("latePickups").EnumerateArray());
+        Assert.Equal(1_500, late.GetProperty("actualPickupMs").GetInt64());
+        Assert.Equal(1_000, late.GetProperty("latestPickupMs").GetInt64());
+        Assert.Equal(500, Assert.Single(state.Incidents.LatePickups).LatenessMilliseconds);
     }
 
     [Fact]
-    public void Shadow_allocations_round_trip_on_every_state_path_and_are_absent_by_default()
+    public void Shadow_allocations_are_written_by_both_state_paths_and_are_absent_by_default()
     {
-        // Shadow Control: the fast writer, the reference canonicalizer and the checkpoint codec.
+        // Shadow Control: the fast writer and the reference canonicalizer.
         var (run, _, promises, travel) = SingleRiderState();
         var plain = new OnlineState(run, travel, 5, travel.SnapshotHash, promises);
         var shadow = plain with
@@ -315,39 +207,15 @@ public sealed class OnlineStateCheckpointCodecTests
                 new ShadowAllocation(ShadowAllocationClass.Guaranteed, "52.494082647339084")),
         };
 
-        var plainCanonical = OnlineStateCanonicalizer.Canonicalize(plain);
-        var shadowCanonical = OnlineStateCanonicalizer.Canonicalize(shadow);
+        var plainCanonical = OnlineStateCanonicalWriter.Write(plain, null).ToArray();
+        var shadowCanonical = OnlineStateCanonicalWriter.Write(shadow, null).ToArray();
         using var plainDocument = JsonDocument.Parse(plainCanonical);
         Assert.False(plainDocument.RootElement.TryGetProperty("shadowAllocations", out _));
         Assert.Contains(
             "\"shadowAllocations\":[{\"class\":\"guaranteed\",\"requestId\":\"request-1\",\"score\":\"52.494082647339084\"}]",
             System.Text.Encoding.UTF8.GetString(shadowCanonical));
-        Assert.Equal(shadowCanonical, OnlineStateCanonicalWriter.Write(shadow, null).ToArray());
         Assert.Equal(plainCanonical, OnlineStateReferenceCanonicalizer.CanonicalizeReference(plain));
         Assert.Equal(shadowCanonical, OnlineStateReferenceCanonicalizer.CanonicalizeReference(shadow));
-
-        using var document = JsonDocument.Parse(shadowCanonical);
-        var decoded = OnlineStateCheckpointCodec.Decode(document.RootElement, shadowAllocation: true);
-        Assert.True(decoded.IsSuccess, decoded.Error);
-        Assert.Equal(shadowCanonical, OnlineStateCanonicalizer.Canonicalize(decoded.State!));
-        Assert.Equal(
-            ShadowAllocationClass.Guaranteed,
-            decoded.State!.Commitments.ShadowAllocationOf(new RequestId("request-1"))!.Class);
-
-        // A run without Shadow refuses the member exactly as before Shadow existed.
-        Assert.Equal(
-            "Checkpoint online state is not an exact canonical domain state.",
-            OnlineStateCheckpointCodec.Decode(document.RootElement).Error);
-
-        var tampered = JsonNode.Parse(shadowCanonical)!;
-        tampered["shadowAllocations"]![0]!["class"] = "maybe";
-        using var tamperedDocument = JsonDocument.Parse(tampered.ToJsonString());
-        Assert.False(OnlineStateCheckpointCodec.Decode(tamperedDocument.RootElement, shadowAllocation: true).IsSuccess);
-
-        var orphan = JsonNode.Parse(shadowCanonical)!;
-        orphan["shadowAllocations"]![0]!["requestId"] = "request-unknown";
-        using var orphanDocument = JsonDocument.Parse(orphan.ToJsonString());
-        Assert.False(OnlineStateCheckpointCodec.Decode(orphanDocument.RootElement, shadowAllocation: true).IsSuccess);
     }
 
     [Fact]
@@ -356,7 +224,7 @@ public sealed class OnlineStateCheckpointCodecTests
         var (run, _, promises, travel) = SingleRiderState();
         var state = new OnlineState(run, travel, 5, travel.SnapshotHash, promises);
 
-        using var document = JsonDocument.Parse(OnlineStateCanonicalizer.Canonicalize(state));
+        using var document = JsonDocument.Parse(OnlineStateCanonicalWriter.Write(state, null).ToArray());
 
         Assert.False(
             document.RootElement.GetProperty("incidentLedger").TryGetProperty("latePickups", out _));

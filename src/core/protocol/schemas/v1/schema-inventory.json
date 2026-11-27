@@ -144,15 +144,8 @@
     },
     {
       "contractType": "RideBound.Contracts.Protocol.CheckpointPayload",
-      "messageType": "checkpoint|restore-input",
+      "messageType": "checkpoint",
       "schema": "checkpoint-payload.schema.json",
-      "fixtureDirectory": "../fixtures/runner",
-      "implementationStatus": "implemented"
-    },
-    {
-      "contractType": "RideBound.Contracts.Protocol.RestoreAcknowledgedPayload",
-      "messageType": "restore-output",
-      "schema": "restore-acknowledged-payload.schema.json",
       "fixtureDirectory": "../fixtures/runner",
       "implementationStatus": "implemented"
     },

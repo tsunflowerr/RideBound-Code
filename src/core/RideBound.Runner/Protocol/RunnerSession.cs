@@ -45,7 +45,7 @@ public sealed record RunnerSessionResult(
 //   RunnerSession.Messages.cs    hello, initializeRun, eventBatch and decisionApplied;
 //   RunnerSession.Decision.cs    the dispatch decision for one event batch;
 //   RunnerSession.Hashing.cs     the canonical state bytes and the inputs of the hashes;
-//   RunnerSession.Checkpoint.cs  checkpoint and restore.
+//   RunnerSession.Checkpoint.cs  checkpoint.
 public sealed partial class RunnerSession
 {
     private readonly CapabilityRequirementProfile _requirements;
@@ -167,7 +167,6 @@ public sealed partial class RunnerSession
             "eventBatch" => ProcessEventBatch(envelope),
             "decisionApplied" => ProcessDecisionApplied(envelope),
             "checkpoint" => ProcessCheckpoint(envelope),
-            "restore" => ProcessRestore(envelope),
             _ => Error(
                 "INVALID_SESSION_STATE",
                 ProtocolFailureDisposition.RejectMessage,

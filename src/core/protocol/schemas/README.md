@@ -1,8 +1,8 @@
 # Schema của giao thức
 
-Thư mục `v1/` chứa 54 file JSON của giao thức v1 giữa adapter và Runner:
+Thư mục `v1/` chứa 52 file JSON của giao thức v1 giữa adapter và Runner:
 
-- 52 file `*.schema.json` (JSON Schema draft 2020-12): một file cho mỗi thông điệp, payload và kiểu dùng chung;
+- 50 file `*.schema.json` (JSON Schema draft 2020-12): một file cho mỗi thông điệp, payload và kiểu dùng chung;
 - `schema-inventory.json`: kiểu C# hoặc thông điệp nào ứng với schema nào;
 - `compatibility-matrix.json`: Runner làm gì với phiên bản schema của bên gửi. Cùng major và minor thì nhận (patch nào
   cũng được); minor cao hơn thì từ chối thông điệp (`UNSUPPORTED_SCHEMA_MINOR`); major khác thì dừng phiên
@@ -10,7 +10,7 @@ Thư mục `v1/` chứa 54 file JSON của giao thức v1 giữa adapter và Run
 
 Các file này thuộc giao thức v1. Ngoài những phần đã gỡ vì Runner và adapter không dùng (năm trường chỉ để ghi sổ của
 vector cam kết, hai sự kiện `incidentOpened` / `incidentResolved`, hành động `commitmentBreachDeclared`, mã
-`INCIDENT_OVERRIDE`), chúng được giữ nguyên từng byte. Vì vậy:
+`INCIDENT_OVERRIDE`, thông điệp `restore` và payload trả lời của nó), chúng được giữ nguyên từng byte. Vì vậy:
 
 - `$id` của mỗi schema là một tên cố định (URL theo cách xếp thư mục cũ của repo), không phải nơi file nằm bây giờ.
   Mọi `$ref` là đường dẫn tương đối trong `v1/`.
