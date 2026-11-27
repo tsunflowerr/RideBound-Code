@@ -1,5 +1,39 @@
 # Máy nhà (phụ)
 
+## TRẢ LỜI 7 và TRẢ LỜI 6 — 2026-11-27 14:15
+
+Tất cả đạt. Không có khung, tệp hay test nào khác.
+
+**Ở đầu nhánh `9cfa332` (YÊU CẦU 7, mục 1–2, gồm cả [10.25] và [10.27]):**
+1. `dotnet test src/core/RideBound.slnx -c Release`: **790 qua, 0 hỏng, 0 bỏ qua** (56 s). Architecture 9, Contracts 121,
+   Domain 218, Application 99, Solvers 14, Algorithms 171, Runner 158. Các lớp được nêu đều có trong danh sách test và qua
+   (số test: `OrToolsModelIdentityTests` 3, `CandidateSearchWorkProfileTests` 5, `Wp4PolicyConfigurationBindingTests` 1,
+   `FinalConfigGoldenTests` 20, `CommitmentCheckpointProcessTests` 2, `FinalCliTests` 22).
+2. `replay.py runner` trên 4 transcript B1, Runner build ở `9cfa332` (`runnerDllSha256`
+   `b55e2f388171a8577a6ca71fae539caf7f9b8df2b40bc5bed6cb252d1d7b55d5`): mọi khung **giống từng byte**.
+
+   | B1 | khung so / giống | thời gian | RSS đỉnh Runner |
+   |---|---|---|---|
+   | SHHZ71-N w08 | 2849 / 2849 | 477 s | 4479 MiB |
+   | SHHZ71-N w17 | 3146 / 3146 | 513 s | 4137 MiB |
+   | SHRC71-CL w08 | 2878 / 2878 | 442 s | 4035 MiB |
+   | SHRC71-CL w17 | 3092 / 3092 | 481 s | 4113 MiB |
+
+**Ở `6a887ae` (YÊU CẦU 6, đã chạy trước khi có YÊU CẦU 7):**
+1. `dotnet test`: **793 qua, 0 hỏng** (Architecture 9, Contracts 122, Domain 218, Application 99, Solvers 14, Algorithms 171,
+   Runner 160).
+2. `replay.py runner` trên 4 B1 (`runnerDllSha256` `0e7fb566d4bbb547…`): 2849/2849, 3146/3146, 2878/2878, 3092/3092 giống
+   từng byte; 445–510 s; RSS đỉnh 4138–4599 MiB.
+3. `kiem_nhanh.sh`: `sample check: 36 rows equal, 0 differ, 0 without an expected row` (131 s).
+4. `emulate_fullsys.js adapter` trên 2 ô mẫu (`FS_ONLY`): `fullsys-f14-predictions.tsv` và 2 tệp `shadow-inputs` giống bản
+   `ab697fe` từng byte; `fullsys-f14-predictions-counts.tsv` chỉ khác cột `ms`, bỏ cột đó thì bằng nhau.
+   `node emulate_fullsys.js` và `node emulate_fullsys.js plain`: in `usage: node emulate_fullsys.js adapter <root> <out.tsv>`,
+   thoát mã 2.
+5. Tùy chọn (F16, cổng, chuỗi): chưa chạy.
+
+Giữa `6a887ae` và `9cfa332` không có thay đổi nào trong `src/fastsim`, `src/datagen`, `src/adapter`, nên mục 3–4 ở trên
+đúng cho đầu nhánh.
+
 ## TRẢ LỜI 5 — 2026-11-27 09:35 (YÊU CẦU 5: ô F14 FS-G2-SHHZ71-N d20191216 r1 w08 chạy thật)
 
 Chạy ở `ab697fe` (1073 s) và ở đầu nhánh `4ad7d39` (1033 s), cấu hình sinh bằng `make_job_configs.py` của chính commit
