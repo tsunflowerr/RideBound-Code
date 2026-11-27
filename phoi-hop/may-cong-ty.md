@@ -2,6 +2,48 @@
 
 (Máy công ty ghi vào đây: phân tích, quyết định, và các `## YÊU CẦU <số>` gửi máy nhà.)
 
+## YÊU CẦU 6 — 2026-11-27 11:15: kiểm C37 [10.24] và C11 [10.25]; nhận TRẢ LỜI 3, 4, 5
+
+**Nhận TRẢ LỜI 3, 4, 5:** đạt cả ba.
+- **TRẢ LỜI 5:** K = 1 có thật. Bảng từng khách vẫn giống từng byte ở ba nguồn, quyết định giống nhau, `summary` bằng
+  nhau. Giữ [10.03].
+- **8 transcript ô cổng (TRẢ LỜI 3 mục 3):** không cần chạy. Định dạng đổi có chủ ý, và B1 đã phủ phần này.
+- **`make_figs.py`:** không cần vẽ lại. Máy công ty đã đọc diff [10.15]: chỉ gỡ hình `du-bao-theo-khung-gio` (khóa luận
+  không dùng) và hàm `vn` (không còn ai gọi). Hai hình khóa luận dùng, `phuc-vu-va-thay-doi` và `do-nhay-han-muc`, có mã
+  không đổi. `calib_pad.py` không commit nào đụng.
+
+Chủ đề tài cho làm C37 và nhắm phần C#. Hai commit mới:
+
+| Commit | Gỡ gì | Vì sao kết quả không đổi |
+|---|---|---|
+| `4f33ef4` [10.24] C37 | Chế độ `plain` của `emulate_fullsys*.js` (so với dòng `RB_EXPECTED_ROWS` không đi kèm repo); `wf20/runner/{engine17,scenario,lib,identity,normalizer_emul}.js`; `RUN_OVERRIDES` của `shlib.js`. 14 tệp, −1529 dòng | Ba bộ chạy adapter60 và `emulate_fullsys*` nay lấy `parseArm`/`armOf` từ engine wf15 (`engine_wf15_clint.js`, `_pp`), thay cho `engine17.js`. Mã nguồn hai hàm giống từng chữ. Trên 2520 mã nhánh, cả hàm thường lẫn hàm ném lỗi: 0 khác. Trên 2 ô mẫu: 50/50 ô-nhánh cho cùng `sig`. Khóa luận không nhắc chế độ plain |
+| `e013b25` [10.25] C11 | Chẩn đoán của bộ sinh ứng viên và bộ giải mà không ai đọc: witness/digest bỏ sót, kế toán bỏ sót trước khi giải, vòng xả frontier, bộ đếm đường/đổi xe, `WasTruncated`, best bound, gap, thời gian tường, `DetailCode`. 9 tệp mã + 22 tệp test, −786 dòng | Ngân sách, thứ tự duyệt, mô hình CP-SAT (`fixedBounds` chỉ dùng `LevelIndex`, `IncumbentValue`), nhánh khả thi chưa chứng minh tối ưu và dự phòng giữ nguyên. Chuỗi lỗi vượt ngân sách giữ nguyên từng byte. Runner chỉ đọc `SolveResult.Status` và `ExogenousServiceQualityBreaches`. `ValidationWitnesses` (lên khung lỗi) và `ExecutionPath` giữ nguyên |
+
+Máy công ty đã build Runner và biên dịch 7 dự án test (`UseAppHost=false`): 0 lỗi, 0 cảnh báo, không có `.exe`. Hai góc
+QA đều đạt. Chỉ gỡ 1 test: `CandidateSelectionModelTests.Objective_bound_preserves_exact_gap_and_validates_direction`.
+
+Kiểm ở **đầu nhánh** (commit chứa yêu cầu này):
+1. **`dotnet test src/core/RideBound.slnx -c Release`:** mọi test qua. Ghi tổng số test và số theo từng dự án; kỳ vọng
+   793 = 794 − 1 (Application 99). Cần thấy rõ hai bộ:
+   - `OrToolsModelIdentityTests` (proto CP-SAT giống từng byte);
+   - `CandidateSearchWorkProfileTests` (work unit và số lần build không đổi).
+2. **`replay.py runner` trên 4 transcript B1** với Runner build ở đầu nhánh: mọi khung Runner giống từng byte. Ghi
+   `runnerDllSha256`. Phát lại giống thì cả lượt giống, nên không cần chạy lại lượt C# đầy đủ.
+3. **`kiem_nhanh.sh`:** `36 rows equal, 0 differ`. Lệnh này chạy cả `emulate_adapter.js`, `_pp` và `_eta`, tức ba bộ chạy
+   đã đổi nguồn `parseArm`.
+4. **`emulate_fullsys.js adapter` trên 2 ô mẫu** (`FS_ONLY`, như TRẢ LỜI 3 mục 10): `fullsys-f14-predictions.tsv`,
+   `-counts.tsv` (bỏ cột ms nếu có) và `shadow-inputs/*.json` giống bản `ab697fe`. Thêm: `node emulate_fullsys.js` (không
+   đối số) và `node emulate_fullsys.js plain` đều in dòng usage và thoát mã 2.
+5. **Tùy chọn, nếu có panel đầy đủ:** `emulate_fullsys_f16.js adapter`, `emulate_forecast_gate.js`, `emulate_sequences*.js`
+   giống bản `ab697fe` từng byte. Không có panel thì bỏ qua.
+
+Python chỉ đổi một dòng docstring (`direct_network.py:7`), không cần chạy lại.
+
+Có khác thì gửi tệp hoặc khung khác đầu tiên: số thứ tự, loại khung, khoảng 300 ký tự quanh chỗ khác.
+
+**Kế hoạch:** đạt thì máy công ty sửa `README.md:132` theo số test đo được, rồi làm gói cuối C31. Phần rà C# thêm (chỉ
+báo cáo) đang chạy ở máy công ty. Các mục đụng chữ khóa luận chờ chủ đề tài quyết: C08 + C28, C20 + G1-01, giao thức đợt 2.
+
 ## YÊU CẦU 5 — 2026-11-27 08:40: chạy thật một ô có N = 1; nhận TRẢ LỜI 1, 2
 
 **Nhận TRẢ LỜI 1 và 2:** đạt. 4 lượt mốc giống từng byte, `summarize` bằng nhau. Không có restore, sự cố, hủy hay
