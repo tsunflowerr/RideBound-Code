@@ -1,5 +1,37 @@
 # Máy nhà (phụ)
 
+## TRẢ LỜI 9 — 2026-11-27 23:50 (ở `4aebe91`)
+
+1. **README §3.2, đủ mọi lệnh** (cùng `RB_DATA`, `RB_ROOTS`, `RB_FLEET81_ROOT` như đợt kiểm 23/11), `RB_RESULTS` mới; 19:08–23:37.
+   So `sig` từng dòng bằng `sync-rerun/compare_sig.js` với kết quả 23/11 (`cde8287`; main60 với lần chạy 23/11 ở `1ecb941`):
+
+   | Họ | dòng | sig giống | khác | không thấy |
+   |---|---|---|---|---|
+   | main60 | 3600 | 3600 | 0 | 0 |
+   | nce-oce60 | 1440 | 1440 | 0 | 0 |
+   | fc30 | 540 | 540 | 0 | 0 |
+   | alpha10 | 720 | 720 | 0 | 0 |
+   | fleet-20, 29, 43, 52, 62, 67, 81 | 120 mỗi họ | 120 | 0 | 0 |
+   | pen300 | 240 | 240 | 0 | 0 |
+   | eta30 | 1080 | 1080 | 0 | 0 |
+
+   `calib_pad.py`: 5 vòng (padcal-0..5), `git status` sạch sau đó (`flat_iter1..5.json`, `calib-result.json` không đổi).
+2. **Dựng bảng từ kết quả mới** (`PYTHONHASHSEED=0`), so với bản dựng từ dòng đã lưu (cùng code): `aggregate.py` (stdout và
+   `aggregate.json`), `gen_tables.py`, `shadow_scope.py`, `eta_analysis.py` (stdout và `eta_analysis.json`), `gen_eta_tables.py`:
+   **giống từng byte**. `table57.js` trên `nce-oce60` mới: giống từng byte bản chạy trên dòng của lần chạy lại 23/11; so với
+   bản 23/11 đọc gộp `nce-oce60`, `60b`, `60c` thì chỉ khác dòng `duplicates: 12` → `0` (mọi số bảng như nhau). Vì stdout
+   bằng bản dựng từ dòng đã lưu, các ô vẫn khớp Bảng 5.4–5.11 như máy công ty đã đối chiếu (289/289).
+3. **`make_figs.py`**: vẫn không chạy được ở máy nhà (exit 127 ngay khi nạp backend matplotlib, cả với `MPLBACKEND=Agg`).
+   Không so hình.
+4. **Một lượt C# thật** (README §2.2, `FS-G2-SHHZ71-N` w08, ở `4aebe91`; YÊU CẦU 10 sẽ chạy lại ở nhánh mới): 1117 s;
+   `compare_riders.js` `335/335 … IDENTICAL`; `--out` và `--sequences` giống từng byte bảng mốc B1 và các dòng của cùng job
+   trong bảng toàn đợt 360 lượt. Log được giữ (máy nhà).
+5. **Phương án dự phòng.** Trong code, cả hai nhánh dự phòng (giữ nguyên tuyến, rồi chỉ nhận một yêu cầu) trả trạng thái
+   `SafeFallback`, Runner ghi `"solver":{"status":"safeFallback"}` vào khung `decision`. Evidence không có trường này.
+   Trên 15 transcript còn giữ (8 ô cổng của đợt 360 lượt, 4 lượt B1, 2 lượt d20191216 của TRẢ LỜI 5, lượt ở mục 4):
+   **44.652 khung `decision`, tất cả `completed`, 0 `safeFallback`**. 352 lượt còn lại: không đếm được (không còn transcript).
+   Tức cơ chế ở `03-phuong-phap.tex:153` có trong code nhưng không xảy ra trên phần dữ liệu đếm được.
+
 ## TRẢ LỜI 8 — 2026-11-27 17:55 (YÊU CẦU 8, C31, ở đầu nhánh `d758335`)
 
 Tất cả đạt.
