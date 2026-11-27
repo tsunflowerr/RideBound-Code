@@ -129,7 +129,7 @@ toàn bộ 360 lượt của báo cáo, phép so này cho 125.871/125.964 khách
 ### 2.3 Test
 
 ```bash
-cd src/core && dotnet test RideBound.slnx -c Release && cd ../..          # 7 dự án, 794 test
+cd src/core && dotnet test RideBound.slnx -c Release && cd ../..          # 7 dự án, 790 test
 (cd src/adapter/tests && python -B -m unittest test_replay test_run_job test_run_campaign test_make_job_configs test_riders)
 ```
 
