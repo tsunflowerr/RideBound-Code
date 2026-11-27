@@ -52,60 +52,38 @@ public sealed class DeterministicCandidateSelectionExecutionBudget
 }
 
 /// <summary>
-/// Audited work and candidate omission information produced before selection.
-/// A non-zero omission count must carry a stable digest so candidate loss can
-/// never be confused with solver loss.
+/// Audited generation and validation work produced before selection.
 /// </summary>
 public sealed class CandidateSelectionPreSolveAccounting
 {
     private CandidateSelectionPreSolveAccounting(
         long consumedGenerationWorkUnits,
-        long consumedValidationWorkUnits,
-        long omittedCandidateCount,
-        string? omissionDigest,
-        bool omissionCountWasSaturated)
+        long consumedValidationWorkUnits)
     {
         ConsumedGenerationWorkUnits = consumedGenerationWorkUnits;
         ConsumedValidationWorkUnits = consumedValidationWorkUnits;
-        OmittedCandidateCount = omittedCandidateCount;
-        OmissionDigest = omissionDigest;
-        OmissionCountWasSaturated = omissionCountWasSaturated;
     }
 
     public long ConsumedGenerationWorkUnits { get; }
 
     public long ConsumedValidationWorkUnits { get; }
 
-    public long OmittedCandidateCount { get; }
-
-    public string? OmissionDigest { get; }
-
-    public bool OmissionCountWasSaturated { get; }
-
     public static DomainResult<CandidateSelectionPreSolveAccounting> Create(
         DeterministicCandidateSelectionExecutionBudget budget,
         long consumedGenerationWorkUnits,
-        long consumedValidationWorkUnits,
-        long omittedCandidateCount,
-        string? omissionDigest = null,
-        bool omissionCountWasSaturated = false)
+        long consumedValidationWorkUnits)
     {
         ArgumentNullException.ThrowIfNull(budget);
-
-        var hasCanonicalLoss = omittedCandidateCount == 0
-            ? omissionDigest is null && !omissionCountWasSaturated
-            : IsLowerHexSha256(omissionDigest);
 
         if (consumedGenerationWorkUnits is < 0
                 or > DomainLimits.MaxCanonicalInteger
             || consumedGenerationWorkUnits > budget.MaximumGenerationWorkUnits
             || consumedValidationWorkUnits is < 0
                 or > DomainLimits.MaxCanonicalInteger
-            || consumedValidationWorkUnits > budget.MaximumValidationWorkUnits
-            || omittedCandidateCount is < 0
-                or > DomainLimits.MaxCanonicalInteger
-            || !hasCanonicalLoss)
+            || consumedValidationWorkUnits > budget.MaximumValidationWorkUnits)
         {
+            // The message predates the removal of the candidate-loss digest and is kept
+            // byte for byte: it reaches the error frame of an over-budget decision.
             return DomainResult<CandidateSelectionPreSolveAccounting>.Fail(
                 CandidateSelectionFailureCodes.InvalidExecutionAccounting,
                 "Pre-solve counters must fit their stage budgets and candidate loss requires a stable digest.",
@@ -115,16 +93,8 @@ public sealed class CandidateSelectionPreSolveAccounting
         return DomainResult<CandidateSelectionPreSolveAccounting>.Success(
             new CandidateSelectionPreSolveAccounting(
                 consumedGenerationWorkUnits,
-                consumedValidationWorkUnits,
-                omittedCandidateCount,
-                omissionDigest,
-                omissionCountWasSaturated));
+                consumedValidationWorkUnits));
     }
-
-    private static bool IsLowerHexSha256(string? value) =>
-        value is { Length: 64 }
-        && value.All(character => character is >= '0' and <= '9'
-            or >= 'a' and <= 'f');
 }
 
 public sealed record CandidateSelectionValidationResult
@@ -187,9 +157,6 @@ public sealed record CandidateSelectionValidationWitness(
 public sealed record CandidateSelectionExecutionDiagnostics(
     long ConsumedGenerationWorkUnits,
     long ConsumedValidationWorkUnits,
-    long OmittedCandidateCount,
-    string? OmissionDigest,
-    bool OmissionCountWasSaturated,
     CandidateSelectionSolveStatus PrimarySolveStatus,
     CandidateSelectionSolverDiagnostics PrimarySolverDiagnostics,
     CandidateSelectionExecutionPath ExecutionPath,
@@ -197,8 +164,6 @@ public sealed record CandidateSelectionExecutionDiagnostics(
     bool PrimaryIncumbentRejected,
     IReadOnlyList<CandidateSelectionValidationWitness> ValidationWitnesses)
 {
-    public bool CandidateLossOccurred => OmittedCandidateCount != 0;
-
     public bool SolverLossOccurred =>
         PrimarySolveStatus != CandidateSelectionSolveStatus.Optimal;
 }
@@ -373,10 +338,7 @@ public sealed class SafeCandidateSelectionExecutor
                 budget.SolverBudget,
                 primary.Diagnostics.ConsumedWorkUnits,
                 primary.Diagnostics.ConsumedDeterministicTimeMicros,
-                primary.Diagnostics.WallTimeMilliseconds,
-                [],
-                reasonCode,
-                message).Value!;
+                []).Value!;
             return Complete(
                 CandidateSelectionSolveResult.SafeFallback(
                     solution,
@@ -394,9 +356,6 @@ public sealed class SafeCandidateSelectionExecutor
                 new CandidateSelectionExecutionDiagnostics(
                     preSolveAccounting.ConsumedGenerationWorkUnits,
                     consumedValidation,
-                    preSolveAccounting.OmittedCandidateCount,
-                    preSolveAccounting.OmissionDigest,
-                    preSolveAccounting.OmissionCountWasSaturated,
                     primary.Status,
                     primary.Diagnostics,
                     path,

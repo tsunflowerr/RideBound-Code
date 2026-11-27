@@ -30,7 +30,6 @@ public sealed class OrToolsPolicyDifferentialTests
             var accounting = CandidateSelectionPreSolveAccounting.Create(
                 executionBudget,
                 0,
-                0,
                 0).Value!;
 
             var production = new SolverBackedFleetSelector(
@@ -53,18 +52,6 @@ public sealed class OrToolsPolicyDifferentialTests
             Assert.Equal(
                 CandidateSelectionSolveStatus.Optimal,
                 production.Selection.Execution.SolveResult.Status);
-            Assert.All(
-                production.Selection.Execution.SolveResult.Diagnostics.ObjectiveBounds,
-                bound =>
-                {
-                    Assert.True(bound.IsProvenOptimal);
-                    Assert.Equal(0, bound.GapNumerator);
-                });
-
-            // Every level is solved, a constant one too (the idle vehicle's rank level on every third seed).
-            Assert.Equal(
-                "ORTOOLS_OPTIMAL",
-                production.Selection.Execution.SolveResult.Diagnostics.DetailCode);
         }
     }
 
@@ -113,7 +100,7 @@ public sealed class OrToolsPolicyDifferentialTests
                 assessments.Add(candidate.CandidateId, new HardVectorCandidateAssessment(candidate.CandidateId));
             }
 
-            sets.Add(new VehicleCandidateSet(vehicleId, candidates, [], false));
+            sets.Add(new VehicleCandidateSet(vehicleId, candidates, []));
         }
 
         // Every third seed adds an idle vehicle with only its no-op, as a full vehicle has. Its
@@ -123,7 +110,7 @@ public sealed class OrToolsPolicyDifferentialTests
             var idle = new VehicleId("vehicle-idle");
             var noOp = Candidate("idle-noop", idle, [], 0);
             assessments.Add(noOp.CandidateId, new HardVectorCandidateAssessment(noOp.CandidateId));
-            sets.Add(new VehicleCandidateSet(idle, [noOp], [], false));
+            sets.Add(new VehicleCandidateSet(idle, [noOp], []));
         }
 
         return new Fixture(sets.AsReadOnly(), assessments);

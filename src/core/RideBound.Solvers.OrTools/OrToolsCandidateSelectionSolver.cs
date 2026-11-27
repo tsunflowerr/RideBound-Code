@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using System.Globalization;
 using Google.OrTools.Sat;
 using RideBound.Application.Optimization;
@@ -16,7 +15,6 @@ public sealed class OrToolsCandidateSelectionSolver : ICandidateSelectionSolver
     {
         ArgumentNullException.ThrowIfNull(problem);
         ArgumentNullException.ThrowIfNull(budget);
-        var stopwatch = Stopwatch.StartNew();
         CandidateSelectionSolution? incumbent = null;
         var bounds = new List<ObjectiveSolveBound>();
         var fixedBounds = new List<ObjectiveSolveBound>();
@@ -43,14 +41,10 @@ public sealed class OrToolsCandidateSelectionSolver : ICandidateSelectionSolver
                     : WithIncumbent(
                         problem,
                         budget,
-                        stopwatch,
                         incumbent,
                         consumedWork,
                         consumedDeterministicMicros,
-                        bounds,
-                        "ORTOOLS_BUDGET_EXHAUSTED",
-                        "The deterministic budget ended before every lexicographic " +
-                        "level was proven optimal.");
+                        bounds);
             }
 
             // The first pass builds the model; each later pass only appends the equalities of the
@@ -139,14 +133,10 @@ public sealed class OrToolsCandidateSelectionSolver : ICandidateSelectionSolver
                     : WithIncumbent(
                         problem,
                         budget,
-                        stopwatch,
                         incumbent,
                         consumedWork,
                         consumedDeterministicMicros,
-                        bounds,
-                        "ORTOOLS_UNKNOWN",
-                        "CP-SAT returned UNKNOWN before all lexicographic levels " +
-                        "were proven.");
+                        bounds);
             }
 
             if (status is not CpSolverStatus.Feasible
@@ -174,17 +164,10 @@ public sealed class OrToolsCandidateSelectionSolver : ICandidateSelectionSolver
 
             incumbent = created.Value!;
             var incumbentValue = incumbent.ObjectiveValues[levelIndex];
-            var bestBound = status == CpSolverStatus.Optimal
-                ? incumbentValue
-                : ConvertBestBound(
-                    solver.BestObjectiveBound,
-                    incumbentValue,
-                    level.Sense);
             var bound = ObjectiveSolveBound.Create(
                 levelIndex,
                 level,
-                incumbentValue,
-                bestBound);
+                incumbentValue);
 
             if (!bound.IsSuccess)
             {
@@ -197,31 +180,25 @@ public sealed class OrToolsCandidateSelectionSolver : ICandidateSelectionSolver
             bounds.Add(bound.Value!);
             fixedBounds.Add(bound.Value!);
 
+            // CP-SAT found an incumbent but did not prove the current lexicographic level optimal.
             if (status == CpSolverStatus.Feasible)
             {
                 return WithIncumbent(
                     problem,
                     budget,
-                    stopwatch,
                     incumbent,
                     consumedWork,
                     consumedDeterministicMicros,
-                    bounds,
-                    "ORTOOLS_FEASIBLE_NOT_PROVEN",
-                    "CP-SAT found a validated incumbent but did not prove the " +
-                    "current lexicographic level optimal.");
+                    bounds);
             }
         }
 
         var diagnostics = Diagnostics(
             problem,
             budget,
-            stopwatch,
             consumedWork,
             consumedDeterministicMicros,
-            bounds,
-            "ORTOOLS_OPTIMAL",
-            AdapterVersion);
+            bounds);
         return CandidateSelectionSolveResult.Optimal(incumbent!, diagnostics);
 
         // Ends the solve without a solution, reporting the work and bounds counted so far.
@@ -232,7 +209,6 @@ public sealed class OrToolsCandidateSelectionSolver : ICandidateSelectionSolver
             NoSolution(
                 problem,
                 budget,
-                stopwatch,
                 status,
                 reasonCode,
                 message,
@@ -496,57 +472,25 @@ public sealed class OrToolsCandidateSelectionSolver : ICandidateSelectionSolver
             : checked((long)micros);
     }
 
-    private static long ConvertBestBound(
-        double value,
-        long incumbent,
-        CandidateSelectionObjectiveSense sense)
-    {
-        if (!double.IsFinite(value))
-        {
-            return sense == CandidateSelectionObjectiveSense.Minimize
-                ? 0
-                : DomainLimits.MaxCanonicalInteger;
-        }
-
-        var integral = sense == CandidateSelectionObjectiveSense.Minimize
-            ? Math.Ceiling(value)
-            : Math.Floor(value);
-        var canonical = integral <= 0
-            ? 0
-            : integral >= DomainLimits.MaxCanonicalInteger
-                ? DomainLimits.MaxCanonicalInteger
-                : checked((long)integral);
-        return sense == CandidateSelectionObjectiveSense.Minimize
-            ? Math.Min(canonical, incumbent)
-            : Math.Max(canonical, incumbent);
-    }
-
     private static CandidateSelectionSolveResult WithIncumbent(
         CandidateSelectionProblem problem,
         DeterministicSolverBudget budget,
-        Stopwatch stopwatch,
         CandidateSelectionSolution incumbent,
         long work,
         long deterministicMicros,
-        IReadOnlyList<ObjectiveSolveBound> bounds,
-        string reasonCode,
-        string message) =>
+        IReadOnlyList<ObjectiveSolveBound> bounds) =>
         CandidateSelectionSolveResult.Feasible(
             incumbent,
             Diagnostics(
                 problem,
                 budget,
-                stopwatch,
                 work,
                 deterministicMicros,
-                bounds,
-                reasonCode,
-                message));
+                bounds));
 
     private static CandidateSelectionSolveResult NoSolution(
         CandidateSelectionProblem problem,
         DeterministicSolverBudget budget,
-        Stopwatch stopwatch,
         CandidateSelectionSolveStatus status,
         string reasonCode,
         string message,
@@ -557,12 +501,9 @@ public sealed class OrToolsCandidateSelectionSolver : ICandidateSelectionSolver
         var diagnostics = Diagnostics(
             problem,
             budget,
-            stopwatch,
             work,
             deterministicMicros,
-            bounds,
-            reasonCode,
-            message);
+            bounds);
         return status switch
         {
             CandidateSelectionSolveStatus.Infeasible =>
@@ -587,26 +528,16 @@ public sealed class OrToolsCandidateSelectionSolver : ICandidateSelectionSolver
     private static CandidateSelectionSolverDiagnostics Diagnostics(
         CandidateSelectionProblem problem,
         DeterministicSolverBudget budget,
-        Stopwatch stopwatch,
         long work,
         long deterministicMicros,
-        IEnumerable<ObjectiveSolveBound> bounds,
-        string detailCode,
-        string detail)
+        IEnumerable<ObjectiveSolveBound> bounds)
     {
-        stopwatch.Stop();
-        var wall = Math.Min(
-            DomainLimits.MaxCanonicalInteger,
-            stopwatch.ElapsedMilliseconds);
         var created = CandidateSelectionSolverDiagnostics.Create(
             problem,
             budget,
             work,
             deterministicMicros,
-            wall,
-            bounds,
-            detailCode,
-            detail);
+            bounds);
 
         if (!created.IsSuccess)
         {

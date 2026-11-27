@@ -238,14 +238,12 @@ public sealed class WaitingRiderRelocationPolicyTests
                 budget,
                 1,
                 1,
-                0,
                 best is null
                     ? []
                     : problem.ObjectiveLevels
                         .Select((level, index) => ObjectiveSolveBound.Create(
                             index,
                             level,
-                            best.ObjectiveValues[index],
                             best.ObjectiveValues[index]).Value!)
                         .ToArray()).Value!;
             return best is null

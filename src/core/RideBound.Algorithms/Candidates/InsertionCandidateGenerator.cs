@@ -1,4 +1,3 @@
-using System.Numerics;
 using RideBound.Application.State;
 using RideBound.Domain.Common;
 using RideBound.Domain.Requests;
@@ -57,24 +56,8 @@ public sealed partial class InsertionCandidateGenerator
         var requests = pendingRequests
             .Take(options.MaximumNewRequestsPerVehicle)
             .ToArray();
-        var omittedRequests = pendingRequests
-            .Skip(options.MaximumNewRequestsPerVehicle)
-            .ToArray();
         var vehicleSets = new List<VehicleCandidateSet>();
-        var omissions = new List<CandidateOmissionWitness>();
         var breaches = new List<ExogenousServiceQualityBreach>();
-
-        if (omittedRequests.Length > 0)
-        {
-            omissions.Add(
-                new CandidateOmissionWitness(
-                    CandidateGenerationFailureCodes.RequestBoundOmission,
-                    omittedRequests.Length,
-                    CandidateIdentity.CreateOmissionDigest(
-                        omittedRequests.Select(request => request.Id.Value)),
-                    RequestIds: Array.AsReadOnly(
-                        omittedRequests.Select(request => request.Id).ToArray())));
-        }
 
         foreach (var vehicle in state.Run.Vehicles.Values.OrderBy(
                      value => value.Id.Value,
@@ -84,8 +67,7 @@ public sealed partial class InsertionCandidateGenerator
                 state,
                 vehicle,
                 requests,
-                options,
-                omittedRequests.Length > 0);
+                options);
 
             if (generated.Witness is not null)
             {
@@ -93,7 +75,6 @@ public sealed partial class InsertionCandidateGenerator
             }
 
             vehicleSets.Add(generated.Candidates!);
-            omissions.AddRange(generated.Omissions);
             breaches.AddRange(generated.Breaches);
         }
 
@@ -111,18 +92,13 @@ public sealed partial class InsertionCandidateGenerator
                 vehicleSets[index] = relocated.MergeInto(vehicleSets[index]);
             }
 
-            omissions.AddRange(relocated.Omissions);
             relocationLosses = relocated.Losses;
         }
 
         return CandidateGenerationResult.Success(
             vehicleSets.AsReadOnly(),
             new CandidateGenerationDiagnostics(
-                pendingRequests.Length,
-                requests.Length,
-                omittedRequests.Length,
                 vehicleSets.Select(set => set.Loss!).ToArray(),
-                omissions.AsReadOnly(),
                 breaches.AsReadOnly(),
                 relocationLosses));
     }
@@ -131,8 +107,7 @@ public sealed partial class InsertionCandidateGenerator
         OnlineState state,
         VehicleState vehicle,
         IReadOnlyList<RideRequest> pendingRequests,
-        CandidateGenerationOptions options,
-        bool requestsWereOmitted)
+        CandidateGenerationOptions options)
     {
         var feasibleById =
             new Dictionary<string, InsertionCandidate>(StringComparer.Ordinal);
@@ -209,33 +184,16 @@ public sealed partial class InsertionCandidateGenerator
         // pure duplicated O(n log n) on every vehicle of every epoch.
         var rankedCandidates = CandidatePortfolioRetainer.Rank(beforeCap).ToArray();
         var ranked = rankedCandidates.ToList();
-        var omittedByCap = Array.Empty<InsertionCandidate>();
 
         if (ranked.Count > options.MaximumCandidatesPerVehicle)
         {
             var retention = _portfolioRetainer.RetainRanked(
                 rankedCandidates,
                 options.MaximumCandidatesPerVehicle);
-            omittedByCap = retention.Omitted.ToArray();
             ranked = retention.Retained.ToList();
         }
 
-        var omissions = BuildOmissions(exploration, omittedByCap);
-
-        var loss = new VehicleCandidateLoss(
-            exploration.WorkUnits,
-            exploration.EvaluatedCandidatePathCount,
-            beforeCap.Length,
-            ranked.Count,
-            prunedById.Count,
-            exploration.OmittedCandidatePathCount,
-            omittedByCap.Length,
-            exploration.OmittedCandidatePathCount > 0,
-            omittedByCap.Length > 0,
-            exploration.OmissionCountWasSaturated);
-        var wasTruncated = requestsWereOmitted
-            || loss.WorkBudgetExhausted
-            || loss.CandidateCapApplied;
+        var loss = new VehicleCandidateLoss(exploration.WorkUnits);
 
         return VehicleGenerationResult.Success(
             new VehicleCandidateSet(
@@ -246,9 +204,7 @@ public sealed partial class InsertionCandidateGenerator
                 prunedById.Values
                     .OrderBy(value => value.CandidateId, StringComparer.Ordinal)
                     .ToArray(),
-                wasTruncated,
                 loss),
-            omissions.AsReadOnly(),
             breaches);
     }
 
@@ -298,40 +254,6 @@ public sealed partial class InsertionCandidateGenerator
         return null;
     }
 
-    /// <summary>
-    /// The omission witnesses of one vehicle: first the paths the work bound left unexplored,
-    /// then the feasible candidates the cap dropped.
-    /// </summary>
-    private static List<CandidateOmissionWitness> BuildOmissions(
-        ExplorationResult exploration,
-        InsertionCandidate[] omittedByCap)
-    {
-        var omissions = new List<CandidateOmissionWitness>();
-
-        if (exploration.OmittedCandidatePathCount > 0)
-        {
-            omissions.Add(
-                new CandidateOmissionWitness(
-                    CandidateGenerationFailureCodes.WorkBoundOmission,
-                    exploration.OmittedCandidatePathCount,
-                    CandidateIdentity.CreateOmissionDigest(
-                        exploration.OmittedSubtreeIds),
-                    CountWasSaturated: exploration.OmissionCountWasSaturated));
-        }
-
-        if (omittedByCap.Length > 0)
-        {
-            omissions.Add(
-                new CandidateOmissionWitness(
-                    CandidateGenerationFailureCodes.CandidateCapOmission,
-                    omittedByCap.Length,
-                    CandidateIdentity.CreateOmissionDigest(
-                        omittedByCap.Select(candidate => candidate.CandidateId))));
-        }
-
-        return omissions;
-    }
-
     private static string FormatPhysicalDetails(
         PhysicalViolationWitness? witness) =>
         witness is null
@@ -366,7 +288,6 @@ public sealed partial class InsertionCandidateGenerator
             root,
             CreatePriority(state, vehicle, requests, serviceQuality, root, rootIsActiveRoute));
         var workUnits = 0L;
-        var evaluatedPaths = 0L;
 
         while (workUnits < options.MaximumExplorationWorkUnits
             && frontier.TryDequeue(out var node, out _))
@@ -380,7 +301,6 @@ public sealed partial class InsertionCandidateGenerator
                     continue;
                 }
 
-                evaluatedPaths++;
                 var routeResult = node.Project(vehicle);
 
                 if (routeResult.IsSuccess)
@@ -425,40 +345,7 @@ public sealed partial class InsertionCandidateGenerator
             }
         }
 
-        var omittedCount = BigInteger.Zero;
-        var omittedSubtreeIds = new List<string>();
-
-        // The combinatorial memo is keyed only by (suffixCount, remaining,
-        // hasInserted); nothing in it depends on the individual frontier node.
-        // Allocating it per node discarded one dictionary per unexpanded node.
-        var subtreeMemo =
-            new Dictionary<(int SuffixCount, int Remaining, bool Inserted), BigInteger>();
-
-        while (frontier.TryDequeue(out var omitted, out _))
-        {
-            var subtreeCount = CountTerminalCandidatePaths(
-                omitted,
-                requests.Count,
-                subtreeMemo);
-
-            if (subtreeCount > 0)
-            {
-                omittedCount += subtreeCount;
-                omittedSubtreeIds.Add(omitted.StableId);
-            }
-        }
-
-        var saturated = omittedCount > DomainLimits.MaxCanonicalInteger;
-        var canonicalOmitted = saturated
-            ? DomainLimits.MaxCanonicalInteger
-            : (long)omittedCount;
-
-        return new ExplorationResult(
-            workUnits,
-            evaluatedPaths,
-            canonicalOmitted,
-            omittedSubtreeIds.AsReadOnly(),
-            saturated);
+        return new ExplorationResult(workUnits);
     }
 
     private static IEnumerable<ExplorationNode> Expand(
@@ -596,52 +483,6 @@ public sealed partial class InsertionCandidateGenerator
             Array.AsReadOnly(ownedSuffix),
             insertedRequestIds);
 
-    private static BigInteger CountTerminalCandidatePaths(
-        ExplorationNode node,
-        int requestCount,
-        IDictionary<(int SuffixCount, int Remaining, bool Inserted), BigInteger> memo) =>
-        Count(
-            node.Suffix.Count,
-            requestCount - node.RequestIndex,
-            node.InsertedRequestIds.Count > 0,
-            memo);
-
-    private static BigInteger Count(
-        int suffixCount,
-        int remaining,
-        bool hasInserted,
-        IDictionary<(int, int, bool), BigInteger> memo)
-    {
-        // Every remaining request can independently be skipped or inserted at
-        // least one way. At 54 remaining requests, 2^54 - 1 already exceeds the
-        // canonical reporting range, so recursion can truthfully saturate early.
-        if (remaining >= 54)
-        {
-            return new BigInteger(DomainLimits.MaxCanonicalInteger) + 1;
-        }
-
-        var key = (suffixCount, remaining, hasInserted);
-
-        if (memo.TryGetValue(key, out var cached))
-        {
-            return cached;
-        }
-
-        if (remaining == 0)
-        {
-            return hasInserted ? BigInteger.One : BigInteger.Zero;
-        }
-
-        var insertionPositions = new BigInteger(suffixCount + 1)
-            * (suffixCount + 2)
-            / 2;
-        var result = Count(suffixCount, remaining - 1, hasInserted, memo)
-            + insertionPositions
-            * Count(suffixCount + 2, remaining - 1, true, memo);
-        memo[key] = result;
-        return result;
-    }
-
     private static long SaturatingAdd(long left, long right) =>
         left > DomainLimits.MaxCanonicalInteger - right
             ? DomainLimits.MaxCanonicalInteger
@@ -774,8 +615,8 @@ public sealed partial class InsertionCandidateGenerator
 
         /// <remarks>
         /// The digest still ends with the token "no-repair", which marked a node outside the removed
-        /// waiting-incumbent repair search (B4). Node ids order the frontier on ties and name the
-        /// omitted subtrees in the omission digests, so the token keeps both byte-identical.
+        /// waiting-incumbent repair search (B4). Node ids order the frontier on ties, so the token
+        /// keeps that order unchanged.
         /// </remarks>
         public string StableId => _stableId ??= $"{RequestIndex:D8}:" +
             CandidateIdentity.CreateSearchNodeDigest(
@@ -839,27 +680,20 @@ public sealed partial class InsertionCandidateGenerator
         }
     }
 
-    private sealed record ExplorationResult(
-        long WorkUnits,
-        long EvaluatedCandidatePathCount,
-        long OmittedCandidatePathCount,
-        IReadOnlyList<string> OmittedSubtreeIds,
-        bool OmissionCountWasSaturated);
+    private sealed record ExplorationResult(long WorkUnits);
 
     private sealed record VehicleGenerationResult(
         VehicleCandidateSet? Candidates,
-        IReadOnlyList<CandidateOmissionWitness> Omissions,
         CandidateGenerationWitness? Witness,
         IReadOnlyList<ExogenousServiceQualityBreach> Breaches)
     {
         public static VehicleGenerationResult Success(
             VehicleCandidateSet candidates,
-            IReadOnlyList<CandidateOmissionWitness> omissions,
             IReadOnlyList<ExogenousServiceQualityBreach> breaches) =>
-            new(candidates, omissions, null, breaches);
+            new(candidates, null, breaches);
 
         public static VehicleGenerationResult Failure(
             CandidateGenerationWitness witness) =>
-            new(null, [], witness, []);
+            new(null, witness, []);
     }
 }

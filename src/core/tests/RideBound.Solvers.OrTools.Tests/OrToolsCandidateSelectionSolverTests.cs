@@ -18,14 +18,6 @@ public sealed class OrToolsCandidateSelectionSolverTests
         Assert.Equal(["v1-request-2", "v2-request-1"], result.Solution!.SelectedOptionIds);
         Assert.Equal([2, 200, 110, 3], result.Solution.ObjectiveValues);
         Assert.Equal(4, result.Diagnostics.ObjectiveBounds.Count);
-        Assert.All(
-            result.Diagnostics.ObjectiveBounds,
-            bound => Assert.True(bound.IsProvenOptimal));
-        Assert.All(
-            result.Diagnostics.ObjectiveBounds,
-            bound => Assert.Equal(
-                result.Solution.ObjectiveValues[bound.LevelIndex],
-                bound.BestBound));
     }
 
     [Fact]
@@ -221,10 +213,6 @@ public sealed class OrToolsCandidateSelectionSolverTests
             result.Diagnostics.ConsumedDeterministicTimeMicros,
             0,
             budget.MaximumDeterministicTimeMicros);
-        Assert.Equal("ORTOOLS_OPTIMAL", result.Diagnostics.DetailCode);
-        Assert.Contains(
-            OrToolsCandidateSelectionSolver.AdapterVersion,
-            result.Diagnostics.Detail);
     }
 
     private static CandidateSelectionProblem TradeoffProblem(
@@ -283,9 +271,5 @@ public sealed class OrToolsCandidateSelectionSolverTests
             ":",
             bound.LevelIndex,
             bound.ObjectiveName,
-            bound.IncumbentValue,
-            bound.BestBound,
-            bound.GapNumerator,
-            bound.GapDenominator,
-            bound.IsProvenOptimal);
+            bound.IncumbentValue);
 }

@@ -157,8 +157,7 @@ public sealed class CandidateSelectionExecutionTests
         var accounting = CandidateSelectionPreSolveAccounting.Create(
             budget,
             consumedGenerationWorkUnits: 4,
-            consumedValidationWorkUnits: 2,
-            omittedCandidateCount: 0).Value!;
+            consumedValidationWorkUnits: 2).Value!;
         var validator = new StubValidator(_ => true);
 
         var result = new SafeCandidateSelectionExecutor(solver, validator).Execute(
@@ -214,10 +213,7 @@ public sealed class CandidateSelectionExecutionTests
         var accounting = CandidateSelectionPreSolveAccounting.Create(
             budget,
             consumedGenerationWorkUnits: 8,
-            consumedValidationWorkUnits: 1,
-            omittedCandidateCount: 3,
-            omissionDigest: new string('a', 64),
-            omissionCountWasSaturated: true).Value!;
+            consumedValidationWorkUnits: 1).Value!;
 
         var result = new SafeCandidateSelectionExecutor(
             solver,
@@ -226,11 +222,7 @@ public sealed class CandidateSelectionExecutionTests
                 budget,
                 accounting);
 
-        Assert.True(result.Diagnostics.CandidateLossOccurred);
         Assert.True(result.Diagnostics.SolverLossOccurred);
-        Assert.Equal(3, result.Diagnostics.OmittedCandidateCount);
-        Assert.Equal(new string('a', 64), result.Diagnostics.OmissionDigest);
-        Assert.True(result.Diagnostics.OmissionCountWasSaturated);
         Assert.Equal(8, result.Diagnostics.ConsumedGenerationWorkUnits);
         Assert.Equal(2, result.Diagnostics.ConsumedValidationWorkUnits);
     }
@@ -243,20 +235,11 @@ public sealed class CandidateSelectionExecutionTests
         var generationOverrun = CandidateSelectionPreSolveAccounting.Create(
             budget,
             consumedGenerationWorkUnits: 101,
-            consumedValidationWorkUnits: 0,
-            omittedCandidateCount: 0);
-        var missingDigest = CandidateSelectionPreSolveAccounting.Create(
-            budget,
-            consumedGenerationWorkUnits: 1,
-            consumedValidationWorkUnits: 1,
-            omittedCandidateCount: 1);
+            consumedValidationWorkUnits: 0);
 
         Assert.Equal(
             CandidateSelectionFailureCodes.InvalidExecutionAccounting,
             generationOverrun.Failure?.Code);
-        Assert.Equal(
-            CandidateSelectionFailureCodes.InvalidExecutionAccounting,
-            missingDigest.Failure?.Code);
     }
 
     [Fact]
@@ -270,8 +253,7 @@ public sealed class CandidateSelectionExecutionTests
         var accounting = CandidateSelectionPreSolveAccounting.Create(
             larger,
             consumedGenerationWorkUnits: 150,
-            consumedValidationWorkUnits: 0,
-            omittedCandidateCount: 0).Value!;
+            consumedValidationWorkUnits: 0).Value!;
         var executor = new SafeCandidateSelectionExecutor(
             new StubSolver(
                 (_, solverBudget) => NoSolution(
@@ -338,8 +320,7 @@ public sealed class CandidateSelectionExecutionTests
         CandidateSelectionPreSolveAccounting.Create(
             budget,
             consumedGenerationWorkUnits: 4,
-            consumedValidationWorkUnits: 0,
-            omittedCandidateCount: 0).Value!;
+            consumedValidationWorkUnits: 0).Value!;
 
     private static CandidateSelectionSolution Solution(
         CandidateSelectionProblem problem,
@@ -356,7 +337,6 @@ public sealed class CandidateSelectionExecutionTests
                 (level, index) => ObjectiveSolveBound.Create(
                     index,
                     level,
-                    solution.ObjectiveValues[index],
                     solution.ObjectiveValues[index]).Value!)
             .ToArray();
         return CandidateSelectionSolveResult.Optimal(
@@ -400,7 +380,6 @@ public sealed class CandidateSelectionExecutionTests
             budget,
             consumedWorkUnits: 7,
             consumedDeterministicTimeMicros: 11,
-            wallTimeMilliseconds: 13,
             bounds ?? []).Value!;
 
     private sealed class StubSolver(

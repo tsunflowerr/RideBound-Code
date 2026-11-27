@@ -259,7 +259,6 @@ public sealed class ForwardSlackProfileTests
             new CandidateGenerationOptions(100, 1));
 
         Assert.True(result.IsSuccess, result.Witness?.Message);
-        Assert.True(result.Diagnostics!.IsComplete);
         var set = Assert.Single(result.VehicleCandidates!);
         Assert.Single(set.Candidates, candidate => candidate.IsNoOp);
         Assert.Contains(set.PrunedCandidates, prune => prune.Code == "CAPACITY");
@@ -286,8 +285,6 @@ public sealed class ForwardSlackProfileTests
 
         Assert.True(first.IsSuccess, first.Witness?.Message);
         Assert.True(second.IsSuccess, second.Witness?.Message);
-        Assert.True(first.Diagnostics!.IsComplete);
-        Assert.True(second.Diagnostics!.IsComplete);
         Assert.True(buildsAfterFirst > 0);
         Assert.Equal(buildsAfterFirst, builder.BuildCount);
         Assert.Equal(
@@ -313,7 +310,6 @@ public sealed class ForwardSlackProfileTests
             new CandidateGenerationOptions(100, 1));
 
         Assert.True(result.IsSuccess, result.Witness?.Message);
-        Assert.True(result.Diagnostics!.IsComplete);
         var candidates = Assert.Single(result.VehicleCandidates!);
         Assert.Single(candidates.Candidates, candidate => candidate.IsNoOp);
         Assert.Contains(

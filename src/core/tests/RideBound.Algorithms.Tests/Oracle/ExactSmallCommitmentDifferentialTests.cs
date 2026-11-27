@@ -29,7 +29,6 @@ public sealed class ExactSmallCommitmentDifferentialTests
             Assert.True(
                 generated.IsSuccess,
                 $"seed={seed}; {generated.Witness?.Message}");
-            Assert.True(generated.Diagnostics!.IsComplete, $"seed={seed}");
             var oracleCandidates = ExactSmallOracle.Generate(fixture.State)
                 [AlgorithmTestData.VehicleOne];
             var expected = oracleCandidates
@@ -77,7 +76,6 @@ public sealed class ExactSmallCommitmentDifferentialTests
                 fixture.State,
                 AlgorithmTestData.SmallGeneration);
             Assert.True(generated.IsSuccess, generated.Witness?.Message);
-            Assert.True(generated.Diagnostics!.IsComplete);
             var candidateSets = generated.VehicleCandidates!;
             var tight = RetainedKeys(
                 fixture,
@@ -102,7 +100,6 @@ public sealed class ExactSmallCommitmentDifferentialTests
             fixture.State,
             AlgorithmTestData.SmallGeneration);
         Assert.True(generated.IsSuccess, generated.Witness?.Message);
-        Assert.True(generated.Diagnostics!.IsComplete);
         var raw = generated.VehicleCandidates!;
         var context = MechanismContext(fixture, "c1-assessment");
 
@@ -145,7 +142,6 @@ public sealed class ExactSmallCommitmentDifferentialTests
                 fixture.State,
                 AlgorithmTestData.SmallGeneration);
             Assert.True(generated.IsSuccess, $"seed={seed}; {generated.Witness?.Message}");
-            Assert.True(generated.Diagnostics!.IsComplete, $"seed={seed}");
             var gated = new HardVectorCandidateAssessor().AssessAndFilter(
                 context,
                 generated.VehicleCandidates!);
@@ -153,7 +149,6 @@ public sealed class ExactSmallCommitmentDifferentialTests
             var options = gated.Batch!.FeasibleCandidateSets.Single().Candidates;
             var solver = new EnumeratingSolver();
 
-            AlgorithmTestData.AssertGeneratedInFull(context.ReducedState, AlgorithmTestData.SmallGeneration);
             var result = new SolverBackedRidePoolingPolicy(solver).Decide(
                 context,
                 AlgorithmTestData.SmallGeneration,
@@ -211,7 +206,6 @@ public sealed class ExactSmallCommitmentDifferentialTests
             fixture.State,
             AlgorithmTestData.SmallGeneration);
         Assert.True(generated.IsSuccess, generated.Witness?.Message);
-        Assert.True(generated.Diagnostics!.IsComplete);
         Assert.True(
             generated.VehicleCandidates!.Single().Candidates.Count > 1,
             "The fixture must offer more than the no-op for this to prove anything.");
@@ -297,7 +291,6 @@ public sealed class ExactSmallCommitmentDifferentialTests
             fixture.State,
             AlgorithmTestData.SmallGeneration);
         Assert.True(generated.IsSuccess, generated.Witness?.Message);
-        Assert.True(generated.Diagnostics!.IsComplete);
         var undeclared = new CommitmentPolicy(
             "undeclared-policy-v1",
             CommitmentDimensionVocabulary.Ordered.Select(
@@ -346,9 +339,7 @@ public sealed class ExactSmallCommitmentDifferentialTests
                 AlgorithmTestData.VehicleOne,
                 [],
                 [],
-                false,
-                new VehicleCandidateLoss(
-                    0, 0, 0, 0, 0, 0, 0, false, false, false)),
+                new VehicleCandidateLoss(0)),
         };
 
         var assessed = new HardVectorCandidateAssessor().AssessAndFilter(
@@ -451,7 +442,6 @@ public sealed class ExactSmallCommitmentDifferentialTests
             fixture.State,
             AlgorithmTestData.SmallGeneration);
         Assert.True(generated.IsSuccess, generated.Witness?.Message);
-        Assert.True(generated.Diagnostics!.IsComplete);
         var set = generated.VehicleCandidates!.Single();
         var kept = fixture.BaselineDrop.Milliseconds;
         var drops = set.Candidates.ToDictionary(
@@ -519,7 +509,6 @@ public sealed class ExactSmallCommitmentDifferentialTests
         var fixture = CreateState(seed: 3);
         var context = SlackDeadlineContext(fixture, fixture.BaselineDrop.Milliseconds - 6, permille: 1);
 
-        AlgorithmTestData.AssertGeneratedInFull(context.ReducedState, AlgorithmTestData.SmallGeneration);
         var result = new SolverBackedRidePoolingPolicy(new EnumeratingSolver()).Decide(
             context,
             AlgorithmTestData.SmallGeneration,
@@ -551,7 +540,6 @@ public sealed class ExactSmallCommitmentDifferentialTests
             fixture.State,
             AlgorithmTestData.SmallGeneration);
         Assert.True(generated.IsSuccess, generated.Witness?.Message);
-        Assert.True(generated.Diagnostics!.IsComplete);
         var set = generated.VehicleCandidates!.Single();
         var noOp = set.Candidates.Single(value => value.IsNoOp);
         var ordinalFirst = set.Candidates
@@ -625,7 +613,6 @@ public sealed class ExactSmallCommitmentDifferentialTests
                     (level, index) => ObjectiveSolveBound.Create(
                         index,
                         level,
-                        best.ObjectiveValues[index],
                         best.ObjectiveValues[index]).Value!)
                 .ToArray();
             return CandidateSelectionSolveResult.Optimal(
@@ -671,7 +658,6 @@ public sealed class ExactSmallCommitmentDifferentialTests
                 budget,
                 Math.Min(work, budget.MaximumWorkUnits),
                 1,
-                0,
                 bounds).Value!;
     }
 

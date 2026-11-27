@@ -24,7 +24,6 @@ public sealed class CommitmentCandidateFilterTests
             reduced,
             AlgorithmTestData.SmallGeneration);
         Assert.True(generated.IsSuccess, generated.Witness?.Message);
-        Assert.True(generated.Diagnostics!.IsComplete);
         var candidateSets = generated.VehicleCandidates!;
         Assert.Contains(
             candidateSets.Single().Candidates,

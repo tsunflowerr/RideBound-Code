@@ -210,7 +210,6 @@ public sealed class HardVectorCandidateAssessor
                     pruned
                         .OrderBy(value => value.CandidateId, StringComparer.Ordinal)
                         .ToArray(),
-                    set.WasTruncated,
                     set.Loss));
         }
 

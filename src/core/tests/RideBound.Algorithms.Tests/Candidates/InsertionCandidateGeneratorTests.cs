@@ -20,7 +20,6 @@ public sealed class InsertionCandidateGeneratorTests
             new CandidateGenerationOptions(100, 1));
 
         Assert.True(result.IsSuccess, result.Witness?.Message);
-        Assert.True(result.Diagnostics!.IsComplete);
         var candidates = Assert.Single(result.VehicleCandidates!).Candidates;
         Assert.Equal(2, candidates.Count);
         Assert.Single(candidates, value => value.IsNoOp);
@@ -49,7 +48,6 @@ public sealed class InsertionCandidateGeneratorTests
             new CandidateGenerationOptions(100, 1));
 
         Assert.True(result.IsSuccess, result.Witness?.Message);
-        Assert.True(result.Diagnostics!.IsComplete);
         var candidates = Assert.Single(result.VehicleCandidates!).Candidates;
         Assert.Equal(4, candidates.Count);
         Assert.Equal(
@@ -95,8 +93,6 @@ public sealed class InsertionCandidateGeneratorTests
 
         Assert.True(first.IsSuccess, first.Witness?.Message);
         Assert.True(second.IsSuccess, second.Witness?.Message);
-        Assert.True(first.Diagnostics!.IsComplete);
-        Assert.True(second.Diagnostics!.IsComplete);
         Assert.Same(route, vehicle.Route);
         Assert.Equal([frozen], route.FrozenPrefix);
         Assert.All(
@@ -121,7 +117,6 @@ public sealed class InsertionCandidateGeneratorTests
             new CandidateGenerationOptions(100, 1));
 
         Assert.True(result.IsSuccess, result.Witness?.Message);
-        Assert.True(result.Diagnostics!.IsComplete);
         var set = Assert.Single(result.VehicleCandidates!);
         Assert.Single(set.Candidates);
         Assert.True(set.Candidates[0].IsNoOp);
@@ -182,7 +177,6 @@ public sealed class InsertionCandidateGeneratorTests
 
         Assert.True(first.IsSuccess, first.Witness?.Message);
         var set = Assert.Single(first.VehicleCandidates!);
-        Assert.True(set.WasTruncated);
         Assert.Equal(2, set.Candidates.Count);
         Assert.Contains(set.Candidates, value => value.IsNoOp);
         Assert.Equal(
@@ -213,10 +207,6 @@ public sealed class InsertionCandidateGeneratorTests
         Assert.Equal(
             6,
             candidates.Count(value => value.NewRequestIds.Count == 2));
-        var loss = Assert.Single(result.Diagnostics!.VehicleLosses);
-        Assert.Equal(8, loss.EvaluatedCandidatePathCount);
-        Assert.Equal(9, loss.UniqueFeasibleCandidateCountBeforeCap);
-        Assert.True(result.Diagnostics.IsComplete);
     }
 
     [Fact]
@@ -245,15 +235,6 @@ public sealed class InsertionCandidateGeneratorTests
             candidate => Assert.Equal(
                 [urgentAlphabeticallyLast.Id],
                 candidate.NewRequestIds));
-        Assert.Equal(2, result.Diagnostics!.TotalPendingRequestCount);
-        Assert.Equal(1, result.Diagnostics.ConsideredRequestCount);
-        Assert.Equal(1, result.Diagnostics.OmittedRequestCount);
-        var omission = Assert.Single(
-            result.Diagnostics.Omissions,
-            witness => witness.Code
-                == CandidateGenerationFailureCodes.RequestBoundOmission);
-        Assert.Equal([lateAlphabeticallyFirst.Id], omission.RequestIds);
-        Assert.True(result.VehicleCandidates!.Single().WasTruncated);
     }
 
     [Fact]
@@ -273,35 +254,13 @@ public sealed class InsertionCandidateGeneratorTests
             maximumExplorationWorkUnits: 3);
 
         var firstRun = _generator.Generate(state, options);
-        var secondRun = _generator.Generate(state, options);
 
         Assert.True(firstRun.IsSuccess, firstRun.Witness?.Message);
         var set = Assert.Single(firstRun.VehicleCandidates!);
         var accepted = Assert.Single(set.Candidates, candidate => !candidate.IsNoOp);
         Assert.Equal(2, accepted.NewRequestIds.Count);
-        Assert.True(set.WasTruncated);
         var loss = Assert.Single(firstRun.Diagnostics!.VehicleLosses);
         Assert.Equal(3, loss.ExplorationWorkUnits);
-        Assert.Equal(1, loss.EvaluatedCandidatePathCount);
-        Assert.Equal(7, loss.OmittedUnexpandedCandidatePathCount);
-        Assert.Equal(
-            8,
-            loss.EvaluatedCandidatePathCount
-                + loss.OmittedUnexpandedCandidatePathCount);
-        Assert.True(loss.WorkBudgetExhausted);
-        var omission = Assert.Single(
-            firstRun.Diagnostics.Omissions,
-            witness => witness.Code
-                == CandidateGenerationFailureCodes.WorkBoundOmission);
-        Assert.Equal(7, omission.Count);
-        Assert.False(omission.CountWasSaturated);
-        Assert.Equal(
-            omission.StableDigest,
-            Assert.Single(
-                secondRun.Diagnostics!.Omissions,
-                witness => witness.Code
-                    == CandidateGenerationFailureCodes.WorkBoundOmission)
-                .StableDigest);
     }
 
     [Fact]
@@ -322,10 +281,8 @@ public sealed class InsertionCandidateGeneratorTests
             2,
             2);
         var bounded = _generator.Generate(state, boundedOptions);
-        var repeated = _generator.Generate(state, boundedOptions);
 
         Assert.True(full.IsSuccess, full.Witness?.Message);
-        Assert.True(full.Diagnostics!.IsComplete);
         Assert.True(bounded.IsSuccess, bounded.Witness?.Message);
         var fullTwoRequest = full.VehicleCandidates!.Single().Candidates
             .Where(candidate => candidate.NewRequestIds.Count == 2)
@@ -340,27 +297,6 @@ public sealed class InsertionCandidateGeneratorTests
             candidate => !candidate.IsNoOp);
         Assert.Equal(2, retained.NewRequestIds.Count);
         Assert.Equal(fullTwoRequest.CandidateId, retained.CandidateId);
-        var loss = Assert.Single(bounded.Diagnostics!.VehicleLosses);
-        Assert.Equal(9, loss.UniqueFeasibleCandidateCountBeforeCap);
-        Assert.Equal(2, loss.RetainedCandidateCount);
-        Assert.Equal(7, loss.OmittedFeasibleCandidateCountByCap);
-        Assert.Equal(
-            loss.UniqueFeasibleCandidateCountBeforeCap,
-            loss.RetainedCandidateCount
-                + loss.OmittedFeasibleCandidateCountByCap);
-        Assert.True(loss.CandidateCapApplied);
-        var omission = Assert.Single(
-            bounded.Diagnostics.Omissions,
-            witness => witness.Code
-                == CandidateGenerationFailureCodes.CandidateCapOmission);
-        Assert.Equal(7, omission.Count);
-        Assert.Equal(
-            omission.StableDigest,
-            Assert.Single(
-                repeated.Diagnostics!.Omissions,
-                witness => witness.Code
-                    == CandidateGenerationFailureCodes.CandidateCapOmission)
-                .StableDigest);
     }
 
     [Fact]

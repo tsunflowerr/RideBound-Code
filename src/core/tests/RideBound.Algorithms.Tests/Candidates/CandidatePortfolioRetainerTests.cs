@@ -242,8 +242,7 @@ public sealed class CandidatePortfolioRetainerTests
                         return new VehicleCandidateSet(
                             retained[0].VehicleId,
                             retained,
-                            [],
-                            retained.Length < set.Count);
+                            []);
                     })
                 .ToArray();
             var portfolioSets = sets.Select(
@@ -255,8 +254,7 @@ public sealed class CandidatePortfolioRetainerTests
                         return new VehicleCandidateSet(
                             retained.Retained[0].VehicleId,
                             retained.Retained,
-                            [],
-                            retained.Omitted.Count > 0);
+                            []);
                     })
                 .ToArray();
             var legacy = new CandidateFleetSelector().Select(legacySets);
@@ -417,8 +415,8 @@ public sealed class CandidatePortfolioRetainerTests
     {
         var selected = new CandidateFleetSelector().Select(
         [
-            new VehicleCandidateSet(VehicleOne, vehicleOne, [], true),
-            new VehicleCandidateSet(VehicleTwo, vehicleTwo, [], true),
+            new VehicleCandidateSet(VehicleOne, vehicleOne, []),
+            new VehicleCandidateSet(VehicleTwo, vehicleTwo, []),
         ]);
         Assert.True(selected.IsSuccess, selected.Witness?.Message);
         return selected.Selection!;

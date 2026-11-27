@@ -1,5 +1,3 @@
-using System.Security.Cryptography;
-using System.Text;
 using RideBound.Algorithms.Candidates;
 using RideBound.Algorithms.Commitments;
 using RideBound.Application.Commitments;
@@ -88,8 +86,6 @@ public sealed record SolverBackedPolicyDecisionResult
 /// </summary>
 public sealed class SolverBackedRidePoolingPolicy
 {
-    private static readonly byte[] OmissionAccountingDomain =
-        "RideBound.Wp4OmissionAccounting.v1\0"u8.ToArray();
     private readonly InsertionCandidateGenerator _generator;
     private readonly HardVectorCandidateAssessor _hardAssessor;
     private readonly SolverBackedFleetSelector _selector;
@@ -206,49 +202,10 @@ public sealed class SolverBackedRidePoolingPolicy
             diagnostics.VehicleLosses
                 .Select(value => value.ExplorationWorkUnits)
                 .Concat((diagnostics.RelocationLosses ?? []).Select(value => value.WorkUnits)));
-        var omittedCount = SaturatingSum(
-            diagnostics.Omissions.Select(value => value.Count));
-        var saturated = diagnostics.Omissions.Any(value => value.CountWasSaturated)
-            || diagnostics.VehicleLosses.Any(
-                value => value.OmissionCountWasSaturated)
-            || (diagnostics.RelocationLosses ?? []).Any(
-                value => value.OmissionCountWasSaturated);
-        var digest = omittedCount == 0
-            ? null
-            : AggregateOmissionDigest(diagnostics.Omissions);
         return CandidateSelectionPreSolveAccounting.Create(
             budget,
             generationWork,
-            validationWorkUnits,
-            omittedCount,
-            digest,
-            saturated);
-    }
-
-    private static string AggregateOmissionDigest(
-        IReadOnlyList<CandidateOmissionWitness> omissions)
-    {
-        using var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
-        hash.AppendData(OmissionAccountingDomain);
-
-        foreach (var omission in omissions
-                     .OrderBy(value => value.Code, StringComparer.Ordinal)
-                     .ThenBy(value => value.StableDigest, StringComparer.Ordinal))
-        {
-            AppendFrame(hash, omission.Code);
-            AppendFrame(hash, omission.Count.ToString(System.Globalization.CultureInfo.InvariantCulture));
-            AppendFrame(hash, omission.StableDigest);
-            AppendFrame(hash, omission.CountWasSaturated ? "1" : "0");
-        }
-
-        return Convert.ToHexStringLower(hash.GetHashAndReset());
-    }
-
-    private static void AppendFrame(IncrementalHash hash, string value)
-    {
-        var bytes = Encoding.UTF8.GetBytes(value);
-        hash.AppendData(BitConverter.GetBytes(System.Net.IPAddress.HostToNetworkOrder(bytes.Length)));
-        hash.AppendData(bytes);
+            validationWorkUnits);
     }
 
     private static long CountCandidates(

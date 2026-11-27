@@ -24,7 +24,6 @@ public sealed class SelectionApplierTests
             position: AlgorithmTestData.NodeThree);
         var state = AlgorithmTestData.CreateState([request], [near, far]);
 
-        AlgorithmTestData.AssertGeneratedInFull(state, Options);
         var result = new ReferenceSelectionPolicy().Decide(state, Options);
 
         Assert.True(result.IsSuccess, result.Witness?.Message);
@@ -50,7 +49,6 @@ public sealed class SelectionApplierTests
         var state = AlgorithmTestData.CreateState([request], [second, first]);
         var generator = new InsertionCandidateGenerator();
         var generated = generator.Generate(state, Options);
-        Assert.True(generated.Diagnostics!.IsComplete);
         var sets = generated.VehicleCandidates!
             .OrderBy(value => value.VehicleId.Value, StringComparer.Ordinal)
             .ToArray();
@@ -89,7 +87,6 @@ public sealed class SelectionApplierTests
                 AlgorithmTestData.Vehicle(AlgorithmTestData.VehicleTwo),
             ]);
 
-        AlgorithmTestData.AssertGeneratedInFull(state, Options);
         var result = new ReferenceSelectionPolicy().Decide(state, Options);
 
         Assert.True(result.IsSuccess, result.Witness?.Message);
@@ -110,7 +107,6 @@ public sealed class SelectionApplierTests
             [request],
             [AlgorithmTestData.Vehicle(capacity: 4)]);
 
-        AlgorithmTestData.AssertGeneratedInFull(state, Options);
         var result = new ReferenceSelectionPolicy().Decide(state, Options);
 
         Assert.True(result.IsSuccess, result.Witness?.Message);
@@ -142,7 +138,6 @@ public sealed class SelectionApplierTests
                     position: AlgorithmTestData.NodeThree),
             ]);
 
-        AlgorithmTestData.AssertGeneratedInFull(state, Options);
         var result = new ReferenceSelectionPolicy().Decide(state, Options);
 
         Assert.True(result.IsSuccess, result.Witness?.Message);
@@ -175,7 +170,6 @@ public sealed class SelectionApplierTests
             [first, second],
             [AlgorithmTestData.Vehicle()]);
 
-        AlgorithmTestData.AssertGeneratedInFull(state, Options);
         var result = new ReferenceSelectionPolicy().Decide(state, Options);
 
         Assert.True(result.IsSuccess, result.Witness?.Message);
@@ -240,7 +234,6 @@ public sealed class SelectionApplierTests
             travel.SnapshotHash,
             RideBound.Domain.Commitments.CommitmentLedger.Empty);
 
-        AlgorithmTestData.AssertGeneratedInFull(state, Options);
         var result = new ReferenceSelectionPolicy().Decide(state, Options);
 
         Assert.True(result.IsSuccess, result.Witness?.Message);
