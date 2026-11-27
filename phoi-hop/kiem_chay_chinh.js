@@ -270,9 +270,27 @@ if (fullCommonFile) {
   checkInt('full_common: khách chung', '56.330', fcj.n.common, 'đối chiếu chéo');
   check('sai số theo thời gian đối chứng (gộp khách)', '0,68', fcj.pooled.ctl_all.timed_abs, '04:102');
   check('sai số theo thời gian kết hợp (gộp khách)', '0,60', fcj.pooled.full_all.timed_abs, '04:102');
-  for (const [win, c, f] of [['w08', '0,665', '0,520'], ['w17', '0,688', '0,671']]) {
-    check(`sai số theo thời gian ${win} đối chứng (theo ngày)`, c, fcj.levels[win].ctl_all.timed_abs, '04:104');
-    check(`sai số theo thời gian ${win} kết hợp (theo ngày)`, f, fcj.levels[win].full_all.timed_abs, '04:104');
+  // 04:104 mức từng khung: gộp trên từng khách của khung, như sai số giờ báo đầu cùng câu (khóa pooled_win, có từ [10.40]).
+  // Trung bình theo ngày (levels) chỉ in để tham khảo; TRẢ LỜI 10 so nhầm với nó nên lệch ở chữ số thứ ba.
+  for (const [win, role, c, f, where] of [['w08', 'sáng', '0,665', '0,520', '04:104 sáng'], ['w17', 'chiều', '0,688', '0,671', '04:104 chiều']]) {
+    const pw = fcj.pooled_win && fcj.pooled_win[win];
+    if (pw) {
+      check(`sai số theo thời gian ${role}, đối chứng (gộp khách)`, c, pw.ctl_all.timed_abs, where);
+      check(`sai số theo thời gian ${role}, kết hợp (gộp khách)`, f, pw.full_all.timed_abs, where);
+      // đối chiếu chéo cách gộp từng khung: số khách và sai số giờ báo đầu của full_common bằng bảng từng khách
+      for (const [g, rl, keys] of [['ctl_all', CTL, allC], ['full_all', FULL, allF]]) {
+        const n = [...keys].filter((q) => riders[rl].get(q).win === win).length, ia = pooled(rl, keys, 'initAbs', win);
+        const same = pw[g].n === n && Math.abs(pw[g].init_abs - ia) < 1e-6;
+        same ? ok++ : bad++;
+        console.log(`${same ? 'OK   ' : 'KHÁC '}\tđối chiếu chéo ${win} ${g}: số khách, sai số giờ báo đầu (full_common và riders.tsv)\t${pw[g].n} ${pw[g].init_abs}\t${n} ${ia}\tcùng cách gộp`);
+      }
+    } else {
+      for (const g of ['đối chứng', 'kết hợp']) {
+        skipped++;
+        console.log(`BỎ QUA\tsai số theo thời gian ${role}, ${g} (gộp khách)\t(full_common.json chưa có pooled_win: chạy lại full_common.py ở đầu nhánh)\t${where}`);
+      }
+    }
+    info(`sai số theo thời gian ${role}, trung bình theo ngày`, fmt(fcj.levels[win].ctl_all.timed_abs, 4), fmt(fcj.levels[win].full_all.timed_abs, 4));
   }
   const t = fcj.diff.w17.all.timed_abs;
   checkInt('chiều: hiệu sai số theo thời gian chưa rõ (khoảng tin cậy chứa 0)', '1', t.lo < 0 && t.hi > 0 ? 1 : 0, '04:104');

@@ -2,6 +2,54 @@
 
 (Máy công ty ghi vào đây: phân tích, quyết định, và các `## YÊU CẦU <số>` gửi máy nhà.)
 
+## YÊU CẦU 11 — 2026-11-27 20:55: nhận TRẢ LỜI 10 phần 1; 4 dòng KHÁC do script so nhầm, khóa luận không sai
+
+**Nhận TRẢ LỜI 10 phần 1 (`d8c0023`): 126 OK, 4 KHÁC, 0 BỎ QUA.** Mọi số chỉ tính được ở máy nhà đều khớp:
+- tổng mức đổi giờ −37,71 [−41,40; −34,03], buổi sáng −49,52;
+- Bảng 5.3 khách chung: −24,59 và −40,04;
+- ngưỡng 30 và 120 s: 32,9 % và 74,5 %;
+- sai số theo thời gian 0,68/0,60; −0,080 và −0,084 kèm khoảng tin cậy;
+- đối chiếu chéo 5/5.
+
+**4 dòng KHÁC (04:104): script so với trung bình theo ngày, còn khóa luận gộp theo khách.**
+- Bốn số máy nhà ra (0,6666; 0,5205; 0,6867; 0,6677) bằng đúng khóa `levels` của `full_common.json` thời khóa luận
+  (`1ecb941`, sha256 `f77ff94f…`). `levels` là trung bình theo ngày.
+- Câu 04:104 đặt các mức này cạnh sai số giờ báo đầu 3,10/2,57 và 3,00/3,18. Các số đó gộp theo khách: TRẢ LỜI 10 cho OK ở
+  dạng gộp khách, còn trung bình theo ngày ra 3,112/2,575.
+- Kiểm số học, với số khách từng khung lấy từ bảng từng khách (đối chứng 30.896 sáng, 32.381 chiều; kết hợp 30.559 và 32.119):
+  - kết hợp: (30.559 × 0,520 + 32.119 × 0,671) / 62.678 = 0,59738, trong khi mức gộp cả ngày là 0,59739;
+  - đối chứng: ra 0,67677, mức gộp cả ngày 0,67635, nằm trong sai số làm tròn của hai số ba chữ số ([0,67627; 0,67727));
+  - dùng trung bình theo ngày thì kết hợp ra 0,59595, lệch 0,0014.
+- `full_common.py` chưa in mức gộp theo khách của từng khung, nên repo chưa có chỗ sinh ra 0,665/0,520/0,688/0,671.
+
+**[10.40] (commit này):**
+- `src/fastsim/adapter60/full_common.py`: thêm khóa `pooled_win`.
+  - Gồm w08, w17 × `ctl_all`, `full_all`, `ctl_common`, `full_common`; mỗi mục có `n`, `init_abs`, `timed_abs`, `init_s`,
+    `timed_s`.
+  - In thêm một dòng `pooled` cho mỗi khung.
+  - Chỉ thêm; mọi khóa cũ tính như trước. `gen_eta_tables.py` không đọc khóa mới.
+- `phoi-hop/kiem_chay_chinh.js`:
+  - 04:104 so với `pooled_win`; tệp không có khóa này thì BỎ QUA. `levels` chỉ in THÔNG TIN.
+  - Thêm đối chiếu chéo mỗi khung: số khách và sai số giờ báo đầu gộp khách trong `full_common.json` phải bằng bảng từng
+    khách (kiểm cách lọc khung).
+- `README.md:291`: nhắc `pooled_win`.
+- Máy công ty đã thử script trên bảng từng khách:
+  - với `full_common.json` thời khóa luận: 4 BỎ QUA đúng chỗ, KHÁC 0;
+  - với một tệp tổng hợp có `pooled_win`: nhánh OK và nhánh KHÁC đều đúng; đối chiếu chéo 4/4 (số khách
+    30.896/30.559/32.381/32.119).
+- Python chưa chạy được ở máy này, mới kiểm bằng đọc diff.
+
+Kiểm ở **đầu nhánh `scope/thesis-trim-2`**:
+1. `RB_EVIDENCE=<như TRẢ LỜI 10> python src/fastsim/adapter60/full_common.py`. Gửi hai dòng `w08 pooled …` và `w17 pooled …`.
+2. So `full_common.json` mới với bản của TRẢ LỜI 10: bỏ khóa `pooled_win` thì hai tệp phải bằng nhau. Ví dụ nạp cả hai,
+   `del new['pooled_win']`, so `==`. `python gen_eta_tables.py` phải in giống hệt khi dùng tệp cũ.
+3. `node phoi-hop/kiem_chay_chinh.js riders.tsv sequences.tsv --pred <như TRẢ LỜI 10> --full-common src/fastsim/adapter60/full_common.json`.
+   - Kỳ vọng `TỔNG OK 134 KHÁC 0 BỎ QUA 0`: 130 cũ, bỏ 4 dòng theo ngày, thêm 4 dòng gộp khách và 4 dòng đối chiếu chéo.
+   - Nếu có dòng KHÁC: gửi số tính lại, không sửa khóa luận.
+4. Phần còn lại của YÊU CẦU 10 (mục 1–3: 775 test, phát lại B1, một lượt C# thật) và YÊU CẦU 9 giữ nguyên.
+
+Commit dưới tên tsunflowerr, **không thêm dòng Co-Authored-By** ([10.39n] vẫn còn dòng này).
+
 ## YÊU CẦU 10 — 2026-11-27 20:10: nhánh mới `scope/thesis-trim-2` (gỡ restore) và kiểm toàn bộ số liệu chạy chính
 
 Chủ đề tài cho tách nhánh mới từ `4aebe91`, gỡ đường restore, rồi kiểm lại thật kỹ mọi số liệu trong khóa luận, nhất là
