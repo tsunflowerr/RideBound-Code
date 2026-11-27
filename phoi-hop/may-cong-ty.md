@@ -2,6 +2,68 @@
 
 (Máy công ty ghi vào đây: phân tích, quyết định, và các `## YÊU CẦU <số>` gửi máy nhà.)
 
+## YÊU CẦU 4 — 2026-11-27 07:32: kiểm các gói Python [10.15]–[10.18]
+
+Commit trên nhánh (sau `ca96d32`):
+
+| Commit | Gỡ gì | Mục |
+|---|---|---|
+| `dbd5e97` [10.15] | Phân tích fc30 cũ: khối B của `aggregate.py` (khóa `B`, `B_rows`), khối "% Bảng 5.7" cũ của `gen_tables.py`, hình `du-bao-theo-khung-gio` của `make_figs.py`. Bảng 5.7–5.10 của khóa luận lấy từ `table57.js`, `eta_analysis.py`, `gen_eta_tables.py`, không đổi. Lượt fc30 vẫn chạy (`calib_pad.py`, `kiem_nhanh.sh` cần) | C39 |
+| `eb626ba` [10.16] | Bộ kiểm WP7 phía adapter: `actual_fleetpy_medium_verify.py`, `assets/wp7-fleetpy-medium/`, `test_medium_verifier.py`, biên nhận artifact của session, `semantic`/`semanticHash` trong `run-00.json` và `summary.json`, `checkpointBindingHash`. Giữ `capability-matrix.json` | C29 |
+| `4df8ad7` [10.17] | Trường evidence không ai đọc: `summary.lifecycle`, `E1ServedShare`, `E2ShareDropVAbove60s`, `dropVCvar95Ms`, `sumDropX/V`, `sumPickupC/X/V`, `nonNormalCertificates`, `moves.firstMoves`, khóa `transcript` (biên nhận). Bia mộ adapter: tiền tố `op_`, cận 64 MiB bị ghi đè (nay bắt buộc setting, lượt thật luôn 2^30), nhánh `lateBoarding` reject, driver khác `complete-graph-direct-v1`/`gzip-v1` và chế độ `check` của `make_run_drivers.py` | C30, C33 |
+| `1e9da42` [10.18] | `EXPECTED_EVIDENCE_SHA256` (`test_run_job.py:41`) đổi `019341f2…` → `9d718888…` | — |
+
+[10.15]–[10.18] chỉ đụng `src/adapter` và `src/fastsim/adapter60/*.py`: không đổi C#, JS, giao thức hay quyết định. Phần
+evidence mà `riders.py` đọc (`audit.table`, `audit.summary.sumDropC`, `finalOnlineState`, `events.alighted`) giữ nguyên,
+`format` vẫn `ridebound-job-evidence-v1`, nên 360 evidence đã lưu vẫn đọc được.
+
+**Gộp với YÊU CẦU 3.** Vì các gói này không đụng C# hay JS, có thể chạy YÊU CẦU 3 và YÊU CẦU 4 cùng lúc ở **đầu nhánh**
+(commit chứa yêu cầu này). Dòng "Python: … không cần cập nhật hash ghim nào" của YÊU CẦU 3 chỉ đúng tới `ca96d32`.
+YÊU CẦU 1 vẫn chạy ở `00fd3be`: mục 3 của nó so các trường `summarize` mà [10.17] đã gỡ.
+
+**Giá trị ghim mới** do máy công ty tính bằng bản viết lại bằng JS của `job_frames`, `write_evidence` và
+`normalized_sha256`. Bản này ra đúng giá trị cũ `019341f2…` trên `ca96d32`, và ra
+`9d718888e49bb9683c122674e7d8f7f5742d71fe109d5c1a6aa4d9eb6674a8e7` trên `4df8ad7`. Chưa chạy bằng Python.
+
+**Python**
+1. 5 module của README §2.3: kỳ vọng 42 test, 0 hỏng (số không đổi). Nếu chỉ hỏng
+   `EvidenceTests.test_evidence_of_a_small_job`, ghi hash thực tế; khác `9d718888…` thì báo, máy công ty sửa.
+2. `discover` có `RIDEBOUND_FLEETPY_ROOT`: kỳ vọng 0 hỏng, 119 test (134 ở `ab697fe`, đếm tĩnh `def test_`). Mất 15 test:
+   11 của `test_medium_verifier.py`, `test_runner_client` 2 (biên nhận artifact, bundle manifest của verifier),
+   `test_session_line_bounds` 3 (cận 64 MiB) thay bằng 1 (`test_the_setting_is_required_and_within_the_runner_range`).
+   Ghi số thật.
+3. `python -B src/adapter/replay.py adapter --transcript <transcript B1> --out <tệp> -- src/adapter/run_job.py <đối số như
+   lượt B1, thư mục ra mới>` cho 4 transcript B1: kỳ vọng `identical` đúng, `initializeRun` chỉ khác `coreCommitSha` và
+   `binarySha256`, job kết thúc bình thường.
+4. Với mỗi thư mục job vừa sinh ở bước 3:
+   - `riders.py --root <root chứa job> --out … --sequences …` (đọc transcript): giống từng byte bảng của B1 và `ab697fe`.
+   - Chép job sang root khác **không kèm** `transcript-00.ndjson.gz`, chạy lại `riders.py` (lần này đọc
+     `evidence.json.gz` mới): cũng giống từng byte.
+   - So `evidence.json.gz` mới với evidence của YÊU CẦU 1: `audit.table`, `finalOnlineState`, `events`, `moves` (bỏ
+     `firstMoves`), `shadowAllocations` và các trường `summary` còn lại (`requests`, `promisedRiders`, `sumDropC`,
+     `decisionsAcknowledged`, `breaches`, `ridersWithForcedBreach`, `latePickups`, `latePickupMaxMs`) bằng nhau; chỉ
+     thiếu các trường đã gỡ.
+5. `make_run_drivers.py write <sealed> <out> complete-graph-direct-v1` cho 2 ô B1 (w08, w17), vào thư mục mới: sha256
+   bằng tệp trong `drivers-run/` đang dùng. Chế độ `check` đã gỡ.
+6. Bảng mô phỏng nhanh trên rows đã lưu (`RB_RESULTS`), mỗi script chạy cả bản `ca96d32` lẫn đầu nhánh:
+   - `aggregate.py`: `aggregate.json` mới bằng bản cũ bỏ khóa `B`, `B_rows`; stdout mới bằng bản cũ bỏ các dòng
+     "dự báo N/CL/CLc/PAD", "CL-N", "CLc-N", "CLc-CL", "CL-PAD", "PAD-N".
+   - `gen_tables.py`: stdout mới bằng bản cũ bỏ khối từ "% Bảng 5.7" tới ngay trước "% Ngân sách (10 ngày):". Bảng 5.4,
+     5.5, 5.6, 5.11, Hình 5.3 và quy mô đội xe khớp .tex 22/11 từng ô.
+   - `make_figs.py` với `RB_FIGURES` mới: chỉ ra `phuc-vu-va-thay-doi` và `do-nhay-han-muc` (`.pdf`, `.png`); PNG giống
+     bản cũ (PDF khác do `CreationDate`).
+   - `PYTHONHASHSEED=0 eta_analysis.py`, `gen_eta_tables.py`, `calib_pad.py`: như trước; `git status` sạch.
+7. Không bắt buộc: một lượt C# + FleetPy đầy đủ, w08 `FS-G2-SHHZ71-N`, ở đầu nhánh: 335/335 `IDENTICAL`, `sequences.tsv`
+   giống từng byte mốc.
+8. Nếu biết script sinh `publication-projection-*.jsonl.gz` (ngoài repo, cho Bảng 5.3): nó có đọc trường nào đã gỡ ở trên
+   không. Số liệu khóa luận không đổi vì Bảng 5.3 dùng tệp đã lưu.
+
+**Cần trả về:** số test qua, hỏng, bỏ qua của bước 1–2 (kèm hash thực tế nếu `EvidenceTests` hỏng); kết quả `replay.py
+adapter` từng transcript; sha `riders.py`/`sequences` qua cả hai đường đọc; kết quả bước 4–6; thời gian chạy.
+
+**Kế hoạch sau:** nhận TRẢ LỜI 3 thì sửa `README.md:132` (số test C#). Sau khi máy nhà xác nhận YÊU CẦU 1–4, gói cuối
+là C31 (bỏ đường đọc transcript của `riders.py`). Còn chờ chủ đề tài quyết: C08 + C28, C37, giao thức đợt 2, C20.
+
 ## YÊU CẦU 3 — 2026-11-27 06:05: kiểm các gói [10.08]–[10.13]
 
 Commit trên nhánh:
