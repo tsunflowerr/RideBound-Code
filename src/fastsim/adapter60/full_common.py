@@ -132,6 +132,14 @@ def main():
     res['pooled'] = pooled
     for k, v in pooled.items():
         print(k, {a: round(b, 4) for a, b in v.items()})
+    # one window, pooled over its riders: the morning and afternoon levels of the thesis (first-promise and time-weighted error)
+    res['pooled_win'] = {}
+    for w in ['w08', 'w17']:
+        res['pooled_win'][w] = {}
+        for name, rs, keys in [('ctl_all', ctl, allc), ('full_all', full, allf), ('ctl_common', ctl, common), ('full_common', full, common)]:
+            ks = [k for k in keys if k[2] == w]
+            res['pooled_win'][w][name] = {'n': len(ks), **{f: sum(rs[k][f] for k in ks) / len(ks) for f in ['init_abs', 'timed_abs', 'init_s', 'timed_s']}}
+        print(w, 'pooled', {name: (v['n'], round(v['init_abs'], 3), round(v['timed_abs'], 3)) for name, v in res['pooled_win'][w].items()})
     res['levels'], res['diff'] = {}, {}
     for scope in [None, 'w08', 'w17']:
         sc = scope or 'day'
