@@ -58,11 +58,7 @@ public sealed record OnlineState(
 
 public sealed record EventReductionWitness(
     string Code,
-    string Message,
-    int? EventIndex = null,
-    long? EventSequence = null,
-    string? EntityId = null,
-    string? Dimension = null);
+    string Message);
 
 public sealed record EventReductionResult
 {

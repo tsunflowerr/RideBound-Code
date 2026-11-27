@@ -4,8 +4,7 @@ using RideBound.Domain.Routes;
 namespace RideBound.Algorithms.Candidates;
 
 public sealed record CandidateRetentionResult(
-    IReadOnlyList<InsertionCandidate> Retained,
-    IReadOnlyList<InsertionCandidate> Omitted);
+    IReadOnlyList<InsertionCandidate> Retained);
 
 /// <summary>
 /// Reduces a physically feasible per-vehicle candidate pool without allowing
@@ -73,7 +72,7 @@ public sealed class CandidatePortfolioRetainer
 
         if (ranked.Length <= maximumCandidates)
         {
-            return new CandidateRetentionResult(ranked, []);
+            return new CandidateRetentionResult(ranked);
         }
 
         var slotCount = maximumCandidates - 1;
@@ -83,13 +82,7 @@ public sealed class CandidatePortfolioRetainer
             slotCount);
 
         retained.Add(declaredNoOp);
-        var retainedIds = retained
-            .Select(candidate => candidate.CandidateId)
-            .ToHashSet(StringComparer.Ordinal);
-        var omitted = ranked
-            .Where(candidate => !retainedIds.Contains(candidate.CandidateId))
-            .ToArray();
-        return new CandidateRetentionResult(retained.AsReadOnly(), omitted);
+        return new CandidateRetentionResult(retained.AsReadOnly());
     }
 
     /// <summary>

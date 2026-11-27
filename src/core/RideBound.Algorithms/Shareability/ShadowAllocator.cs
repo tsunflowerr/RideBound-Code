@@ -51,11 +51,11 @@ public sealed class ShadowAllocator
     private readonly RouteScheduleProjector _projector;
     private readonly int[] _identity;
 
-    public ShadowAllocator(ShadowAllocationInputs inputs, RouteScheduleProjector? projector = null)
+    public ShadowAllocator(ShadowAllocationInputs inputs)
     {
         ArgumentNullException.ThrowIfNull(inputs);
         _inputs = inputs;
-        _projector = projector ?? new RouteScheduleProjector();
+        _projector = new RouteScheduleProjector();
         _identity = Enumerable.Range(0, inputs.Network.NodeCount).ToArray();
     }
 

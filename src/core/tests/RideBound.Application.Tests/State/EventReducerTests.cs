@@ -90,7 +90,6 @@ public sealed class EventReducerTests
 
         Assert.False(result.IsSuccess);
         Assert.Equal(RunFailureCodes.VehicleRiderMismatch, result.Witness?.Code);
-        Assert.Equal(2, result.Witness?.EventIndex);
     }
 
     [Fact]
@@ -106,8 +105,6 @@ public sealed class EventReducerTests
 
         Assert.False(result.IsSuccess);
         Assert.Equal("UNKNOWN_VEHICLE", result.Witness?.Code);
-        Assert.Equal(3, result.Witness?.EventIndex);
-        Assert.Equal(4, result.Witness?.EventSequence);
         Assert.Empty(initial.Run.Requests);
         Assert.Empty(initial.Run.Vehicles);
         Assert.Null(initial.TravelTimes);
@@ -135,7 +132,6 @@ public sealed class EventReducerTests
         Assert.Equal(
             EventReductionFailureCodes.InvalidEventSequence,
             result.Witness?.Code);
-        Assert.Equal(0, result.Witness?.EventIndex);
     }
 
     [Fact]
@@ -268,8 +264,6 @@ public sealed class EventReducerTests
         Assert.Equal(
             EventReductionFailureCodes.TravelSnapshotIdentityMismatch,
             result.Witness?.Code);
-        Assert.Equal(0, result.Witness?.EventIndex);
-        Assert.Equal(1, result.Witness?.EventSequence);
         Assert.Empty(initial.Run.Vehicles);
         Assert.Null(initial.TravelTimes);
     }

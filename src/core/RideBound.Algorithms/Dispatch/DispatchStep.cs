@@ -75,7 +75,7 @@ public sealed class DispatchStep
         }
 
         var decision = solved.Decision!.Decision;
-        var validationPolicies = solved.Decision.EffectivePolicies;
+        var validationPolicies = context.Policies;
 
         var validation = _commitmentValidator.Validate(
             new CommitmentValidationContext(

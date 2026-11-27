@@ -112,12 +112,6 @@ public static class DecisionReasonCodes
 
 public static class DecisionPayloadCodec
 {
-    public const string StructuralOnlyReasonCode =
-        DecisionReasonCodes.Wp1StructuralOnly;
-
-    public const string CertificateNotAvailableReasonCode =
-        "COMMITMENT_VALIDATOR_NOT_AVAILABLE";
-
     private static readonly IReadOnlySet<string> Fields =
         new HashSet<string>(StringComparer.Ordinal)
         {

@@ -41,9 +41,9 @@ public sealed class CandidateScheduleEvaluator
 {
     private readonly RouteScheduleProjector _projector;
 
-    public CandidateScheduleEvaluator(RouteScheduleProjector? projector = null)
+    public CandidateScheduleEvaluator()
     {
-        _projector = projector ?? new RouteScheduleProjector();
+        _projector = new RouteScheduleProjector();
     }
 
     public CandidateScheduleEvaluationResult Evaluate(

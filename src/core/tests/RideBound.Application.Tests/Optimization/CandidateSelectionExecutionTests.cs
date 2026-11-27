@@ -26,8 +26,6 @@ public sealed class CandidateSelectionExecutionTests
             result.Diagnostics.ExecutionPath);
         Assert.Equal(["v1-accept", "v2-noop"], result.SolveResult.Solution!.SelectedOptionIds);
         Assert.Equal(1, result.Diagnostics.ConsumedValidationWorkUnits);
-        Assert.Equal(0, result.Diagnostics.FallbackValidationAttempts);
-        Assert.False(result.Diagnostics.PrimaryIncumbentRejected);
     }
 
     [Fact]
@@ -49,7 +47,6 @@ public sealed class CandidateSelectionExecutionTests
                 Accounting(budget));
 
         Assert.Equal(CandidateSelectionSolveStatus.Feasible, result.SolveResult.Status);
-        Assert.True(result.Diagnostics.SolverLossOccurred);
     }
 
     [Theory]
@@ -82,8 +79,7 @@ public sealed class CandidateSelectionExecutionTests
             result.Diagnostics.ExecutionPath);
         Assert.Equal(["v1-noop", "v2-noop"], result.SolveResult.Solution!.SelectedOptionIds);
         Assert.Empty(result.SolveResult.Diagnostics.ObjectiveBounds);
-        Assert.Equal(primaryStatus, result.Diagnostics.PrimarySolveStatus);
-        Assert.Equal(7, result.Diagnostics.PrimarySolverDiagnostics.ConsumedWorkUnits);
+        Assert.Equal(7, result.SolveResult.Diagnostics.ConsumedWorkUnits);
     }
 
     [Fact]
@@ -106,14 +102,12 @@ public sealed class CandidateSelectionExecutionTests
 
         Assert.Equal(CandidateSelectionSolveStatus.SafeFallback, result.SolveResult.Status);
         Assert.Equal(["v1-noop", "v2-noop"], result.SolveResult.Solution!.SelectedOptionIds);
-        Assert.True(result.Diagnostics.PrimaryIncumbentRejected);
         Assert.Equal(2, result.Diagnostics.ConsumedValidationWorkUnits);
-        Assert.Equal(1, result.Diagnostics.FallbackValidationAttempts);
+        Assert.Equal(2, validator.CallCount);
         var witness = Assert.Single(result.Diagnostics.ValidationWitnesses);
         Assert.Equal(
             CandidateSelectionExecutionPath.ValidatedIncumbent,
             witness.AttemptedPath);
-        Assert.Equal(["v1-accept", "v2-noop"], witness.SelectedOptionIds);
     }
 
     [Fact]
@@ -141,7 +135,7 @@ public sealed class CandidateSelectionExecutionTests
             CandidateSelectionExecutionPath.GreedySingleRequest,
             result.Diagnostics.ExecutionPath);
         Assert.Equal(["v1-accept", "v2-noop"], result.SolveResult.Solution!.SelectedOptionIds);
-        Assert.Equal(2, result.Diagnostics.FallbackValidationAttempts);
+        Assert.Equal(2, validator.CallCount);
     }
 
     [Fact]
@@ -183,10 +177,11 @@ public sealed class CandidateSelectionExecutionTests
                 problem,
                 solverBudget,
                 CandidateSelectionSolveStatus.Unknown));
+        var validator = new StubValidator(_ => false);
 
         var result = new SafeCandidateSelectionExecutor(
             solver,
-            new StubValidator(_ => false)).Execute(
+            validator).Execute(
                 problem,
                 budget,
                 Accounting(budget));
@@ -197,7 +192,7 @@ public sealed class CandidateSelectionExecutionTests
             CandidateSelectionFailureCodes.NoValidatedFallback,
             result.SolveResult.ReasonCode);
         Assert.Equal(CandidateSelectionExecutionPath.None, result.Diagnostics.ExecutionPath);
-        Assert.Equal(3, result.Diagnostics.FallbackValidationAttempts);
+        Assert.Equal(3, validator.CallCount);
     }
 
     [Fact]
@@ -222,7 +217,7 @@ public sealed class CandidateSelectionExecutionTests
                 budget,
                 accounting);
 
-        Assert.True(result.Diagnostics.SolverLossOccurred);
+        Assert.NotEqual(CandidateSelectionSolveStatus.Optimal, result.SolveResult.Status);
         Assert.Equal(8, result.Diagnostics.ConsumedGenerationWorkUnits);
         Assert.Equal(2, result.Diagnostics.ConsumedValidationWorkUnits);
     }

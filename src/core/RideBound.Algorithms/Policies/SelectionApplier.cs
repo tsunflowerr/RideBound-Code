@@ -45,12 +45,7 @@ public static class SelectionApplier
                 new RollingCostWitness(
                     DecisionFailureCodes.SelectedCandidateInvalid,
                     "A selected relocation needs exactly one donor (the rider's vehicle) and one " +
-                    "receiver of the same waiting rider.",
-                    donors.FirstOrDefault()?.VehicleId ?? receivers[0].VehicleId,
-                    donors.FirstOrDefault()?.Candidate.RelocatedRequestId
-                        ?? receivers.FirstOrDefault()?.Candidate.RelocatedRequestId,
-                    donors.FirstOrDefault()?.Candidate.CandidateId ?? receivers[0].Candidate.CandidateId,
-                    "relocation"));
+                    "receiver of the same waiting rider."));
         }
 
         return (
@@ -84,11 +79,7 @@ public static class SelectionApplier
             {
                 return new RollingCostWitness(
                     DecisionFailureCodes.SelectedCandidateInvalid,
-                    validation.Witness!.Message,
-                    plan.VehicleId,
-                    validation.Witness.RequestId,
-                    plan.Candidate.CandidateId,
-                    validation.Witness.Dimension);
+                    validation.Witness!.Message);
             }
         }
 
@@ -115,7 +106,7 @@ public static class SelectionApplier
 
             if (!route.IsSuccess)
             {
-                return (null, ApplyFailure(route.Failure!, plan.VehicleId, plan.Candidate.CandidateId).Witness);
+                return (null, ApplyFailure(route.Failure!).Witness);
             }
 
             run = route.Value!;
@@ -128,10 +119,7 @@ public static class SelectionApplier
             return (
                 null,
                 ApplyFailure(
-                    reassigned.Failure!,
-                    relocation.ReceiverVehicleId,
-                    plans.Single(value => value.VehicleId == relocation.ReceiverVehicleId).Candidate.CandidateId,
-                    relocation.RequestId).Witness);
+                    reassigned.Failure!).Witness);
         }
 
         run = reassigned.Value!;
@@ -148,7 +136,7 @@ public static class SelectionApplier
                 {
                     return (
                         null,
-                        ApplyFailure(accepted.Failure!, plan.VehicleId, plan.Candidate.CandidateId, requestId).Witness);
+                        ApplyFailure(accepted.Failure!).Witness);
                 }
 
                 run = accepted.Value!;
@@ -211,9 +199,7 @@ public static class SelectionApplier
                 if (!route.IsSuccess)
                 {
                     return ApplyFailure(
-                        route.Failure!,
-                        plan.VehicleId,
-                        plan.Candidate.CandidateId);
+                        route.Failure!);
                 }
 
                 run = route.Value!;
@@ -228,10 +214,7 @@ public static class SelectionApplier
                 if (!accepted.IsSuccess)
                 {
                     return ApplyFailure(
-                        accepted.Failure!,
-                        plan.VehicleId,
-                        plan.Candidate.CandidateId,
-                        requestId);
+                        accepted.Failure!);
                 }
 
                 run = accepted.Value!;
@@ -288,7 +271,7 @@ public static class SelectionApplier
 
             if (!rejected.IsSuccess)
             {
-                return ApplyFailure(rejected.Failure!, requestId: request.Id);
+                return ApplyFailure(rejected.Failure!);
             }
 
             run = rejected.Value!;
@@ -326,16 +309,9 @@ public static class SelectionApplier
     }
 
     private static DispatchDecisionResult ApplyFailure(
-        DomainFailure failure,
-        VehicleId? vehicleId = null,
-        string? candidateId = null,
-        RequestId? requestId = null) =>
+        DomainFailure failure) =>
         DispatchDecisionResult.Failure(
             new RollingCostWitness(
                 DecisionFailureCodes.DecisionApplyFailed,
-                failure.Message,
-                vehicleId,
-                requestId,
-                candidateId,
-                failure.Dimension));
+                failure.Message));
 }

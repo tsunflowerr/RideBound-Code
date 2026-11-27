@@ -114,9 +114,7 @@ public sealed class SolverBackedFleetSelector
                     rejection is null
                         ? executed.SolveResult.Message
                             ?? "The solver and validated fallback portfolio produced no selection."
-                        : $"Fallback validation failed: {rejection.ReasonCode}: {rejection.Message}",
-                    Dimension: rejection?.ReasonCode
-                        ?? executed.SolveResult.ReasonCode));
+                        : $"Fallback validation failed: {rejection.ReasonCode}: {rejection.Message}"));
         }
 
         var selected = mapping.Map(executed.SolveResult.Solution);
@@ -308,8 +306,7 @@ public sealed class SolverBackedFleetSelector
                 return MappedSelectionResult.Failure(
                     new RollingCostWitness(
                         SolverBackedSelectionFailureCodes.ModelMappingFailed,
-                        "Mapped fleet selection exceeded the canonical integer range.",
-                        Dimension: "selectionAggregation"));
+                        "Mapped fleet selection exceeded the canonical integer range."));
             }
         }
 
@@ -330,8 +327,7 @@ public sealed class SolverBackedFleetSelector
                 candidates,
                 new RollingCostWitness(
                     SolverBackedSelectionFailureCodes.ModelMappingFailed,
-                    message,
-                    Dimension: "candidateSelectionModel"));
+                    message));
 
         private sealed record ObjectiveMapping(
             CandidateSelectionObjectiveLevel Level,

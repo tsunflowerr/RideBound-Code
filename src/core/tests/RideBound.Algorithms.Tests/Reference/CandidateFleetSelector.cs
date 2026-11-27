@@ -22,8 +22,7 @@ public sealed class CandidateFleetSelector
             return FleetSelectionResult.Failure(
                 new RollingCostWitness(
                     DecisionFailureCodes.NoVehiclePlan,
-                    "Every vehicle requires at least one feasible plan, including no-op.",
-                    missing.VehicleId));
+                    "Every vehicle requires at least one feasible plan, including no-op."));
         }
 
         FleetSelection? best = null;
@@ -102,10 +101,7 @@ public sealed class CandidateFleetSelector
             {
                 overflow ??= new RollingCostWitness(
                     DecisionFailureCodes.OperationalCostOverflow,
-                    "Fleet operational cost exceeded the integer range.",
-                    candidate.VehicleId,
-                    CandidateId: candidate.CandidateId,
-                    Dimension: "operationalCost");
+                    "Fleet operational cost exceeded the integer range.");
                 continue;
             }
 

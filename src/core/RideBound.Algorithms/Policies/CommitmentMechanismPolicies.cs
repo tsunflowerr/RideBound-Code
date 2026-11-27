@@ -31,8 +31,5 @@ public static class RevisionPenaltyPolicy
         DispatchDecisionResult.Failure(
             new RollingCostWitness(
                 DecisionFailureCodes.CandidateGenerationFailed,
-                witness.Message,
-                witness.VehicleId,
-                witness.RequestId,
-                Dimension: witness.Dimension));
+                witness.Message));
 }

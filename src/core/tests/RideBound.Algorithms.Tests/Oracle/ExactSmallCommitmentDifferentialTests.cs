@@ -314,17 +314,10 @@ public sealed class ExactSmallCommitmentDifferentialTests
         Assert.Equal(
             CommitmentFailureCodes.VehicleHasNoFeasibleCandidate,
             witness.Code);
-        Assert.Equal(AlgorithmTestData.VehicleOne, witness.VehicleId);
-
-        // Every diagnostic field must be typed rather than parsed out of prose.
-        Assert.NotNull(witness.CandidateId);
-        Assert.NotNull(witness.UnderlyingCode);
-        Assert.Equal(
-            generated.VehicleCandidates!.Single().Candidates.Count,
-            witness.GeneratedCandidateCount);
-        Assert.Equal(
-            witness.GeneratedCandidateCount,
-            witness.RejectedCandidateCount);
+        Assert.StartsWith(
+            "C1 rejected every generated candidate for this vehicle. ",
+            witness.Message,
+            StringComparison.Ordinal);
         Assert.DoesNotContain("firstCode=", witness.Message, StringComparison.Ordinal);
     }
 
@@ -350,9 +343,9 @@ public sealed class ExactSmallCommitmentDifferentialTests
         Assert.Equal(
             CommitmentFailureCodes.VehicleHasNoFeasibleCandidate,
             assessed.Witness!.Code);
-        Assert.Equal(AlgorithmTestData.VehicleOne, assessed.Witness.VehicleId);
-        Assert.Null(assessed.Witness.CandidateId);
-        Assert.Equal(0, assessed.Witness.GeneratedCandidateCount);
+        Assert.Equal(
+            "C1 reached a vehicle without any generated candidate; even the safety no-op was absent.",
+            assessed.Witness.Message);
     }
 
     [Fact]
@@ -361,7 +354,7 @@ public sealed class ExactSmallCommitmentDifferentialTests
         // The incumbent was booked under a policy the catalog does not declare, so the
         // validator rejects every candidate, the no-op included. The witness must cite
         // the no-op itself.
-        var (generated, set, noOp, ordinalFirst, context) = EveryCandidateRejected();
+        var (generated, _, _, _, context) = EveryCandidateRejected();
 
         var assessed = new HardVectorCandidateAssessor().AssessAndFilter(
             context,
@@ -370,10 +363,6 @@ public sealed class ExactSmallCommitmentDifferentialTests
         Assert.False(assessed.IsSuccess);
         var witness = assessed.Witness!;
         Assert.Equal(CommitmentFailureCodes.VehicleHasNoFeasibleCandidate, witness.Code);
-        Assert.Equal(noOp.CandidateId, witness.CandidateId);
-        Assert.NotEqual(ordinalFirst.CandidateId, witness.CandidateId);
-        Assert.Equal("COMMITMENT_POLICY_NOT_FOUND", witness.UnderlyingCode);
-        Assert.Equal(set.Candidates.Count, witness.RejectedCandidateCount);
         Assert.Contains(". No-op rejection: ", witness.Message, StringComparison.Ordinal);
         Assert.EndsWith(
             "The active request has no exact commitment policy.",
@@ -385,7 +374,7 @@ public sealed class ExactSmallCommitmentDifferentialTests
     public void C1_policy_reports_the_assessment_failure_when_a_vehicle_loses_every_candidate()
     {
         // The assessor cites the no-op, and the policy stops before the solver.
-        var (_, _, noOp, _, context) = EveryCandidateRejected();
+        var (_, _, _, _, context) = EveryCandidateRejected();
         var solver = new EnumeratingSolver();
 
         var result = new SolverBackedRidePoolingPolicy(solver).Decide(
@@ -400,7 +389,6 @@ public sealed class ExactSmallCommitmentDifferentialTests
             "C1 rejected every generated candidate for this vehicle. No-op rejection: ",
             witness.Message,
             StringComparison.Ordinal);
-        Assert.Equal(noOp.CandidateId, witness.CandidateId);
         Assert.Null(solver.LastProblem);
     }
 

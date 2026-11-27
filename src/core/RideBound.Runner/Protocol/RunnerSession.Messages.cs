@@ -80,10 +80,7 @@ public sealed partial class RunnerSession
             payloadResult.Value!,
             new InitializeRunValidationContext(
                 _hello,
-                _helloAcknowledgement,
-                envelope.RunId,
-                envelope.ScenarioId,
-                _identity));
+                _helloAcknowledgement));
 
         if (!validation.IsSuccess)
         {
@@ -292,7 +289,7 @@ public sealed partial class RunnerSession
                 envelope);
         }
 
-        var stateAfterHash = online.StateAfterHash!;
+        var stateAfterHash = lightStateAfterHash;
         var shell = new DecisionPayload(
             DecisionProductionStatus.Produced,
             online.ReasonCode!,

@@ -24,30 +24,6 @@ public sealed class InitializeRunValidatorTests
     }
 
     [Fact]
-    public void Scenario_mismatch_does_not_create_initialized_identity()
-    {
-        var input = ReadInput();
-        Assert.True(ScenarioId.TryCreate("different-scenario", out var expectedScenario));
-        var mismatchedContext = input.Context with
-        {
-            ExpectedScenarioId = expectedScenario,
-        };
-
-        var result = InitializeRunValidator.Validate(
-            input.Envelope,
-            input.Payload,
-            mismatchedContext);
-
-        Assert.False(result.IsSuccess);
-        Assert.Null(result.Identity);
-        Assert.Equal(
-            InitializeRunValidationErrorCode.IdentityMismatch,
-            result.Error?.Code);
-        Assert.Equal("IDENTITY_MISMATCH", result.Error?.ProtocolCode);
-        Assert.Equal("$.scenarioId", result.Error?.Field);
-    }
-
-    [Fact]
     public void Capability_selection_mismatch_does_not_create_initialized_identity()
     {
         var input = ReadInput();
@@ -72,8 +48,8 @@ public sealed class InitializeRunValidatorTests
         Assert.Null(result.Identity);
         Assert.Equal("IDENTITY_MISMATCH", result.Error?.ProtocolCode);
         Assert.Equal(
-            "$.payload.manifest.capabilitySelection",
-            result.Error?.Field);
+            "Manifest capability selection differs from helloAck.",
+            result.Error?.Message);
     }
 
     [Fact]
@@ -101,33 +77,6 @@ public sealed class InitializeRunValidatorTests
     }
 
     [Fact]
-    public void Reinitialize_active_session_is_protocol_error_and_keeps_existing_identity()
-    {
-        var input = ReadInput();
-        var first = InitializeRunValidator.Validate(
-            input.Envelope,
-            input.Payload,
-            input.Context);
-        var activeContext = input.Context with
-        {
-            ActiveSession = first.Identity,
-        };
-
-        var repeated = InitializeRunValidator.Validate(
-            input.Envelope,
-            input.Payload,
-            activeContext);
-
-        Assert.False(repeated.IsSuccess);
-        Assert.Null(repeated.Identity);
-        Assert.Equal(
-            InitializeRunValidationErrorCode.InvalidSessionState,
-            repeated.Error?.Code);
-        Assert.Equal("INVALID_SESSION_STATE", repeated.Error?.ProtocolCode);
-        Assert.Same(first.Identity, activeContext.ActiveSession);
-    }
-
-    [Fact]
     public void Manifest_adapter_must_match_hello_identity()
     {
         var input = ReadInput();
@@ -142,7 +91,9 @@ public sealed class InitializeRunValidatorTests
             context);
 
         Assert.False(result.IsSuccess);
-        Assert.Equal("$.payload.manifest.adapter", result.Error?.Field);
+        Assert.Equal(
+            "Manifest adapter identity differs from the hello identity.",
+            result.Error?.Message);
         Assert.Equal("IDENTITY_MISMATCH", result.Error?.ProtocolCode);
     }
 
@@ -161,9 +112,7 @@ public sealed class InitializeRunValidatorTests
             payload,
             new InitializeRunValidationContext(
                 hello,
-                acknowledgement,
-                envelope.RunId,
-                envelope.ScenarioId));
+                acknowledgement));
     }
 
     private static HelloPayload DecodeHello(string fixturePath)

@@ -154,7 +154,6 @@ public sealed partial class RunnerSession
             _ => SolverStatus.NotRun,
         };
         return OnlineDecisionBuildResult.Success(
-            stagedHash,
             reasonCode,
             actions,
             certificate,
@@ -162,7 +161,6 @@ public sealed partial class RunnerSession
     }
 
     private sealed record OnlineDecisionBuildResult(
-        Sha256Hex? StateAfterHash,
         string? ReasonCode,
         IReadOnlyList<JsonElement>? Actions,
         CertificateShell? Certificate,
@@ -170,19 +168,17 @@ public sealed partial class RunnerSession
         OnlineDecisionBuildError? Error)
     {
         public static OnlineDecisionBuildResult Success(
-            Sha256Hex stateAfterHash,
             string reasonCode,
             IReadOnlyList<JsonElement> actions,
             CertificateShell certificate,
             SolverStatusShell solver) =>
-            new(stateAfterHash, reasonCode, actions, certificate, solver, null);
+            new(reasonCode, actions, certificate, solver, null);
 
         public static OnlineDecisionBuildResult Fail(
             string code,
             ProtocolFailureDisposition disposition,
             string message) =>
             new(
-                null,
                 null,
                 null,
                 null,

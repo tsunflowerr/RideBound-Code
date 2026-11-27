@@ -334,7 +334,7 @@ public sealed class Wp4RunnerIntegrationTests
         Assert.Equal(2_500, rider.ActualPickupTime!.Value.Milliseconds);
         Assert.Equal(2_000, rider.LatestPickup.Milliseconds);
 
-        var checkpoint = setup.Session.Process(CheckpointRequest()).Response!;
+        var checkpoint = StreamedEnvelope(setup.Session.Process(CheckpointRequest()));
         var restored = CreateSession(configuration, commitmentConfiguration: commitment);
         Assert.Equal(
             "restore",
@@ -423,7 +423,7 @@ public sealed class Wp4RunnerIntegrationTests
 
         Assert.True(actionsCompared > 0);
 
-        var checkpoint = light.Session.Process(CheckpointRequest()).Response!;
+        var checkpoint = StreamedEnvelope(light.Session.Process(CheckpointRequest()));
         Assert.Equal("checkpoint", checkpoint.MessageType.Value);
         var restoredSession = CreateSession(lightWp4, commitmentConfiguration: commitment);
         var restore = restoredSession.Session.Process(
@@ -845,6 +845,16 @@ public sealed class Wp4RunnerIntegrationTests
               "payload":{"decisionHash":"{{hash}}"}
             }
             """);
+
+    private static ProtocolEnvelope StreamedEnvelope(RunnerSessionResult result)
+    {
+        using var stream = new MemoryStream();
+        result.Streamed!.WriteToAsync(stream, CancellationToken.None)
+            .AsTask()
+            .GetAwaiter()
+            .GetResult();
+        return ProtocolEnvelopeCodec.Decode(stream.ToArray()).Envelope!;
+    }
 
     private static byte[] CheckpointRequest() =>
         Encoding.UTF8.GetBytes(

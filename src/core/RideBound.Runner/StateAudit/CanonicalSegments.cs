@@ -17,8 +17,6 @@ public sealed class CanonicalSegments
 
     public long Length { get; }
 
-    public int PartCount => _parts.Count;
-
     public IReadOnlyList<ArraySegment<byte>> Parts => _parts;
 
     public void CopyTo(Span<byte> destination)
@@ -37,28 +35,6 @@ public sealed class CanonicalSegments
         var result = GC.AllocateUninitializedArray<byte>(checked((int)Length));
         CopyTo(result);
         return result;
-    }
-
-    public bool ContentEquals(ReadOnlySpan<byte> other)
-    {
-        if (other.Length != Length)
-        {
-            return false;
-        }
-
-        var offset = 0;
-
-        foreach (var part in _parts)
-        {
-            if (!part.AsSpan().SequenceEqual(other.Slice(offset, part.Count)))
-            {
-                return false;
-            }
-
-            offset += part.Count;
-        }
-
-        return true;
     }
 
     /// <summary>Compares the bytes of two segment lists without joining either.</summary>

@@ -75,7 +75,6 @@ public sealed partial class RunnerSession
 
         return new RunnerSessionResult(
             new StreamedResponse(
-                "checkpoint",
                 [before, .. stateParts, after]));
     }
 

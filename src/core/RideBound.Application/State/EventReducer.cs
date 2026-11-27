@@ -46,7 +46,7 @@ public sealed class EventReducer
             if (applied.Failure is not null)
             {
                 return EventReductionResult.Failure(
-                    ToWitness(applied.Failure, index, onlineEvent.EventSequence));
+                    ToWitness(applied.Failure));
             }
 
             run = applied.Run!;
@@ -107,8 +107,7 @@ public sealed class EventReducer
         {
             return new EventReductionWitness(
                 EventReductionFailureCodes.InvalidEpoch,
-                "Internal event batch epoch must advance by one.",
-                Dimension: "epoch");
+                "Internal event batch epoch must advance by one.");
         }
 
         if (batch.SimulationTime.Milliseconds
@@ -116,8 +115,7 @@ public sealed class EventReducer
         {
             return new EventReductionWitness(
                 EventReductionFailureCodes.InvalidEventTime,
-                "Batch simulation time cannot move backwards.",
-                Dimension: "simTimeMs");
+                "Batch simulation time cannot move backwards.");
         }
 
         if (batch.Events.Count == 0)
@@ -131,8 +129,7 @@ public sealed class EventReducer
         {
             return new EventReductionWitness(
                 EventReductionFailureCodes.InvalidEventSequence,
-                "The next internal event sequence is outside the canonical range.",
-                Dimension: "eventSeq");
+                "The next internal event sequence is outside the canonical range.");
         }
 
         var expectedSequence = state.NextEventSequence;
@@ -145,30 +142,21 @@ public sealed class EventReducer
             {
                 return new EventReductionWitness(
                     EventReductionFailureCodes.InvalidEventSequence,
-                    "Internal event sequence must be globally consecutive.",
-                    index,
-                    onlineEvent.EventSequence,
-                    Dimension: "eventSeq");
+                    "Internal event sequence must be globally consecutive.");
             }
 
             if (onlineEvent.EventSequence == DomainLimits.MaxCanonicalInteger)
             {
                 return new EventReductionWitness(
                     EventReductionFailureCodes.InvalidEventSequence,
-                    "The event sequence exhausts the canonical integer range.",
-                    index,
-                    onlineEvent.EventSequence,
-                    Dimension: "eventSeq");
+                    "The event sequence exhausts the canonical integer range.");
             }
 
             if (onlineEvent.SimulationTime != batch.SimulationTime)
             {
                 return new EventReductionWitness(
                     EventReductionFailureCodes.InvalidEventTime,
-                    "Every internal event must use the batch simulation time.",
-                    index,
-                    onlineEvent.EventSequence,
-                    Dimension: "simTimeMs");
+                    "Every internal event must use the batch simulation time.");
             }
 
             expectedSequence++;
@@ -320,16 +308,10 @@ public sealed class EventReducer
     }
 
     private static EventReductionWitness ToWitness(
-        DomainFailure failure,
-        int? index = null,
-        long? sequence = null) =>
+        DomainFailure failure) =>
         new(
             failure.Code,
-            failure.Message,
-            index,
-            sequence,
-            failure.EntityId,
-            failure.Dimension);
+            failure.Message);
 
     private sealed record EventApplyResult(
         RideBoundRun? Run,

@@ -85,11 +85,7 @@ public sealed record DispatchDecisionResult
 
 public sealed record RollingCostWitness(
     string Code,
-    string Message,
-    VehicleId? VehicleId = null,
-    RequestId? RequestId = null,
-    string? CandidateId = null,
-    string? Dimension = null);
+    string Message);
 
 public static class DecisionFailureCodes
 {

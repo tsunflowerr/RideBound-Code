@@ -27,8 +27,6 @@ public sealed record RunnerSessionResult(
     ProtocolEnvelope? Response,
     bool ShouldTerminate = false)
 {
-    private readonly ProtocolEnvelope? _response = Response;
-
     public RunnerSessionResult(StreamedResponse streamed)
         : this((ProtocolEnvelope?)null)
     {
@@ -37,15 +35,9 @@ public sealed record RunnerSessionResult(
 
     /// <summary>
     /// Set when the response is written part by part (the checkpoint);
-    /// <see cref="Response"/> then decodes it on demand.
+    /// <see cref="Response"/> is then null.
     /// </summary>
     public StreamedResponse? Streamed { get; }
-
-    public ProtocolEnvelope? Response
-    {
-        get => _response ?? Streamed?.ToEnvelope();
-        init => _response = value;
-    }
 }
 
 // One protocol session of the Runner: it answers the adapter's messages in order. This file holds the session

@@ -27,10 +27,6 @@ internal sealed class CanonicalBuffer
 
     public byte[] Array => _buffer;
 
-    public ReadOnlySpan<byte> WrittenSpan => _buffer.AsSpan(0, _length);
-
-    public void Reset() => _length = 0;
-
     public byte[] ToArray() => _buffer.AsSpan(0, _length).ToArray();
 
     public void Raw(ReadOnlySpan<byte> value)

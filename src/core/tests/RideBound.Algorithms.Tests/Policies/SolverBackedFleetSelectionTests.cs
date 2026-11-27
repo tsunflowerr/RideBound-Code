@@ -111,7 +111,10 @@ public sealed class SolverBackedFleetSelectionTests
         Assert.Equal(
             "noop",
             Assert.Single(result.Selection.Selection.VehiclePlans).Candidate.CandidateId);
-        Assert.True(result.Selection.Execution.Diagnostics.PrimaryIncumbentRejected);
+        Assert.Equal(
+            CandidateSelectionExecutionPath.ValidatedIncumbent,
+            Assert.Single(result.Selection.Execution.Diagnostics.ValidationWitnesses)
+                .AttemptedPath);
     }
 
     [Fact]
@@ -171,12 +174,9 @@ public sealed class SolverBackedFleetSelectionTests
                     executionBudget));
 
         Assert.True(result.IsSuccess, result.Witness?.Message);
-        Assert.True(
-            result.Decision!.Decision.SelectionExecution!.Diagnostics
-                .SolverLossOccurred);
         Assert.Equal(
             CandidateSelectionSolveStatus.SafeFallback,
-            result.Decision.Decision.SelectionExecution.SolveResult.Status);
+            result.Decision!.Decision.SelectionExecution!.SolveResult.Status);
     }
 
     /// <summary>

@@ -150,23 +150,14 @@ public enum CandidateSelectionExecutionPath
 
 public sealed record CandidateSelectionValidationWitness(
     CandidateSelectionExecutionPath AttemptedPath,
-    IReadOnlyList<string> SelectedOptionIds,
     string ReasonCode,
     string Message);
 
 public sealed record CandidateSelectionExecutionDiagnostics(
     long ConsumedGenerationWorkUnits,
     long ConsumedValidationWorkUnits,
-    CandidateSelectionSolveStatus PrimarySolveStatus,
-    CandidateSelectionSolverDiagnostics PrimarySolverDiagnostics,
     CandidateSelectionExecutionPath ExecutionPath,
-    long FallbackValidationAttempts,
-    bool PrimaryIncumbentRejected,
-    IReadOnlyList<CandidateSelectionValidationWitness> ValidationWitnesses)
-{
-    public bool SolverLossOccurred =>
-        PrimarySolveStatus != CandidateSelectionSolveStatus.Optimal;
-}
+    IReadOnlyList<CandidateSelectionValidationWitness> ValidationWitnesses);
 
 public sealed record CandidateSelectionExecutionResult(
     CandidateSelectionSolveResult SolveResult,
@@ -211,8 +202,6 @@ public sealed class SafeCandidateSelectionExecutor
 
         var primary = _solver.Solve(problem, budget.SolverBudget);
         var consumedValidation = preSolveAccounting.ConsumedValidationWorkUnits;
-        var fallbackAttempts = 0L;
-        var primaryRejected = false;
         var validationWitnesses = new List<CandidateSelectionValidationWitness>();
 
         if (primary.Solution is not null)
@@ -232,8 +221,6 @@ public sealed class SafeCandidateSelectionExecutor
             {
                 return ValidationBudgetFailure();
             }
-
-            primaryRejected = true;
         }
 
         var noOp = CandidateSelectionSolution.Create(
@@ -244,7 +231,6 @@ public sealed class SafeCandidateSelectionExecutor
 
         if (noOp.IsSuccess)
         {
-            fallbackAttempts++;
             var noOpValidation = Validate(
                 noOp.Value!,
                 CandidateSelectionExecutionPath.SafeNoOp);
@@ -266,7 +252,6 @@ public sealed class SafeCandidateSelectionExecutor
 
         foreach (var greedy in CreateGreedySingleRequestSolutions(problem))
         {
-            fallbackAttempts++;
             var greedyValidation = Validate(
                 greedy,
                 CandidateSelectionExecutionPath.GreedySingleRequest);
@@ -312,7 +297,6 @@ public sealed class SafeCandidateSelectionExecutor
             validationWitnesses.Add(
                 new CandidateSelectionValidationWitness(
                     attemptedPath,
-                    Array.AsReadOnly(solution.SelectedOptionIds.ToArray()),
                     validation.ReasonCode!,
                     validation.Message!));
             return ValidationAttempt.Invalid;
@@ -356,11 +340,7 @@ public sealed class SafeCandidateSelectionExecutor
                 new CandidateSelectionExecutionDiagnostics(
                     preSolveAccounting.ConsumedGenerationWorkUnits,
                     consumedValidation,
-                    primary.Status,
-                    primary.Diagnostics,
                     path,
-                    fallbackAttempts,
-                    primaryRejected,
                     validationWitnesses.AsReadOnly()));
     }
 

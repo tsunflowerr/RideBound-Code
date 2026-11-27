@@ -14,8 +14,8 @@ namespace RideBound.Algorithms.Tests.Policies;
 /// <summary>
 /// A comparison of budget arms is only meaningful if a commitment budget binds every
 /// arm exactly as configured. That property is not an operational convention — it is
-/// decided by the effective policies that <c>SolverBackedRidePoolingPolicy</c> hands
-/// the runner, which the validator then scores the decision against. These tests pin
+/// decided by the configured policies that the validator scores the decision of
+/// <c>SolverBackedRidePoolingPolicy</c> against. These tests pin
 /// them so a later edit cannot silently make one arm easier or harder than the
 /// published comparison claims.
 /// </summary>
@@ -124,14 +124,15 @@ public sealed class EffectivePolicyFairnessTests
                 100_000,
                 100_000,
                 solverBudget).Value!;
+        var context = new CommitmentMechanismContext(
+            before,
+            state,
+            new CommitmentPolicyCatalog([configured]),
+            "effective-policy-fairness",
+            1);
         var result = new SolverBackedRidePoolingPolicy(
             new NoIncumbentSolver()).Decide(
-                new CommitmentMechanismContext(
-                    before,
-                    state,
-                    new CommitmentPolicyCatalog([configured]),
-                    "effective-policy-fairness",
-                    1),
+                context,
                 new CandidateGenerationOptions(
                     maximumCandidatesPerVehicle: 100,
                     maximumNewRequestsPerVehicle: 1,
@@ -140,7 +141,7 @@ public sealed class EffectivePolicyFairnessTests
 
         Assert.True(result.IsSuccess, result.Witness?.Message);
         Assert.True(
-            result.Decision!.EffectivePolicies.TryGetPolicy(PolicyId, out var policy));
+            context.Policies.TryGetPolicy(PolicyId, out var policy));
         return policy;
     }
 

@@ -118,20 +118,14 @@ public sealed class CommitmentDecisionValidator
     private readonly CommitmentLockEvaluator _lockEvaluator;
     private readonly CommitmentBudgetEvaluator _budgetEvaluator;
 
-    public CommitmentDecisionValidator(
-        PhysicalPlanValidator? physicalValidator = null,
-        RouteScheduleProjector? scheduleProjector = null,
-        PromiseProjector? promiseProjector = null,
-        PromiseDeltaCalculator? deltaCalculator = null,
-        CommitmentLockEvaluator? lockEvaluator = null,
-        CommitmentBudgetEvaluator? budgetEvaluator = null)
+    public CommitmentDecisionValidator()
     {
-        _physicalValidator = physicalValidator ?? new PhysicalPlanValidator();
-        _scheduleProjector = scheduleProjector ?? new RouteScheduleProjector();
-        _promiseProjector = promiseProjector ?? new PromiseProjector();
-        _deltaCalculator = deltaCalculator ?? new PromiseDeltaCalculator();
-        _lockEvaluator = lockEvaluator ?? new CommitmentLockEvaluator();
-        _budgetEvaluator = budgetEvaluator ?? new CommitmentBudgetEvaluator();
+        _physicalValidator = new PhysicalPlanValidator();
+        _scheduleProjector = new RouteScheduleProjector();
+        _promiseProjector = new PromiseProjector();
+        _deltaCalculator = new PromiseDeltaCalculator();
+        _lockEvaluator = new CommitmentLockEvaluator();
+        _budgetEvaluator = new CommitmentBudgetEvaluator();
     }
 
     public CommitmentDecisionValidationResult Validate(

@@ -129,10 +129,7 @@ public sealed record CandidateGenerationResult
 
 public sealed record CandidateGenerationWitness(
     string Code,
-    string Message,
-    VehicleId? VehicleId = null,
-    RequestId? RequestId = null,
-    string? Dimension = null);
+    string Message);
 
 public sealed record CandidateGenerationOptions
 {
