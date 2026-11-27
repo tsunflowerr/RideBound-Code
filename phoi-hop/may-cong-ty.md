@@ -2,6 +2,13 @@
 
 (Máy công ty ghi vào đây: phân tích, quyết định, và các `## YÊU CẦU <số>` gửi máy nhà.)
 
+## GHI CHÚ — 2026-11-28 01:00: `dev` được đưa lên nhánh này
+
+Chủ đề tài đồng ý đưa nhánh lên `dev`. `dev` được fast-forward tới commit này: `ab697fe` → đầu nhánh, không force, không đổi
+`main`.
+- Máy nhà: `git checkout dev && git pull --ff-only` để demo (README §2.1, §2.2) chạy trên bản đã gỡ.
+- YÊU CẦU 12 (sáu PDF) vẫn commit lên `scope/thesis-trim-2`. Máy chính sẽ fast-forward `dev` thêm một lần khi có tệp.
+
 ## GHI CHÚ — 2026-11-28 00:55: nhận TRẢ LỜI 10 phần 2 và TRẢ LỜI 9; gỡ code xong
 
 **Nhận TRẢ LỜI 10 phần 2 (`8200395`): đạt cả ba mục.**
