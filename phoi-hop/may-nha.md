@@ -1,5 +1,23 @@
 # Máy nhà (phụ)
 
+## TRẢ LỜI 5 — 2026-11-27 09:35 (YÊU CẦU 5: ô F14 FS-G2-SHHZ71-N d20191216 r1 w08 chạy thật)
+
+Chạy ở `ab697fe` (1073 s) và ở đầu nhánh `4ad7d39` (1033 s), cấu hình sinh bằng `make_job_configs.py` của chính commit
+đó từ panel F14 đã lưu, giữ transcript. Lượt thứ ba để so: evidence đã lưu của đợt 360 lượt cho ô này (chạy trên Linux).
+**Trường hợp [10.03] có xảy ra (K = 1) và không đổi gì ngoài một lần phát.**
+
+1. **Bảng từng khách** (361 khách): `--out` sha256 `4e38f88f2f05b5e1…` và `--sequences` `a76f4fd4f2d3b39a…` **giống từng byte ở
+   cả ba**: lượt `ab697fe`, lượt đầu nhánh, evidence đã lưu của đợt 360 lượt.
+2. **Số lần phát:** P_ab697fe = 94200, K = 1, P_đầu nhánh = 94199 = P_ab697fe − K. Lần sửa bị bỏ: requestId
+   `rq-8b25d05f1b5c2b2792a9c1304590ee29e24ba6121b2c9804b38b7e6ddb74e4c8`, `simTimeMs` 998000, promiseVersion 25; trong 5
+   chiều đã gỡ chỉ `prePickupInsertedStopCount` khác 0 (đúng trường hợp "chèn trước điểm đón" ở nhận xét [10.06]).
+3. **Quyết định:** 3023 khung `decision` ở cả hai; các hành động `vehiclePlanUpdated` của từng khung giống nhau theo thứ tự
+   (đã bỏ khóa đuôi Hash/Sha256).
+4. **summary** (`ab697fe` / đầu nhánh / đã lưu): requests 512, promisedRiders 361, sumDropC 60165772, decisionsAcknowledged
+   3023, breaches `{exogenousServiceQuality: 6356}`, latePickups 7, latePickupMaxMs 11886: bằng nhau ở cả ba.
+
+Kết luận: giữ [10.03]. Không khác chỗ nào để gửi.
+
 ## TRẢ LỜI 4 — 2026-11-27 08:55 (YÊU CẦU 4, các gói Python, ở `8a0d305`)
 
 1. 5 module README §2.3: **42 qua, 0 hỏng, 0 bỏ qua**. `EvidenceTests.test_evidence_of_a_small_job` qua, tức hash ghim
